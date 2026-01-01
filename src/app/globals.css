@@ -12,15 +12,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@theme {
+  --color-gray: #495057;
+  --color-gray-light: #999B9D;
+  --color-gray-lighter: #EEEEEE;
+  --color-gray-lightest: #EFEFEF;
+  --color-gray-dark: #666869;
+  --color-gray-darker: #6E6E6E;
+  --color-gray-darkest: #4D4B4B;
+
+  --color-black: #212529;
+  --color-black-dark: #000000;
+
+  --color-white: #ffffff;
+  --color-white-light: #F6FDFF;
+
+  --color-blue: #013B4D;
+  --color-blue-lightest: #E3F5FA;
+  --color-blue-lighter: #CDF0FB;
+  --color-blue-light: #A5D1DE;
+  --color-blue-dark: #4FC3F7;
+
+  --color-yellow: #DA8543;
+  --color-yellow-lighter: #FFF0E4;
+  --color-yellow-light: #FEDEC4;
+  --color-yellow-dark: #F9D0B0;
+
+  --color-red: #DC3545;
+
+  --color-green: #28A745;
+  --color-green-light: #EAFFEF;
+
+  /* Your custom screens */
+  --breakpoint-xs: 480px;
+  --breakpoint-3xl: 1600px;
+  --breakpoint-4xl: 1920px;
+  --breakpoint-5xl: 2000px;
+  --breakpoint-6xl: 2400px;
+}
+
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--color-gray);
   font-family: Arial, Helvetica, sans-serif;
 }
