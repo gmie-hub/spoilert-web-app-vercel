@@ -35,7 +35,7 @@ const Stack: FC<ComponentProps> = (props) => {
 
   return (
     <div
-      className={`flex flex-col ${spacingClass} ${alignClasses[alignItems]} ${justifyClasses[justifyContent]} ${className}`}
+      className={`flex flex-col w-full ${spacingClass} ${alignClasses[alignItems]} ${justifyClasses[justifyContent]} ${className}`}
     >
       {children}
     </div>

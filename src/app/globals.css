@@ -20,6 +20,7 @@
   --color-gray-dark: #666869;
   --color-gray-darker: #6E6E6E;
   --color-gray-darkest: #4D4B4B;
+  --color-gray-footer: #869DA3;
 
   --color-black: #212529;
   --color-black-dark: #000000;
@@ -62,4 +63,14 @@ body {
   background: var(--background);
   color: var(--color-gray);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 1rem;
+  }
 }

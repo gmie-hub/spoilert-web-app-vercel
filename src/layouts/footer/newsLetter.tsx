@@ -1,0 +1,31 @@
+import Button from "@spt/components/button";
+import Flex from "@spt/components/flex";
+import Stack from "@spt/components/stack";
+
+const NewsLetter = () => {
+  return (
+    <section className="bg-gray-footer w-full">
+      <Flex
+        className="px-8 md:px-[132px] py-6 md:py-12 items-start md:items-center flex-col md:flex-row"
+        direction={{ base: "column", md: "row" }}
+        justifyContent="between"
+        spacing={{ base: "gap-8", md: "gap-20" }}
+        // alignItems={{ base: "start", md: "center" }}
+      >
+        <Stack className="text-white">
+          <h5 className="md:text-lg text-base">Join our newsletter</h5>
+          <p>
+            Subscribe to our newsletter and be the first to receive exclusive
+            updates, improvements and special offers.
+          </p>
+        </Stack>
+
+        <div>
+          <Button variant="yellow">Subscribe</Button>
+        </div>
+      </Flex>
+    </section>
+  );
+};
+
+export default NewsLetter;

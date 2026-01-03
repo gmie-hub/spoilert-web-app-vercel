@@ -5,7 +5,7 @@ type Wrap = "nowrap" | "wrap" | "wrap-reverse";
 interface ComponentProps {
   children: ReactNode;
   spacing?: string | Partial<Record<Breakpoint, string>>;
-  className: string;
+  className?: string;
   alignItems?: "start" | "center" | "end" | "stretch";
   justifyContent?: "start" | "center" | "end" | "between" | "around";
 }
