@@ -1,6 +1,7 @@
-import NewsLetter from "./newsLetter";
-import Info from "./info";
 import Box from "@spt/components/box";
+
+import Info from "./info";
+import NewsLetter from "./newsLetter";
 
 const Footer = () => {
   return (

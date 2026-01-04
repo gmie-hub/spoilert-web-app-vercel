@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Header from "@spt/layouts/website/header";
+
 import Footer from "@spt/layouts/footer/footer";
+import Header from "@spt/layouts/website/header";
+
+import type { Metadata } from "next";
 import "../globals.css";
 
 const inter = Inter({

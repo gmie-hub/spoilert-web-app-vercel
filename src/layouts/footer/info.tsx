@@ -1,17 +1,18 @@
-import HStack from "@spt/components/hstack";
-import Stack from "@spt/components/stack";
-import SMSIcon from "@spt/assets/icons/sms.svg";
+import Image from "next/image";
+import Link from "next/link";
+
 import PhoneIcon from "@spt/assets/icons/call.svg";
-import LocationIcon from "@spt/assets/icons/location.svg";
-import AppStoreBadge from "@spt/assets/images/app-store.png";
-import GooglePlayBadge from "@spt/assets/images/google-play.png";
-import XIcon from "@spt/assets/icons/x-icon.svg";
 import FacebookIcon from "@spt/assets/icons/facebook.svg";
 import InstagramIcon from "@spt/assets/icons/instagram.svg";
 import LinkedInIcon from "@spt/assets/icons/linkedIn.svg";
-import Image from "next/image";
-import Link from "next/link";
+import LocationIcon from "@spt/assets/icons/location.svg";
+import SMSIcon from "@spt/assets/icons/sms.svg";
+import XIcon from "@spt/assets/icons/x-icon.svg";
+import AppStoreBadge from "@spt/assets/images/app-store.png";
+import GooglePlayBadge from "@spt/assets/images/google-play.png";
 import Flex from "@spt/components/flex";
+import HStack from "@spt/components/hstack";
+import Stack from "@spt/components/stack";
 
 const info = [
   { icon: SMSIcon, text: "blinkersnigeria@gmail.com" },
@@ -43,6 +44,7 @@ const Info = () => {
       <Stack className="w-full gap-8">
         <Flex
           justifyContent="between"
+          direction={{ base: "column", md: "row" }}
           className="w-full justify-between items-start flex-col md:flex-row"
           spacing="gap-8 md:gap-0"
         >
@@ -103,7 +105,11 @@ const Info = () => {
 
         <hr className="border-gray" />
 
-        <HStack justifyContent="between" className="w-full items-center">
+        <Flex
+          justifyContent="between"
+          direction={{ base: "column", md: "row" }}
+          className="w-full justify-between items-center flex-col-reverse md:flex-row"
+        >
           <p>© 2025 Spoilert. All rights reserved.</p>
 
           <HStack spacing="gap-4">
@@ -124,7 +130,7 @@ const Info = () => {
             <p>•</p>
             <p>Privacy</p>
           </HStack>
-        </HStack>
+        </Flex>
       </Stack>
     </section>
   );
