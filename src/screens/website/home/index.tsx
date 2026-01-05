@@ -1,7 +1,9 @@
+import Discover from "./discover";
+
 const WebsiteHome = () => {
   return (
     <main>
-      <h1>Home Page</h1>
+      <Discover />
     </main>
   );
 };
