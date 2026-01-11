@@ -1,3 +1,5 @@
+import GetStarted from "@spt/components/getStarted";
+
 import Discover from "./discover";
 import LearningPlatform from "./learningPlatform";
 import WhyWeAreDifferent from "./whyWeAreDifferent";
@@ -8,6 +10,7 @@ const WebsiteHome = () => {
       <Discover />
       <LearningPlatform />
       <WhyWeAreDifferent />
+      <GetStarted/>
     </main>
   );
 };
