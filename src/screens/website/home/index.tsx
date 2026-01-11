@@ -1,7 +1,9 @@
 import GetStarted from "@spt/components/getStarted";
 
 import Discover from "./discover";
+import GlobalCommunity from "./globalCommunity";
 import LearningPlatform from "./learningPlatform";
+import WhatSpoilertOffers from "./whatSpoilertOffers";
 import WhyWeAreDifferent from "./whyWeAreDifferent";
 
 const WebsiteHome = () => {
@@ -10,7 +12,9 @@ const WebsiteHome = () => {
       <Discover />
       <LearningPlatform />
       <WhyWeAreDifferent />
-      <GetStarted/>
+      <WhatSpoilertOffers />
+      <GlobalCommunity />
+      <GetStarted />
     </main>
   );
 };

@@ -7,6 +7,7 @@ import DiscoverImage from "@spt/assets/icons/discover-spoil.svg";
 import Button from "@spt/components/button";
 import Flex from "@spt/components/flex";
 import Stack from "@spt/components/stack";
+import WebsiteSection from "@spt/components/websiteSection";
 
 const Discover = () => {
   const containerVariants = {
@@ -27,7 +28,7 @@ const Discover = () => {
   };
 
   return (
-    <section className="px-8 py-6 md:px-[100px] md:py-[72px]">
+    <WebsiteSection>
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -72,7 +73,7 @@ const Discover = () => {
           </div>
         </motion.div>
       </motion.div>
-    </section>
+    </WebsiteSection>
   );
 };
 
