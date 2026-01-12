@@ -6,10 +6,10 @@ import Flex from "@spt/components/flex";
 import SpoilCard from "@spt/components/spoilCard";
 import Stack from "@spt/components/stack";
 import WebsiteSection from "@spt/components/websiteSection";
-import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
+import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuery";
 
-const InstitutionSpoils = () => {
-  const { data } = useGetInstitutionSpoilsQuery();
+const RecommendedSpoils = () => {
+  const { data } = useGetAllSpoilsQuery();
 
   return (
     <WebsiteSection className="my-4 w-full">
@@ -20,7 +20,7 @@ const InstitutionSpoils = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Institution Spoils
+          Recommended Spoils
         </motion.h1>
 
         <Flex
@@ -30,7 +30,7 @@ const InstitutionSpoils = () => {
           className="gap-4 md:gap-6 w-full"
         >
           {data?.data?.data?.slice(0, 4).map((spoil, index) => (
-            <SpoilCard key={index} spoil={spoil} index={index} isInstitution />
+            <SpoilCard key={index} spoil={spoil} index={index} />
           ))}
         </Flex>
       </Stack>
@@ -38,4 +38,4 @@ const InstitutionSpoils = () => {
   );
 };
 
-export default InstitutionSpoils;
+export default RecommendedSpoils;

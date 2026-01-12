@@ -15,11 +15,13 @@ interface SpoilCardProps {
   spoil: SpoilDatum;
   onViewSpoil?: (spoil: SpoilDatum) => void;
   index?: number;
+  isInstitution?: boolean;
 }
 
 const SpoilCard: React.FC<SpoilCardProps> = ({
   spoil,
   onViewSpoil,
+  isInstitution,
   index = 0,
 }) => {
   const handleViewSpoil = () => {
@@ -56,7 +58,9 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
       <div className="p-4 flex-1 flex flex-col">
         <Stack spacing="gap-3" className="flex-1">
           <Stack spacing="gap-2">
-            <p className="text-gray-dark text-sm">{spoil?.institution}</p>
+            {isInstitution && (
+              <p className="text-gray-dark text-sm">{spoil?.institution}</p>
+            )}
             <h3 className="text-lg font-semibold text-black line-clamp-2">
               {spoil.title}
             </h3>

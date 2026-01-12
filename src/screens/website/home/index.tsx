@@ -4,6 +4,7 @@ import Discover from "./discover";
 import GlobalCommunity from "./globalCommunity";
 import InstitutionSpoils from "./institutionSpoils";
 import LearningPlatform from "./learningPlatform";
+import RecommendedSpoils from "./recommendedSpoils";
 import WhatSpoilertOffers from "./whatSpoilertOffers";
 import WhyWeAreDifferent from "./whyWeAreDifferent";
 
@@ -14,6 +15,7 @@ const WebsiteHome = () => {
       <LearningPlatform />
       <WhyWeAreDifferent />
       <WhatSpoilertOffers />
+      <RecommendedSpoils />
       <InstitutionSpoils />
       <GlobalCommunity />
       <GetStarted />
