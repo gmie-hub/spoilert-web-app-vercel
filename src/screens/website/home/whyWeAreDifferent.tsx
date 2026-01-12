@@ -12,7 +12,7 @@ import WebsiteSection from "@spt/components/websiteSection";
 
 const WhyWeAreDifferent = () => {
   return (
-    <WebsiteSection className="">
+    <WebsiteSection className="my-4">
       <Stack className="gap-6 md:gap-10">
         <motion.h1
           className="text-xl md:text-5xl font-semibold text-center text-black self-center"
@@ -27,7 +27,7 @@ const WhyWeAreDifferent = () => {
           {data.map((item, index) => (
             <motion.div
               key={index}
-              className={`p-6 rounded-xl border-16 hover:shadow-lg transition-shadow duration-300 ${item.className}`}
+              className={`p-6 rounded-xl border-10 md:border-16 hover:shadow-lg transition-shadow duration-300 ${item.className}`}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1, duration: 0.5 }}

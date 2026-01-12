@@ -5,6 +5,7 @@ import Header from "@spt/layouts/website/header";
 
 import type { Metadata } from "next";
 import "../globals.css";
+import QueryProvider from "../providers/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,11 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Header />
-        {children}
-        <Footer />
-      </body>
+      <QueryProvider>
+        <body className={inter.className}>
+          <Header />
+          {children}
+          <Footer />
+        </body>
+      </QueryProvider>
     </html>
   );
 }

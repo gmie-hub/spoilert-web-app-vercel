@@ -37,7 +37,7 @@ const GlobalCommunity = () => {
         <motion.div variants={childVariants} className="flex-1">
           <Stack className="">
             <h1 className="text-2xl md:text-4xl font-bold text-black leading-10 md:leading-16">
-              A Global Community of Learners and Tutors
+              A Global Community of <br /> Learners and Tutors
             </h1>
 
             <p>
@@ -47,18 +47,17 @@ const GlobalCommunity = () => {
               collective desire to learn and teach beyond borders.{" "}
             </p>
 
-            <div>
-              <Button className="px-10">Get Started</Button>
+            <div className="mt-6">
+              <Button className="px-12">Get Started</Button>
             </div>
           </Stack>
         </motion.div>
 
         <motion.div
           variants={childVariants}
-          className="flex-1"
+          className="flex justify-end flex-1"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="">
             <Image
               src={GlobalImage}
               alt="global"
@@ -66,7 +65,6 @@ const GlobalCommunity = () => {
               height={327}
               className="md:w-[486px] md:h-[486px]"
             />
-          </div>
         </motion.div>
       </motion.div>
     </WebsiteSection>
