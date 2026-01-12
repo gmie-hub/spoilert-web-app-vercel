@@ -1,3 +1,6 @@
+import SignUpPage from "@spt/app/auth/signup/page";
+import GetStarted from "@spt/components/getStarted";
+
 import Discover from "./discover";
 import GlobalCommunity from "./globalCommunity";
 import InstitutionSpoils from "./institutionSpoils";
@@ -14,6 +17,9 @@ const WebsiteHome = () => {
       <WhatSpoilertOffers />
       <InstitutionSpoils />
       <GlobalCommunity />
+      <SignUpPage />
+
+      <GetStarted />
     </main>
   );
 };

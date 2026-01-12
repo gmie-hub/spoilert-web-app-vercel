@@ -1,9 +1,12 @@
+import React from "react";
+
 import { Inter } from "next/font/google";
 
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
 
 import type { Metadata } from "next";
+
 import "../globals.css";
 import QueryProvider from "../providers/QueryProvider";
 
