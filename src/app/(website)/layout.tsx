@@ -5,10 +5,11 @@ import { Inter } from "next/font/google";
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
 
+import QueryProvider from "../providers/QueryProvider";
+
 import type { Metadata } from "next";
 
 import "../globals.css";
-import QueryProvider from "../providers/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
