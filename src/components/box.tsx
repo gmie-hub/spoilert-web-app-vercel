@@ -1,5 +1,7 @@
 import { FC, ReactNode } from 'react';
 
+import { Breakpoint } from '@spt/types/component';
+
 interface BoxProps {
   children: ReactNode;
   padding?: string | Partial<Record<Breakpoint, string>>; 
