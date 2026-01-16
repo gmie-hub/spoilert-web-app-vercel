@@ -31,7 +31,7 @@ const Button: React.FC<ButtonProps> = ({
   ...props 
 }) => {
   const baseStyles =
-    "px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition-colors duration-300 cursor-pointer";
+    "px-6 py-3 rounded-xl flex items-center justify-center gap-4 font-semibold transition-colors duration-300 cursor-pointer";
 
   const variantStyles = {
     default: "bg-blue text-white hover:bg-blue/90",

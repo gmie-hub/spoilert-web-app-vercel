@@ -27,7 +27,7 @@ const WhatSpoilertOffers = () => {
           Why We Are Different
         </motion.h1>
 
-        <HStack justifyContent="center">
+        <HStack justifyContent="center" className="mb-8">
           <Tabs tabs={tabs} />
         </HStack>
       </Stack>

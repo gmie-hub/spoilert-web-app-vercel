@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { Breakpoint, ComponentProps, Direction, Wrap } from "@spt/types/component";
+
 interface FlexProps extends ComponentProps {
   direction?: Direction | Partial<Record<Breakpoint, Direction>>;
   wrap?: Wrap | Partial<Record<Breakpoint, Wrap>>;

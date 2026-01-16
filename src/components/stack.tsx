@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { ComponentProps } from "@spt/types/component";
+
 const Stack: FC<ComponentProps> = (props) => {
   const {
     children,

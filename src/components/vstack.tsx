@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { ComponentProps } from "@spt/types/component";
+
 const VStack: FC<ComponentProps> = ({
   children,
   spacing = "gap-4",

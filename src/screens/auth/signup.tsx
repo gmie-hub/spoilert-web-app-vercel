@@ -140,9 +140,7 @@ const SignUp = () => {
             email: "",
             password: "",
           }}
-          onSubmit={(values) => {
-            console.log(values);
-          }}
+          onSubmit={() => {}}
         >
           <Form className="space-y-6">
             {/* FIRST & LAST NAME */}

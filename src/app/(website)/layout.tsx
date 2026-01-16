@@ -5,6 +5,8 @@ import { Inter } from "next/font/google";
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
 
+import QueryProvider from "../providers/QueryProvider";
+
 import type { Metadata } from "next";
 
 import "../globals.css";
@@ -27,11 +29,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Header />
-        {children}
-        <Footer />
-      </body>
+      <QueryProvider>
+        <body className={inter.className}>
+          <Header />
+          {children}
+          <Footer />
+        </body>
+      </QueryProvider>
     </html>
   );
 }

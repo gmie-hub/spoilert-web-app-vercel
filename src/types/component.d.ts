@@ -1,8 +1,8 @@
-type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
-type Direction = "row" | "column";
-type Wrap = "nowrap" | "wrap" | "wrap-reverse";
+export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
+export type Direction = "row" | "column";
+export type Wrap = "nowrap" | "wrap" | "wrap-reverse";
 
-interface ComponentProps {
+export interface ComponentProps {
   children: ReactNode;
   spacing?: string | Partial<Record<Breakpoint, string>>;
   className?: string;
