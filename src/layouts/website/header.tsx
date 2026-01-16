@@ -8,6 +8,7 @@ import Link from "next/link";
 import Logo from "@spt/assets/icons/logo.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
 import Button from "@spt/components/button";
+import { useRouter } from "next/navigation";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -21,6 +22,7 @@ const Header = () => {
   // For demonstration, we'll consider "Home" as the active link.
   // In a real app, you'd use `usePathname` from `next/navigation`.
   const activePath = "/";
+  const router = useRouter()
 
   return (
     <header className="sticky top-0 z-10  px-24 border-b border-gray-lightest bg-white">
@@ -56,7 +58,7 @@ const Header = () => {
              Create Spoil
             </Button>
 
-            <Button variant="default">
+            <Button onClick={()=>router.push('/auth/signup')} variant="default">
               Sign Up For Free
             </Button>
           </div>

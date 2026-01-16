@@ -2,6 +2,7 @@ import React from "react";
 
 import { Inter } from "next/font/google";
 
+// eslint-disable-next-line import/order
 import AuthLayout from "@spt/layouts/authLayout";
 
 import "../globals.css";
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+
         <AuthLayout>{children}</AuthLayout>
       </body>
     </html>
