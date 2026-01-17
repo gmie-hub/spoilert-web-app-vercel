@@ -6,18 +6,17 @@ import Link from "next/link";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
-import { useSignUpMutation } from "@spt/hooks/apiRequests/useSignupMutation";
+import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
+import { validations } from "@spt/utils/validation";
 
 const SignUp = () => {
-  const { mutate: signUp, isPending } = useSignUpMutation();
+  const { signupHandler, isLoading } = useSignupMutation();
 
   return (
     <main className="w-full max-w-none">
       <Stack className="w-full max-w-none space-y-8">
         <div className="space-y-2 w-full">
-          <h1 className="text-[2.4rem] font-semibold text-gray-900">
-            Sign Up
-          </h1>
+          <h1 className="text-[2.4rem] font-semibold text-gray-900">Sign Up</h1>
           <p className="text-gray-500">
             Begin your journey with Spoilt by signing up.
           </p>
@@ -31,18 +30,10 @@ const SignUp = () => {
             email: "",
             password: "",
           }}
-          // validationSchema={validations}
-          onSubmit={(values) => {
-            signUp({
-              email: values.email,
-              password: values.password,
-              username: values.username,
-              first_name: values.firstName,
-              last_name: values.lastName,
-            });
-          }}
+          validationSchema={validations}
+          onSubmit={signupHandler}
         >
-          {({ isValid, dirty }) => (
+          {({ isValid }) => (
             <Form className="space-y-6 w-full max-w-none">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Input name="firstName" label="First Name" />
@@ -54,18 +45,14 @@ const SignUp = () => {
                 <Input name="email" type="email" label="Email Address" />
               </div>
 
-              <Input
-                name="password"
-                type="password"
-                label="Password"
-              />
+              <Input name="password" type="password" label="Password" />
 
               <Button
                 type="submit"
-                disabled={!isValid || !dirty || isPending}
+                disabled={!isValid || isLoading}
                 className="w-full"
               >
-                {isPending ? "Creating account..." : "Sign Up"}
+                {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </Form>
           )}
