@@ -2,9 +2,11 @@ import React from "react";
 
 import { Inter } from "next/font/google";
 
+// eslint-disable-next-line import/order
 import AuthLayout from "@spt/layouts/authLayout";
 
 import "../globals.css";
+import QueryProvider from "../providers/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,9 +26,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <AuthLayout>{children}</AuthLayout>
-      </body>
+      <QueryProvider>
+        <body className={inter.className}>
+          <AuthLayout>{children}</AuthLayout>
+        </body>
+      </QueryProvider>
     </html>
   );
 }
