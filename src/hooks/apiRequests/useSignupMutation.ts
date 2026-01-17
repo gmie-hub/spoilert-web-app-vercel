@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 import { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
@@ -35,6 +36,19 @@ export const useSignUpMutation = () => {
     SignUpPayload
   >({
     mutationFn: signUpRequest,
+
+    onSuccess: (data) => {
+      toast.success(
+        data?.message || "Account created successfully 🎉"
+      );
+    },
+
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message ||
+          "Signup failed, please try again"
+      );
+    },
   });
 
   const errorMessage =

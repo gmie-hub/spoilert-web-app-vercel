@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 import AuthLayout from "@spt/layouts/authLayout";
 
 import "../globals.css";
+import QueryProvider from "../providers/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,10 +26,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-
-        <AuthLayout>{children}</AuthLayout>
-      </body>
+      <QueryProvider>
+        <body className={inter.className}>
+          <AuthLayout>{children}</AuthLayout>
+        </body>
+      </QueryProvider>
     </html>
   );
 }

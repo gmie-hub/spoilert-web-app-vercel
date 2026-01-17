@@ -18,10 +18,6 @@ const WebsiteHome = () => {
       <RecommendedSpoils />
       <InstitutionSpoils />
       <GlobalCommunity />
-<<<<<<< HEAD
-
-=======
->>>>>>> 88c91303cda20b138a8d8d6d05ccae0f210ce541
       <GetStarted />
     </main>
   );
