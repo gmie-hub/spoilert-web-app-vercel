@@ -1,63 +1,78 @@
+"use client";
+
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
-export interface SignUpPayload {
-  email: string;
-  password: string;
+import type { AxiosError } from "axios";
+import type { FormikValues } from "formik";
+
+
+
+interface Payload {
   first_name: string;
   last_name: string;
   username: string;
+  email: string;
+  password: string;
 }
 
-export interface SignUpResponse {
+interface SignupResponse {
   message: string;
-  data: {
-    id: string;
-    email: string;
-    username: string;
-  };
+  data: any;
 }
 
-export const useSignUpMutation = () => {
-  const signUpRequest = async (
-    payload: SignUpPayload
-  ): Promise<SignUpResponse> => {
-    const response = await api.post("auth/register", payload);
-    return response.data;
+export const useSignupMutation = () => {
+  const router = useRouter();
+
+  const signUp = async (
+    payload: Payload
+  ): Promise<SignupResponse> => {
+    return (await api.post("/auth/register", payload)).data;
   };
 
   const mutation = useMutation<
-    SignUpResponse,
+    SignupResponse,
     AxiosError<ApiErrorResponse>,
-    SignUpPayload
+    Payload
   >({
-    mutationFn: signUpRequest,
-
-    onSuccess: (data) => {
-      toast.success(
-        data?.message || "Account created successfully 🎉"
-      );
-    },
-
-    onError: (error) => {
-      toast.error(
-        error.response?.data?.message ||
-          "Signup failed, please try again"
-      );
-    },
+    mutationKey: ["signup"],
+    mutationFn: signUp,
   });
 
-  const errorMessage =
-    mutation.error?.response?.data?.message ||
-    mutation.error?.message ||
-    "Signup failed";
+const signupHandler = async (
+  values: FormikValues,
+  { setSubmitting }: any
+) => {
+  const payload: Payload = {
+    first_name: values.firstName,
+    last_name: values.lastName,
+    username: values.username,
+    email: values.email,
+    password: values.password,
+  };
+
+  try {
+    await mutation.mutateAsync(payload);
+    toast.success("Account created successfully 🎉");
+    router.push("/auth/login");
+  } catch (error: any) {
+    toast.error(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Signup failed"
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   return {
-    ...mutation,
-    errorMessage,
+    isLoading: mutation.isPending,
+    signupHandler,
   };
 };

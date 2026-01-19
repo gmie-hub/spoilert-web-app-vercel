@@ -2,6 +2,7 @@ import React from "react";
 
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Inter } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 
 import QueryProvider from "./providers/QueryProvider";
 
@@ -29,7 +30,16 @@ export default function RootLayout({
     <html lang="en">
       <AppRouterCacheProvider options={{ enableCssLayer: true }}>
         <QueryProvider>
-          <body className={inter.className}>{children}</body>
+          <body className={inter.className}>
+            {children}
+            
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: { fontSize: "1rem" },
+              }}
+            />
+          </body>
         </QueryProvider>
       </AppRouterCacheProvider>
     </html>
