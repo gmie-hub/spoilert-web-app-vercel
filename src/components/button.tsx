@@ -2,7 +2,13 @@ import React, { ButtonHTMLAttributes, ReactNode } from "react";
 
 import * as motion from "motion/react-client";
 
-type ButtonVariant = "default" | "outline" | "yellow" | "yellowOutline";
+type ButtonVariant =
+  | "default"
+  | "outline"
+  | "yellow"
+  | "yellowOutline"
+  | "lightBlue"
+  | "darkBlue";
 
 type ConflictingProps =
   | "onDrag"
@@ -14,8 +20,10 @@ type ConflictingProps =
   | "onAnimationStart"
   | "onAnimationComplete";
 
-interface ButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, ConflictingProps> {
+interface ButtonProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  ConflictingProps
+> {
   variant?: ButtonVariant;
   iconLeft?: ReactNode;
   iconRight?: ReactNode;
@@ -28,7 +36,7 @@ const Button: React.FC<ButtonProps> = ({
   iconRight,
   children,
   className = "",
-  ...props 
+  ...props
 }) => {
   const baseStyles =
     "px-6 py-3 rounded-xl flex items-center justify-center gap-4 font-semibold transition-colors duration-300 cursor-pointer";
@@ -40,6 +48,8 @@ const Button: React.FC<ButtonProps> = ({
     yellow: "bg-yellow text-white hover:bg-yellow/90",
     yellowOutline:
       "bg-transparent border border-yellow text-yellow hover:bg-yellow hover:text-white",
+    lightBlue: "bg-[#E3F5FA] text-[#013B4D] hover:bg-[#E3F5FA]/90", 
+    darkBlue: "bg-[#013B4D] text-white hover:bg-[#013B4D]/90",
   };
 
   const combinedClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;
@@ -49,7 +59,7 @@ const Button: React.FC<ButtonProps> = ({
       className={combinedClasses}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      {...props} 
+      {...props}
     >
       {iconLeft && <span>{iconLeft}</span>}
       {children}

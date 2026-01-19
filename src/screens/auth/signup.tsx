@@ -1,7 +1,84 @@
+// "use client";
+
+// import { Form, Formik } from "formik";
+// import Link from "next/link";
+
+// import Button from "@spt/components/button";
+// import Input from "@spt/components/input";
+// import Stack from "@spt/components/stack";
+// import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
+// import { validations } from "@spt/utils/validation";
+
+// const SignUp = () => {
+//   const { signupHandler, isLoading } = useSignupMutation();
+
+//   return (
+//     <main className="w-full max-w-none">
+//       <Stack className="w-full max-w-none space-y-8">
+//         <div className="space-y-2 w-full">
+//           <h1 className="text-[2.4rem] font-semibold text-gray-900">Sign Up</h1>
+//           <p className="text-gray-500">
+//             Begin your journey with Spoilt by signing up.
+//           </p>
+//         </div>
+
+//         <Formik
+//           initialValues={{
+//             firstName: "",
+//             lastName: "",
+//             username: "",
+//             email: "",
+//             password: "",
+//           }}
+//           validationSchema={validations}
+//           onSubmit={signupHandler}
+//         >
+//           {({ isValid }) => (
+//             <Form className="space-y-6 w-full max-w-none">
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+//                 <Input name="firstName" label="First Name" />
+//                 <Input name="lastName" label="Last Name" />
+//               </div>
+
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+//                 <Input name="username" label="Username" />
+//                 <Input name="email" type="email" label="Email Address" />
+//               </div>
+
+//               <Input name="password" type="password" label="Password" />
+
+//               <Button
+//                 type="submit"
+//                 disabled={!isValid || isLoading}
+//                 className="w-full"
+//               >
+//                 {isLoading ? "Creating account..." : "Sign Up"}
+//               </Button>
+//             </Form>
+//           )}
+//         </Formik>
+
+//         <p className="text-center text-[1.4rem] text-gray-500">
+//           Already have an account?{" "}
+//           <Link
+//             href="/auth/login"
+//             className="text-teal-600 font-medium hover:underline"
+//           >
+//             Log in
+//           </Link>
+//         </p>
+//       </Stack>
+//     </main>
+//   );
+// };
+
+// export default SignUp;
+
 "use client";
 
-import { Form, Formik } from "formik";
+import { ErrorMessage, Field, Form, Formik } from "formik";
 import Link from "next/link";
+import { object } from "yup";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
@@ -12,16 +89,26 @@ import { validations } from "@spt/utils/validation";
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();
 
+  const validationSchema = object().shape({
+    firstName: validations.firstName,
+    lastName: validations.lastName,
+    username: validations.username,
+    email: validations.email,
+    agreeToTerms: validations.agreeToTerms,
+    password: validations.password,
+  });
+
   return (
     <main className="w-full max-w-none">
       <Stack className="w-full max-w-none space-y-8">
         <div className="space-y-2 w-full">
-          <h1 className="text-[2.4rem] font-semibold text-gray-900">Sign Up</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900">
+            Sign Up
+          </h1>
+          <p className="text-sm sm:text-md text-gray-500">
             Begin your journey with Spoilt by signing up.
           </p>
         </div>
-
         <Formik
           initialValues={{
             firstName: "",
@@ -29,8 +116,9 @@ const SignUp = () => {
             username: "",
             email: "",
             password: "",
+            agreeToTerms: false, // ✅ REQUIRED
           }}
-          validationSchema={validations}
+          validationSchema={validationSchema}
           onSubmit={signupHandler}
         >
           {({ isValid }) => (
@@ -46,7 +134,37 @@ const SignUp = () => {
               </div>
 
               <Input name="password" type="password" label="Password" />
+              <div className="flex items-center gap-2">
+                <Field
+                  type="checkbox"
+                  name="agreeToTerms"
+                  id="agreeToTerms"
+                  className="h-4 w-4 border-gray-300 rounded"
+                />
 
+                <label htmlFor="agreeToTerms" className="text-gray-700 text-sm">
+                  I agree to the platform&apos;s{" "}
+                  <Link
+                    href="/terms"
+                    className="text-[var(--color-yellow)] hover:underline font-medium"
+                  >
+                    Terms and Conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy"
+                    className="text-[var(--color-yellow)] hover:underline font-medium"
+                  >
+                    Privacy Policy
+                  </Link>
+                </label>
+              </div>
+
+              <ErrorMessage
+                name="agreeToTerms"
+                component="div"
+                className="text-red-500 text-sm"
+              />
               <Button
                 type="submit"
                 disabled={!isValid || isLoading}
@@ -57,16 +175,32 @@ const SignUp = () => {
             </Form>
           )}
         </Formik>
-
-        <p className="text-center text-[1.4rem] text-gray-500">
+        <p className="mx-auto text-center text-sm sm:text-md text-gray-500">
           Already have an account?{" "}
           <Link
-            href="/auth/login"
-            className="text-teal-600 font-medium hover:underline"
+            href="/auth/signin"
+            className="font-medium text-[var(--color-yellow)] hover:underline"
           >
             Log in
           </Link>
         </p>
+        <p className="mx-auto text-center text-sm sm:text-md text-gray-500">
+          OR
+        </p>
+        <Button
+          variant="lightBlue"
+          className="w-full flex items-center justify-center gap-2"
+          iconLeft={<img src="/google.svg" alt="Google" className="h-5 w-5" />}
+        >
+          Continue with Google
+        </Button>
+        <Button
+          variant="lightBlue"
+          className="w-full flex items-center justify-center gap-2"
+          iconLeft={<img src="/google.svg" alt="Google" className="h-5 w-5" />}
+        >
+          Continue with Facebook
+        </Button>{" "}
       </Stack>
     </main>
   );
