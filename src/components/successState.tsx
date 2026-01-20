@@ -1,85 +1,12 @@
-// "use client";
-
-// import React, {  ReactNode } from "react";
-
-// import Link from "next/link";
-
-// import Button from "@spt/components/button";
-// import Card from "@spt/components/card";
-// import Stack from "@spt/components/stack";
-
-// interface SuccessStateProps {
-//   title: string;
-//   description?: string;
-//   buttonLabel: string;
-//   href?: string;
-//   onButtonClick?: () => void;
-//   icon?: ReactNode;
-//   className?: string;
-// }
-
-// const SuccessState = ({
-//   title,
-//   description,
-//   buttonLabel,
-//   href,
-//   onButtonClick,
-//   icon,
-//   className = "",
-// }: SuccessStateProps) => {
-//   return (
-// <div className="min-h-screen w-full flex items-center justify-center px-4">
-// <Card className="max-w-md w-full flex items-center justify-center">
-//     <Stack className="items-center justify-center text-center space-y-6">
-//       {/* Icon */}
-//       {icon && (
-//         <div className="flex items-center justify-center">
-//           {icon}
-//         </div>
-//       )}
-
-//       {/* Title */}
-//       <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-//         {title}
-//       </h1>
-
-//       {/* Description */}
-//       {description && (
-//         <p className="text-sm sm:text-md text-gray-500 max-w-sm mx-auto">
-//           {description}
-//         </p>
-//       )}
-
-//       {/* CTA */}
-//       {href ? (
-//         <Link href={href} className="w-full">
-//           <Button className="w-full">
-//             {buttonLabel}
-//           </Button>
-//         </Link>
-//       ) : (
-//         <Button
-//           className="w-full"
-//           onClick={onButtonClick}
-//         >
-//           {buttonLabel}
-//         </Button>
-//       )}
-//     </Stack>
-//   </Card>
-// </div>
-//   );
-// };
-
-// export default SuccessState;
 "use client";
 
-import React, { ReactNode } from "react";
+import React from "react";
 
+import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 import Button from "@spt/components/button";
-import Card from "@spt/components/card";
 import Stack from "@spt/components/stack";
 
 interface SuccessStateProps {
@@ -88,9 +15,13 @@ interface SuccessStateProps {
   buttonLabel: string;
   href?: string;
   onButtonClick?: () => void;
-  icon?: ReactNode;
+  icon?: string;
   className?: string;
 }
+export const childVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
 
 const SuccessState = ({
   title,
@@ -99,42 +30,48 @@ const SuccessState = ({
   href,
   onButtonClick,
   icon,
-  className = "",
 }: SuccessStateProps) => {
   return (
-    <div className="min-h-screen w-full grid place-items-center px-4">
-      <Card className={`max-w-md w-full ${className}`}>
-        <Stack className="items-center text-center space-y-6">
-          {/* Icon */}
-          {icon && <div>{icon}</div>}
+    <main className="w-full max-w-none text-center ">
+      <Stack className="w-full max-w-none space-y-2 ">
+        <motion.div
+          variants={childVariants}
+          className="flex justify-center items-center w-full"
+          whileHover={{ scale: 1.05 }}
+        >
+          <Image
+            src={icon || ""}
+            alt="icon"
+            width={200}
+            height={36}
+            className="md:w-[200px]  md:h-[200px]"
+          />
+        </motion.div>
 
-          {/* Title */}
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900  mx-auto text-center">
-            {title}
-          </h1>
+        {/* Title */}
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900  mx-auto text-center">
+          {title}
+        </h1>
 
-          {/* Description */}
-          {description && (
-            <p className="text-sm sm:text-md text-gray-500 max-w-sm mx-auto">
-              {description}
-            </p>
-          )}
+        {/* Description */}
+        {description && (
+          <p className="text-sm sm:text-md text-gray-500 max-w-sm mx-auto">
+            {description}
+          </p>
+        )}
 
-          {/* CTA */}
-          {href ? (
-            <Link href={href} className="w-full">
-              <Button className="w-full">
-                {buttonLabel}
-              </Button>
-            </Link>
-          ) : (
-            <Button className="w-full" onClick={onButtonClick}>
-              {buttonLabel}
-            </Button>
-          )}
-        </Stack>
-      </Card>
-    </div>
+        {/* CTA */}
+        {href ? (
+          <Link href={href} className="w-full">
+            <Button className="w-full">{buttonLabel}</Button>
+          </Link>
+        ) : (
+          <Button className="w-full" onClick={onButtonClick}>
+            {buttonLabel}
+          </Button>
+        )}
+      </Stack>
+    </main>
   );
 };
 

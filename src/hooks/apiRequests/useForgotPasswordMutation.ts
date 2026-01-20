@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { ApiErrorResponse } from "@spt/types/error";
@@ -18,8 +19,10 @@ interface ForgotPasswordResponse {
 }
 
 export const useForgotPasswordMutation = () => {
+  const router = useRouter();
+
   const forgotPassword = async (
-    payload: Payload
+    payload: Payload,
   ): Promise<ForgotPasswordResponse> => {
     return (await api.post("/auth/forgot-password", payload)).data;
   };
@@ -35,7 +38,7 @@ export const useForgotPasswordMutation = () => {
 
   const forgotPasswordHandler = async (
     values: FormikValues,
-    { setSubmitting, resetForm }: any
+    { setSubmitting, resetForm }: any,
   ) => {
     const payload: Payload = {
       email: values.email,
@@ -45,16 +48,18 @@ export const useForgotPasswordMutation = () => {
       const response = await mutation.mutateAsync(payload);
 
       toast.success(
-        response?.message ||
-          "Password reset link sent. Check your email 📬"
+        response?.message || "Password reset link sent. Check your email 📬",
       );
+      localStorage.setItem("userEmail", values.email);
+
+      router.push("/auth/reset-password");
 
       resetForm();
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to send reset link"
+          "Failed to send reset link",
       );
     } finally {
       setSubmitting(false);

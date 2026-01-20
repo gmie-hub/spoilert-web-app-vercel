@@ -14,6 +14,7 @@ interface Payload {
   token: string;
   password: string;
   password_confirmation?:string
+  email:string
 }
 
 interface ResetPasswordResponse {
@@ -37,11 +38,13 @@ export const useResetPasswordMutation = () => {
     mutationKey: ["reset-password"],
     mutationFn: resetPassword,
   });
+  const email = localStorage.getItem("userEmail") || "";
 
   const resetPasswordHandler = async (
     values: FormikValues,
     actions: any,
     token: string,
+    // email:string
   ) => {
     const { setSubmitting } = actions;
 
@@ -49,7 +52,8 @@ export const useResetPasswordMutation = () => {
       const payload: Payload = {
         token,
         password: values.password,
-        password_confirmation:values.password
+        password_confirmation:values.password,
+        email:email,
       };
 
       const response = await mutation.mutateAsync(payload);
@@ -58,7 +62,7 @@ export const useResetPasswordMutation = () => {
         response?.message || "Password reset successful 🔐"
       );
 
-      router.push("/auth/signin");
+      router.push("/auth/reset-password-successfully");
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||

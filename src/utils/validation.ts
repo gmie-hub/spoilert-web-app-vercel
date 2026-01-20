@@ -16,7 +16,6 @@ export const validations = {
     .required("Email is required"),
 
   agreeToTerms: Yup.boolean().oneOf([true], "You must agree to terms"),
-  rememberMe: Yup.boolean().oneOf([true], "You must agree to terms"),
 
   password: Yup.string()
     .min(8, "Password must be at least 8 characters")
