@@ -12,7 +12,7 @@ const RecommendedSpoils = () => {
   const { data } = useGetAllSpoilsQuery();
 
   return (
-    <WebsiteSection className="my-4 w-full">
+    <WebsiteSection className="w-full">
       <Stack className="gap-6 md:gap-10">
         <motion.h1
           className="text-xl md:text-5xl font-semibold text-center text-black self-center"

@@ -4,11 +4,11 @@ import React, { useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import Logo from "@spt/assets/icons/logo.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
 import Button from "@spt/components/button";
-import { useRouter } from "next/navigation";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -19,10 +19,9 @@ const navLinks = [
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // For demonstration, we'll consider "Home" as the active link.
-  // In a real app, you'd use `usePathname` from `next/navigation`.
+  const router = useRouter();
+
   const activePath = "/";
-  const router = useRouter()
 
   return (
     <header className="sticky top-0 z-10  px-24 border-b border-gray-lightest bg-white">
@@ -51,14 +50,18 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center gap-6">
-            <Link href="/login" className="text-gray hover:text-blue transition-colors duration-300 font-semibold">
+            <Link
+              href="/login"
+              className="text-gray hover:text-blue transition-colors duration-300 font-semibold"
+            >
               Login
             </Link>
-               <Button variant="outline">
-             Create Spoil
-            </Button>
+            <Button variant="outline">Create Spoil</Button>
 
-            <Button onClick={()=>router.push('/auth/signup')} variant="default">
+            <Button
+              onClick={() => router.push("/auth/signup")}
+              variant="default"
+            >
               Sign Up For Free
             </Button>
           </div>
@@ -99,13 +102,21 @@ const Header = () => {
 
           <div className="border-t border-gray-lightest pt-4 pb-3">
             <div className="px-5">
-               <Link href="/login" className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-gray hover:bg-gray-lightest" onClick={() => setIsMenuOpen(false)}>
+              <Link
+                href="/login"
+                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-gray hover:bg-gray-lightest"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Login
               </Link>
             </div>
 
             <div className="mt-3 px-5">
-              <Button variant="default" className="w-full" onClick={() => setIsMenuOpen(false)}>
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Sign Up For Free
               </Button>
             </div>
