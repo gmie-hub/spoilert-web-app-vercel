@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
+import { useAuthStore } from "@spt/store/authStore";
 import { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
@@ -45,13 +46,18 @@ export const useLoginMutation = () => {
       const response = await mutation.mutateAsync(payload);
 
       // Store token in localStorage (or cookies)
-      localStorage.setItem("token", response.data.token);
+      // localStorage.setItem("token", response.data.token);
+        if (response.data) {
+      const { token, user } = response.data;
+      useAuthStore.getState().setAuth({ user, token }); // save to Zustand
+      console.log("Login successful, data saved:", { user, token });
+    }
       toast.success("Logged in successfully 🎉");
 
       // Redirect after login
-      router.push("/dashboard"); // change this to your post-login route
+      // router.push("/dashboard"); // change this to your post-login route
     } catch (error: any) {
-      toast.error(
+      toast.error(error?.response?.data?.error ||
         error?.response?.data?.message ||
           error?.message ||
           "Login failed"

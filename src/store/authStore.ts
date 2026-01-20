@@ -1,0 +1,53 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+interface User {
+  id: number;
+  email: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
+  country: string;
+  country_code: string;
+  preferred_currency: string;
+  phone_number: string;
+  avatar: string | null;
+  role: string;
+  email_verified_at: string | null;
+  phone_verified_at: string | null;
+  kyc_verified_at: string | null;
+  is_active: number;
+  last_login: string | null;
+  is_password_changed: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  profile: any;
+  total_spoils_created: any;
+  followers_count: any;
+}
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  setAuth: (auth: { user: User; token: string }) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      setAuth: ({ user, token }) => set({ user, token }),
+      logout: () => {
+        set({ user: null, token: null });
+        localStorage.removeItem("spoilert-web-auth-storage"); // clears persisted data
+      },
+    }),
+    {
+      name: "spoilert-web-auth-storage", // key in localStorage
+    }
+  )
+);

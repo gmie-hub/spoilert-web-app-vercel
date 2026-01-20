@@ -7,7 +7,7 @@ const AccountCreatedSuccessfully = () => {
       icon={SuccessIcon.src}
       title="Registration Successful 🎉"
       buttonLabel="Take Me In"
-      href="/home"
+      href="/auth/signin"
     />
   );
 };

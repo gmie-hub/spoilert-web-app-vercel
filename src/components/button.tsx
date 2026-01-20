@@ -48,8 +48,8 @@ const Button: React.FC<ButtonProps> = ({
     yellow: "bg-yellow text-white hover:bg-yellow/90",
     yellowOutline:
       "bg-transparent border border-yellow text-yellow hover:bg-yellow hover:text-white",
-    lightBlue: "bg-[#E3F5FA] text-[#013B4D] hover:bg-[#E3F5FA]/90", 
-    darkBlue: "bg-[#013B4D] text-white hover:bg-[#013B4D]/90",
+    lightBlue: "bg-[var(--color-blue-lightest)] text-[var(--color-blue)] hover:bg-[var(--color-blue-lightest)]/90", 
+    darkBlue: "bg-[var(--color-blue)] text-white hover:bg-[var(--color-blue)]/90",
   };
 
   const combinedClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;
