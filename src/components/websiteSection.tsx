@@ -6,7 +6,7 @@ interface WebsiteSectionProps extends PropsWithChildren {
 
 const WebsiteSection: FC<WebsiteSectionProps> = ({ children, className }) => {
   return (
-    <section className={`px-8 py-6 md:px-[100px] md:py-[72px] ${className || ''}`}>
+    <section className={`px-8 py-3 md:px-[100px] md:py-[30px] ${className || ''}`}>
       {children}
     </section>
   );
