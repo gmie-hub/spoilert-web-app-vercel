@@ -1,9 +1,12 @@
 "use client";
 
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import Image from "next/image";
 import Link from "next/link";
 import * as Yup from "yup";
 
+import FacebookIcon from "@spt/assets/icons/FacebookBlue.svg";
+import GoogleIcon from "@spt/assets/icons/search 1.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
@@ -130,7 +133,14 @@ const Login = () => {
         <Button
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
-          iconLeft={<img src="/google.svg" alt="Google" className="h-5 w-5" />}
+          iconLeft={
+            <Image
+              src={GoogleIcon}
+              alt="icon"
+              width={24}
+              height={24}
+            />
+          }
         >
           Continue with Google
         </Button>
@@ -139,7 +149,12 @@ const Login = () => {
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
           iconLeft={
-            <img src="/facebook.svg" alt="Facebook" className="h-5 w-5" />
+            <Image
+              src={FacebookIcon}
+              alt="icon"
+              width={24}
+              height={24}
+            />
           }
         >
           Continue with Facebook
