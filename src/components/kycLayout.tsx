@@ -1,4 +1,4 @@
-    "use client";
+"use client";
 
 import React from "react";
 
@@ -27,30 +27,29 @@ const StepLayout = ({
   children,
 }: StepLayoutProps) => {
   return (
-    <main className="w-full max-w-md mx-auto">
-      <Stack className="space-y-6">
+    <main className="w-full max-w-md ">
+      <Stack className="space-y-4">
         {/* Step Indicator */}
-        <p className="text-sm text-gray-500">
-          Step {step}
-          {totalSteps ? ` of ${totalSteps}` : ""}
+        <p className="text-sm text-[var(--color-black)] ">
+          Step <span className="font-bold  ">{step}</span>
+          {totalSteps ? (
+            <>
+              {" "}
+              of <span  className="font-bold ">{totalSteps}</span>
+            </>
+          ) : (
+            ""
+          )}
         </p>
 
         {/* Title */}
-        <h1 className="text-xl font-semibold text-gray-900">
-          {title}
-        </h1>
+        <h1 className="text-xl font-semibold  text-[var(--color-gray)] ">{title}</h1>
 
         {/* Description */}
-        {description && (
-          <p className="text-sm text-gray-500">
-            {description}
-          </p>
-        )}
+        {description && <p className="text-sm text-gray-500">{description}</p>}
 
         {/* Body (Form goes here) */}
-        <div className="space-y-4">
-          {children}
-        </div>
+        <div className="space-y-4 w-full">{children}</div>
 
         {/* CTA Button */}
         <Button

@@ -5,6 +5,8 @@ import { useState } from "react";
 import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
+import SelectCountryStep from "./selectCountry";
+import VerifyIdentity from "./verifyIdentity";
 
 const KYCProcess = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -30,7 +32,9 @@ const KYCProcess = () => {
         />
       </div>
 
-      <Card></Card>
+      <Card>
+        <VerifyIdentity />
+      </Card>
     </Stack>
   );
 };
