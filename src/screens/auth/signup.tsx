@@ -5,13 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { object } from "yup";
 
+import FacebookIcon from "@spt/assets/icons/search 1.svg";
+import GoogleIcon from "@spt/assets/icons/search 1.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
 import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
 import { validations } from "@spt/utils/validation";
-import FacebookIcon from "@spt/assets/icons/search 1.svg";
-import GoogleIcon from "@spt/assets/icons/search 1.svg";
+
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();
 

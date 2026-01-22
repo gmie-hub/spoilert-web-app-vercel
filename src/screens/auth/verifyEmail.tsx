@@ -16,9 +16,17 @@ import { useVerifyEmailMutation } from "@spt/hooks/apiRequests/useVerifyEmailMut
 
 const VerifyEmail = () => {
   const [timer, setTimer] = useState(27);
+  const [email, setEmail] = useState("");
+
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
-  const email = localStorage.getItem("userEmail") || "";
   const router = useRouter();
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("userEmail") || "";
+    if (storedEmail) {
+      setEmail(storedEmail);
+    }
+  }, [])
 
   const { resendOtpHandler, isLoading } = useResendOtpMutation();
   const { verifyEmailHandler, isLoading: verifying } = useVerifyEmailMutation();

@@ -24,6 +24,7 @@ export const childVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
+
 const SuccessState = ({
   title,
   description,
