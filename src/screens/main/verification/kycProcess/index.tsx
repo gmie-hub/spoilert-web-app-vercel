@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
@@ -16,7 +15,13 @@ const KYCProcess = () => {
   };
 
   return (
-    <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 2, md: 4 }}>
+    <Stack
+      direction={{ xs: "column", md: "row" }}
+      spacing={{ xs: 2, md: 4 }}
+      ms={{ xs: 2, md: 6 }}
+      mr={{ xs: 2, md: 20 }}
+      ml={{ xs: 2, md: 4 }}
+    >
       <div className="border border-gray-lightest">
         <Stepper
           steps={steps}
@@ -25,9 +30,7 @@ const KYCProcess = () => {
         />
       </div>
 
-      <Card>
-        
-      </Card>
+      <Card></Card>
     </Stack>
   );
 };
