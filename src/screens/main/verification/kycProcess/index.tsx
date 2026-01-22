@@ -1,6 +1,11 @@
+"use client";
+
+import { useState } from "react";
+
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import { useState } from "react";
+
+import { Card, Stepper } from "@spt/components";
 
 const KYCProcess = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -11,10 +16,18 @@ const KYCProcess = () => {
   };
 
   return (
-    <Stack>
-      <Box border="1px solid #EFEFEF">
+    <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 2, md: 4 }}>
+      <div className="border border-gray-lightest">
+        <Stepper
+          steps={steps}
+          activeStep={activeStep}
+          isStepSkipped={isStepSkipped}
+        />
+      </div>
+
+      <Card>
         
-      </Box>
+      </Card>
     </Stack>
   );
 };

@@ -1,5 +1,7 @@
+import KYCProcess from "@spt/screens/main/verification/kycProcess";
+
 export default function KYCProgressPage() {
     return (
-        <div>KYC Progress Page</div>
+        <KYCProcess />
     )
 }

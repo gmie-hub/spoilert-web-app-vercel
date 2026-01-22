@@ -14,14 +14,14 @@ interface StepperProps {
 const CustomStepper: FC<StepperProps> = ({ activeStep, steps, isStepSkipped }) => {
   return (
     <Box sx={{ width: "100%" }}>
-      <Stepper activeStep={activeStep}>
+      <Stepper activeStep={activeStep} orientation='vertical'>
         {steps.map((label, index) => {
           const stepProps: { completed?: boolean } = {};
           
           if (isStepSkipped(index)) {
             stepProps.completed = false;
           }
-          
+
           return (
             <Step key={label} {...stepProps}>
               <StepLabel>{label}</StepLabel>
