@@ -49,14 +49,19 @@ const Header = () => {
             </ul>
           </nav>
 
-          <div className="flex items-center gap-6">
+           <div className="flex items-center gap-6">
             <Link
               href="/login"
               className="text-gray hover:text-blue transition-colors duration-300 font-semibold"
             >
               Login
             </Link>
-            <Button variant="outline">Create Spoil</Button>
+            <Button
+              onClick={() => router.push("/create-spoils")}
+              variant="outline"
+            >
+              Create Spoil
+            </Button>
 
             <Button
               onClick={() => router.push("/auth/signup")}
