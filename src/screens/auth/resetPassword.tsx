@@ -1,22 +1,24 @@
 "use client";
 
 import { Form, Formik } from "formik";
-import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import * as Yup from "yup";
 
+import BackIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
-import { useResetPasswordMutation } from
-  "@spt/hooks/apiRequests/useResetPasswordMutation";
+import { childVariants } from "@spt/components/successState";
+import { useResetPasswordMutation } from "@spt/hooks/apiRequests/useResetPasswordMutation";
 import { validations } from "@spt/utils/validation";
 
 const ResetPassword = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
-
-  const { resetPasswordHandler, isLoading } =
-    useResetPasswordMutation();
+  const router = useRouter();
+  const { resetPasswordHandler, isLoading } = useResetPasswordMutation();
 
   const validationSchema = Yup.object().shape({
     password: validations.password,
@@ -29,6 +31,21 @@ const ResetPassword = () => {
     <main className="w-full max-w-none">
       <Stack className="w-full max-w-none space-y-8">
         {/* Header */}
+        <motion.div
+          onClick={router.back}
+          variants={childVariants}
+          className="flex justify-right  w-full"
+          whileHover={{ scale: 1.05 }}
+        >
+          <Image
+            src={BackIcon}
+            alt=" "
+            width={24}
+            height={24}
+          />
+          <span>Back</span>
+        </motion.div>
+
         <div className="space-y-2 w-full">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900">
             Reset Password

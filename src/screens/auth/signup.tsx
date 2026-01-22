@@ -1,6 +1,7 @@
 "use client";
 
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import Image from "next/image";
 import Link from "next/link";
 import { object } from "yup";
 
@@ -9,7 +10,8 @@ import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
 import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
 import { validations } from "@spt/utils/validation";
-
+import FacebookIcon from "@spt/assets/icons/search 1.svg";
+import GoogleIcon from "@spt/assets/icons/search 1.svg";
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();
 
@@ -89,11 +91,7 @@ const SignUp = () => {
                 component="div"
                 className="text-red-500 text-sm"
               />
-              <Button
-                type="submit"
-                disabled={ isLoading}
-                className="w-full"
-              >
+              <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </Form>
@@ -114,14 +112,18 @@ const SignUp = () => {
         <Button
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
-          iconLeft={<img src="/google.svg" alt="Google" className="h-5 w-5" />}
+          iconLeft={
+            <Image src={GoogleIcon  } alt="icon" width={24} height={24} />
+          }
         >
           Continue with Google
         </Button>
         <Button
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
-          iconLeft={<img src="/google.svg" alt="Google" className="h-5 w-5" />}
+          iconLeft={
+            <Image src={FacebookIcon} alt="icon" width={24} height={24} />
+          }
         >
           Continue with Facebook
         </Button>{" "}
