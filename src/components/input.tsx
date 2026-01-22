@@ -59,13 +59,13 @@
 // };
 
 // export default Input;
+
 "use client";
 
 import type { FC } from "react";
+// eslint-disable-next-line import/order
 import { useState } from "react";
-
 import { useField } from "formik";
-import { Eye, EyeOff } from "lucide-react";
 
 interface CustomInputProps {
   name: string;
@@ -105,7 +105,7 @@ const Input: FC<CustomInputProps> = ({
           type={isPassword && showPassword ? "text" : type}
           placeholder={placeholder}
           className={`
-            h-12 w-full rounded-lg border bg-[#FBFBFB] px-3 pr-10 text-sm
+            h-12 w-full rounded-lg border bg-[#FBFBFB] px-3 pr-12 text-sm
             placeholder:text-gray-400
             focus:outline-none focus:ring-2 focus:ring-teal-500
             ${
@@ -120,9 +120,10 @@ const Input: FC<CustomInputProps> = ({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-lg cursor-pointer"
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showPassword ? "🙈" : "👁️"}
           </button>
         )}
       </div>
