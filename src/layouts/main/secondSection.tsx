@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 import Stack from "@mui/material/Stack";
 import Image from "next/image";
 import Link from "next/link";
