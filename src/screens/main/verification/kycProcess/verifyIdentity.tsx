@@ -5,10 +5,11 @@ import { useState } from "react";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
+import CustomUpload from "@spt/components/customUpload";
 import Input from "@spt/components/input";
 import StepLayout from "@spt/components/kycLayout";
 
-interface FormValues {      
+interface FormValues {
   nin: string;
   ninImage: File | null;
 }
@@ -56,25 +57,21 @@ const VerifyIdentity = () => {
               {/* NIN INPUT */}
               <Input name="nin" label="NIN Number" placeholder="NIN number" />
 
-              {/* UPLOAD */}
-              {/* <Upload
-                label="Upload a photo of your NIN"
-                onChange={(file) => setFieldValue("ninImage", file)}
-              /> */}
-
-              {/* INFO BOX */}
-              {/* WHY WE NEED YOUR NIN */}
-              <div className="w-full">
+              <CustomUpload
+                name="profileImage"
+                // placeHolder=".PNG, .JPG up to 5MB"
+              />
+              <div className="w-full bg-[#E0F4FD]  rounded-lg">
                 <button
                   type="button"
                   onClick={() => setShowWhy((prev) => !prev)}
-                  className="flex w-full items-center justify-between rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700"
+                  className="flex w-full items-center justify-between rounded-lg  px-4 py-3 text-sm text-blue-700"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-blue-600 text-xs font-bold">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-blue-dark)] text-[var(--color-blue-dark)] text-xs font-bold">
                       i
                     </span>
-                    <span>Why we need your NIN</span>
+                    <span className="text-[#212529]">Why we need your NIN</span>
                   </div>
 
                   <span
@@ -87,7 +84,7 @@ const VerifyIdentity = () => {
                 </button>
 
                 {showWhy && (
-                  <div className="rounded-b-lg bg-blue-50 px-4 pb-4 pt-2 text-sm text-blue-700">
+                  <div className="rounded-b-lg px-4 pb-4 pt-2 text-sm  text-[#495057] ">
                     We need your NIN to verify your identity and ensure the
                     security of your account. Be rest assured that we do not
                     have access to your bank details.

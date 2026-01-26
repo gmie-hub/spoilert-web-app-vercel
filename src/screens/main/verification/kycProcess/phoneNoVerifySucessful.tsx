@@ -1,16 +1,15 @@
 import SuccessIcon from "@spt/assets/icons/doneblue.svg";
 import SuccessState from "@spt/components/successState";
 
-const VerificationProgress = () => {
+const PhoneNoVerifySucessful = () => {
   return (
     <div className="w-full flex justify-start">
       <div className="w-[70%] space-y-4">
         {" "}
         <SuccessState
           icon={SuccessIcon}
-          title="Your Identity Verification Is Being Processed 🎉"
-          description=" . Thank you for your patience."
-          buttonLabel="Okay"
+          title="Phone Number Verified Successfully 🎉 "
+          buttonLabel="Continue Verification"
           href="/auth/signin"
         />
       </div>
@@ -18,4 +17,4 @@ const VerificationProgress = () => {
   );
 };
 
-export default VerificationProgress;
+export default PhoneNoVerifySucessful;

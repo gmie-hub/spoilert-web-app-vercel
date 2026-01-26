@@ -52,7 +52,7 @@ const AddBankAccountStep = () => {
           >
             <div className="w-full space-y-4">
               {/* Info Notice */}   
-              <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-700">
+              <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
                 Note that only one bank account can be added to receive
                 payments. Please verify that your details are correct before
                 saving.
