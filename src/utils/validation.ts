@@ -26,4 +26,5 @@ export const validations = {
     .required("Password is required"),
       passwordLogin: Yup.string()
     .required("Password is required"),
+     country: Yup.string().required("Country is required"),
 };

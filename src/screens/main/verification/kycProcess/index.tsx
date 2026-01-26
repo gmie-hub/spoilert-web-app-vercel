@@ -7,13 +7,16 @@ import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
 
+// import SelectCountryStep from "./selectCountry";
+import VerificationProgress from "./verificationProgress";
+
 const KYCProcess = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [skipped, setSkipped] = useState(new Set());
 
   const isStepSkipped = (step: number) => {
     return skipped.has(step);
-  };
+  };  
 
   return (
     <Stack
@@ -34,7 +37,9 @@ const KYCProcess = () => {
         />
       </Stack>
 
-      <Card></Card>
+      <Card>
+        <VerificationProgress />
+      </Card>
     </Stack>
   );
 };

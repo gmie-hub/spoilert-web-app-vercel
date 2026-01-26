@@ -28,10 +28,7 @@ const Input: FC<CustomInputProps> = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <label
-        htmlFor={name}
-        className="text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={name} className="text-sm font-medium text-gray-700">
         {label}
         {hasAsterisk && <span className="ml-1 text-red-500">*</span>}
       </label>
@@ -47,9 +44,7 @@ const Input: FC<CustomInputProps> = ({
             placeholder:text-gray-400
             focus:outline-none focus:ring-2 focus:ring-teal-500
             ${
-              hasError
-                ? "border-red-500 focus:ring-red-400"
-                : "border-gray-200"
+              hasError ? "border-red-500 focus:ring-red-400" : "border-gray-200"
             }
           `}
         />
@@ -66,11 +61,7 @@ const Input: FC<CustomInputProps> = ({
         )}
       </div>
 
-      {hasError && (
-        <span className="text-xs text-red-500">
-          {meta.error}
-        </span>
-      )}
+      {hasError && <span className="text-xs text-red-500">{meta.error}</span>}
     </div>
   );
 };

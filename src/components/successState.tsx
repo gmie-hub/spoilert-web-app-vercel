@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { ReactNode } from "react";
 
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -11,7 +11,7 @@ import Stack from "@spt/components/stack";
 
 interface SuccessStateProps {
   title: string;
-  description?: string;
+  description?: ReactNode;
   buttonLabel: string;
   href?: string;
   onButtonClick?: () => void;
