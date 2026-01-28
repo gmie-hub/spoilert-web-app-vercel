@@ -8,6 +8,8 @@ import Image from "next/image";
 import SignUpImage from "@spt/assets/images/auth-image-one.svg";
 import { Card } from "@spt/components";
 
+import type { StaticImageData } from "next/image";
+
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -19,7 +21,7 @@ const containerVariants = {
 
 interface AuthLayoutProps {
   children: React.ReactNode;
-  image?: any;
+  image?: StaticImageData;
 }
 
 const AuthLayout = ({ children, image = SignUpImage }: AuthLayoutProps) => {

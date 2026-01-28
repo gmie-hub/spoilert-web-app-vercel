@@ -59,7 +59,8 @@ const VerifyIdentity = () => {
 
               <CustomUpload
                 name="profileImage"
-                // placeHolder=".PNG, .JPG up to 5MB"
+                placeholder="Upload Image"
+                label="Upload a photo of your NIN"
               />
               <div className="w-full bg-[#E0F4FD]  rounded-lg">
                 <button
