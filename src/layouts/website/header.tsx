@@ -24,7 +24,7 @@ const Header = () => {
   const activePath = "/";
 
   return (
-    <header className="sticky top-0 z-10  px-24 border-b border-gray-lightest bg-white">
+    <header className="sticky top-0 z-10 px-24 border-b border-gray-lightest bg-white">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" aria-label="Home">
           <Image src={Logo} alt="Spoilert Logo" width={120} height={40} />
