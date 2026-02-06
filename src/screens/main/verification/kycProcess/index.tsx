@@ -7,7 +7,8 @@ import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
 
-import VerifyPhoneNumberStep from "./verifyPhone";
+// import VerifyPhoneNumberStep from "./verifyPhone";
+import AddBankAccountStep from "./addBankAccount";
 
 // import SelectCountryStep from "./selectCountry";
 
@@ -39,7 +40,7 @@ const KYCProcess = () => {
       </Stack>
 
       <Card>
-        <VerifyPhoneNumberStep />
+        <AddBankAccountStep />
       </Card>
     </Stack>
   );

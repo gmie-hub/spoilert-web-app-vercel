@@ -51,7 +51,7 @@ const Header = () => {
 
            <div className="flex items-center gap-6">
             <Link
-              href="/login"
+              href="/auth/signin"
               className="text-gray hover:text-blue transition-colors duration-300 font-semibold"
             >
               Login
