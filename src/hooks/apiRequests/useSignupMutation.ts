@@ -55,11 +55,14 @@ export const useSignupMutation = () => {
       await mutation.mutateAsync(payload);
       toast.success("Account created successfully 🎉");
       localStorage.setItem("userEmail", values.email);
-      
+
       router.push("/auth/email-verification");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || error?.message || "Signup failed",
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Signup failed",
       );
     } finally {
       setSubmitting(false);

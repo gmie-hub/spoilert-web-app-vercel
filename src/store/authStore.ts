@@ -43,11 +43,11 @@ export const useAuthStore = create<AuthState>()(
       setAuth: ({ user, token }) => set({ user, token }),
       logout: () => {
         set({ user: null, token: null });
-        localStorage.removeItem("spoilert-web-auth-storage"); // clears persisted data
+        localStorage.removeItem("spoilert-web&site#"); // clears persisted data
       },
     }),
     {
-      name: "spoilert-web-auth-storage", // key in localStorage
+      name: "spoilert-web&site#", // key in localStorage
     }
   )
 );

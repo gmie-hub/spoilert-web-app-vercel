@@ -7,57 +7,43 @@ import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
 
+import SelectCountryStep from "./selectCountry";
+import VerifyIdentity from "./verifyIdentityNIN";
 import VerifyPhoneNumberStep from "./verifyPhone";
-
-// import SelectCountryStep from "./selectCountry";
+import AddBankAccountStep from "./addBankAccount";
 
 const KYCProcess = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [skipped, setSkipped] = useState(new Set());
 
+  const goToNextStep = () => {
+    setActiveStep((prev) => prev + 1);
+  };
+
   const isStepSkipped = (step: number) => {
     return skipped.has(step);
-  };  
+  };
 
   const renderStepContent = () => {
-      if (!selectedType) {
+    switch (activeStep) {
+      case 1:
+        return <SelectCountryStep onNext={goToNextStep} />;
+      case 2:
+        return (
+          <VerifyPhoneNumberStep onNext={goToNextStep} />
+        );
+      case 3:
+        return (
+          <VerifyIdentity onNext={goToNextStep} />
+        );
+      case 4:
+        return (
+          <AddBankAccountStep onNext={goToNextStep} />
+        );
+      default:
         return null;
-      }
-  
-      switch (activeStep) {
-        case 0:
-          return (
-            <SpoilBasicsStep
-              data={basicsData}
-              onChange={setBasicsData}
-              onNext={goToNextStep}
-              selectedType={selectedType}
-              onBackToSelection={handleBackToSelection}
-            />
-          );
-        case 1:
-          return (
-            <SpoilOutlineStep
-              data={outlineData}
-              onChange={setOutlineData}
-              onNext={goToNextStep}
-              onPrevious={goToPreviousStep}
-            />
-          );
-        case 2:
-          return (
-            <SpoilReviewStep
-              basics={basicsData}
-              outline={outlineData}
-              selectedType={selectedType}
-              onPrevious={goToPreviousStep}
-              onSubmit={handleSubmitSpoil}
-            />
-          );
-        default:
-          return null;
-      }
-    };
+    }
+  };
 
   return (
     <Stack
@@ -68,7 +54,9 @@ const KYCProcess = () => {
       my={{ xs: 2, md: 8 }}
     >
       <Stack className="border border-gray-lightest rounded-xl py-4 pl-2 md:pl-4 gap-4">
-        <h3 className="text-black text-xl font-medium">Verification Progress</h3>
+        <h3 className="text-black text-xl font-medium">
+          Verification Progress
+        </h3>
         <p>Complete the verification process to start creating spoils</p>
 
         <Stepper
@@ -79,7 +67,7 @@ const KYCProcess = () => {
       </Stack>
 
       <Card>
-        <VerifyPhoneNumberStep />
+        {renderStepContent()}
       </Card>
     </Stack>
   );

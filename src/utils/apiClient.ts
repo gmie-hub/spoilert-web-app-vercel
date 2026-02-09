@@ -8,6 +8,7 @@ export const api: AxiosInstance = axios.create({
   },
 });
 
+
 api.interceptors.request.use(
   function (config) {
     let token = "";
@@ -18,8 +19,8 @@ api.interceptors.request.use(
           localStorage.getItem("spoilert-web&site#") || "{}"
         );
 
-        if (tokenModel?.security_token) {
-          token = tokenModel?.security_token;
+        if (tokenModel?.state?.token) {
+          token = tokenModel?.state?.token;
         }
       }
     }

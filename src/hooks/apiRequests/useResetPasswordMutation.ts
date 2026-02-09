@@ -11,10 +11,10 @@ import type { AxiosError } from "axios";
 import type { FormikValues } from "formik";
 
 interface Payload {
-  token: string;
+  code: string;
   password: string;
-  password_confirmation?:string
-  email:string
+  password_confirmation?: string;
+  email: string;
 }
 
 interface ResetPasswordResponse {
@@ -25,7 +25,7 @@ export const useResetPasswordMutation = () => {
   const router = useRouter();
 
   const resetPassword = async (
-    payload: Payload
+    payload: Payload,
   ): Promise<ResetPasswordResponse> => {
     return (await api.post("/auth/reset-password", payload)).data;
   };
@@ -43,31 +43,30 @@ export const useResetPasswordMutation = () => {
   const resetPasswordHandler = async (
     values: FormikValues,
     actions: any,
-    token: string,
     // email:string
   ) => {
     const { setSubmitting } = actions;
 
     try {
       const payload: Payload = {
-        token,
+        code: values?.otp,
         password: values.password,
-        password_confirmation:values.password,
-        email:email,
+        password_confirmation: values.password,
+        email: email,
       };
 
       const response = await mutation.mutateAsync(payload);
 
-      toast.success(
-        response?.message || "Password reset successful 🔐"
-      );
+      toast.success(response?.message || "Password reset successful 🔐");
+      localStorage.removeItem("userEmail");
 
       router.push("/auth/reset-password-successfully");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
           error?.message ||
-          "Password reset failed"
+          "Password reset failed",
       );
     } finally {
       setSubmitting(false);

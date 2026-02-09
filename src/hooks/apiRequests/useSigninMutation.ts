@@ -50,7 +50,6 @@ export const useLoginMutation = () => {
         if (response.data) {
       const { token, user } = response.data;
       useAuthStore.getState().setAuth({ user, token }); // save to Zustand
-      console.log("Login successful, data saved:", { user, token });
     }
       toast.success("Logged in successfully 🎉");
 

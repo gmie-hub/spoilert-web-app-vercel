@@ -15,17 +15,22 @@ const initialValues: FormValues = {
   country: "",
 };
 
-const validationSchema = Yup.object().shape({
+const validationSchema = Yup.object({
   country: validations.country,
 });
 
-const SelectCountryStep = () => {
+const SelectCountryStep = ({ onNext }: { onNext: () => void }) => {
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>,
   ) => {
+    // ✅ save selected country
+    localStorage.setItem("selectedCountry", values.country);
+
     actions.setSubmitting(false);
-    // proceed to next step
+
+    // move to next step here if you use router or stepper
+    onNext();
   };
 
   return (
@@ -42,10 +47,9 @@ const SelectCountryStep = () => {
             title="Select Country"
             description="To begin your verification, select your country"
             buttonLabel="Continue"
-            onButtonClick={() => {
-              // Formik handles submit automatically
-              document.querySelector<HTMLFormElement>("form")?.requestSubmit();
-            }}
+            onButtonClick={() =>
+              document.querySelector<HTMLFormElement>("form")?.requestSubmit()
+            }
           >
             <div className="w-full space-y-2">
               <Select

@@ -18,7 +18,7 @@ interface ResendOtpResponse {
 
 export const useResendOtpMutation = () => {
   const resendOtp = async (
-    payload: ResendOtpPayload
+    payload: ResendOtpPayload,
   ): Promise<ResendOtpResponse> => {
     return (await api.post("/auth/resend-otp", payload)).data;
   };
@@ -38,9 +38,10 @@ export const useResendOtpMutation = () => {
       toast.success("OTP resent successfully 📩");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
           error?.message ||
-          "Failed to resend OTP"
+          "Failed to resend OTP",
       );
     }
   };
