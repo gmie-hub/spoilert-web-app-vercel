@@ -20,7 +20,7 @@ interface AddBankAccountResponse {
 
 export const useAddBankAccountMutation = () => {
   const addBankAccount = async (
-    payload: AddBankAccountPayload
+    payload: AddBankAccountPayload,
   ): Promise<AddBankAccountResponse> => {
     return (await api.post("banks/add", payload)).data;
   };
@@ -34,15 +34,19 @@ export const useAddBankAccountMutation = () => {
     mutationFn: addBankAccount,
   });
 
-  const addBankAccountHandler = async (account_number: string, bank_id: number) => {
+  const addBankAccountHandler = async (
+    account_number: string,
+    bank_id: number,
+  ) => {
     try {
       await mutation.mutateAsync({ account_number, bank_id });
       toast.success("Bank account added successfully 🏦");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
           error?.message ||
-          "Failed to add bank account"
+          "Failed to add bank account",
       );
     }
   };

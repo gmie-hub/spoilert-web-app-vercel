@@ -24,7 +24,17 @@ export const validations = {
     .matches(/[0-9]/, "Must contain a number")
     .matches(/[@$!%*?&#]/, "Must contain a special character")
     .required("Password is required"),
-      passwordLogin: Yup.string()
-    .required("Password is required"),
-     country: Yup.string().required("Country is required"),
+  passwordLogin: Yup.string().required("Password is required"),
+  country: Yup.string().required("Country is required"),
+
+  bankName: Yup.string().required("Bank name is required"),
+  accountNumber: Yup.string()
+    .matches(/^\d{10}$/, "Account number must be 10 digits")
+    .required("Account number is required"),
+
+  countryCode: Yup.string().required(),
+  phoneNumber: Yup.string()
+    .matches(/^\d+$/, "Phone number must contain only digits")
+    .min(7, "Phone number is too short")
+    .required("Phone number is required"),
 };

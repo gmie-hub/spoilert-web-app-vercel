@@ -1,11 +1,13 @@
 "use client";
 
 import { Form, Formik, FormikHelpers } from "formik";
-import * as Yup from "yup";
+import { object } from "yup";
 
 import Input from "@spt/components/input";
 import StepLayout from "@spt/components/kycLayout";
 import Select from "@spt/components/select";
+import { useVerifyPhoneMutation } from "@spt/hooks/apiRequests/useVerifyPhoneMutation";
+import { validations } from "@spt/utils/validation";
 
 interface FormValues {
   countryCode: string;
@@ -17,39 +19,43 @@ const initialValues: FormValues = {
   phoneNumber: "",
 };
 
-const validationSchema = Yup.object().shape({
-  countryCode: Yup.string().required(),
-  phoneNumber: Yup.string()
-    .matches(/^\d+$/, "Phone number must contain only digits")
-    .min(7, "Phone number is too short")
-    .required("Phone number is required"),
+const validationSchema = object().shape({
+  countryCode: validations.countryCode,
+  phoneNumber: validations.phoneNumber,
 });
 
 const VerifyPhoneNumberStep = () => {
-  const handleSubmit = (
+  const { sendOtpHandler, isLoading } = useVerifyPhoneMutation();
+
+  const handleSubmit = async (
     values: FormValues,
     actions: FormikHelpers<FormValues>,
   ) => {
-    const fullPhoneNumber = `${values.countryCode}${values.phoneNumber}`;
-    console.log("Sending code to:", fullPhoneNumber);
-    actions.setSubmitting(false);
+    if (isLoading) return;
+
+    try {
+      await sendOtpHandler(values, actions);
+
+      // ✅ Save separately
+      localStorage.setItem("countryCode", values.countryCode);
+      localStorage.setItem("phoneNumber", values.phoneNumber);
+
+    } finally {
+      actions.setSubmitting(false);
+    }
   };
 
   const COUNTRY_OPTIONS = [
-    { value: "+44", label: "+44" },
-    { value: "+1", label: "+1" },
-    { value: "+234", label: "+234" },
+    { value: "+44", label: "🇬🇧 +44" },
+    { value: "+1", label: "🇺🇸 +1" },
+    { value: "+234", label: "🇳🇬 +234" },
   ];
-  const COUNTRY_FLAG: Record<string, string> = {
-    "+44": "🇬🇧",
-    "+1": "🇺🇸",
-    "+234": "🇳🇬",
-  };
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit} // use wrapper function
     >
       {({ submitForm }) => (
         <Form>
@@ -58,7 +64,7 @@ const VerifyPhoneNumberStep = () => {
             totalSteps={4}
             title="Verify Your Phone Number"
             description="To start creating Spoils we need to verify your phone number. Enter your phone number to get a verification code."
-            buttonLabel="Send Code"
+            buttonLabel={isLoading ? "Sending..." : "Send Code"}
             onButtonClick={submitForm}
           >
             <div className="w-full space-y-2">
@@ -68,25 +74,13 @@ const VerifyPhoneNumberStep = () => {
 
               {/* Phone input container */}
               <div className="flex items-center rounded-lg border border-gray-200 px-3 py-2 gap-2">
-                <Select
-                  label=""
-                  name="countryCode"
-                  options={[
-                    { value: "+44", label: "🇬🇧 +44" },
-                    { value: "+1", label: "🇺🇸 +1" },
-                    { value: "+234", label: "🇳🇬 +234" },
-                  ]}
+                <Select label="" name="countryCode" options={COUNTRY_OPTIONS} />
 
-                  // className="w-[90px]"
-                />
-
-                <Input
-                  name="phoneNumber"
-                  placeholder="901234567"
-                  label=""
-                  // className="border-0 p-0 focus:ring-0"
-                />
+                <Input name="phoneNumber" placeholder="901234567" label="" />
               </div>
+              {/* <Button type="submit"  className="w-full">
+                send
+                </Button> */}
             </div>
           </StepLayout>
         </Form>

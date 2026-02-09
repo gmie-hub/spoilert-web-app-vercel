@@ -1,7 +1,10 @@
+
+
 // "use client";
 
 // import type { FC } from "react";
 // import { useEffect, useRef, useState } from "react";
+
 // import { useField } from "formik";
 
 // interface SelectOption {
@@ -19,7 +22,8 @@
 //   searchable?: boolean;
 //   onSearchChange?: (value: string) => void;
 //   filterOnFrontend?: boolean;
-//   debounceTime?: number; // debounce delay in ms
+//   debounceTime?: number;
+//   isLoading?: boolean; // optional: indicate if endpoint is loading
 // }
 
 // const Select: FC<CustomSelectProps> = ({
@@ -33,6 +37,7 @@
 //   onSearchChange,
 //   filterOnFrontend = true,
 //   debounceTime = 400,
+//   isLoading = false,
 // }) => {
 //   const [field, meta, helpers] = useField(name);
 //   const hasError = Boolean(meta.touched && meta.error);
@@ -43,13 +48,15 @@
 //   const dropdownRef = useRef<HTMLDivElement>(null);
 //   const searchInputRef = useRef<HTMLInputElement>(null);
 
-//   /** Debounce timer */
-//   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+//   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 //   /** Close dropdown when clicking outside */
 //   useEffect(() => {
 //     const handleClickOutside = (event: MouseEvent) => {
-//       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+//       if (
+//         dropdownRef.current &&
+//         !dropdownRef.current.contains(event.target as Node)
+//       ) {
 //         setOpen(false);
 //       }
 //     };
@@ -57,19 +64,18 @@
 //     return () => document.removeEventListener("mousedown", handleClickOutside);
 //   }, []);
 
-//   /** Focus search input when dropdown opens */
+//   /** Focus input when dropdown opens or options update */
 //   useEffect(() => {
 //     if (open && searchable && searchInputRef.current) {
-//       searchInputRef.current.focus();
+//       searchInputRef.current.focus({ preventScroll: true });
 //     }
-//   }, [open, searchable]);
+//   }, [open, searchable, options]); // ✅ also depend on options
 
 //   /** Handle search input changes with debounce */
 //   const handleSearchChange = (value: string) => {
 //     setSearch(value);
 
 //     if (!filterOnFrontend && onSearchChange) {
-//       // Clear previous timer
 //       if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
 //       debounceTimer.current = setTimeout(() => {
@@ -80,12 +86,12 @@
 
 //   /** Filter options only if filterOnFrontend is true */
 //   const displayedOptions = filterOnFrontend
-//     ? options.filter(option =>
-//         option.label.toLowerCase().includes(search.toLowerCase())
+//     ? options.filter((option) =>
+//         option.label.toLowerCase().includes(search.toLowerCase()),
 //       )
 //     : options;
 
-//   const selectedOption = options.find(opt => opt.value === field.value);
+//   const selectedOption = options.find((opt) => opt.value === field.value);
 
 //   return (
 //     <div className="flex flex-col gap-1" ref={dropdownRef}>
@@ -113,9 +119,7 @@
 //           </span>
 
 //           {/* Dropdown Icon */}
-//           <span className="absolute right-3 text-sm text-gray-400">
-//             ▼
-//           </span>
+//           <span className="absolute right-3 text-sm text-gray-400">▼</span>
 //         </div>
 
 //         {/* Dropdown */}
@@ -133,26 +137,31 @@
 //               />
 //             )}
 
-//             {/* Options */}
-//             {displayedOptions.length > 0 ? (
-//               displayedOptions.map(option => (
-//                 <div
-//                   key={option.value}
-//                   onClick={() => {
-//                     helpers.setValue(option.value);
-//                     setOpen(false);
-//                     setSearch("");
-//                   }}
-//                   className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
-//                 >
-//                   {option.label}
-//                 </div>
-//               ))
-//             ) : (
-//               <p className="px-3 py-2 text-sm text-gray-400">
-//                 No result found
-//               </p>
+//             {/* Loading State */}
+//             {isLoading && (
+//               <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
 //             )}
+
+//             {/* Options */}
+//             {!isLoading && displayedOptions.length > 0
+//               ? displayedOptions.map((option) => (
+//                   <div
+//                     key={option.value}
+//                     onClick={() => {
+//                       helpers.setValue(option.value);
+//                       setOpen(false);
+//                       setSearch(""); // reset search
+//                     }}
+//                     className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+//                   >
+//                     {option.label}
+//                   </div>
+//                 ))
+//               : !isLoading && (
+//                   <p className="px-3 py-2 text-sm text-gray-400">
+//                     No result found
+//                   </p>
+//                 )}
 //           </div>
 //         )}
 //       </div>
@@ -164,12 +173,11 @@
 // };
 
 // export default Select;
-
 "use client";
 
 import type { FC } from "react";
-import { useEffect, useRef, useState } from "react";
 
+import { useEffect, useRef, useState } from "react";
 import { useField } from "formik";
 
 interface SelectOption {
@@ -186,9 +194,10 @@ interface CustomSelectProps {
   disabled?: boolean;
   searchable?: boolean;
   onSearchChange?: (value: string) => void;
+  onChange?: (value: string) => void;  // ✅ add this
   filterOnFrontend?: boolean;
   debounceTime?: number;
-  isLoading?: boolean; // optional: indicate if endpoint is loading
+  isLoading?: boolean;
 }
 
 const Select: FC<CustomSelectProps> = ({
@@ -200,6 +209,7 @@ const Select: FC<CustomSelectProps> = ({
   disabled = false,
   searchable = false,
   onSearchChange,
+  onChange,  // ✅ add this
   filterOnFrontend = true,
   debounceTime = 400,
   isLoading = false,
@@ -215,7 +225,6 @@ const Select: FC<CustomSelectProps> = ({
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /** Close dropdown when clicking outside */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -229,14 +238,12 @@ const Select: FC<CustomSelectProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /** Focus input when dropdown opens or options update */
   useEffect(() => {
     if (open && searchable && searchInputRef.current) {
       searchInputRef.current.focus({ preventScroll: true });
     }
-  }, [open, searchable, options]); // ✅ also depend on options
+  }, [open, searchable, options]);
 
-  /** Handle search input changes with debounce */
   const handleSearchChange = (value: string) => {
     setSearch(value);
 
@@ -249,7 +256,6 @@ const Select: FC<CustomSelectProps> = ({
     }
   };
 
-  /** Filter options only if filterOnFrontend is true */
   const displayedOptions = filterOnFrontend
     ? options.filter((option) =>
         option.label.toLowerCase().includes(search.toLowerCase()),
@@ -260,13 +266,11 @@ const Select: FC<CustomSelectProps> = ({
 
   return (
     <div className="flex flex-col gap-1" ref={dropdownRef}>
-      {/* Label */}
       <label htmlFor={name} className="text-sm font-medium text-gray-700">
         {label}
         {hasAsterisk && <span className="ml-1 text-red-500">*</span>}
       </label>
 
-      {/* Select Box */}
       <div className="relative">
         <div
           onClick={() => !disabled && setOpen(!open)}
@@ -282,15 +286,11 @@ const Select: FC<CustomSelectProps> = ({
           <span className="text-gray-700">
             {selectedOption ? selectedOption.label : placeholder}
           </span>
-
-          {/* Dropdown Icon */}
           <span className="absolute right-3 text-sm text-gray-400">▼</span>
         </div>
 
-        {/* Dropdown */}
         {open && !disabled && (
           <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-md max-h-60 overflow-auto">
-            {/* Search Input */}
             {searchable && (
               <input
                 ref={searchInputRef}
@@ -302,20 +302,19 @@ const Select: FC<CustomSelectProps> = ({
               />
             )}
 
-            {/* Loading State */}
             {isLoading && (
               <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
             )}
 
-            {/* Options */}
             {!isLoading && displayedOptions.length > 0
               ? displayedOptions.map((option) => (
                   <div
                     key={option.value}
                     onClick={() => {
                       helpers.setValue(option.value);
+                      onChange?.(option.value); // ✅ call onChange
                       setOpen(false);
-                      setSearch(""); // reset search
+                      setSearch("");
                     }}
                     className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
                   >
@@ -331,7 +330,6 @@ const Select: FC<CustomSelectProps> = ({
         )}
       </div>
 
-      {/* Error */}
       {hasError && <span className="text-xs text-red-500">{meta.error}</span>}
     </div>
   );

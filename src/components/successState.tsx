@@ -225,7 +225,7 @@ const SuccessState = ({
         {/* 🔘 Primary CTA */}
         {href ? (
           <Link href={href} className="w-full">
-            <Button className="w-full">{buttonLabel}</Button>
+            <Button type='submit' className="w-full">{buttonLabel}</Button>
           </Link>
         ) : (
           <Button className="w-full" onClick={onButtonClick}>

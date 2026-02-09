@@ -1,221 +1,38 @@
-// "use client";
-
-// import { useState } from "react";
-
-// import { useMutation } from "@tanstack/react-query";
-// import { Form, Formik, FormikHelpers } from "formik";
-// import * as Yup from "yup";
-
-// import Input from "@spt/components/input";
-// import StepLayout from "@spt/components/kycLayout";
-// import Select from "@spt/components/select";
-// import { useGetBanksQuery } from "@spt/hooks/apiRequests/useGetBankQuery";
-
-// import toast from "react-hot-toast";
-// import { ApiErrorResponse } from "@spt/types/error";
-// import api from "@spt/utils/apiClient";
-// import type { AxiosError } from "axios";
-
-// interface FormValues {
-//   bankName: string; // stores bank.code
-//   accountNumber: string;
-// }
-
-// const initialValues: FormValues = {
-//   bankName: "",
-//   accountNumber: "",
-// };
-
-// const validationSchema = Yup.object().shape({
-//   bankName: Yup.string().required("Bank name is required"),
-//   accountNumber: Yup.string()
-//     .matches(/^\d{10}$/, "Account number must be 10 digits")
-//     .required("Account number is required"),
-// });
-
-// // ✅ Bank Verification Mutation
-// const useVerifyBankMutation = () => {
-//   const mutationFn = async (payload: {
-//     account_number: string;
-//     bank_id: number;
-//   }) => {
-//     return (await api.post("  ", payload)).data;
-//   };
-
-//   const mutation = useMutation<
-//     { account_name: string },
-//     AxiosError<ApiErrorResponse>,
-//     { account_number: string; bank_id: number }
-//   >({
-//     mutationKey: ["verify-bank"],
-//     mutationFn,
-//   });
-
-//   const verifyBank = async (account_number: string, bank_id: number) => {
-//     try {
-//       const result = await mutation.mutateAsync({ account_number, bank_id });
-//       toast.success("Bank account verified ✅");
-//       return result.account_name;
-//     } catch (error: any) {
-//       toast.error(
-//         error?.response?.data?.message ||
-//           error?.message ||
-//           "Failed to verify bank account",
-//       );
-//       return null;
-//     }
-//   };
-
-//   return { verifyBank, isVerifying: mutation.isPending };
-// };
-// console;
-// const AddBankAccountStep = () => {
-//   const [bankSearch, setBankSearch] = useState("");
-//   const [accountName, setAccountName] = useState<string | null>(null);
-
-//   const { data, isLoading, isError, errorMessage } =
-//     useGetBanksQuery(bankSearch);
-
-//   const bankOptions =
-//     data?.data?.map((bank: any) => ({
-//       value: bank.code, // Formik stores this
-//       label: bank.name,
-//     })) || [];
-
-//   const { verifyBank, isVerifying } = useVerifyBankMutation();
-
-//   /** ✅ Verify using the actual bank id from API */
-//   const handleAccountNumberChange = async (
-//     accountNumber: string,
-//     bankCode: string,
-//   ) => {
-//     if (accountNumber.length === 10 && bankCode) {
-//       const bankObj = data?.data?.find((b: any) => b.code === bankCode);
-//       if (!bankObj) return;
-
-//       const name = await verifyBank(accountNumber, bankObj.id); // pass correct bank_id
-//       setAccountName(name);
-//     } else {
-//       setAccountName(null);
-//     }
-//   };
-
-//   return (
-//     <Formik
-//       initialValues={initialValues}
-//       validationSchema={validationSchema}
-//       onSubmit={(values: FormValues, actions: FormikHelpers<FormValues>) => {
-//         console.log("Submitted Values:", values);
-//         actions.setSubmitting(false);
-//       }}
-//     >
-//       {({ submitForm, values, setFieldValue }) => (
-//         <Form>
-//           <StepLayout
-//             step={4}
-//             totalSteps={4}
-//             title="Add Bank Account"
-//             description=""
-//             buttonLabel="Save Bank Details"
-//             onButtonClick={submitForm}
-//           >
-//             <div className="w-full space-y-4">
-//               {/* Info Notice */}
-//               <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
-//                 Note that only one bank account can be added to receive
-//                 payments. Please verify that your details are correct before
-//                 saving.
-//               </div>
-
-//               {/* Bank Name Select */}
-//               <Select
-//                 name="bankName"
-//                 label="Bank Name"
-//                 searchable={true}
-//                 // filterOnFrontend={false}
-//                 placeholder={
-//                   isLoading ? "Loading banks..." : "Select bank name"
-//                 }
-//                 options={bankOptions}
-//                 disabled={isLoading}
-//                 onSearchChange={(value) => setBankSearch(value)}
-//               />
-
-//               {/* Error Message */}
-//               {isError && (
-//                 <p className="text-red-500 text-sm">{errorMessage}</p>
-//               )}
-
-//               {/* Account Number */}
-//               <Input
-//                 name="accountNumber"
-//                 label="Account Number"
-//                 placeholder="Enter account number"
-//                 onChange={(val: string) => {
-//                   setFieldValue("accountNumber", val);
-//                   handleAccountNumberChange(val, values.bankName);
-//                 }}
-//               />
-
-//               {/* Display Verified Account Name */}
-//               {isVerifying && (
-//                 <p className="text-sm text-red">Verifying account number...</p>
-//               )}
-//               {accountName && !isVerifying && (
-//                 <p className="text-sm text-green-600 font-medium">
-//                   Account Name: {accountName}
-//                 </p>
-//               )}
-//             </div>
-//           </StepLayout>
-//         </Form>
-//       )}
-//     </Formik>
-//   );
-// };
-
-// export default AddBankAccountStep;
 
 // "use client";
 
-// import { useState } from "react";
-
+// import { useEffect, useState } from "react";
 // import { Form, Formik, FormikHelpers } from "formik";
-// import * as Yup from "yup";
+// import { object } from "yup";
 
+// import Button from "@spt/components/button";
 // import Input from "@spt/components/input";
 // import StepLayout from "@spt/components/kycLayout";
 // import Select from "@spt/components/select";
+// import { useAddBankAccountMutation } from "@spt/hooks/apiRequests/useAddBankAccMutation";
 // import { useGetBanksQuery } from "@spt/hooks/apiRequests/useGetBankQuery";
 // import { useVerifyBankMutation } from "@spt/hooks/apiRequests/useVerifyBankAccountMutation";
+// import { validations } from "@spt/utils/validation";
 
 // interface FormValues {
 //   bankName: string; // stores bank.code
 //   accountNumber: string;
 // }
 
-// const initialValues: FormValues = {
-//   bankName: "",
-//   accountNumber: "",
-// };
-
-// const validationSchema = Yup.object().shape({
-//   bankName: Yup.string().required("Bank name is required"),
-//   accountNumber: Yup.string()
-//     .matches(/^\d{10}$/, "Account number must be 10 digits")
-//     .required("Account number is required"),
+// const validationSchema = object().shape({
+//   accountNumber: validations.accountNumber,
+//   bankName: validations.bankName,
 // });
 
 // const AddBankAccountStep = () => {
 //   const [bankSearch, setBankSearch] = useState("");
 //   const [accountName, setAccountName] = useState<string | null>(null);
 
-//   const { data, isLoading, isError, errorMessage } =
-//     useGetBanksQuery(bankSearch);
+//   const { data, isLoading } = useGetBanksQuery(bankSearch);
 
 //   const bankOptions =
 //     data?.data?.map((bank: any) => ({
-//       value: bank.code, // Formik stores this
+//       value: bank.code,
 //       label: bank.name,
 //     })) || [];
 
@@ -223,150 +40,180 @@
 //     verifiedAccount,
 //     verifyBankHandler,
 //     isLoading: isVerifying,
+//     errorMessage: verifyErrorMessage,
 //   } = useVerifyBankMutation();
-//   console.log(verifiedAccount, "verifiedAccountverifiedAccount");
-//   /** ===============================
-//    * Handle Account Number Change
-//    * Only allow 10 digits max
-//    * Verify when length === 10
-//    =============================== */
+
+//   const { addBankAccountHandler, isLoading: isAdding } =
+//     useAddBankAccountMutation();
+
+//   const verifyAccount = async (accountNumber: string, bankCode: string) => {
+//     if (accountNumber.length !== 10 || !bankCode) return;
+
+//     const bankObj = data?.data?.find((b: any) => b.code === bankCode);
+//     if (!bankObj) return;
+
+//     const result = await verifyBankHandler(accountNumber, bankObj.id);
+
+//     if (result?.data?.res?.account_name) {
+//       setAccountName(result.data.res.account_name);
+//     } else {
+//       setAccountName(null);
+//     }
+//   };
+
 //   const handleAccountNumberChange = async (
 //     accountNumber: string,
-//     bankCode: string,
+//     bankCode: string
 //   ) => {
-//     if (accountNumber.length > 10) return; // prevent more than 10
+//     if (accountNumber.length > 10) return;
 
+//     // clear previous verification
 //     setAccountName(null);
 
-//     if (accountNumber.length === 10 && bankCode) {
-//       const bankObj = data?.data?.find((b: any) => b.code === bankCode);
-//       if (!bankObj) return;
+//     // verify if 10 digits
+//     await verifyAccount(accountNumber, bankCode);
+//   };
 
-//       const result = await verifyBankHandler(accountNumber, bankObj.id);
+//   const handleSubmit = async (
+//     values: FormValues,
+//     actions: FormikHelpers<FormValues>
+//   ) => {
+//     if (!accountName) return;
+
+//     const bankObj = data?.data?.find((b: any) => b.code === values.bankName);
+//     if (!bankObj) return;
+
+//     try {
+//       await addBankAccountHandler(values.accountNumber, bankObj.id);
+//       actions.setSubmitting(false);
+//     } catch (error) {
+//       actions.setSubmitting(false);
 //     }
 //   };
 
 //   return (
 //     <Formik
-//       initialValues={initialValues}
+//       initialValues={{ accountNumber: "", bankName: "" }}
 //       validationSchema={validationSchema}
-//       onSubmit={(values: FormValues, actions: FormikHelpers<FormValues>) => {
-//         console.log("Submitted Values:", values);
-//         actions.setSubmitting(false);
-//       }}
+//       onSubmit={handleSubmit}
 //     >
-//       {({ submitForm, values, setFieldValue }) => (
-//         <Form>
-//           <StepLayout
-//             step={4}
-//             totalSteps={4}
-//             title="Add Bank Account"
-//             description=""
-//             buttonLabel="Save Bank Details"
-//             onButtonClick={submitForm}
-//           >
-//             <div className="w-full space-y-4">
-//               {/* Info Notice */}
-//               <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
-//                 Note that only one bank account can be added to receive
-//                 payments. Please verify that your details are correct before
-//                 saving.
+//       {({ values, setFieldValue }) => {
+
+//         // VERIFY AGAIN when bank changes (while account number already has 10 digits)
+//         useEffect(() => {
+//           if (values.accountNumber.length === 10 && values.bankName) {
+//             verifyAccount(values.accountNumber, values.bankName);
+//           }
+//         }, [values.bankName]);
+
+//         return (
+//           <Form>
+//             <StepLayout
+//               step={4}
+//               totalSteps={4}
+//               title="Add Bank Account"
+//               description=""
+//               showButton={false}
+//             >
+//               <div className="w-full space-y-4">
+//                 <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
+//                   Note that only one bank account can be added to receive
+//                   payments. Please verify that your details are correct before
+//                   saving.
+//                 </div>
+
+//                 <Select
+//                   name="bankName"
+//                   label="Bank Name"
+//                   searchable={true}
+//                   placeholder={
+//                     isLoading ? "Loading banks..." : "Select bank name"
+//                   }
+//                   options={bankOptions}
+//                   disabled={isLoading}
+//                   onSearchChange={(value) => setBankSearch(value)}
+//                   onChange={(value) => setFieldValue("bankName", value)}
+//                 />
+
+//                 <Input
+//                   name="accountNumber"
+//                   label="Account Number"
+//                   placeholder="Enter account number"
+//                   disabled={!values.bankName}
+//                   onValueChange={(value) => {
+//                     setFieldValue("accountNumber", value);
+//                     handleAccountNumberChange(value, values.bankName);
+//                   }}
+//                 />
+
+//                 <Button type="submit" disabled={isAdding} className="w-full">
+//                   {isAdding ? "Saving..." : "Save Bank Details"}
+//                 </Button>
+
+//                 {isVerifying && (
+//                   <p className="text-sm text-gray-500">
+//                     Verifying account number...
+//                   </p>
+//                 )}
+
+//                 {accountName && !isVerifying && (
+//                   <p className="text-sm text-green-600 font-medium">
+//                     Account Name: {accountName}
+//                   </p>
+//                 )}
+
+//                 {values.accountNumber?.length === 10  && !accountName && verifiedAccount?.message && !isVerifying && (
+//                   <p className="text-sm text-red-500 font-medium">
+//                     {verifyErrorMessage}
+//                   </p>
+//                 )}
 //               </div>
-
-//               {/* Bank Name Select */}
-//               <Select
-//                 name="bankName"
-//                 label="Bank Name"
-//                 searchable={true}
-//                 // filterOnFrontend={false}
-//                 placeholder={
-//                   isLoading ? "Loading banks..." : "Select bank name"
-//                 }
-//                 options={bankOptions}
-//                 disabled={isLoading}
-//                 onSearchChange={(value) => setBankSearch(value)}
-//               />
-
-//               {/* Error Message */}
-//               {isError && (
-//                 <p className="text-red-500 text-sm">{errorMessage}</p>
-//               )}
-
-//               {/* Account Number */}
-//               <Input
-//                 name="accountNumber"
-//                 label="Account Number"
-//                 placeholder="Enter account number"
-//                 onChange={(val: string) => {
-//                   setFieldValue("accountNumber", val);
-//                   handleAccountNumberChange(val, values.bankName);
-//                 }}
-//               />
-
-//               {/* Verified Account Name / Loading / Error */}
-//               {isVerifying && (
-//                 <p className="text-sm text-gray-500">
-//                   Verifying account number...
-//                 </p>
-//               )}
-//               {verifiedAccount && !isVerifying && (
-//                 <p className="text-sm text-green-600 font-medium">
-//                   Account Name:{" "}
-//                   {verifiedAccount?.data &&
-//                     verifiedAccount?.data.res?.account_name}
-//                 </p>
-//               )}
-//               {verifiedAccount && !isVerifying && (
-//                 <p className="text-sm text-red-500 font-medium">
-//                   {verifiedAccount?.message}
-//                 </p>
-//               )}
-//             </div>
-//           </StepLayout>
-//         </Form>
-//       )}
+//             </StepLayout>
+//           </Form>
+//         );
+//       }}
 //     </Formik>
 //   );
 // };
 
 // export default AddBankAccountStep;
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Formik, FormikHelpers } from "formik";
-import * as Yup from "yup";
+import { object } from "yup";
+import { useRouter } from "next/navigation";
 
+import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import StepLayout from "@spt/components/kycLayout";
 import Select from "@spt/components/select";
+
 import { useGetBanksQuery } from "@spt/hooks/apiRequests/useGetBankQuery";
 import { useVerifyBankMutation } from "@spt/hooks/apiRequests/useVerifyBankAccountMutation";
-import { useAddBankAccountMutation } from "@spt/hooks/apiRequests/useAddBankAccMutation";
+
+import { validations } from "@spt/utils/validation";
 
 interface FormValues {
   bankName: string; // stores bank.code
   accountNumber: string;
 }
 
-const initialValues: FormValues = {
-  bankName: "",
-  accountNumber: "",
-};
-
-const validationSchema = Yup.object().shape({
-  bankName: Yup.string().required("Bank name is required"),
-  accountNumber: Yup.string()
-    .matches(/^\d{10}$/, "Account number must be 10 digits")
-    .required("Account number is required"),
+const validationSchema = object().shape({
+  accountNumber: validations.accountNumber,
+  bankName: validations.bankName,
 });
 
 const AddBankAccountStep = () => {
+  const router = useRouter();
+
   const [bankSearch, setBankSearch] = useState("");
   const [accountName, setAccountName] = useState<string | null>(null);
 
-  const { data, isLoading, isError, errorMessage } =
-    useGetBanksQuery(bankSearch);
+  /* ================================
+     FETCH BANKS
+  ================================ */
+  const { data, isLoading } = useGetBanksQuery(bankSearch);
 
   const bankOptions =
     data?.data?.map((bank: any) => ({
@@ -374,139 +221,176 @@ const AddBankAccountStep = () => {
       label: bank.name,
     })) || [];
 
+  /* ================================
+     VERIFY ACCOUNT MUTATION
+  ================================ */
   const {
     verifiedAccount,
     verifyBankHandler,
     isLoading: isVerifying,
+    errorMessage: verifyErrorMessage,
   } = useVerifyBankMutation();
 
-  const { addBankAccountHandler, isLoading: isAdding } =
-    useAddBankAccountMutation();
+  /* ================================
+     VERIFY ACCOUNT FUNCTION
+  ================================ */
+  const verifyAccount = async (accountNumber: string, bankCode: string) => {
+    if (accountNumber.length !== 10 || !bankCode) return;
 
-  /** ===============================
-   * Handle Account Number Change
-   * Only allow 10 digits max
-   * Verify when length === 10
-   =============================== */
-  const handleAccountNumberChange = async (
-    accountNumber: string,
-    bankCode: string,
-  ) => {
-    if (accountNumber.length > 10) return;
+    const bankObj = data?.data?.find((b: any) => b.code === bankCode);
+    if (!bankObj) return;
 
-    setAccountName(null);
+    const result = await verifyBankHandler(accountNumber, bankObj.id);
 
-    if (accountNumber.length === 10 && bankCode) {
-      const bankObj = data?.data?.find((b: any) => b.code === bankCode);
-      if (!bankObj) return;
-
-      const result = await verifyBankHandler(accountNumber, bankObj.id);
-
-      if (result?.data?.res?.account_name) {
-        setAccountName(result.data.res.account_name);
-      } else {
-        setAccountName(null);
-      }
+    if (result?.data?.res?.account_name) {
+      setAccountName(result.data.res.account_name);
+    } else {
+      setAccountName(null);
     }
   };
 
+  /* ================================
+     HANDLE ACCOUNT INPUT CHANGE
+  ================================ */
+  const handleAccountNumberChange = async (
+    accountNumber: string,
+    bankCode: string
+  ) => {
+    if (accountNumber.length > 10) return;
+
+    // Clear previous verification
+    setAccountName(null);
+
+    // Verify once it's 10 digits
+    await verifyAccount(accountNumber, bankCode);
+  };
+
+  /* ================================
+     SUBMIT HANDLER
+     (SAVE TO LOCAL STORAGE)
+  ================================ */
   const handleSubmit = async (
     values: FormValues,
-    actions: FormikHelpers<FormValues>,
+    actions: FormikHelpers<FormValues>
   ) => {
     if (!accountName) return;
 
     const bankObj = data?.data?.find((b: any) => b.code === values.bankName);
     if (!bankObj) return;
 
-    try {
-      await addBankAccountHandler(values.accountNumber, bankObj.id);
-      actions.setSubmitting(false);
-    } catch (error) {
-      actions.setSubmitting(false);
-    }
+    // ✅ Save everything as ONE object
+    const bankDetails = {
+      accountNumber: values.accountNumber,
+      bankId: bankObj.id,
+      bankName: bankObj.name,
+      accountName: accountName,
+    };
+
+    localStorage.setItem("bankDetails", JSON.stringify(bankDetails));
+
+    actions.setSubmitting(false);
+
+    // ✅ Go to confirmation screen
+    // router.push("/kyc/sure-to-save-bank-account");
   };
 
+  /* ================================
+     FORM
+  ================================ */
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{ accountNumber: "", bankName: "" }}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
-      {({ submitForm, values, setFieldValue, isSubmitting }) => (
-        <Form>
-          <StepLayout
-            step={4}
-            totalSteps={4}
-            title="Add Bank Account"
-            description=""
-            buttonLabel="Save Bank Details"
-            onButtonClick={submitForm}
-            buttonDisabled={
-              !accountName || isVerifying || isAdding || isSubmitting
-            } // <--- disable if account not verified
-          >
-            <div className="w-full space-y-4">
-              {/* Info Notice */}
-              <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
-                Note that only one bank account can be added to receive
-                payments. Please verify that your details are correct before
-                saving.
-              </div>
+      {({ values, setFieldValue }) => {
+        // VERIFY AGAIN when bank changes
+        useEffect(() => {
+          if (values.accountNumber.length === 10 && values.bankName) {
+            verifyAccount(values.accountNumber, values.bankName);
+          }
+        }, [values.bankName]);
 
-              {/* Bank Name Select */}
-              <Select
-                name="bankName"
-                label="Bank Name"
-                searchable={true}
-                placeholder={
-                  isLoading ? "Loading banks..." : "Select bank name"
-                }
-                options={bankOptions}
-                disabled={isLoading}
-                onSearchChange={(value) => setBankSearch(value)}
-              />
+        return (
+          <Form>
+            <StepLayout
+              step={4}
+              totalSteps={4}
+              title="Add Bank Account"
+              description=""
+              showButton={false}
+            >
+              <div className="w-full space-y-4">
+                {/* Note */}
+                <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
+                  Note that only one bank account can be added to receive
+                  payments. Please verify that your details are correct before
+                  saving.
+                </div>
 
-              {/* Error Message */}
-              {isError && (
-                <p className="text-red-500 text-sm">{errorMessage}</p>
-              )}
+                {/* Bank Select */}
+                <Select
+                  name="bankName"
+                  label="Bank Name"
+                  searchable={true}
+                  placeholder={
+                    isLoading ? "Loading banks..." : "Select bank name"
+                  }
+                  options={bankOptions}
+                  disabled={isLoading}
+                  onSearchChange={(value) => setBankSearch(value)}
+                  onChange={(value) => setFieldValue("bankName", value)}
+                />
 
-              {/* Account Number */}
-              <Input
-                // disabled={values?.bankName ===''}
-                name="accountNumber"
-                label="Account Number"
-                placeholder="Enter account number"
-                onChange={(val: string) => {
-                  setFieldValue("accountNumber", val);
-                  handleAccountNumberChange(val, values.bankName);
-                }}
-              />
+                {/* Account Number */}
+                <Input
+                  name="accountNumber"
+                  label="Account Number"
+                  placeholder="Enter account number"
+                  disabled={!values.bankName}
+                  onValueChange={(value) => {
+                    setFieldValue("accountNumber", value);
+                    handleAccountNumberChange(value, values.bankName);
+                  }}
+                />
 
-              {/* Verified Account Name / Loading / Error */}
-              {isVerifying && (
-                <p className="text-sm text-gray-500">
-                  Verifying account number...
-                </p>
-              )}
-              {accountName && !isVerifying && (
-                <p className="text-sm text-green-600 font-medium">
-                  Account Name: {accountName}
-                </p>
-              )}
-              {verifiedAccount &&
-                verifiedAccount.message &&
-                !accountName &&
-                !isVerifying && (
-                  <p className="text-sm text-red-500 font-medium">
-                    {verifiedAccount.message}
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={!accountName}
+                  className="w-full"
+                >
+                  Continue
+                </Button>
+
+                {/* Loading */}
+                {isVerifying && (
+                  <p className="text-sm text-gray-500">
+                    Verifying account number...
                   </p>
                 )}
-            </div>
-          </StepLayout>
-        </Form>
-      )}
+
+                {/* Success */}
+                {accountName && !isVerifying && (
+                  <p className="text-sm text-green-600 font-medium">
+                    Account Name: {accountName}
+                  </p>
+                )}
+
+                {/* Error */}
+                {values.accountNumber.length === 10 &&
+                  !accountName &&
+                  verifyErrorMessage &&
+                  !isVerifying && (
+                    <p className="text-sm text-red-500 font-medium">
+                      {verifyErrorMessage}
+                    </p>
+                  )}
+              </div>
+            </StepLayout>
+          </Form>
+        );
+      }}
     </Formik>
   );
 };

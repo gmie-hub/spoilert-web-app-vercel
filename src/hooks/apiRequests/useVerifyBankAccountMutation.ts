@@ -1,6 +1,3 @@
-
-
-
 // "use client";
 
 // import { useState } from "react";
@@ -72,7 +69,6 @@
 //   };
 // };
 
-
 // "use client";
 
 // import { useState } from "react";
@@ -133,7 +129,6 @@
 //   };
 // };
 
-
 "use client";
 
 import { useState } from "react";
@@ -164,23 +159,35 @@ interface VerifyBankResponse {
 }
 
 export const useVerifyBankMutation = () => {
-  const [verifiedAccount, setVerifiedAccount] = useState<VerifyBankResponse | null>(null);
+  const [verifiedAccount, setVerifiedAccount] =
+    useState<VerifyBankResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Mutation function
-  const verifyBank = async (payload: VerifyBankPayload): Promise<VerifyBankResponse> => {
+  const verifyBank = async (
+    payload: VerifyBankPayload,
+  ): Promise<VerifyBankResponse> => {
     return (await api.post("/banks/verify", payload)).data;
   };
 
   // React Query mutation
-  const mutation = useMutation<VerifyBankResponse, AxiosError<ApiErrorResponse>, VerifyBankPayload>({
+  const mutation = useMutation<
+    VerifyBankResponse,
+    AxiosError<ApiErrorResponse>,
+    VerifyBankPayload
+  >({
     mutationKey: ["verify-bank"],
     mutationFn: verifyBank,
     onSuccess: (data) => {
       setVerifiedAccount(data);
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
-      const msg = error?.response?.data?.message || error?.message || "Failed to verify bank account";
-      setVerifiedAccount({ message: msg });
+      const msg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to verify bank account";
+      setErrorMessage(msg);
     },
   });
 
@@ -195,6 +202,7 @@ export const useVerifyBankMutation = () => {
   return {
     verifyBankHandler,
     isLoading: mutation.isPending,
-    verifiedAccount, // now you can safely do verifiedAccount?.data.res?.account_name
+    verifiedAccount,
+    errorMessage,
   };
 };

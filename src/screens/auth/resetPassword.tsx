@@ -3,7 +3,7 @@
 import { Form, Formik } from "formik";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 
 import BackIcon from "@spt/assets/icons/arrow-left.svg";
@@ -15,8 +15,6 @@ import { useResetPasswordMutation } from "@spt/hooks/apiRequests/useResetPasswor
 import { validations } from "@spt/utils/validation";
 
 const ResetPassword = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
   const router = useRouter();
   const { resetPasswordHandler, isLoading } = useResetPasswordMutation();
 
@@ -37,12 +35,7 @@ const ResetPassword = () => {
           className="flex justify-right  w-full"
           whileHover={{ scale: 1.05 }}
         >
-          <Image
-            src={BackIcon}
-            alt=" "
-            width={24}
-            height={24}
-          />
+          <Image src={BackIcon} alt=" " width={24} height={24} />
           <span>Back</span>
         </motion.div>
 
@@ -58,16 +51,22 @@ const ResetPassword = () => {
         {/* Form */}
         <Formik
           initialValues={{
+            otp:"",
             password: "",
             confirmPassword: "",
           }}
           validationSchema={validationSchema}
           onSubmit={(values, actions) =>
-            resetPasswordHandler(values, actions, token)
+            resetPasswordHandler(values, actions)
           }
         >
           {({ isValid }) => (
             <Form className="space-y-6 w-full max-w-none">
+              <Input
+                name="otp"
+                label="OTP"
+                placeholder="Enter OTP"
+              />
               <Input
                 name="password"
                 type="password"

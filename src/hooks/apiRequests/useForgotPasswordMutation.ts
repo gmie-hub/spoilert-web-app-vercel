@@ -57,7 +57,8 @@ export const useForgotPasswordMutation = () => {
       resetForm();
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
           error?.message ||
           "Failed to send reset link",
       );
