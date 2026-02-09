@@ -10,7 +10,6 @@ import { Card, Stepper } from "@spt/components";
 
 import VerifyIdentity from "./verifyIdentityNIN";
 
-// import SelectCountryStep from "./selectCountry";
 
 const KYCProcess = () => {
   const [activeStep, setActiveStep] = useState(1);
