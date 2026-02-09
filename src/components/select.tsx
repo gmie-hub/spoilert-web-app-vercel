@@ -3,6 +3,9 @@
 import type { FC } from "react";
 
 import { useField } from "formik";
+import Image from "next/image";
+
+import ArrowDownIcon from "@spt/assets/icons/arrow-down.svg";
 
 interface SelectOption {
   value: string;
@@ -74,7 +77,7 @@ const Select: FC<CustomSelectProps> = ({
 
         {/* Dropdown Icon */}
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
-          ▼
+          <Image src={ArrowDownIcon} alt="Dropdown arrow" width={16} height={16} />
         </span>
       </div>
 

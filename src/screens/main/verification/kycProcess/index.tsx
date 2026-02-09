@@ -19,6 +19,46 @@ const KYCProcess = () => {
     return skipped.has(step);
   };  
 
+  const renderStepContent = () => {
+      if (!selectedType) {
+        return null;
+      }
+  
+      switch (activeStep) {
+        case 0:
+          return (
+            <SpoilBasicsStep
+              data={basicsData}
+              onChange={setBasicsData}
+              onNext={goToNextStep}
+              selectedType={selectedType}
+              onBackToSelection={handleBackToSelection}
+            />
+          );
+        case 1:
+          return (
+            <SpoilOutlineStep
+              data={outlineData}
+              onChange={setOutlineData}
+              onNext={goToNextStep}
+              onPrevious={goToPreviousStep}
+            />
+          );
+        case 2:
+          return (
+            <SpoilReviewStep
+              basics={basicsData}
+              outline={outlineData}
+              selectedType={selectedType}
+              onPrevious={goToPreviousStep}
+              onSubmit={handleSubmitSpoil}
+            />
+          );
+        default:
+          return null;
+      }
+    };
+
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}

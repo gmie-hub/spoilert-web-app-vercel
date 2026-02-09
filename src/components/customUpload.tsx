@@ -46,10 +46,12 @@ const CustomUpload = ({
   return (
     <div className="flex flex-col gap-1 w-full">
       {/* Label */}
-      <label htmlFor={name} className="text-sm font-medium text-gray-700">
-        {label}
-        {hasAsterisk && <span className="ml-1 text-red-500">*</span>}
-      </label>
+      {label && (
+        <label htmlFor={name} className="text-sm font-medium text-gray-700">
+          {label}
+          {hasAsterisk && <span className="ml-1 text-red-500">*</span>}
+        </label>
+      )}
 
       {/* Hidden file input */}
       <input
@@ -76,7 +78,6 @@ const CustomUpload = ({
         {/* Text */}
         <div className="flex flex-col">
           <span className="font-semibold text-[var(--color-blue)] truncate">
-            
             {field.value ? field.value.name : ""}
           </span>
           {!field.value && (

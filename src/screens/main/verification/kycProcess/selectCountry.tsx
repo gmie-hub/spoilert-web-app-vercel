@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Form, Formik, FormikHelpers } from "formik";
@@ -16,11 +15,9 @@ const initialValues: FormValues = {
   country: "",
 };
 
-
-
-  const validationSchema = Yup.object().shape({
-    country: validations.country,
-  });
+const validationSchema = Yup.object().shape({
+  country: validations.country,
+});
 
 const SelectCountryStep = () => {
   const handleSubmit = (
@@ -34,7 +31,7 @@ const SelectCountryStep = () => {
   return (
     <Formik
       initialValues={initialValues}
-        validationSchema={validationSchema}
+      validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
       {() => (
