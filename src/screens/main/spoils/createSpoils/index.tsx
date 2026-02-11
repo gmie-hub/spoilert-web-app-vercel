@@ -99,13 +99,7 @@ const CreateSpoil = () => {
   const goToPreviousStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
 
   const handleSubmitSpoil = () => {
-    console.log("Spoil payload", {
-      type: selectedType,
-      basics: basicsData,
-      outline: outlineData,
-    });
-
-    if (typeof window !== "undefined") {
+      if (typeof window !== "undefined") {
       window.alert("Spoil submitted for review!");
     }
 

@@ -11,10 +11,8 @@ import BackIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
-import { childVariants } from "@spt/components/successState";
 import { useForgotPasswordMutation } from "@spt/hooks/apiRequests/useForgotPasswordMutation";
 import { validations } from "@spt/utils/validation";
-
 
 const ForgotPassword = () => {
   const { forgotPasswordHandler, isLoading } = useForgotPasswordMutation();
@@ -23,6 +21,11 @@ const ForgotPassword = () => {
   const validationSchema = Yup.object().shape({
     email: validations.email,
   });
+
+  const childVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
 
   return (
     <main className="w-full max-w-none">

@@ -56,7 +56,7 @@ const ModuleModal: FC<ModuleModalProps> = ({
               name="title"
               label="Module Title"
               placeholder="Title"
-              hasAsterisk
+              // hasAsterisk
             />
 
             <Textarea

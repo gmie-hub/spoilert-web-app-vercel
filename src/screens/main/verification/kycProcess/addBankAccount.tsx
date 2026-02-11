@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { Form, Formik, FormikHelpers } from "formik";
-import { useRouter } from "next/navigation";
 import { object } from "yup";
 
 import Button from "@spt/components/button";
@@ -25,8 +24,6 @@ const validationSchema = object().shape({
 });
 
 const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
-  const router = useRouter();
-
   const [bankSearch, setBankSearch] = useState("");
   const [accountName, setAccountName] = useState<string | null>(null);
 
@@ -45,7 +42,6 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
      VERIFY ACCOUNT MUTATION
   ================================ */
   const {
-    verifiedAccount,
     verifyBankHandler,
     isLoading: isVerifying,
     errorMessage: verifyErrorMessage,
@@ -110,14 +106,9 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
 
     actions.setSubmitting(false);
 
-    // ✅ Go to confirmation screen
-    // router.push("/kyc/sure-to-save-bank-account");
     onNext();
   };
 
-  /* ================================
-     FORM
-  ================================ */
   return (
     <Formik
       initialValues={{ accountNumber: "", bankName: "" }}

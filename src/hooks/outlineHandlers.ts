@@ -1,4 +1,5 @@
-import type { Lesson, Module, OutlineData, QuizConfig } from "../types";
+import type { Lesson, Module, OutlineData, QuizConfig } from "@spt/types";
+
 import type { FormikHelpers } from "formik";
 
 const generateId = () =>
@@ -39,7 +40,7 @@ export const createModuleHandlers = (
     };
 
     if (modalState.editingId) {
-      const updatedModules = data.modules.map((module) =>
+      const updatedModules = data.modules.map((module: Module) =>
         module.id === modalState.editingId ? { ...module, ...payload } : module,
       );
       updateOutline({ modules: updatedModules });
@@ -57,7 +58,9 @@ export const createModuleHandlers = (
   };
 
   const handleDelete = (moduleId: string) => {
-    const updatedModules = data.modules.filter((module) => module.id !== moduleId);
+    const updatedModules = data.modules.filter(
+      (module: Module) => module.id !== moduleId,
+    );
     updateOutline({ modules: updatedModules });
   };
 
@@ -80,7 +83,7 @@ export const createLessonHandlers = (
     }
 
     const targetModule = data.modules.find(
-      (module) => module.id === modalState.moduleId,
+      (module: Module) => module.id === modalState.moduleId,
     );
 
     if (!targetModule) {
@@ -89,11 +92,15 @@ export const createLessonHandlers = (
     }
 
     const existingLesson = modalState.lessonId
-      ? targetModule.lessons.find((lesson) => lesson.id === modalState.lessonId)
+      ? targetModule.lessons.find(
+          (lesson: Lesson) => lesson.id === modalState.lessonId,
+        )
       : undefined;
 
     const fileAsset =
-      values.type === "text" ? null : values.file ?? existingLesson?.file ?? null;
+      values.type === "text"
+        ? null
+        : (values.file ?? existingLesson?.file ?? null);
 
     const newLesson: Lesson = {
       id: modalState.lessonId ?? generateId(),
@@ -104,16 +111,16 @@ export const createLessonHandlers = (
       fileName:
         values.type === "text"
           ? undefined
-          : fileAsset?.name ?? existingLesson?.fileName,
+          : (fileAsset?.name ?? existingLesson?.fileName),
     };
 
-    const updatedModules = data.modules.map((module) => {
+    const updatedModules = data.modules.map((module: Module) => {
       if (module.id !== modalState.moduleId) {
         return module;
       }
 
       const lessons = existingLesson
-        ? module.lessons.map((lesson) =>
+        ? module.lessons.map((lesson: Lesson) =>
             lesson.id === existingLesson.id ? newLesson : lesson,
           )
         : [...module.lessons, newLesson];
@@ -127,13 +134,15 @@ export const createLessonHandlers = (
   };
 
   const handleDelete = (moduleId: string, lessonId: string) => {
-    const updatedModules = data.modules.map((module) => {
+    const updatedModules = data.modules.map((module: Module) => {
       if (module.id !== moduleId) {
         return module;
       }
       return {
         ...module,
-        lessons: module.lessons.filter((lesson) => lesson.id !== lessonId),
+        lessons: module.lessons.filter(
+          (lesson: Lesson) => lesson.id !== lessonId,
+        ),
       };
     });
     updateOutline({ modules: updatedModules });

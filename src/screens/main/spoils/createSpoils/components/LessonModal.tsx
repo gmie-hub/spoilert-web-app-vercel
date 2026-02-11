@@ -50,7 +50,7 @@ const lessonValidationSchema = yup.object({
     otherwise: (schema) => schema.trim(),
   }),
   file: yup
-    .mixed<File | null>()
+    .mixed()
     .nullable()
     .when("type", {
       is: (value: LessonTypeOption) => value !== "text",
@@ -101,8 +101,9 @@ const LessonModal: FC<LessonModalProps> = ({
                   name="title"
                   label="Lesson Title"
                   placeholder="Title"
-                  hasAsterisk
+                  // hasAsterisk
                 />
+
                 <Select
                   name="type"
                   label="Lesson Type"

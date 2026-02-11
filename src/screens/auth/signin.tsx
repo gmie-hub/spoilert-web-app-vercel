@@ -74,7 +74,7 @@ const Login = () => {
             loginHandler(values, { setSubmitting });
           }}
         >
-          {({ values, handleChange, isValid, errors, touched }) => (
+          {({ values, handleChange, isValid }) => (
             <Form className="space-y-6 w-full max-w-none">
               <Input name="email" type="email" label="Email Address" />
               <Input name="password" type="password" label="Password" />

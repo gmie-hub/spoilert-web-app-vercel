@@ -8,7 +8,6 @@ import Image from "next/image";
 import * as Yup from "yup";
 
 import Button from "@spt/components/button";
-import { childVariants } from "@spt/components/successState";
 
 interface OtpVerificationLayoutProps {
   title: string;
@@ -48,6 +47,11 @@ const OtpVerificationLayout = ({
       .length(6, "Enter the 6-digit code")
       .required("Verification code is required"),
   });
+
+  const childVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
 
   return (
     <div className="max-w-md mx-auto">
@@ -94,125 +98,13 @@ const OtpVerificationLayout = ({
           setFieldTouched,
         }) => (
           <Form onSubmit={handleSubmit} className="space-y-6 mt-6">
-            {/* OTP inputs */}
-            {/* <div className="flex justify-center gap-2 sm:gap-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <input
-                  key={index}
-                  ref={(el) => {
-                    inputsRef.current[index] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={values.code[index] || ""}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
-                    if (!val) return;
-
-                    const newCode =
-                      values.code.substring(0, index) +
-                      val +
-                      values.code.substring(index + 1);
-
-                    setFieldValue("code", newCode);
-                    setFieldTouched("code", true, true); // mark field as touched
-                    if (index < 5) inputsRef.current[index + 1]?.focus();
-                  }}
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Backspace" &&
-                      !values.code[index] &&
-                      index > 0
-                    ) {
-                      inputsRef.current[index - 1]?.focus();
-                    }
-                  }}
-                  className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              ))}
-            </div> */}
-            {/* <div className="flex justify-center gap-2 sm:gap-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <input
-                  key={index}
-                  ref={(el) => {
-                    inputsRef.current[index] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={values.code[index] || ""}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
-                    if (!val) return;
-
-                    const newCode =
-                      values.code.substring(0, index) +
-                      val +
-                      values.code.substring(index + 1);
-
-                    setFieldValue("code", newCode);
-                    setFieldTouched("code", true, true);
-                    if (index < 5) inputsRef.current[index + 1]?.focus();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Backspace") {
-                      e.preventDefault(); // prevent default backspace behavior
-
-                      const newCodeArray = values.code
-                        .split("")
-                        .map((c) => c || "");
-                      // Clear the current input
-                      newCodeArray[index] = "";
-
-                      // Update Formik value
-                      setFieldValue("code", newCodeArray.join(""));
-
-                      // Move focus to previous input if not the first
-                      if (index > 0) {
-                        inputsRef.current[index - 1]?.focus();
-                      }
-                    }
-
-                    // Optional: move left/right with arrow keys
-                    if (e.key === "ArrowLeft" && index > 0) {
-                      inputsRef.current[index - 1]?.focus();
-                    }
-                    if (e.key === "ArrowRight" && index < 5) {
-                      inputsRef.current[index + 1]?.focus();
-                    }
-                  }}
-                  // NEW: Handle paste
-                  onPaste={(e) => {
-                    e.preventDefault();
-                    const pasteData = e.clipboardData
-                      .getData("Text")
-                      .replace(/\D/g, "");
-                    if (!pasteData) return;
-
-                    const newCodeArray = Array.from(values.code.padEnd(6, " "));
-                    for (let i = 0; i < 6 && i < pasteData.length; i++) {
-                      newCodeArray[i] = pasteData[i];
-                    }
-
-                    const newCode = newCodeArray.join("").trim();
-                    setFieldValue("code", newCode);
-                    setFieldTouched("code", true, true);
-
-                    // Move focus to the last filled input
-                    const lastIndex = Math.min(pasteData.length - 1, 5);
-                    inputsRef.current[lastIndex]?.focus();
-                  }}
-                  className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              ))}
-            </div> */}
             <div className="flex justify-center gap-2 sm:gap-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <input
                   key={index}
-                  ref={(el) => (inputsRef.current[index] = el)}
+                  ref={(el) => {
+                    inputsRef.current[index] = el;
+                  }}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}

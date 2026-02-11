@@ -38,7 +38,6 @@ export const useResetPasswordMutation = () => {
     mutationKey: ["reset-password"],
     mutationFn: resetPassword,
   });
-  const email = localStorage.getItem("userEmail") || "";
 
   const resetPasswordHandler = async (
     values: FormikValues,
@@ -46,6 +45,10 @@ export const useResetPasswordMutation = () => {
     // email:string
   ) => {
     const { setSubmitting } = actions;
+    const email =
+      typeof window !== "undefined"
+        ? localStorage.getItem("userEmail") || ""
+        : "";
 
     try {
       const payload: Payload = {
@@ -58,7 +61,9 @@ export const useResetPasswordMutation = () => {
       const response = await mutation.mutateAsync(payload);
 
       toast.success(response?.message || "Password reset successful 🔐");
-      localStorage.removeItem("userEmail");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("userEmail");
+      }
 
       router.push("/auth/reset-password-successfully");
     } catch (error: any) {

@@ -10,7 +10,6 @@ import BackIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
-import { childVariants } from "@spt/components/successState";
 import { useResetPasswordMutation } from "@spt/hooks/apiRequests/useResetPasswordMutation";
 import { validations } from "@spt/utils/validation";
 
@@ -24,6 +23,11 @@ const ResetPassword = () => {
       .oneOf([Yup.ref("password")], "Passwords do not match")
       .required("Please re-enter your password"),
   });
+
+  const childVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
 
   return (
     <main className="w-full max-w-none">
@@ -51,22 +55,16 @@ const ResetPassword = () => {
         {/* Form */}
         <Formik
           initialValues={{
-            otp:"",
+            otp: "",
             password: "",
             confirmPassword: "",
           }}
           validationSchema={validationSchema}
-          onSubmit={(values, actions) =>
-            resetPasswordHandler(values, actions)
-          }
+          onSubmit={(values, actions) => resetPasswordHandler(values, actions)}
         >
           {({ isValid }) => (
             <Form className="space-y-6 w-full max-w-none">
-              <Input
-                name="otp"
-                label="OTP"
-                placeholder="Enter OTP"
-              />
+              <Input name="otp" label="OTP" placeholder="Enter OTP" />
               <Input
                 name="password"
                 type="password"

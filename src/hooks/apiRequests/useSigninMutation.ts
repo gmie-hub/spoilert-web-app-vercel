@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { useAuthStore } from "@spt/store/authStore";
@@ -25,8 +24,6 @@ interface LoginResponse {
 }
 
 export const useLoginMutation = () => {
-  const router = useRouter();
-
   const login = async (payload: Payload): Promise<LoginResponse> => {
     return (await api.post("/auth/login", payload)).data;
   };
