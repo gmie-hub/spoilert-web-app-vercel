@@ -7,13 +7,13 @@ import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
 
+import AddBankAccountStep from "./addBankAccount";
 import SelectCountryStep from "./selectCountry";
 import VerifyIdentity from "./verifyIdentityNIN";
 import VerifyPhoneNumberStep from "./verifyPhone";
-import AddBankAccountStep from "./addBankAccount";
 
 const KYCProcess = () => {
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
 
   const goToNextStep = () => {
@@ -25,7 +25,7 @@ const KYCProcess = () => {
   };
 
   const renderStepContent = () => {
-    switch (activeStep) {
+    switch (activeStep + 1) {
       case 1:
         return <SelectCountryStep onNext={goToNextStep} />;
       case 2:

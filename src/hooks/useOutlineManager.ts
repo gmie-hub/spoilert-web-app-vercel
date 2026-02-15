@@ -1,12 +1,12 @@
 import { useState } from "react";
 
+import type { Lesson, Module, OutlineData } from "@spt/types";
+
 import {
   createLessonHandlers,
   createModuleHandlers,
   createQuizHandler,
 } from "./outlineHandlers";
-
-import type { Lesson, Module, OutlineData } from "../types";
 
 interface LessonFormState {
   title: string;
@@ -48,9 +48,9 @@ export const useOutlineManager = (
     initialValues: { title: "", description: "" },
   });
 
-  const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [collapsedModules, setCollapsedModules] = useState<
+    Record<string, boolean>
+  >({});
 
   const updateOutline = (updates: Partial<OutlineData>) => {
     onChange({ ...data, ...updates });
@@ -98,7 +98,7 @@ export const useOutlineManager = (
             title: lesson.title,
             type: lesson.type,
             content: lesson.type === "text" ? lesson.content : "",
-            file: lesson.type === "text" ? null : lesson.file ?? null,
+            file: lesson.type === "text" ? null : (lesson.file ?? null),
           }
         : {
             title: "",

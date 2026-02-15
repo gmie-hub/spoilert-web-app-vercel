@@ -65,7 +65,7 @@ const basicsValidationSchema = yup.object({
   lessonCount: yup.string().trim().nullable(),
   description: yup.string().trim(),
   learningOutcome: yup.string().trim(),
-  coverImage: yup.mixed<File | null>().nullable(),
+  coverImage: yup.mixed().nullable(),
 });
 
 const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
@@ -99,7 +99,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 name="title"
                 label="Spoil Title"
                 placeholder="Title"
-                hasAsterisk
+                // hasAsterisk
               />
 
               <Select
@@ -135,7 +135,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 label="Amount"
                 placeholder="Enter amount"
                 type="number"
-                hasAsterisk
+                // hasAsterisk
               />
 
               <div className="space-y-2">

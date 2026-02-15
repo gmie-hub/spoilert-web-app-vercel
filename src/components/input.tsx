@@ -1,7 +1,7 @@
 
 "use client";
 
-import { FC, ChangeEvent, useState } from "react";
+import { ChangeEvent, FC, useState } from "react";
 
 import { useField } from "formik";
 

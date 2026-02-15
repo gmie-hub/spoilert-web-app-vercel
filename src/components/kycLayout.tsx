@@ -81,13 +81,10 @@ interface StepLayoutProps {
   totalSteps?: number;
   title: string;
   description?: string;
-
   buttonLabel?: string;
   onButtonClick?: () => void;
   buttonDisabled?: boolean;
-
   showButton?: boolean; // 👈 new (optional, default true)
-
   children: React.ReactNode;
 }
 

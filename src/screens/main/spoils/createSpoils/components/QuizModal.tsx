@@ -56,7 +56,7 @@ const QuizModal: FC<QuizModalProps> = ({
               name="title"
               label="Quiz Title"
               placeholder="Title"
-              hasAsterisk
+              // hasAsterisk
             />
 
             <Textarea

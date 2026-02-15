@@ -38,7 +38,9 @@ const OtpInput = ({ length = 6, value, onChange }: OtpInputProps) => {
       {Array.from({ length }).map((_, index) => (
         <input
           key={index}
-          ref={(el) => (inputsRef.current[index] = el)}
+          ref={(el) => {
+            inputsRef.current[index] = el;
+          }}
           type="text"
           inputMode="numeric"
           maxLength={1}
