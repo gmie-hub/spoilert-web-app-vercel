@@ -1,0 +1,107 @@
+"use client";
+
+import { motion } from "motion/react";
+import Image from "next/image";
+
+import BookmarkIcon from "@spt/assets/icons/fav.svg";
+import RatingIcon from "@spt/assets/icons/star.svg";
+import HStack from "@spt/components/hstack";
+import WebsiteSection from "@spt/components/websiteSection";
+import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
+
+const InstitutionSpoils = () => {
+  const { data } = useGetInstitutionSpoilsQuery();
+
+  return (
+    <WebsiteSection className="py-4 w-full">
+      <motion.h1
+        className="pb-5 text-[28px] md:text-[40px] font-semibold text-center text-black self-center leading-tight"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        Institution Spoils
+      </motion.h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 w-full ">
+        {data?.data?.data?.slice(0, 6)?.map((spoil, index) => (
+          <motion.div
+            key={spoil.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className="bg-white rounded-xl shadow-lg overflow-hidden p-4 flex flex-row items-start gap-4"
+          >
+            {/* Thumbnail image on the left */}
+            {spoil?.cover_image_url && (
+              <div className="relative w-60 h-[201px] md:w-44 md:h-[201px] rounded-md overflow-hidden flex-shrink-0">
+                <Image
+                  src={spoil?.cover_image_url}
+                  alt={spoil.title}
+                  fill
+                  className="object-cover"
+                />
+
+                {/* Bookmark */}
+                <div className="absolute top-2 right-3 bg-white rounded-full p-2 shadow-md">
+                  <Image
+                    src={BookmarkIcon}
+                    alt="bookmark"
+                    width={15}
+                    height={15}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
+
+            <div className="flex-1">
+              {spoil.institution && (
+                <p className="text-sm font-medium  text-[var(--color-black)] pb-2">
+                  {spoil.institution}
+                </p>
+              )}
+              <h3 className=" pb-2 text-lg font-medium text-[var(--color-black)]">
+                {spoil.title}
+              </h3>
+              <p className="pb-2 text-lg font-semi-bold text-gray-900">
+                ₦{spoil.display_amount?.toLocaleString()}
+              </p>
+              <div className="my-2 w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
+                {spoil.tutor.avatar ? (
+                  <Image
+                    src={spoil.tutor.avatar}
+                    alt="tutor"
+                    // fill
+                    className="object-cover"
+                    width={40}
+                    height={40}
+                  />
+                ) : (
+                  <span className="text-xs font-semibold flex items-center justify-center w-full h-full text-gray-600">
+                    {spoil.tutor.first_name[0]?.toUpperCase()}
+                    {spoil.tutor.last_name[0]?.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <span  className="text-[11px] px-3 py-1 rounded-full bg-[var(--color-blue-lightest)]   text-[var(--color-blue)]">
+                {spoil.category?.name || "Category"}
+              </span>
+
+              <HStack className="mt-2" spacing="gap-1" alignItems="center">
+                <Image src={RatingIcon} alt="rating" width={20} height={20} />
+                <p className="text-[1wpx] text-[var(--color-black-dark)] ">
+                  {spoil.average_rating?.toFixed(1) || "0.0"} (
+                  {spoil.ratings_count || 0})
+                </p>
+              </HStack>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </WebsiteSection>
+  );
+};
+
+export default InstitutionSpoils;

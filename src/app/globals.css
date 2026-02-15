@@ -77,3 +77,12 @@ html {
     font-size: 1rem;
   }
 }
+
+/* Utility to hide native scrollbars (works across modern browsers) */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

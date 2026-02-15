@@ -293,17 +293,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import Logo from "@spt/assets/icons/logo.svg";
+import CreateSpoilIcon from "@spt/assets/icons/add-circle.svg";
+import Learnings from "@spt/assets/icons/book.svg";
+import FilterIcon from "@spt/assets/icons/filter-search.svg";
+import FrameIcon from "@spt/assets/icons/Frame 1618872992.svg";
+import Logo from "@spt/assets/icons/Group(2).svg";
+import Home from "@spt/assets/icons/home.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
-import MenusIcon from "@spt/assets/icons/menu.svg";
+import CommunityIcon from "@spt/assets/icons/messages-2.svg";
+import ProfileNavIcon from "@spt/assets/icons/profileNav.svg";
+import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import Button from "@spt/components/button";
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "My Learnings", href: "/learnings" },
-  { name: "Create Spoil", href: "/create-spoils" },
-  { name: "Community", href: "/community" },
-  { name: "Profile", href: "/profile" },
+  { icon: Home, name: "Home", href: "/" },
+  { icon: Learnings, name: "My Learnings", href: "/learnings" },
+  { icon: CreateSpoilIcon, name: "Create Spoil", href: "/create-spoils" },
+  { icon: CommunityIcon, name: "Community", href: "/community" },
+  { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
 ];
 
 const Header = () => {
@@ -325,7 +332,7 @@ const Header = () => {
 
           {/* NAV LINKS (Desktop Only) */}
           <nav className="hidden lg:flex items-center gap-3">
-            {navLinks.map((link) => {
+            {navLinks?.map((link) => {
               const isActive = pathname === link.href;
 
               return (
@@ -341,8 +348,8 @@ const Header = () => {
                 >
                   {/* MENU ICON */}
                   <Image
-                    src={MenusIcon}
-                    alt="Menu icon"
+                    src={link?.icon}
+                    alt="icon"
                     width={16}
                     height={16}
                     className={isActive ? "brightness-0 invert" : ""}
@@ -359,7 +366,7 @@ const Header = () => {
         <div className="hidden lg:flex items-center gap-4">
           <Button
             variant="outline"
-            className="rounded-full px-6"
+            className="rounded-full px-14"
             onClick={() => router.push("/auth/signin")}
           >
             Login
@@ -386,17 +393,59 @@ const Header = () => {
       {/* ================= SEARCH ROW ================= */}
       <div className="border-t border-gray-100 bg-white">
         <div className="mx-auto flex max-w-[1400px] justify-center py-4">
-          <div className="relative w-full max-w-[650px]">
+          {/* <div className="relative w-full max-w-[650px]">
             <input
               type="text"
               placeholder="Search for a spoil, tutor, Institution..."
               className="w-full rounded-full border border-gray-300 bg-gray-50 px-6 py-3 text-sm outline-none focus:border-[#0B2C3D]"
             />
 
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-[#0B2C3D] px-4 py-2 text-white">
-              🔍
-            </button>
-          </div>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full  px-4 py-2 text-white flex items-center gap-4">
+              <Image   className="cursor-pointer" src={FilterIcon} alt="icon" width={20} height={20} />
+              <Image className="cursor-pointer" src={FrameIcon} alt="icon" width={32} height={32} />
+            </div>
+          </div> */}
+
+          <div className="relative w-full max-w-[650px]">
+  {/* Search icon inside input */}
+  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+    <Image
+      src={SearchIcon}   // 👈 your search icon
+      alt="search"
+      width={18}
+      height={18}
+    />
+  </div>
+
+  <input
+    type="text"
+    placeholder="Search for a spoil, tutor, Institution..."
+    className="
+      w-full rounded-full border border-gray-300 bg-gray-50 
+      pl-12 pr-32 py-3 text-sm 
+      outline-none focus:border-[#0B2C3D]
+    "
+  />
+
+  {/* Right icons (unchanged) */}
+  <div className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-4 py-2 flex items-center gap-4">
+    <Image
+      className="cursor-pointer"
+      src={FilterIcon}
+      alt="icon"
+      width={20}
+      height={20}
+    />
+    <Image
+      className="cursor-pointer"
+      src={FrameIcon}
+      alt="icon"
+      width={32}
+      height={32}
+    />
+  </div>
+</div>
+
         </div>
       </div>
 
@@ -410,9 +459,7 @@ const Header = () => {
                 key={link.name}
                 href={link.href}
                 className={`text-sm font-medium ${
-                  pathname === link.href
-                    ? "text-[#0B2C3D]"
-                    : "text-gray-700"
+                  pathname === link.href ? "text-[#0B2C3D]" : "text-gray-700"
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -422,7 +469,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Auth Buttons */}
-         <div className="w-1/2 flex  flex-col gap-3">
+          <div className="w-1/2 flex  flex-col gap-3">
             <Button
               variant="outline"
               className="w-full rounded-full"
@@ -438,7 +485,7 @@ const Header = () => {
             >
               Sign Up For Free
             </Button>
-          </div>  
+          </div>
         </div>
       )}
     </header>
