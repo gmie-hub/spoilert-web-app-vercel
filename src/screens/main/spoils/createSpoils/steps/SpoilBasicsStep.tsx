@@ -84,7 +84,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       <Formik<BasicsFormData>
         initialValues={data}
         enableReinitialize
-        validationSchema={basicsValidationSchema}
+        // validationSchema={basicsValidationSchema}
         onSubmit={(values) => {
           onChange(values);
           onNext();
@@ -214,13 +214,13 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={onBackToSelection}
               >
                 Back
-              </Button>
+              </Button> */}
 
               <Button
                 type="submit"

@@ -52,13 +52,9 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     <div className="rounded-3xl bg-white p-8 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-blue)]">
-            Step 2
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-gray-900">Spoil Outline</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Create quizzes and break down your spoil into modules and lessons.
-          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-gray-900">
+            Spoil Outline
+          </h2>
         </div>
 
         <Button
@@ -76,9 +72,10 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
 
       <div className="mt-8 rounded-2xl border border-gray-100 bg-[#FDFDFE] p-6">
         <p className="text-sm text-gray-600">
-          Create pre-spoil and post-spoil quizzes so you can track your learner's progress before and after taking the spoil.
+          Create pre-spoil and post-spoil quizzes so you can track your
+          learner's progress before and after taking the spoil.
         </p>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 md:grid-rows-2">
           <Button
             type="button"
             variant="outline"
@@ -101,12 +98,18 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
         <div className="mt-4 grid gap-4 text-xs text-gray-500 md:grid-cols-2">
           {data.preQuiz && (
             <p>
-              Saved pre-spoil quiz: <span className="font-medium text-gray-800">{data.preQuiz.title}</span>
+              Saved pre-spoil quiz:{" "}
+              <span className="font-medium text-gray-800">
+                {data.preQuiz.title}
+              </span>
             </p>
           )}
           {data.postQuiz && (
             <p>
-              Saved post-spoil quiz: <span className="font-medium text-gray-800">{data.postQuiz.title}</span>
+              Saved post-spoil quiz:{" "}
+              <span className="font-medium text-gray-800">
+                {data.postQuiz.title}
+              </span>
             </p>
           )}
         </div>
@@ -140,7 +143,9 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
                 const lesson = module.lessons.find((l) => l.id === lessonId);
                 if (lesson) openLessonModal(module.id, lesson);
               }}
-              onDeleteLesson={(lessonId) => handleDeleteLesson(module.id, lessonId)}
+              onDeleteLesson={(lessonId) =>
+                handleDeleteLesson(module.id, lessonId)
+              }
             />
           ))
         )}
