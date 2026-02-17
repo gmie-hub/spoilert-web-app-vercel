@@ -2,9 +2,13 @@
 
 import type { FC } from "react";
 
+import Image from "next/image";
 import { FiPlus } from "react-icons/fi";
 
+import AddCircleIcon from "@spt/assets/icons/add-circle.svg";
+import EditIcon from "@spt/assets/icons/edit.svg";
 import Button from "@spt/components/button";
+import NoData from "@spt/components/noData";
 import { useOutlineManager } from "@spt/hooks/useOutlineManager";
 
 import LessonModal from "../components/LessonModal";
@@ -46,35 +50,38 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
 
-  const disableNext = data.modules.length === 0;
+  const hasModules = data.modules.length > 0;
 
   return (
-    <div className="rounded-3xl bg-white p-8 shadow-sm">
+    <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="mt-2 text-2xl font-semibold text-gray-900">
+          <h2 className="mt-2 text-xl font-semibold text-black">
             Spoil Outline
           </h2>
         </div>
 
-        <Button
-          type="button"
-          variant="darkBlue"
-          className="min-w-[180px]"
-          onClick={() => openModuleModal()}
-        >
-          <span className="flex items-center gap-2">
-            <FiPlus />
-            Add Module
-          </span>
-        </Button>
+        {hasModules && (
+          <Button
+            type="button"
+            variant="darkBlue"
+            className="min-w-[180px]"
+            onClick={() => openModuleModal()}
+          >
+            <span className="flex items-center gap-2">
+              <FiPlus />
+              Add Module
+            </span>
+          </Button>
+        )}
       </div>
 
-      <div className="mt-8 rounded-2xl border border-gray-100 bg-[#FDFDFE] p-6">
+      <div className="rounded-2xl border border-gray-100 p-6">
         <p className="text-sm text-gray-600">
           Create pre-spoil and post-spoil quizzes so you can track your
           learner's progress before and after taking the spoil.
         </p>
+
         <div className="mt-5 grid gap-4 md:grid-rows-2">
           <Button
             type="button"
@@ -82,19 +89,29 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             className="justify-between"
             onClick={() => openQuizModal("pre")}
           >
+            <Image
+              src={data.preQuiz ? EditIcon : AddCircleIcon}
+              alt="add-edit"
+            />
+
             {data.preQuiz ? "Edit Pre-Spoil Quiz" : "Create Pre-Spoil Quiz"}
-            <FiPlus />
           </Button>
+
           <Button
             type="button"
             variant="outline"
             className="justify-between"
             onClick={() => openQuizModal("post")}
           >
+            <Image
+              src={data.postQuiz ? EditIcon : AddCircleIcon}
+              alt="add-edit"
+            />
+
             {data.postQuiz ? "Edit Post-Spoil Quiz" : "Create Post-Spoil Quiz"}
-            <FiPlus />
           </Button>
         </div>
+
         <div className="mt-4 grid gap-4 text-xs text-gray-500 md:grid-cols-2">
           {data.preQuiz && (
             <p>
@@ -115,18 +132,17 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
         </div>
       </div>
 
-      <div className="mt-8 space-y-6">
+      <p className="text-sm">
+        Break down your spoil outline into modules and lessons
+      </p>
+
+      <div className="space-y-6">
         {data.modules.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-gray-800">
-              No Spoil Module Has Been Added Yet
-            </p>
-            <p className="max-w-xl text-sm text-gray-500">
-              Add modules and lessons to each module to create a proper outline.
-            </p>
-            <Button type="button" onClick={() => openModuleModal()}>
-              Add Module
-            </Button>
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
+            <NoData
+              heading="No Spoil Module Has Been Added Yet"
+              description="Add modules and lessons to each module to create a proper outline."
+            />
           </div>
         ) : (
           data.modules.map((module, index) => (
@@ -151,12 +167,16 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
         )}
       </div>
 
-      <div className="mt-10 flex flex-wrap gap-4">
+      <div className="mt-5 flex flex-col gap-6">
+        <Button
+          type="button"
+          onClick={hasModules ? onNext : () => openModuleModal()}
+        >
+          {hasModules ? "Save and Continue" : "Add Module"}
+        </Button>
+
         <Button type="button" variant="outline" onClick={onPrevious}>
           Previous
-        </Button>
-        <Button type="button" disabled={disableNext} onClick={onNext}>
-          Save and Continue
         </Button>
       </div>
 

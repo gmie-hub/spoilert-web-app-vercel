@@ -99,10 +99,6 @@ const CreateSpoil = () => {
   const goToPreviousStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
 
   const handleSubmitSpoil = () => {
-      if (typeof window !== "undefined") {
-      window.alert("Spoil submitted for review!");
-    }
-
     resetAll();
   };
 

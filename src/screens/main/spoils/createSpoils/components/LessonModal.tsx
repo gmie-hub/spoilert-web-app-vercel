@@ -6,11 +6,12 @@ import { Form, Formik, type FormikHelpers } from "formik";
 import * as yup from "yup";
 
 import Button from "@spt/components/button";
-import CustomUpload from "@spt/components/customUpload";
 import Input from "@spt/components/input";
 import Modal from "@spt/components/modal";
 import Select from "@spt/components/select";
 import Textarea from "@spt/components/textarea";
+
+import ContentUpload from "./ContentUpload";
 
 import type { LessonTypeOption } from "../types";
 
@@ -95,23 +96,21 @@ const LessonModal: FC<LessonModalProps> = ({
                 : undefined;
 
           return (
-            <Form className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <Input
-                  name="title"
-                  label="Lesson Title"
-                  placeholder="Title"
-                  // hasAsterisk
-                />
+            <Form className="space-y-6">
+              <Input
+                name="title"
+                label="Lesson Title"
+                placeholder="Title"
+                // hasAsterisk
+              />
 
-                <Select
-                  name="type"
-                  label="Lesson Type"
-                  placeholder="Select type"
-                  options={lessonTypeOptions}
-                  hasAsterisk
-                />
-              </div>
+              <Select
+                name="type"
+                label="Lesson Type"
+                placeholder="Select type"
+                options={lessonTypeOptions}
+                hasAsterisk
+              />
 
               {values.type === "text" ? (
                 <Textarea
@@ -122,18 +121,13 @@ const LessonModal: FC<LessonModalProps> = ({
                 />
               ) : (
                 <div className="space-y-1">
-                  <CustomUpload
+                  <ContentUpload
                     name="file"
                     label="Content Upload"
                     accept={acceptType}
-                    placeholder={
-                      values.type === "video"
-                        ? "Upload lesson video"
-                        : "Upload lesson pdf"
-                    }
                     hasAsterisk
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray">
                     {values.type === "video"
                       ? "Video should not be more than 5mins long"
                       : "Upload lesson as a PDF file"}
@@ -141,14 +135,9 @@ const LessonModal: FC<LessonModalProps> = ({
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={!isValid || isSubmitting}>
-                  Save
-                </Button>
-              </div>
+              <Button type="submit" disabled={!isValid || isSubmitting} className="w-full">
+                Save
+              </Button>
             </Form>
           );
         }}

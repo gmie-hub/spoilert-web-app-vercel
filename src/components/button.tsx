@@ -8,7 +8,8 @@ type ButtonVariant =
   | "yellow"
   | "yellowOutline"
   | "lightBlue"
-  | "darkBlue";
+  | "darkBlue"
+  | "danger";
 
 type ConflictingProps =
   | "onDrag"
@@ -36,6 +37,7 @@ const Button: React.FC<ButtonProps> = ({
   iconRight,
   children,
   className = "",
+  type = "button",
   ...props
 }) => {
   const baseStyles =
@@ -48,14 +50,18 @@ const Button: React.FC<ButtonProps> = ({
     yellow: "bg-yellow text-white hover:bg-yellow/90",
     yellowOutline:
       "bg-transparent border border-yellow text-yellow hover:bg-yellow hover:text-white",
-    lightBlue: "bg-[var(--color-blue-lightest)] text-[var(--color-blue)] hover:bg-[var(--color-blue-lightest)]/90", 
-    darkBlue: "bg-[var(--color-blue)] text-white hover:bg-[var(--color-blue)]/90",
+    lightBlue:
+      "bg-[var(--color-blue-lightest)] text-[var(--color-blue)] hover:bg-[var(--color-blue-lightest)]/90",
+    darkBlue:
+      "bg-[var(--color-blue)] text-white hover:bg-[var(--color-blue)]/90",
+    danger: "bg-red text-white hover:bg-red-600",
   };
 
   const combinedClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;
 
   return (
     <motion.button
+      type={type}
       className={combinedClasses}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}

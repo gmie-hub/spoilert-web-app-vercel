@@ -44,16 +44,13 @@ const childVariants = {
 const SuccessState = ({
   title,
   description,
-
   buttonLabel,
   href,
   onButtonClick,
-
   showSecondBtn = false,
   secondBtnLabel = "Secondary action",
   secondBtnHref,
   onSecondBtnClick,
-
   icon,
   className,
   showBack = false,
