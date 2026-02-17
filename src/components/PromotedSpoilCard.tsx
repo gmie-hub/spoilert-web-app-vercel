@@ -4,9 +4,9 @@ import React from "react";
 
 import { motion } from "motion/react";
 import Image from "next/image";
-import ThumbUp from "@spt/assets/icons/vuesax.svg";
 
 import ArrowIcon from "@spt/assets/icons/arrow-right-icon.svg";
+import ThumbUp from "@spt/assets/icons/vuesax.svg";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import Button from "./button";
@@ -91,7 +91,7 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
       </div>
 
       {/* Image Preview */}
-      <div className="relative h-[230px] mx-4 mb-4 ">
+      <div className="relative h-[270px] mx-4 mb-4 ">
         <Image
           src={spoil.cover_image_url}
           alt={spoil.title}

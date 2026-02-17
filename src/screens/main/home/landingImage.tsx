@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 
 import Image from "next/image";
 
-import HeroImage3 from "@spt/assets/images/Hero.png";
-import HeroImage1 from "@spt/assets/images/homeim.png";
-import HeroImage2 from "@spt/assets/images/homeimg.png";
+import HeroImage3 from "@spt/assets/images/Hero(3).png";
+import HeroImage1 from "@spt/assets/images/Hero(4).png";
+import HeroImage2 from "@spt/assets/images/Hero(5).png";
 import Button from "@spt/components/button";
 
 const slides = [HeroImage1.src, HeroImage2.src, HeroImage3.src];

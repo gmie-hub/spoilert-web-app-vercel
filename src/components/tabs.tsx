@@ -18,12 +18,27 @@ const Tabs = ({ tabs }: TabsProps) => {
 
   return (
     <div className="flex flex-col justify-center items-center">
-      <div className="flex w-fit border-b border-gray-200 cursor-pointer">
+      {/* <div className="flex w-fit border-b border-gray-200 cursor-pointer">
         {tabs.map((tab, index) => (
           <button
             key={index}
             onClick={() => setActiveTab(index)}
             className={`w-fit px-4 py-2 cursor-pointer text-sm font-medium transition-colors duration-200 ${
+              activeTab === index
+                ? "border-b-2 border-blue text-blue"
+                : "text-gray hover:text-gray-700"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div> */}
+      <div className="flex justify-start w-full border-b border-gray-200 cursor-pointer">
+        {tabs.map((tab, index) => (
+          <button
+            key={index}
+            onClick={() => setActiveTab(index)}
+            className={`px-4 py-2 text-sm font-medium text-center transition-colors duration-200 ${
               activeTab === index
                 ? "border-b-2 border-blue text-blue"
                 : "text-gray hover:text-gray-700"

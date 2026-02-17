@@ -28,7 +28,6 @@ const PromotedSpoils = () => {
 
         {/* <div className="grid grid-cols-2 gap-4 w-full"> */}
         <div className="grid grid-cols-1  lg:grid-cols-2 gap-5 w-full">
-
           {data?.data?.data?.slice(0, 2).map((spoil, index) => (
             <PromotedSpoilCard key={spoil.id} spoil={spoil} index={index} />
           ))}
