@@ -9,7 +9,9 @@ type ButtonVariant =
   | "yellowOutline"
   | "lightBlue"
   | "darkBlue"
-  | "danger";
+  | "danger"
+  |"whiteOutline"
+  | "blueOutline"
 
 type ConflictingProps =
   | "onDrag"
@@ -55,6 +57,10 @@ const Button: React.FC<ButtonProps> = ({
     darkBlue:
       "bg-[var(--color-blue)] text-white hover:bg-[var(--color-blue)]/90",
     danger: "bg-red text-white hover:bg-red-600",
+    whiteOutline:
+      "bg-transparent border border-white text-white hover:bg-blue hover:text-white",
+      blueOutline:
+      "bg-transparent border border-[var(--color-blue)] text-[var(--color-blue)] hover:bg-blue hover:text-white",
   };
 
   const combinedClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;

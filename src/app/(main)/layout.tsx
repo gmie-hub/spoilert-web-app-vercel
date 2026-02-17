@@ -3,7 +3,7 @@ import React from "react";
 import { Inter } from "next/font/google";
 
 import Footer from "@spt/layouts/footer/footer";
-import Header from "@spt/layouts/main/header";
+import Header from "@spt/layouts/website/header";
 
 import "../globals.css";
 

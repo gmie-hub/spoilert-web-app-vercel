@@ -1,4 +1,4 @@
-import SuccessIcon from "@spt/assets/icons/facebook.svg";
+import SuccessIcon from "@spt/assets/icons/done-task-1lwcuCqx7L.svg";
 import SuccessState from "@spt/components/successState";
 
 const AccountCreatedSuccessfully = () => {
