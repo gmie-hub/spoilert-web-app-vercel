@@ -3,7 +3,6 @@
 import type { FC } from "react";
 
 import { Form, Formik, type FormikHelpers } from "formik";
-import * as yup from "yup";
 
 import Button from "@spt/components/button";
 import Modal from "@spt/components/modal";
@@ -23,19 +22,19 @@ interface ScheduleSpoilPremiereModalProps {
   ) => void;
 }
 
-const schedulePremiereValidationSchema = yup.object({
-  date: yup
-    .string()
-    .required("Date is required")
-    .test("is-future-date", "Date must be in the future", function (value) {
-      if (!value) return false;
-      const selectedDate = new Date(value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return selectedDate >= today;
-    }),
-  time: yup.string().required("Time is required"),
-});
+// const schedulePremiereValidationSchema = yup.object({
+//   date: yup
+//     .string()
+//     .required("Date is required")
+//     .test("is-future-date", "Date must be in the future", function (value) {
+//       if (!value) return false;
+//       const selectedDate = new Date(value);
+//       const today = new Date();
+//       today.setHours(0, 0, 0, 0);
+//       return selectedDate >= today;
+//     }),
+//   time: yup.string().required("Time is required"),
+// });
 
 const defaultInitialValues: SchedulePremiereFormState = {
   date: "",

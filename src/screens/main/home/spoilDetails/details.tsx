@@ -4,10 +4,9 @@ import React, { useEffect, useState } from "react";
 
 import Image from "next/image";
 
-import RatingIcon from "@spt/assets/icons/star.svg";
-import PolyIcon from "@spt/assets/icons/Polygon 1.svg";
 import Orange from "@spt/assets/icons/orange-arrow-right.svg";
-
+import PolyIcon from "@spt/assets/icons/Polygon 1.svg";
+import RatingIcon from "@spt/assets/icons/star.svg";
 import StarWhitecon from "@spt/assets/icons/star.svg";
 
 import Tabs from "../../../../components/tabs";
