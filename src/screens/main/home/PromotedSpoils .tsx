@@ -15,6 +15,7 @@ const PromotedSpoils = () => {
       <Stack>
         {/* Title */}
 
+
         <motion.h1
           className="pb-5 text-[28px] md:text-[40px] font-semibold text-center text-black self-center leading-tight"
           initial={{ opacity: 0, y: -20 }}
