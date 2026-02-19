@@ -7,6 +7,7 @@ import Image from "next/image";
 import Icon1 from "@spt/assets/icons/Icon(3).svg";
 import Button from "@spt/components/button";
 import WebsiteSection from "@spt/components/websiteSection";
+import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
 
 const categories = [
   {
@@ -52,6 +53,16 @@ const AUTO_SLIDE_INTERVAL = 4000;
 const SpoilByCategory = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
+  // Call institution spoils endpoint and use results if available
+  const { data } = useGetInstitutionSpoilsQuery();
+  const apiCategories = data?.data?.data?.slice(0, 6)?.map((s: any) => ({
+    id: s.id,
+    title: s.title || "Untitled",
+    spoils: `${s.ratings_count || 0} Spoils`,
+    image: s.cover_image_url || "/categories/uiux.jpg",
+  }));
+  const items = apiCategories && apiCategories.length > 0 ? apiCategories : categories;
+
   /** Auto Slide */
   useEffect(() => {
     const interval = setInterval(() => {
@@ -84,7 +95,7 @@ const SpoilByCategory = () => {
         ref={sliderRef}
         className="flex gap-4 overflow-x-auto scroll-smooth px-2 scrollbar-hide"
       >
-        {categories.map((cat) => (
+        {items.map((cat) => (
           <div
             key={cat.id}
             className="relative flex-shrink-0 overflow-hidden rounded-2xl

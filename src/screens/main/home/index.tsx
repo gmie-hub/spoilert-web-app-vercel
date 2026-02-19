@@ -1,4 +1,3 @@
-
 import GetStarted from "@spt/components/getStarted";
 
 import InstitutionSpoils from "./institutionSpoils";
@@ -15,16 +14,15 @@ const HomePage = () => {
   return (
     <main>
       <HeroSlider />
-      <SkillsSpoils/>
-      <PromotedSpoils/>
-      <InstitutionSpoils/>
-      <SpoilByCategory/>
-      <MostSubscribe/>
-      <PromotedAdsCarousel/>
-      <SelfDev  />
-      <TrendingSpoil/>
-      <GetStarted/>
-
+      <SkillsSpoils />
+      <PromotedSpoils />
+      <InstitutionSpoils />
+      <SpoilByCategory />
+      <MostSubscribe />
+      <PromotedAdsCarousel />
+      <SelfDev />
+      <TrendingSpoil />
+      <GetStarted />
     </main>
   );
 };
