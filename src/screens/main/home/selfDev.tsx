@@ -19,7 +19,7 @@ const SelfDev = () => {
   const rightSpoils = spoils.slice(3, 6);
 
   return (
-    <WebsiteSection className="w-full bg-[#014751] py-14">
+    <WebsiteSection className="w-full bg-[#014751] py-10 md:py-14">
       {/* Title */}
       <motion.h1
         className="text-2xl md:text-4xl font-bold text-center text-white mb-10"
@@ -31,18 +31,18 @@ const SelfDev = () => {
       </motion.h1>
 
       {/* Main Layout */}
-      <div className="w-full px-6">
+      <div className="w-full px-4 sm:px-6 md:px-8">
         {/* ✅ Two White Column Boxes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
           {/* LEFT COLUMN */}
-          <div className="bg-[var(--color-blue-lightest)]  rounded-2xl p-6 space-y-5 shadow-lg">
+          <div className="bg-[var(--color-blue-lightest)] rounded-2xl p-4 sm:p-6 space-y-5 shadow-lg">
             {leftSpoils.map((spoil, index) => (
               <SpoilCard spoil={spoil} key={spoil.id} index={index} />
             ))}
           </div>
 
           {/* RIGHT COLUMN */}
-          <div className="bg-[var(--color-blue-lightest)]  rounded-2xl p-6 space-y-5 shadow-lg">
+          <div className="bg-[var(--color-blue-lightest)] rounded-2xl p-4 sm:p-6 space-y-5 shadow-lg">
             {rightSpoils.map((spoil, index) => (
               <SpoilCard
                 className="bg[#EFFCFF]"
@@ -65,26 +65,20 @@ const SpoilCard = ({ spoil, index }: any) => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-[#EFFCFF] rounded-xl p-4 flex gap-4 items-start"
+      className="bg-[#EFFCFF] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start"
     >
       {/* Thumbnail */}
-      <div className="w-[139px] h-[124px] rounded-lg overflow-hidden flex-shrink-0">
-        <Image
-          src={spoil.cover_image_url}
-          alt={spoil.title}
-          width={139}
-          height={123}
-          className="w-full h-full object-cover"
-        />
+      <div className="relative w-full h-44 sm:w-[139px] sm:h-[124px] rounded-lg overflow-hidden flex-shrink-0">
+        <Image src={spoil.cover_image_url} alt={spoil.title} fill className="object-cover" />
       </div>
 
       {/* Content */}
       <div className="flex-1">
         {/* Title */}
-        <h2 className="font-semibold text-sm text-[#03363b]">{spoil.title}</h2>
+        <h2 className="font-semibold text-sm sm:text-base text-[#03363b] line-clamp-2">{spoil.title}</h2>
 
         {/* Price */}
-        <p className="text-sm font-bold text-[#03363b] mt-1">
+        <p className="text-sm sm:text-base font-bold text-[#03363b] mt-1">
           ₦{spoil.display_amount?.toLocaleString()}
         </p>
 
@@ -106,14 +100,14 @@ const SpoilCard = ({ spoil, index }: any) => {
             )}
           </div>
 
-          <p className="text-xs  text-[var(--color-gray-dark)] truncate">
+          <p className="text-xs sm:text-sm text-[var(--color-gray-dark)] truncate">
             {spoil.tutor.first_name} {spoil.tutor.last_name}
           </p>
         </HStack>
 
         {/* Category */}
         {spoil.category?.name && (
-          <span className="inline-block mt-2 text-[10px] px-2 py-1 rounded-full bg-[#dff6f7] text-[#0b595b]">
+          <span className="inline-block mt-2 text-xs sm:text-sm px-2 py-1 rounded-full bg-[#dff6f7] text-[#0b595b]">
             {spoil.category.name}
           </span>
         )}

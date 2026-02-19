@@ -24,7 +24,7 @@ export default function HeroSlider() {
   }, []);
 
   return (
-    <div className="relative py-12  w-full overflow-hidden">
+    <div className="relative w-full overflow-hidden h-[60vh] md:h-[75vh] lg:h-[85vh]">
       {/* Slides */}
       {slides.map((img, i) => (
         <div
@@ -48,41 +48,37 @@ export default function HeroSlider() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-20" />
 
       {/* Content */}
-      <div className="relative z-30 flex h-full items-center justify-center text-center px-4">
-        <div className="max-w-4xl text-white">
-          <h1 className="text-[32px] md:text-[48px] font-semibold mb-4 leading-tight">
-            Empowering{" "}
-            <span className="text-[var(--color-yellow)]">
-              Global Education.
-            </span>
+      <div className="relative z-30 flex h-full items-center justify-center text-center px-4 sm:px-6">
+        <div className="max-w-4xl text-white px-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-2 md:mb-4 leading-snug">
+            Empowering <span className="text-[var(--color-yellow)]">Global Education.</span>
           </h1>
 
-          <h1 className="text-[30px] md:text-[44px] font-semibold mb-4 leading-tight">
-            Learn, Teach, and{" "}
-            <span className="text-[var(--color-yellow)]">Earn Money.</span>
-          </h1>
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 md:mb-6 leading-snug">
+            Learn, Teach, and <span className="text-[var(--color-yellow)]">Earn Money.</span>
+          </h2>
 
-          <p className="font-normal text-[20px] leading-[150%] tracking-[-0.02em] text-center opacity-90 mb-8 max-w-2xl mx-auto">
-            Discover a world of knowledge and skill acquisition from leading
-            experts and reputable institutions around the world.
+          <p className="font-normal text-sm sm:text-base md:text-lg leading-[1.5] tracking-[-0.02em] text-center opacity-90 mb-6 md:mb-8 max-w-2xl mx-auto">
+            Discover a world of knowledge and skill acquisition from leading experts and reputable institutions around the world.
           </p>
-          <div className="flex justify-center gap-4 flex-wrap">
-            <Button variant="default" className="rounded-full">
+
+          <div className="flex justify-center gap-3 flex-wrap">
+            <Button variant="default" className="rounded-full px-4 py-2 text-sm sm:text-base">
               Download App
             </Button>
 
-            <Button variant="whiteOutline" className="rounded-full">
+            <Button variant="whiteOutline" className="rounded-full px-4 py-2 text-sm sm:text-base">
               Get Started
             </Button>
           </div>
 
           {/* Dots */}
-          <div className="flex justify-center gap-2 mt-10">
+          <div className="flex justify-center gap-2 mt-6 md:mt-10">
             {slides.map((_, i) => (
               <span
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`w-2.5 h-2.5 rounded-full cursor-pointer transition ${
+                className={`w-2.5 h-2.5 rounded-full cursor-pointer transition-transform duration-200 ${
                   i === index ? "bg-[#1C87A8] scale-110" : "bg-[#F5F4F4]"
                 }`}
               />
