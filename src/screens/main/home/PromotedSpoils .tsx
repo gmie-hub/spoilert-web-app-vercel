@@ -10,6 +10,8 @@ import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInsti
 const PromotedSpoils = () => {
   const { data } = useGetInstitutionSpoilsQuery();
 
+
+  
   return (
     <WebsiteSection className="py-4 w-full">
       <Stack>
