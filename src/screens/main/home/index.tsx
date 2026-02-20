@@ -3,11 +3,11 @@ import GetStarted from "@spt/components/getStarted";
 import InstitutionSpoils from "./institutionSpoils";
 import HeroSlider from "./landingImage";
 import MostSubscribe from "./mostSubscribe";
-import PromotedAdsCarousel from "./PromotedAdsCarousel";
+// import PromotedAdsCarousel from "./PromotedAdsCarousel";
 import PromotedSpoils from "./PromotedSpoils ";
 import SelfDev from "./selfDev";
 import SkillsSpoils from "./skills";
-import SpoilByCategory from "./spoilByCat";
+// import SpoilByCategory from "./spoilByCat";
 import TrendingSpoil from "./trendingSpoils";
 
 const HomePage = () => {
@@ -17,9 +17,9 @@ const HomePage = () => {
       <SkillsSpoils />
       <PromotedSpoils />
       <InstitutionSpoils />
-      <SpoilByCategory />
+      {/* <SpoilByCategory /> */}
       <MostSubscribe />
-      <PromotedAdsCarousel />
+      {/* <PromotedAdsCarousel /> */}
       <SelfDev />
       <TrendingSpoil />
       <GetStarted />
