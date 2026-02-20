@@ -21,7 +21,6 @@ import Modal from "@spt/components/modal";
 import SuccessState from "@spt/components/successState";
 import { validations } from "@spt/utils/validation";
 
-
 export default function ContactSection() {
   /* ✅ Validation Schema */
   const validationSchema = object().shape({
@@ -70,8 +69,6 @@ export default function ContactSection() {
                     text="18B, Onikepo Akande Street, Off Admiralty way,Lekki Phase 1, Lagos State, Nigeria."
                   />
                 </div>
-
-                
               </div>
 
               {/* Socials */}
@@ -206,8 +203,7 @@ function InfoItem({ icon, text }: { icon?: any; text: string }) {
           className="object-contain"
         />
       );
-    } catch (e:any) {
-      console.log(e)
+    } catch {
       if (typeof icon === "string") {
         return <img src={icon} alt="icon" className="w-5 h-5" />;
       }
@@ -217,6 +213,16 @@ function InfoItem({ icon, text }: { icon?: any; text: string }) {
 
       return null;
     }
+    //  catch (e:any) {
+    //   if (typeof icon === "string") {
+    //     return <img src={icon} alt="icon" className="w-5 h-5" />;
+    //   }
+
+    //   if (React.isValidElement(icon)) return icon;
+    //   if (typeof icon === "function") return React.createElement(icon as any);
+
+    //   return null;
+    // }
   };
 
   return (
@@ -233,4 +239,3 @@ function InfoItem({ icon, text }: { icon?: any; text: string }) {
     </div>
   );
 }
-
