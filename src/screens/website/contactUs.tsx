@@ -207,6 +207,7 @@ function InfoItem({ icon, text }: { icon?: any; text: string }) {
         />
       );
     } catch (e:any) {
+      console.log(e)
       if (typeof icon === "string") {
         return <img src={icon} alt="icon" className="w-5 h-5" />;
       }
