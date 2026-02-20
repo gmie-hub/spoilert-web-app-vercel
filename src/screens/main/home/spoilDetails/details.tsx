@@ -89,6 +89,7 @@ export default function Details() {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const handleResize = () => setIsSmallScreen(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
