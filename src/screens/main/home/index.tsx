@@ -7,7 +7,7 @@ import MostSubscribe from "./mostSubscribe";
 import PromotedSpoils from "./PromotedSpoils ";
 import SelfDev from "./selfDev";
 import SkillsSpoils from "./skills";
-import SpoilByCategory from "./spoilByCat";
+// import SpoilByCategory from "./spoilByCat";
 import TrendingSpoil from "./trendingSpoils";
 
 const HomePage = () => {
@@ -17,7 +17,7 @@ const HomePage = () => {
       <SkillsSpoils />
       <PromotedSpoils />
       <InstitutionSpoils />
-      <SpoilByCategory />
+      {/* <SpoilByCategory /> */}
       <MostSubscribe />
       {/* <PromotedAdsCarousel /> */}
       <SelfDev />
