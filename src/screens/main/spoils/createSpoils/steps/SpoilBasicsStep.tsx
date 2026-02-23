@@ -28,13 +28,6 @@ interface SpoilBasicsStepProps {
   onCreated?: (id: number) => void;
 }
 
-const categories = [
-  "Product Design",
-  "Marketing",
-  "Software Engineering",
-  "Finance",
-];
-
 const pricingModels = ["free", "Paid", "Subscription"];
 
 const buildNumberOptions = (limit: number) =>
@@ -42,11 +35,6 @@ const buildNumberOptions = (limit: number) =>
     const value = String(index + 1);
     return { value, label: value };
   });
-
-const categoryOptions = categories.map((category) => ({
-  label: category,
-  value: category,
-}));
 
 const pricingOptions = pricingModels.map((pricing) => ({
   label: pricing,
@@ -72,7 +60,8 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
   const { createSpoilHandler, isLoading: isCreating } =
     useCreateSpoilMutation();
-  const { updateSpoilHandler, isLoading: isUpdating } = useUpdateSpoilMutation();
+  const { updateSpoilHandler, isLoading: isUpdating } =
+    useUpdateSpoilMutation();
 
   const storedSpoilId = useAuthStore.getState().createdSpoilId;
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
@@ -88,7 +77,9 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       courseCode: spoilData.course_code ?? "",
       pricing: spoilData.pricing ?? "",
       amount: spoilData.amount ? String(spoilData.amount) : "",
-      expiryDate: spoilData.expires_at ? String(spoilData.expires_at).split(" ")[0] : "",
+      expiryDate: spoilData.expires_at
+        ? String(spoilData.expires_at).split(" ")[0]
+        : "",
       moduleCount: spoilData.modules_no ? String(spoilData.modules_no) : "",
       lessonCount: spoilData.lessons_no ? String(spoilData.lessons_no) : "",
       description: spoilData.description ?? "",
@@ -98,15 +89,11 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
     onChange(mapped);
   }, [spoilData, onChange]);
 
-  const apiCategoryOptions =
+  const mergedCategoryOptions =
     Categories?.data?.map((c) => ({
       label: c.name,
       value: String(c.id),
     })) ?? [];
-
-  const mergedCategoryOptions = apiCategoryOptions.length
-    ? apiCategoryOptions
-    : categoryOptions;
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
@@ -127,7 +114,11 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           // if we have a stored spoil id, update instead of create
           if (storedSpoilId) {
             try {
-              const res = await updateSpoilHandler(storedSpoilId, values, formikHelpers);
+              const res = await updateSpoilHandler(
+                storedSpoilId,
+                values,
+                formikHelpers,
+              );
               if (!res) return;
               onNext();
             } catch {
