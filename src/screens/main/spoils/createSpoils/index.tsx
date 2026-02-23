@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useAuthStore } from "@spt/store/authStore";
 
 import Stack from "@mui/material/Stack";
 import Image from "next/image";
@@ -42,6 +43,10 @@ const CreateSpoil = () => {
 
   const handleSelectionContinue = () => {
     if (!selectedType) return;
+
+    // clear any previously stored created spoil id when starting a new flow
+    const setCreatedSpoilId = useAuthStore.getState().setCreatedSpoilId;
+    setCreatedSpoilId?.(null);
 
     if (selectedType === "advanced") {
       router.push("/create-spoils/advance-spoil");
