@@ -59,7 +59,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
   onChange,
   onNext,
-  onBackToSelection,
+  // onBackToSelection,
   onCreated,
 }) => {
   const {
