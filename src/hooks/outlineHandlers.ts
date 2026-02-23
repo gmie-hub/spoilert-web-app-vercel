@@ -33,6 +33,7 @@ export const createModuleHandlers = (
   const handleSubmit = (
     values: ModuleFormState,
     helpers: FormikHelpers<ModuleFormState>,
+    serverId?: string | number,
   ) => {
     const payload = {
       title: values.title.trim(),
@@ -46,7 +47,7 @@ export const createModuleHandlers = (
       updateOutline({ modules: updatedModules });
     } else {
       const newModule: Module = {
-        id: generateId(),
+        id: serverId ? String(serverId) : generateId(),
         ...payload,
         lessons: [],
       };

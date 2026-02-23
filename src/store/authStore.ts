@@ -31,8 +31,10 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
+  createdSpoilId?: number | null;
   setAuth: (auth: { user: User; token: string }) => void;
   logout: () => void;
+  setCreatedSpoilId?: (id: number | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -40,9 +42,11 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      createdSpoilId: null,
       setAuth: ({ user, token }) => set({ user, token }),
+      setCreatedSpoilId: (id: number | null) => set({ createdSpoilId: id }),
       logout: () => {
-        set({ user: null, token: null });
+        set({ user: null, token: null, createdSpoilId: null });
         localStorage.removeItem("spoilert-web&site#"); // clears persisted data
       },
     }),

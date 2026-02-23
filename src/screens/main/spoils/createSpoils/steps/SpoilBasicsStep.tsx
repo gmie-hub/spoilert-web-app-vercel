@@ -8,6 +8,8 @@ import * as yup from "yup";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
+import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
+import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
 
@@ -19,6 +21,7 @@ interface SpoilBasicsStepProps {
   onNext: () => void;
   onBackToSelection: () => void;
   selectedType: SpoilTypeOption;
+  onCreated?: (id: number) => void;
 }
 
 const categories = [
@@ -28,7 +31,7 @@ const categories = [
   "Finance",
 ];
 
-const pricingModels = ["Free", "Paid", "Subscription"];
+const pricingModels = ["free", "Paid", "Subscription"];
 
 const buildNumberOptions = (limit: number) =>
   Array.from({ length: limit }, (_, index) => {
@@ -36,6 +39,7 @@ const buildNumberOptions = (limit: number) =>
     return { value, label: value };
   });
 
+  
 const categoryOptions = categories.map((category) => ({
   label: category,
   value: category,
@@ -74,6 +78,21 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   onNext,
   onBackToSelection,
 }) => {
+  const { data: Categories, isLoading, isError, categoryErrorMessage } =
+    useGetAllCategoriesQuery();
+
+  const { createSpoilHandler, isLoading: isCreating } = useCreateSpoilMutation();
+
+  const apiCategoryOptions = Categories?.data?.map((c) => ({
+    label: c.name,
+    value: String(c.id),
+  })) ?? [];
+
+  const mergedCategoryOptions = apiCategoryOptions.length
+    ? apiCategoryOptions
+    : categoryOptions;
+
+
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
       <h2 className="mt-2 text-xl font-semibold text-black">Spoil Basics</h2>
@@ -85,9 +104,20 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
         initialValues={data}
         enableReinitialize
         // validationSchema={basicsValidationSchema}
-        onSubmit={(values) => {
+        validateOnChange={false}
+        validateOnBlur={false}
+        onSubmit={async (values) => {
           onChange(values);
-          onNext();
+          // try {
+          //   const res = await createSpoilHandler(values, formikHelpers);
+          //   const createdId = res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
+          //   if (createdId && typeof onCreated === "function") {
+          //     onCreated(Number(createdId));
+          //   }
+          //   onNext();
+          // } catch (err) {
+          //   // createSpoilHandler handles toasts; preserve form state
+          // }
         }}
       >
         {({ values, handleChange, handleBlur, isSubmitting, isValid }) => (
@@ -106,9 +136,13 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 name="category"
                 label="Category"
                 placeholder="Select category"
-                options={categoryOptions}
+                options={mergedCategoryOptions}
                 hasAsterisk
+                isLoading={isLoading}
               />
+              {isError && (
+                <p className="text-sm text-red-500">{categoryErrorMessage}</p>
+              )}
 
               <Input
                 name="institution"

@@ -1,13 +1,14 @@
 import GetStarted from "@spt/components/getStarted";
+import BackToTopButton from "@spt/components/ui/backTotopBtn";
 
 import InstitutionSpoils from "./institutionSpoils";
 import HeroSlider from "./landingImage";
 import MostSubscribe from "./mostSubscribe";
-// import PromotedAdsCarousel from "./PromotedAdsCarousel";
+import PromotedAdsCarousel from "./PromotedAdsCarousel";
 import PromotedSpoils from "./PromotedSpoils ";
 import SelfDev from "./selfDev";
 import SkillsSpoils from "./skills";
-// import SpoilByCategory from "./spoilByCat";
+import SpoilByCategory from "./spoilByCat";
 import TrendingSpoil from "./trendingSpoils";
 
 const HomePage = () => {
@@ -15,14 +16,17 @@ const HomePage = () => {
     <main>
       <HeroSlider />
       <SkillsSpoils />
-      <PromotedSpoils />
+      <section id="third-section">
+        <PromotedSpoils />
+      </section>
       <InstitutionSpoils />
-      {/* <SpoilByCategory /> */}
+      <SpoilByCategory />
       <MostSubscribe />
-      {/* <PromotedAdsCarousel /> */}
+      <PromotedAdsCarousel />
       <SelfDev />
       <TrendingSpoil />
       <GetStarted />
+      <BackToTopButton/>
     </main>
   );
 };

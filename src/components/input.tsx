@@ -1,8 +1,9 @@
 
 "use client";
 
-import { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, KeyboardEvent, useState } from "react";
 
+import { useFormikContext } from "formik";
 import { useField } from "formik";
 
 interface Props {
@@ -34,9 +35,17 @@ const Input: FC<Props> = ({
     if (disabled) return;
 
     helpers.setValue(e.target.value);
-    helpers.setTouched(true);
+      onValueChange?.(e.target.value);
+  };
 
-    onValueChange?.(e.target.value);
+  const { validateField } = useFormikContext() as any;
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      helpers.setTouched(true);
+      // trigger field validation
+      validateField(field.name);
+    }
   };
 
   return (
@@ -53,6 +62,7 @@ const Input: FC<Props> = ({
           disabled={disabled}
           value={field.value}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           className={`
             h-12 w-full px-3 rounded-lg border outline-none text-sm
             ${hasError ? "border-red-500" : "border-gray-200"}

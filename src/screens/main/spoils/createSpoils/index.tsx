@@ -5,10 +5,13 @@ import { useMemo, useState } from "react";
 import Stack from "@mui/material/Stack";
 import Image from "next/image";
 
+
 import AdvancedSpoilIcon from "@spt/assets/icons/advanced-spoil.svg";
 import SimpleSpoilIcon from "@spt/assets/icons/simple-spoil.svg";
 import Button from "@spt/components/button";
 import CustomStepper from "@spt/components/stepper";
+import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
+import { useAuthStore } from "@spt/store/authStore";
 
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilOutlineStep from "./steps/SpoilOutlineStep";
@@ -50,6 +53,7 @@ const CreateSpoil = () => {
     useState<BasicsFormData>(initialBasicsState);
   const [outlineData, setOutlineData] =
     useState<OutlineData>(initialOutlineState);
+  const [createdSpoilId, setCreatedSpoilId] = useState<number | null>(null);
 
   const spoilTypes = useMemo(
     () => [
@@ -98,9 +102,34 @@ const CreateSpoil = () => {
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   const goToPreviousStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
 
-  const handleSubmitSpoil = () => {
-    resetAll();
+  const { createSpoilHandler, isLoading: isCreating } = useCreateSpoilMutation();
+
+  const handleSubmitSpoil = async () => {
+    if (createdSpoilId) {
+      // already created earlier in basics step
+      resetAll();
+      return;
+    }
+
+    try {
+      const res = await createSpoilHandler(basicsData, {});
+      const createdId =
+        res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
+
+      if (createdId) {
+        setCreatedSpoilId(Number(createdId));
+        // set on outline so modules can pick it up
+        setOutlineData((prev) => ({ ...(prev as any), spoil_id: createdId } as any));
+        setCreatedSpoilIdInStore?.(Number(createdId));
+      }
+    } catch (err) {
+      // createSpoilHandler shows toast; nothing else to do
+    } finally {
+      resetAll();
+    }
   };
+
+  const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
 
   const renderStepContent = () => {
     if (!selectedType) {
@@ -116,6 +145,13 @@ const CreateSpoil = () => {
             onNext={goToNextStep}
             selectedType={selectedType}
             onBackToSelection={handleBackToSelection}
+            onCreated={(id: number) => {
+              setCreatedSpoilId(id);
+              // store spoil id on outline data so modules can pick it up
+              setOutlineData((prev) => ({ ...(prev as any), spoil_id: id } as any));
+              // persist to global store so it survives reloads
+              setCreatedSpoilIdInStore?.(id);
+            }}
           />
         );
       case 1:

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { useAuthStore } from "@spt/store/authStore";
@@ -9,6 +10,7 @@ import api from "@spt/utils/apiClient";
 
 import type { AxiosError } from "axios";
 import type { FormikValues } from "formik";
+
 
 interface Payload {
   email: string;
@@ -24,6 +26,8 @@ interface LoginResponse {
 }
 
 export const useLoginMutation = () => {
+    const router = useRouter();
+  
   const login = async (payload: Payload): Promise<LoginResponse> => {
     return (await api.post("/auth/login", payload)).data;
   };
@@ -51,7 +55,7 @@ export const useLoginMutation = () => {
       toast.success("Logged in successfully 🎉");
 
       // Redirect after login
-      // router.push("/dashboard"); // change this to your post-login route
+      router.push("/"); // change this to your post-login route
     } catch (error: any) {
       toast.error(error?.response?.data?.error ||
         error?.response?.data?.message ||

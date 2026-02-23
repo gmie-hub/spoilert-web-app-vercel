@@ -9,6 +9,7 @@ import AddCircleIcon from "@spt/assets/icons/add-circle.svg";
 import EditIcon from "@spt/assets/icons/edit.svg";
 import Button from "@spt/components/button";
 import NoData from "@spt/components/noData";
+import { useGetAllModulesQuery } from "@spt/hooks/apiRequests/useGetAllModuleQuery";
 import { useOutlineManager } from "@spt/hooks/useOutlineManager";
 
 import LessonModal from "../components/LessonModal";
@@ -50,7 +51,19 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
 
-  const hasModules = data.modules.length > 0;
+  const { data: serverModulesRaw, isLoading: modulesLoading } = useGetAllModulesQuery();
+
+  // map server modules to local Module shape (server modules don't include lessons)
+  const serverModules = serverModulesRaw?.map((m) => ({
+    id: String(m.id),
+    title: m.title,
+    description: m.description,
+    lessons: [],
+  })) ?? [];
+
+  const modulesToRender = serverModules.length > 0 ? serverModules : data.modules;
+
+  const hasModules = modulesToRender.length > 0;
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
@@ -137,7 +150,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       </p>
 
       <div className="space-y-6">
-        {data.modules.length === 0 ? (
+        {modulesToRender.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <NoData
               heading="No Spoil Module Has Been Added Yet"
@@ -145,7 +158,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             />
           </div>
         ) : (
-          data.modules.map((module, index) => (
+          modulesToRender.map((module, index) => (
             <ModuleCard
               key={module.id}
               module={module}
@@ -186,6 +199,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
         initialValues={moduleModalState.initialValues}
         onClose={closeModuleModal}
         onSubmit={handleModuleSubmit}
+        spoilId={data.spoil_id ?? null}
       />
 
       <LessonModal

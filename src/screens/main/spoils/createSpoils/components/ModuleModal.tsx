@@ -9,6 +9,7 @@ import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Modal from "@spt/components/modal";
 import Textarea from "@spt/components/textarea";
+import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
 
 interface ModuleFormState {
   title: string;
@@ -23,7 +24,10 @@ interface ModuleModalProps {
   onSubmit: (
     values: ModuleFormState,
     helpers: FormikHelpers<ModuleFormState>,
+    serverId?: string | number,
   ) => void;
+  /** optional spoil id to attach new modules to server-side spoil */
+  spoilId?: string | number | null;
 }
 
 const moduleValidationSchema = yup.object({
@@ -38,6 +42,8 @@ const ModuleModal: FC<ModuleModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { createModuleHandler, isLoading: isCreatingModule } = useCreateModuleMutation();
+
   return (
     <Modal
       open={open}
@@ -48,9 +54,31 @@ const ModuleModal: FC<ModuleModalProps> = ({
         initialValues={initialValues}
         enableReinitialize
         validationSchema={moduleValidationSchema}
-        onSubmit={onSubmit}
+        onSubmit={async (values, helpers) => {
+          const payload = {
+            title: values.title.trim(),
+            description: values.description.trim(),
+          };
+
+          // If not editing and we have a server-side create handler, try to create on server
+          if (!isEditing && createModuleHandler) {
+            try {
+              const res = await createModuleHandler(payload as any);
+              const serverModuleId = res?.data?.id ?? res?.data?.module?.id ?? undefined;
+              onSubmit(values, helpers, serverModuleId);
+              return;
+            } catch (err) {
+              // API hook shows toast; fall back to local submit
+              onSubmit(values, helpers);
+              return;
+            }
+          }
+
+          // Default: delegate to parent
+          onSubmit(values, helpers);
+        }}
       >
-        {({ isSubmitting, isValid }) => (
+        {({ isSubmitting }) => (
           <Form className="space-y-4">
             <Input
               name="title"
@@ -70,8 +98,8 @@ const ModuleModal: FC<ModuleModalProps> = ({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!isValid || isSubmitting}>
-                Save
+              <Button type="submit" disabled={isSubmitting || isCreatingModule}>
+                {isSubmitting || isCreatingModule ? "Saving..." : "Save"}
               </Button>
             </div>
           </Form>

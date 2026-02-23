@@ -28,7 +28,7 @@ const GetStarted = () => {
       <div className="relative flex flex-col items-center">
         {/* Peach strip (SMALLER WIDTH) */}
 
-        <div className="mx-auto h-[18px] w-[95%] max-w-[1080px] rounded-[8px] bg-[#F9D0B0]" />
+        <div className="mx-auto h-[18px] w-[95%] max-w-[1080px] rounded-t-[8px] bg-[#F9D0B0]" />
 
         {/* Dark card (WIDER) */}
         <motion.div
