@@ -1,14 +1,18 @@
 "use client";
 
 import type { FC } from "react";
+import { useEffect } from "react";
 
 import { Form, Formik } from "formik";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
+import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
+import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
+import { useAuthStore } from "@spt/store/authStore";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
@@ -24,13 +28,6 @@ interface SpoilBasicsStepProps {
   onCreated?: (id: number) => void;
 }
 
-const categories = [
-  "Product Design",
-  "Marketing",
-  "Software Engineering",
-  "Finance",
-];
-
 const pricingModels = ["free", "Paid", "Subscription"];
 
 const buildNumberOptions = (limit: number) =>
@@ -38,11 +35,6 @@ const buildNumberOptions = (limit: number) =>
     const value = String(index + 1);
     return { value, label: value };
   });
-
-const categoryOptions = categories.map((category) => ({
-  label: category,
-  value: category,
-}));
 
 const pricingOptions = pricingModels.map((pricing) => ({
   label: pricing,
@@ -56,7 +48,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
   onChange,
   onNext,
-  onBackToSelection,
+  // onBackToSelection,
   onCreated,
 }) => {
   const {
@@ -68,16 +60,40 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
   const { createSpoilHandler, isLoading: isCreating } =
     useCreateSpoilMutation();
+  const { updateSpoilHandler, isLoading: isUpdating } =
+    useUpdateSpoilMutation();
 
-  const apiCategoryOptions =
+  const storedSpoilId = useAuthStore.getState().createdSpoilId;
+  const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
+
+  useEffect(() => {
+    if (!spoilData) return;
+
+    const mapped = {
+      coverImage: spoilData.cover_image_url ?? null,
+      title: spoilData.title ?? "",
+      category: String(spoilData.category?.id ?? ""),
+      institution: spoilData.institution ?? "",
+      courseCode: spoilData.course_code ?? "",
+      pricing: spoilData.pricing ?? "",
+      amount: spoilData.amount ? String(spoilData.amount) : "",
+      expiryDate: spoilData.expires_at
+        ? String(spoilData.expires_at).split(" ")[0]
+        : "",
+      moduleCount: spoilData.modules_no ? String(spoilData.modules_no) : "",
+      lessonCount: spoilData.lessons_no ? String(spoilData.lessons_no) : "",
+      description: spoilData.description ?? "",
+      learningOutcome: spoilData.what_to_learn ?? "",
+    };
+
+    onChange(mapped);
+  }, [spoilData, onChange]);
+
+  const mergedCategoryOptions =
     Categories?.data?.map((c) => ({
       label: c.name,
       value: String(c.id),
     })) ?? [];
-
-  const mergedCategoryOptions = apiCategoryOptions.length
-    ? apiCategoryOptions
-    : categoryOptions;
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
@@ -94,6 +110,24 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
         validateOnBlur={true}
         onSubmit={async (values, formikHelpers) => {
           onChange(values);
+
+          // if we have a stored spoil id, update instead of create
+          if (storedSpoilId) {
+            try {
+              const res = await updateSpoilHandler(
+                storedSpoilId,
+                values,
+                formikHelpers,
+              );
+              if (!res) return;
+              onNext();
+            } catch {
+              // update handler shows toast
+            }
+            return;
+          }
+
+          // otherwise create a new spoil
           let res: any;
           try {
             res = await createSpoilHandler(values, formikHelpers);
@@ -105,10 +139,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           if (!res) return; // request failed, stay on this step
 
           const createdId =
-            res?.data?.id ??
-            res?.data?.spoil_id ??
-            res?.data?.data?.id ??
-            null;
+            res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
 
           if (!createdId) return; // no id returned, stay on this step
 
@@ -118,7 +149,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           onNext();
         }}
       >
-        {({ values, handleChange, handleBlur,  isValid }) => (
+        {({ values, handleChange, handleBlur, isValid }) => (
           <Form className="mt-8 space-y-8">
             <UploadSpoilImage />
 
@@ -248,10 +279,10 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             <div className="flex flex-wrap gap-4">
               <Button
                 type="submit"
-                disabled={!isValid  || isCreating}
+                disabled={!isValid || isCreating || isUpdating}
                 className="w-full"
               >
-                { isCreating ? "Saving..." : "Save and Continue"}
+                {isCreating || isUpdating ? "Saving..." : "Save and Continue"}
               </Button>
             </div>
           </Form>

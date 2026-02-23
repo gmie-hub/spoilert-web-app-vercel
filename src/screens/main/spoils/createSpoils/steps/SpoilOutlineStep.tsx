@@ -52,38 +52,29 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
 
-  const { data: serverModulesRaw, isLoading: modulesLoading } = useGetAllModulesQuery();
+  const { data: serverModulesRaw } = useGetAllModulesQuery();
 
   const spoilId = data.spoil_id ?? null;
 
-  // Fetch lessons for each server module
-  const mod0Id = serverModulesRaw?.[0]?.id ?? null;
-  const mod1Id = serverModulesRaw?.[1]?.id ?? null;
-  const mod2Id = serverModulesRaw?.[2]?.id ?? null;
-  const mod3Id = serverModulesRaw?.[3]?.id ?? null;
-  const mod4Id = serverModulesRaw?.[4]?.id ?? null;
+  // Fetch all lessons for this spoil in one call
+  const { data: allLessons } = useGetLessonQuery(spoilId);
 
-  const { data: lessons0 } = useGetLessonQuery(mod0Id, spoilId);
-  const { data: lessons1 } = useGetLessonQuery(mod1Id, spoilId);
-  const { data: lessons2 } = useGetLessonQuery(mod2Id, spoilId);
-  const { data: lessons3 } = useGetLessonQuery(mod3Id, spoilId);
-  const { data: lessons4 } = useGetLessonQuery(mod4Id, spoilId);
-
-  const lessonsMap = useMemo(() => {
-    const map: Record<string, typeof lessons0> = {};
-    if (mod0Id) map[String(mod0Id)] = lessons0;
-    if (mod1Id) map[String(mod1Id)] = lessons1;
-    if (mod2Id) map[String(mod2Id)] = lessons2;
-    if (mod3Id) map[String(mod3Id)] = lessons3;
-    if (mod4Id) map[String(mod4Id)] = lessons4;
+  // Group lessons by module_id on the frontend
+  const lessonsGrouped = useMemo(() => {
+    const map: Record<string, typeof allLessons> = {};
+    for (const lesson of allLessons) {
+      const key = String(lesson.module_id);
+      if (!map[key]) map[key] = [];
+      map[key].push(lesson);
+    }
     return map;
-  }, [mod0Id, mod1Id, mod2Id, mod3Id, mod4Id, lessons0, lessons1, lessons2, lessons3, lessons4]);
+  }, [allLessons]);
 
   // map server modules to local Module shape, merging in fetched lessons
   const serverModules = useMemo(() => {
     if (!serverModulesRaw?.length) return [];
     return serverModulesRaw.map((m) => {
-      const serverLessons = lessonsMap[String(m.id)] ?? [];
+      const serverLessons = lessonsGrouped[String(m.id)] ?? [];
       return {
         id: String(m.id),
         title: m.title,
@@ -99,7 +90,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
         })),
       };
     });
-  }, [serverModulesRaw, lessonsMap]);
+  }, [serverModulesRaw, lessonsGrouped]);
 
   const modulesToRender = serverModules.length > 0 ? serverModules : data.modules;
 
@@ -236,6 +227,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       <ModuleModal
         open={moduleModalState.open}
         isEditing={moduleModalState.editingId !== null}
+        editingId={moduleModalState.editingId}
         initialValues={moduleModalState.initialValues}
         onClose={closeModuleModal}
         onSubmit={handleModuleSubmit}
@@ -245,6 +237,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       <LessonModal
         open={lessonModalState.open}
         isEditing={lessonModalState.lessonId !== null}
+        editingId={lessonModalState.lessonId}
         initialValues={lessonModalState.initialValues}
         moduleId={lessonModalState.moduleId}
         onClose={closeLessonModal}

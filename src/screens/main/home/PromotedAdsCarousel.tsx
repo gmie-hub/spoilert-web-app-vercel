@@ -135,16 +135,8 @@ const PromotedAdsCarousel = () => {
       alt: s.title || "Promoted Ad",
     })) || [];
 
-  /* ==============================
-     Duplicate to 10 items for testing scroll
-  ============================== */
-  const items =
-    apiItems.length > 0
-      ? Array(4)
-          .fill(apiItems)
-          .flat()
-          .slice(0, 10)
-      : [];
+  /* Use API items directly */
+  const items = apiItems;
 
   /* ==============================
      Auto Slide

@@ -11,6 +11,7 @@ import Modal from "@spt/components/modal";
 import Select from "@spt/components/select";
 import Textarea from "@spt/components/textarea";
 import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
+import useUpdateLessonMutation from "@spt/hooks/apiRequests/useUpdateLessonMutation";
 
 import ContentUpload from "./ContentUpload";
 
@@ -27,6 +28,7 @@ interface LessonFormState {
 interface LessonModalProps {
   open: boolean;
   isEditing: boolean;
+  editingId?: string | null;
   initialValues: LessonFormState;
   moduleId: number | string | null;
   onClose: () => void;
@@ -75,6 +77,7 @@ const lessonValidationSchema = yup.object({
 const LessonModal: FC<LessonModalProps> = ({
   open,
   isEditing,
+  editingId,
   initialValues,
   moduleId,
   onClose,
@@ -82,12 +85,33 @@ const LessonModal: FC<LessonModalProps> = ({
 }) => {
   const { createLessonHandler, isLoading: isCreatingLesson } =
     useCreateLessonMutation();
+  const { updateLessonHandler, isUpdating } = useUpdateLessonMutation();
 
   const handleFormSubmit = async (
     values: LessonFormState,
     helpers: FormikHelpers<LessonFormState>,
   ) => {
-    // When editing, just update locally
+    // When editing & we have a server lesson id, call update API
+    if (isEditing && editingId) {
+      try {
+        await updateLessonHandler({
+          lessonId: editingId,
+          title: values.title,
+          type: values.type,
+          content: values.content,
+          file: values.file,
+          description: values.description,
+        });
+        onSubmit(values, helpers);
+        onClose();
+      } catch {
+        // updateLessonHandler shows toast; keep modal open
+        helpers.setSubmitting(false);
+      }
+      return;
+    }
+
+    // When editing locally (no server id)
     if (isEditing) {
       onSubmit(values, helpers);
       return;
@@ -108,6 +132,7 @@ const LessonModal: FC<LessonModalProps> = ({
         const serverLessonId =
           res?.data?.id ?? res?.data?.[0]?.id ?? res?.data?.data?.id ?? null;
         onSubmit(values, helpers, serverLessonId ?? undefined);
+        onClose();
       } catch {
         // createLessonHandler shows toast; keep modal open
         helpers.setSubmitting(false);
@@ -185,8 +210,8 @@ const LessonModal: FC<LessonModalProps> = ({
                 rows={3}
                 placeholder="Add a brief description"
               />
-              <Button type="submit" disabled={!isValid || isCreatingLesson} className="w-full">
-                {isCreatingLesson ? 'Saving...' : 'Save'}
+              <Button type="submit" disabled={!isValid || isCreatingLesson || isUpdating} className="w-full">
+                {isCreatingLesson || isUpdating ? 'Saving...' : 'Save'}
               </Button>
             </Form>
           );

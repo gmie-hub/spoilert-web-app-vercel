@@ -10,6 +10,7 @@ import Input from "@spt/components/input";
 import Modal from "@spt/components/modal";
 import Textarea from "@spt/components/textarea";
 import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
+import useUpdateModuleMutation from "@spt/hooks/apiRequests/useUpdateModuleMutation";
 
 interface ModuleFormState {
   title: string;
@@ -19,6 +20,7 @@ interface ModuleFormState {
 interface ModuleModalProps {
   open: boolean;
   isEditing: boolean;
+  editingId?: string | null;
   initialValues: ModuleFormState;
   onClose: () => void;
   onSubmit: (
@@ -38,11 +40,13 @@ const moduleValidationSchema = yup.object({
 const ModuleModal: FC<ModuleModalProps> = ({
   open,
   isEditing,
+  editingId,
   initialValues,
   onClose,
   onSubmit,
 }) => {
   const { createModuleHandler, isLoading: isCreatingModule } = useCreateModuleMutation();
+  const { updateModuleHandler, isUpdating } = useUpdateModuleMutation();
 
   return (
     <Modal
@@ -60,21 +64,36 @@ const ModuleModal: FC<ModuleModalProps> = ({
             description: values.description.trim(),
           };
 
-          // If not editing and we have a server-side create handler, try to create on server
+          // Editing: call PATCH /modules/:id
+          if (isEditing && editingId) {
+            try {
+              await updateModuleHandler({
+                moduleId: editingId,
+                ...payload,
+              });
+              onSubmit(values, helpers);
+              onClose();
+            } catch {
+              // updateModuleHandler shows toast
+              helpers.setSubmitting(false);
+            }
+            return;
+          }
+
+          // Creating: call POST /modules
           if (!isEditing && createModuleHandler) {
             try {
               const res = await createModuleHandler(payload as any);
               const serverModuleId = res?.data?.id ?? res?.data?.module?.id ?? undefined;
               onSubmit(values, helpers, serverModuleId);
-              return;
-            } catch (err) {
-              // API hook shows toast; fall back to local submit
-              onSubmit(values, helpers);
-              return;
+              onClose();
+            } catch {
+              helpers.setSubmitting(false);
             }
+            return;
           }
 
-          // Default: delegate to parent
+          // Fallback: delegate to parent
           onSubmit(values, helpers);
         }}
       >
@@ -98,8 +117,8 @@ const ModuleModal: FC<ModuleModalProps> = ({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={ isCreatingModule}>
-                {isCreatingModule ? "Saving..." : "Save"}
+              <Button type="submit" disabled={isCreatingModule || isUpdating}>
+                {isCreatingModule || isUpdating ? "Saving..." : "Save"}
               </Button>
             </div>
           </Form>

@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import Image from "next/image";
 
 // import BackTOp from "@spt/assets/icons/button(1).svg";
 import Button from "@spt/components/button";
@@ -14,12 +13,12 @@ import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInsti
 const TrendingSpoil = () => {
   const { data } = useGetInstitutionSpoilsQuery();
 
-    const handleScrollTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  //   const handleScrollTop = () => {
+  //   window.scrollTo({
+  //     top: 0,
+  //     behavior: "smooth",
+  //   });
+  // };
   
   return (
     <WebsiteSection className="my-10 w-full">
