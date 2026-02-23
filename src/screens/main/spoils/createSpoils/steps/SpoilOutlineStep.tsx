@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC } from "react";
+import { type FC, useMemo } from "react";
 
 import Image from "next/image";
 import { FiPlus } from "react-icons/fi";
@@ -10,6 +10,7 @@ import EditIcon from "@spt/assets/icons/edit.svg";
 import Button from "@spt/components/button";
 import NoData from "@spt/components/noData";
 import { useGetAllModulesQuery } from "@spt/hooks/apiRequests/useGetAllModuleQuery";
+import { useGetLessonQuery } from "@spt/hooks/apiRequests/useGetLessonQuery";
 import { useOutlineManager } from "@spt/hooks/useOutlineManager";
 
 import LessonModal from "../components/LessonModal";
@@ -53,13 +54,52 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
 
   const { data: serverModulesRaw, isLoading: modulesLoading } = useGetAllModulesQuery();
 
-  // map server modules to local Module shape (server modules don't include lessons)
-  const serverModules = serverModulesRaw?.map((m) => ({
-    id: String(m.id),
-    title: m.title,
-    description: m.description,
-    lessons: [],
-  })) ?? [];
+  const spoilId = data.spoil_id ?? null;
+
+  // Fetch lessons for each server module
+  const mod0Id = serverModulesRaw?.[0]?.id ?? null;
+  const mod1Id = serverModulesRaw?.[1]?.id ?? null;
+  const mod2Id = serverModulesRaw?.[2]?.id ?? null;
+  const mod3Id = serverModulesRaw?.[3]?.id ?? null;
+  const mod4Id = serverModulesRaw?.[4]?.id ?? null;
+
+  const { data: lessons0 } = useGetLessonQuery(mod0Id, spoilId);
+  const { data: lessons1 } = useGetLessonQuery(mod1Id, spoilId);
+  const { data: lessons2 } = useGetLessonQuery(mod2Id, spoilId);
+  const { data: lessons3 } = useGetLessonQuery(mod3Id, spoilId);
+  const { data: lessons4 } = useGetLessonQuery(mod4Id, spoilId);
+
+  const lessonsMap = useMemo(() => {
+    const map: Record<string, typeof lessons0> = {};
+    if (mod0Id) map[String(mod0Id)] = lessons0;
+    if (mod1Id) map[String(mod1Id)] = lessons1;
+    if (mod2Id) map[String(mod2Id)] = lessons2;
+    if (mod3Id) map[String(mod3Id)] = lessons3;
+    if (mod4Id) map[String(mod4Id)] = lessons4;
+    return map;
+  }, [mod0Id, mod1Id, mod2Id, mod3Id, mod4Id, lessons0, lessons1, lessons2, lessons3, lessons4]);
+
+  // map server modules to local Module shape, merging in fetched lessons
+  const serverModules = useMemo(() => {
+    if (!serverModulesRaw?.length) return [];
+    return serverModulesRaw.map((m) => {
+      const serverLessons = lessonsMap[String(m.id)] ?? [];
+      return {
+        id: String(m.id),
+        title: m.title,
+        description: m.description,
+        lessons: serverLessons.map((l) => ({
+          id: String(l.id),
+          title: l.title,
+          type: l.type,
+          content: l.content ?? "",
+          file: null as File | null,
+          fileName: l.file ?? undefined,
+          description: l.description ?? "",
+        })),
+      };
+    });
+  }, [serverModulesRaw, lessonsMap]);
 
   const modulesToRender = serverModules.length > 0 ? serverModules : data.modules;
 
@@ -206,6 +246,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
         open={lessonModalState.open}
         isEditing={lessonModalState.lessonId !== null}
         initialValues={lessonModalState.initialValues}
+        moduleId={lessonModalState.moduleId}
         onClose={closeLessonModal}
         onSubmit={handleLessonSubmit}
       />

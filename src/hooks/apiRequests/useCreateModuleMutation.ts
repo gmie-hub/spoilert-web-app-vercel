@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import { useAuthStore } from "@spt/store/authStore";
@@ -21,6 +21,9 @@ interface CreateModuleResponse {
 }
 
 export const useCreateModuleMutation = () => {
+    const queryClient = useQueryClient();
+
+    
   const createModule = async (payload: CreateModulePayload): Promise<CreateModuleResponse> => {
     // if no spoil_id provided, try to use the last created spoil id from the persisted store
     const finalPayload = { ...payload } as any;
@@ -41,6 +44,11 @@ export const useCreateModuleMutation = () => {
     try {
       const res = await mutation.mutateAsync(payload);
       toast.success("Module added");
+
+        queryClient.invalidateQueries({
+            queryKey: ["modules"],
+          });
+
       return res;
     } catch (error: any) {
       toast.error(

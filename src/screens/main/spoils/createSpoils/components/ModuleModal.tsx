@@ -78,7 +78,7 @@ const ModuleModal: FC<ModuleModalProps> = ({
           onSubmit(values, helpers);
         }}
       >
-        {({ isSubmitting }) => (
+        {() => (
           <Form className="space-y-4">
             <Input
               name="title"
@@ -98,8 +98,8 @@ const ModuleModal: FC<ModuleModalProps> = ({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || isCreatingModule}>
-                {isSubmitting || isCreatingModule ? "Saving..." : "Save"}
+              <Button type="submit" disabled={ isCreatingModule}>
+                {isCreatingModule ? "Saving..." : "Save"}
               </Button>
             </div>
           </Form>

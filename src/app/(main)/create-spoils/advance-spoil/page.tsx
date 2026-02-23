@@ -1,8 +1,5 @@
-import AdvanceSpoil from "@spt/screens/main/spoils/createSpoils/steps/SpoilBasicsStep";
+import AdvancedSpoil from "@spt/screens/main/spoils/createSpoils/AdvancedSpoil";
 
 export default function AdvanceSpoilPage() {
-    return (
-        // <AdvanceSpoil />
-        <div></div>
-    )
+  return <AdvancedSpoil />;
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
 import type { Lesson, Module, OutlineData } from "@spt/types";
 
 import {
@@ -14,6 +13,7 @@ interface LessonFormState {
   type: "video" | "pdf" | "text";
   content: string;
   file: File | null;
+  description: string;
 }
 
 export const useOutlineManager = (
@@ -40,6 +40,7 @@ export const useOutlineManager = (
       type: "video",
       content: "",
       file: null,
+      description: "",
     },
   });
 
@@ -85,6 +86,7 @@ export const useOutlineManager = (
         type: "video",
         content: "",
         file: null,
+        description: "",
       },
     });
   };
@@ -100,12 +102,14 @@ export const useOutlineManager = (
             type: lesson.type,
             content: lesson.type === "text" ? lesson.content : "",
             file: lesson.type === "text" ? null : (lesson.file ?? null),
+            description: lesson.description ?? "",
           }
         : {
             title: "",
             type: "video",
             content: "",
             file: null,
+            description: "",
           },
     });
   };
@@ -141,7 +145,6 @@ export const useOutlineManager = (
     closeModuleModal,
   );
 
-  const { createModuleHandler, isLoading: isCreatingModule } = useCreateModuleMutation();
 
   // wrap module submit to also call API when creating a new module (not editing)
   const handleModuleSubmit = async (
@@ -156,25 +159,7 @@ export const useOutlineManager = (
 
     // Try to create on server first when spoil_id is present so we can use server id
     // prefer canonical server field `spoil_id` (set in CreateSpoil.index when spoil is created)
-    const spoilId = (data as any).spoil_id ?? null;
-    if (spoilId) {
-      try {
-        const res = await createModuleHandler({
-          title: values.title.trim(),
-          description: values.description.trim(),
-          spoil_id: spoilId,
-        });
 
-        const serverModuleId = res?.data?.id ?? res?.data?.module?.id ?? null;
-        // Add locally using server id
-        moduleHandlers.handleSubmit(values, helpers, serverModuleId ?? undefined);
-        return;
-      } catch (err) {
-        // API error handled by hook (toast); fall back to local add
-        moduleHandlers.handleSubmit(values, helpers);
-        return;
-      }
-    }
 
     // No spoil id yet; create locally first for immediate UI feedback
     moduleHandlers.handleSubmit(values, helpers);

@@ -75,6 +75,7 @@ export const useCreateSpoilMutation = () => {
 					error?.message ||
 					"Failed to create spoil",
 			);
+			throw error;
 		} finally {
 			setSubmitting?.(false);
 		}

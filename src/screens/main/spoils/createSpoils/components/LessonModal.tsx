@@ -10,6 +10,7 @@ import Input from "@spt/components/input";
 import Modal from "@spt/components/modal";
 import Select from "@spt/components/select";
 import Textarea from "@spt/components/textarea";
+import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
 
 import ContentUpload from "./ContentUpload";
 
@@ -20,16 +21,19 @@ interface LessonFormState {
   type: LessonTypeOption;
   content: string;
   file: File | null;
+  description: string;
 }
 
 interface LessonModalProps {
   open: boolean;
   isEditing: boolean;
   initialValues: LessonFormState;
+  moduleId: number | string | null;
   onClose: () => void;
   onSubmit: (
     values: LessonFormState,
     helpers: FormikHelpers<LessonFormState>,
+    serverLessonId?: string | number,
   ) => void;
 }
 
@@ -65,15 +69,56 @@ const lessonValidationSchema = yup.object({
           ),
       otherwise: (schema) => schema.nullable(),
     }),
+  description: yup.string().trim(),
 });
 
 const LessonModal: FC<LessonModalProps> = ({
   open,
   isEditing,
   initialValues,
+  moduleId,
   onClose,
   onSubmit,
 }) => {
+  const { createLessonHandler, isLoading: isCreatingLesson } =
+    useCreateLessonMutation();
+
+  const handleFormSubmit = async (
+    values: LessonFormState,
+    helpers: FormikHelpers<LessonFormState>,
+  ) => {
+    // When editing, just update locally
+    if (isEditing) {
+      onSubmit(values, helpers);
+      return;
+    }
+
+    // When creating & moduleId exists, call API first
+    if (moduleId) {
+      try {
+        const res = await createLessonHandler(moduleId, [
+          {
+            title: values.title,
+            type: values.type,
+            content: values.content,
+            file: values.file,
+            description: values.description,
+          },
+        ]);
+        const serverLessonId =
+          res?.data?.id ?? res?.data?.[0]?.id ?? res?.data?.data?.id ?? null;
+        onSubmit(values, helpers, serverLessonId ?? undefined);
+      } catch {
+        // createLessonHandler shows toast; keep modal open
+        helpers.setSubmitting(false);
+        return;
+      }
+    } else {
+      // No moduleId yet, save locally
+      onSubmit(values, helpers);
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -85,9 +130,9 @@ const LessonModal: FC<LessonModalProps> = ({
         initialValues={initialValues}
         enableReinitialize
         validationSchema={lessonValidationSchema}
-        onSubmit={onSubmit}
+        onSubmit={handleFormSubmit}
       >
-        {({ values, isSubmitting, isValid }) => {
+        {({ values, isValid }) => {
           const acceptType =
             values.type === "video"
               ? "video/*"
@@ -134,9 +179,14 @@ const LessonModal: FC<LessonModalProps> = ({
                   </p>
                 </div>
               )}
-
-              <Button type="submit" disabled={!isValid || isSubmitting} className="w-full">
-                Save
+              <Textarea
+                name="description"
+                label="Description (Optional)"
+                rows={3}
+                placeholder="Add a brief description"
+              />
+              <Button type="submit" disabled={!isValid || isCreatingLesson} className="w-full">
+                {isCreatingLesson ? 'Saving...' : 'Save'}
               </Button>
             </Form>
           );

@@ -3,7 +3,6 @@
 import type { FC } from "react";
 
 import { Form, Formik } from "formik";
-import * as yup from "yup";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
@@ -12,6 +11,7 @@ import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutatio
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
+import { basicsValidationSchema } from "../validations";
 
 import type { BasicsFormData, SpoilTypeOption } from "../types";
 
@@ -39,7 +39,6 @@ const buildNumberOptions = (limit: number) =>
     return { value, label: value };
   });
 
-  
 const categoryOptions = categories.map((category) => ({
   label: category,
   value: category,
@@ -53,45 +52,32 @@ const pricingOptions = pricingModels.map((pricing) => ({
 const moduleOptions = buildNumberOptions(20);
 const lessonOptions = buildNumberOptions(60);
 
-const basicsValidationSchema = yup.object({
-  title: yup.string().trim().required("Title is required"),
-  category: yup.string().trim().required("Select a category"),
-  institution: yup.string().trim(),
-  courseCode: yup.string().trim(),
-  pricing: yup.string().trim().required("Select a pricing model"),
-  amount: yup
-    .string()
-    .trim()
-    .matches(/^(?:\d+)(?:\.\d{1,2})?$/, "Enter a valid amount")
-    .required("Amount is required"),
-  expiryDate: yup.string().trim().nullable(),
-  moduleCount: yup.string().trim().nullable(),
-  lessonCount: yup.string().trim().nullable(),
-  description: yup.string().trim(),
-  learningOutcome: yup.string().trim(),
-  coverImage: yup.mixed().nullable(),
-});
-
 const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
   onChange,
   onNext,
   onBackToSelection,
+  onCreated,
 }) => {
-  const { data: Categories, isLoading, isError, categoryErrorMessage } =
-    useGetAllCategoriesQuery();
+  const {
+    data: Categories,
+    isLoading,
+    isError,
+    categoryErrorMessage,
+  } = useGetAllCategoriesQuery();
 
-  const { createSpoilHandler, isLoading: isCreating } = useCreateSpoilMutation();
+  const { createSpoilHandler, isLoading: isCreating } =
+    useCreateSpoilMutation();
 
-  const apiCategoryOptions = Categories?.data?.map((c) => ({
-    label: c.name,
-    value: String(c.id),
-  })) ?? [];
+  const apiCategoryOptions =
+    Categories?.data?.map((c) => ({
+      label: c.name,
+      value: String(c.id),
+    })) ?? [];
 
   const mergedCategoryOptions = apiCategoryOptions.length
     ? apiCategoryOptions
     : categoryOptions;
-
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
@@ -103,24 +89,36 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       <Formik<BasicsFormData>
         initialValues={data}
         enableReinitialize
-        // validationSchema={basicsValidationSchema}
-        validateOnChange={false}
-        validateOnBlur={false}
-        onSubmit={async (values) => {
+        validationSchema={basicsValidationSchema}
+        validateOnChange={true}
+        validateOnBlur={true}
+        onSubmit={async (values, formikHelpers) => {
           onChange(values);
-          // try {
-          //   const res = await createSpoilHandler(values, formikHelpers);
-          //   const createdId = res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
-          //   if (createdId && typeof onCreated === "function") {
-          //     onCreated(Number(createdId));
-          //   }
-          //   onNext();
-          // } catch (err) {
-          //   // createSpoilHandler handles toasts; preserve form state
-          // }
+          let res: any;
+          try {
+            res = await createSpoilHandler(values, formikHelpers);
+          } catch {
+            // createSpoilHandler handles toasts; stay on this step
+            return;
+          }
+
+          if (!res) return; // request failed, stay on this step
+
+          const createdId =
+            res?.data?.id ??
+            res?.data?.spoil_id ??
+            res?.data?.data?.id ??
+            null;
+
+          if (!createdId) return; // no id returned, stay on this step
+
+          if (typeof onCreated === "function") {
+            onCreated(Number(createdId));
+          }
+          onNext();
         }}
       >
-        {({ values, handleChange, handleBlur, isSubmitting, isValid }) => (
+        {({ values, handleChange, handleBlur,  isValid }) => (
           <Form className="mt-8 space-y-8">
             <UploadSpoilImage />
 
@@ -248,20 +246,12 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             </div>
 
             <div className="flex flex-wrap gap-4">
-              {/* <Button
-                type="button"
-                variant="outline"
-                onClick={onBackToSelection}
-              >
-                Back
-              </Button> */}
-
               <Button
                 type="submit"
-                disabled={!isValid || isSubmitting}
+                disabled={!isValid  || isCreating}
                 className="w-full"
               >
-                Save and Continue
+                { isCreating ? "Saving..." : "Save and Continue"}
               </Button>
             </div>
           </Form>
