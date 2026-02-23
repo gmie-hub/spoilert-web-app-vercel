@@ -130,19 +130,8 @@ const SpoilByCategory = () => {
     );
   }, [data]);
 
-  /** Ensure we always have 10 items for scrolling test */
-  const items = useMemo(() => {
-    const mockCount = Math.max(0, 10 - apiCategories.length);
-
-    const mockItems = Array.from({ length: mockCount }).map((_, i) => ({
-      id: `mock-${i}`,
-      title: `Mock Category ${i + 1}`,
-      spoils: `${Math.floor(Math.random() * 50)} Spoils`,
-      image: "/categories/uiux.jpg",
-    }));
-
-    return [...apiCategories, ...mockItems];
-  }, [apiCategories]);
+  /* Use API categories directly */
+  const items = apiCategories;
 
   /** Auto Slide */
   useEffect(() => {

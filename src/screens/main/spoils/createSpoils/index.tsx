@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAuthStore } from "@spt/store/authStore";
+
 
 import Stack from "@mui/material/Stack";
 import Image from "next/image";
@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import AdvancedSpoilIcon from "@spt/assets/icons/advanced-spoil.svg";
 import SimpleSpoilIcon from "@spt/assets/icons/simple-spoil.svg";
 import Button from "@spt/components/button";
+import { useAuthStore } from "@spt/store/authStore";
 
 import type { SpoilTypeOption } from "./types";
 

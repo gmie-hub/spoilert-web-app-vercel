@@ -11,6 +11,7 @@ import Select from "@spt/components/select";
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
+import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
@@ -71,6 +72,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
   const { createSpoilHandler, isLoading: isCreating } =
     useCreateSpoilMutation();
+  const { updateSpoilHandler, isLoading: isUpdating } = useUpdateSpoilMutation();
 
   const storedSpoilId = useAuthStore.getState().createdSpoilId;
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
@@ -121,6 +123,20 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
         validateOnBlur={true}
         onSubmit={async (values, formikHelpers) => {
           onChange(values);
+
+          // if we have a stored spoil id, update instead of create
+          if (storedSpoilId) {
+            try {
+              const res = await updateSpoilHandler(storedSpoilId, values, formikHelpers);
+              if (!res) return;
+              onNext();
+            } catch {
+              // update handler shows toast
+            }
+            return;
+          }
+
+          // otherwise create a new spoil
           let res: any;
           try {
             res = await createSpoilHandler(values, formikHelpers);
@@ -272,10 +288,10 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             <div className="flex flex-wrap gap-4">
               <Button
                 type="submit"
-                disabled={!isValid || isCreating}
+                disabled={!isValid || isCreating || isUpdating}
                 className="w-full"
               >
-                {isCreating ? "Saving..." : "Save and Continue"}
+                {isCreating || isUpdating ? "Saving..." : "Save and Continue"}
               </Button>
             </div>
           </Form>
