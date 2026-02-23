@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC } from "react";
+import { type FC, useMemo } from "react";
 
 import Image from "next/image";
 import { FiPlus } from "react-icons/fi";
@@ -9,6 +9,8 @@ import AddCircleIcon from "@spt/assets/icons/add-circle.svg";
 import EditIcon from "@spt/assets/icons/edit.svg";
 import Button from "@spt/components/button";
 import NoData from "@spt/components/noData";
+import { useGetAllModulesQuery } from "@spt/hooks/apiRequests/useGetAllModuleQuery";
+import { useGetLessonQuery } from "@spt/hooks/apiRequests/useGetLessonQuery";
 import { useOutlineManager } from "@spt/hooks/useOutlineManager";
 
 import LessonModal from "../components/LessonModal";
@@ -50,7 +52,49 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
 
-  const hasModules = data.modules.length > 0;
+  const { data: serverModulesRaw } = useGetAllModulesQuery();
+
+  const spoilId = data.spoil_id ?? null;
+
+  // Fetch all lessons for this spoil in one call
+  const { data: allLessons } = useGetLessonQuery(spoilId);
+
+  // Group lessons by module_id on the frontend
+  const lessonsGrouped = useMemo(() => {
+    const map: Record<string, typeof allLessons> = {};
+    for (const lesson of allLessons) {
+      const key = String(lesson.module_id);
+      if (!map[key]) map[key] = [];
+      map[key].push(lesson);
+    }
+    return map;
+  }, [allLessons]);
+
+  // map server modules to local Module shape, merging in fetched lessons
+  const serverModules = useMemo(() => {
+    if (!serverModulesRaw?.length) return [];
+    return serverModulesRaw.map((m) => {
+      const serverLessons = lessonsGrouped[String(m.id)] ?? [];
+      return {
+        id: String(m.id),
+        title: m.title,
+        description: m.description,
+        lessons: serverLessons.map((l) => ({
+          id: String(l.id),
+          title: l.title,
+          type: l.type,
+          content: l.content ?? "",
+          file: null as File | null,
+          fileName: l.file ?? undefined,
+          description: l.description ?? "",
+        })),
+      };
+    });
+  }, [serverModulesRaw, lessonsGrouped]);
+
+  const modulesToRender = serverModules.length > 0 ? serverModules : data.modules;
+
+  const hasModules = modulesToRender.length > 0;
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
@@ -137,7 +181,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       </p>
 
       <div className="space-y-6">
-        {data.modules.length === 0 ? (
+        {modulesToRender.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <NoData
               heading="No Spoil Module Has Been Added Yet"
@@ -145,7 +189,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             />
           </div>
         ) : (
-          data.modules.map((module, index) => (
+          modulesToRender.map((module, index) => (
             <ModuleCard
               key={module.id}
               module={module}
@@ -183,15 +227,19 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       <ModuleModal
         open={moduleModalState.open}
         isEditing={moduleModalState.editingId !== null}
+        editingId={moduleModalState.editingId}
         initialValues={moduleModalState.initialValues}
         onClose={closeModuleModal}
         onSubmit={handleModuleSubmit}
+        spoilId={data.spoil_id ?? null}
       />
 
       <LessonModal
         open={lessonModalState.open}
         isEditing={lessonModalState.lessonId !== null}
+        editingId={lessonModalState.lessonId}
         initialValues={lessonModalState.initialValues}
+        moduleId={lessonModalState.moduleId}
         onClose={closeLessonModal}
         onSubmit={handleLessonSubmit}
       />

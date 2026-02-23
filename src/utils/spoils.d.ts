@@ -83,3 +83,37 @@ interface Category {
   url: string;
   total_spoils: number;
 }
+
+export interface CategoriesResponse {
+  message: string;
+  status: boolean;
+  data: CategoriesData;
+}
+
+interface CategoriesData {
+  current_page: number;
+  data: CategoryDatum[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: Link[];
+  next_page_url: null;
+  path: string;
+  per_page: number;
+  prev_page_url: null;
+  to: number;
+  total: number;
+}
+
+export interface CategoryDatum {
+  id: number;
+  name: string;
+  slug: string;
+  description: null;
+  url: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null;
+  total_spoils: number;
+}

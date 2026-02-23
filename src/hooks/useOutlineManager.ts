@@ -13,6 +13,7 @@ interface LessonFormState {
   type: "video" | "pdf" | "text";
   content: string;
   file: File | null;
+  description: string;
 }
 
 export const useOutlineManager = (
@@ -39,6 +40,7 @@ export const useOutlineManager = (
       type: "video",
       content: "",
       file: null,
+      description: "",
     },
   });
 
@@ -84,6 +86,7 @@ export const useOutlineManager = (
         type: "video",
         content: "",
         file: null,
+        description: "",
       },
     });
   };
@@ -99,12 +102,14 @@ export const useOutlineManager = (
             type: lesson.type,
             content: lesson.type === "text" ? lesson.content : "",
             file: lesson.type === "text" ? null : (lesson.file ?? null),
+            description: lesson.description ?? "",
           }
         : {
             title: "",
             type: "video",
             content: "",
             file: null,
+            description: "",
           },
     });
   };
@@ -140,6 +145,26 @@ export const useOutlineManager = (
     closeModuleModal,
   );
 
+
+  // wrap module submit to also call API when creating a new module (not editing)
+  const handleModuleSubmit = async (
+    values: { title: string; description: string },
+    helpers: any,
+  ) => {
+    // If editing, just use local handler
+    if (moduleModalState.editingId) {
+      moduleHandlers.handleSubmit(values, helpers);
+      return;
+    }
+
+    // Try to create on server first when spoil_id is present so we can use server id
+    // prefer canonical server field `spoil_id` (set in CreateSpoil.index when spoil is created)
+
+
+    // No spoil id yet; create locally first for immediate UI feedback
+    moduleHandlers.handleSubmit(values, helpers);
+  };
+
   const lessonHandlers = createLessonHandlers(
     data,
     updateOutline,
@@ -160,7 +185,7 @@ export const useOutlineManager = (
     collapsedModules,
     openModuleModal,
     closeModuleModal,
-    handleModuleSubmit: moduleHandlers.handleSubmit,
+    handleModuleSubmit,
     handleDeleteModule: moduleHandlers.handleDelete,
     toggleModuleCollapse,
     openLessonModal,

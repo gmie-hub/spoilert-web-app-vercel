@@ -1,15 +1,21 @@
 "use client";
 
 import type { FC } from "react";
+import { useEffect } from "react";
 
 import { Form, Formik } from "formik";
-import * as yup from "yup";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
+import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
+import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
+import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
+import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
+import { useAuthStore } from "@spt/store/authStore";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
+import { basicsValidationSchema } from "../validations";
 
 import type { BasicsFormData, SpoilTypeOption } from "../types";
 
@@ -19,27 +25,16 @@ interface SpoilBasicsStepProps {
   onNext: () => void;
   onBackToSelection: () => void;
   selectedType: SpoilTypeOption;
+  onCreated?: (id: number) => void;
 }
 
-const categories = [
-  "Product Design",
-  "Marketing",
-  "Software Engineering",
-  "Finance",
-];
-
-const pricingModels = ["Free", "Paid", "Subscription"];
+const pricingModels = ["free", "Paid", "Subscription"];
 
 const buildNumberOptions = (limit: number) =>
   Array.from({ length: limit }, (_, index) => {
     const value = String(index + 1);
     return { value, label: value };
   });
-
-const categoryOptions = categories.map((category) => ({
-  label: category,
-  value: category,
-}));
 
 const pricingOptions = pricingModels.map((pricing) => ({
   label: pricing,
@@ -49,31 +44,57 @@ const pricingOptions = pricingModels.map((pricing) => ({
 const moduleOptions = buildNumberOptions(20);
 const lessonOptions = buildNumberOptions(60);
 
-const basicsValidationSchema = yup.object({
-  title: yup.string().trim().required("Title is required"),
-  category: yup.string().trim().required("Select a category"),
-  institution: yup.string().trim(),
-  courseCode: yup.string().trim(),
-  pricing: yup.string().trim().required("Select a pricing model"),
-  amount: yup
-    .string()
-    .trim()
-    .matches(/^(?:\d+)(?:\.\d{1,2})?$/, "Enter a valid amount")
-    .required("Amount is required"),
-  expiryDate: yup.string().trim().nullable(),
-  moduleCount: yup.string().trim().nullable(),
-  lessonCount: yup.string().trim().nullable(),
-  description: yup.string().trim(),
-  learningOutcome: yup.string().trim(),
-  coverImage: yup.mixed().nullable(),
-});
-
 const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
   onChange,
   onNext,
-  onBackToSelection,
+  // onBackToSelection,
+  onCreated,
 }) => {
+  const {
+    data: Categories,
+    isLoading,
+    isError,
+    categoryErrorMessage,
+  } = useGetAllCategoriesQuery();
+
+  const { createSpoilHandler, isLoading: isCreating } =
+    useCreateSpoilMutation();
+  const { updateSpoilHandler, isLoading: isUpdating } =
+    useUpdateSpoilMutation();
+
+  const storedSpoilId = useAuthStore.getState().createdSpoilId;
+  const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
+
+  useEffect(() => {
+    if (!spoilData) return;
+
+    const mapped = {
+      coverImage: spoilData.cover_image_url ?? null,
+      title: spoilData.title ?? "",
+      category: String(spoilData.category?.id ?? ""),
+      institution: spoilData.institution ?? "",
+      courseCode: spoilData.course_code ?? "",
+      pricing: spoilData.pricing ?? "",
+      amount: spoilData.amount ? String(spoilData.amount) : "",
+      expiryDate: spoilData.expires_at
+        ? String(spoilData.expires_at).split(" ")[0]
+        : "",
+      moduleCount: spoilData.modules_no ? String(spoilData.modules_no) : "",
+      lessonCount: spoilData.lessons_no ? String(spoilData.lessons_no) : "",
+      description: spoilData.description ?? "",
+      learningOutcome: spoilData.what_to_learn ?? "",
+    };
+
+    onChange(mapped);
+  }, [spoilData, onChange]);
+
+  const mergedCategoryOptions =
+    Categories?.data?.map((c) => ({
+      label: c.name,
+      value: String(c.id),
+    })) ?? [];
+
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
       <h2 className="mt-2 text-xl font-semibold text-black">Spoil Basics</h2>
@@ -84,13 +105,51 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       <Formik<BasicsFormData>
         initialValues={data}
         enableReinitialize
-        // validationSchema={basicsValidationSchema}
-        onSubmit={(values) => {
+        validationSchema={basicsValidationSchema}
+        validateOnChange={true}
+        validateOnBlur={true}
+        onSubmit={async (values, formikHelpers) => {
           onChange(values);
+
+          // if we have a stored spoil id, update instead of create
+          if (storedSpoilId) {
+            try {
+              const res = await updateSpoilHandler(
+                storedSpoilId,
+                values,
+                formikHelpers,
+              );
+              if (!res) return;
+              onNext();
+            } catch {
+              // update handler shows toast
+            }
+            return;
+          }
+
+          // otherwise create a new spoil
+          let res: any;
+          try {
+            res = await createSpoilHandler(values, formikHelpers);
+          } catch {
+            // createSpoilHandler handles toasts; stay on this step
+            return;
+          }
+
+          if (!res) return; // request failed, stay on this step
+
+          const createdId =
+            res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
+
+          if (!createdId) return; // no id returned, stay on this step
+
+          if (typeof onCreated === "function") {
+            onCreated(Number(createdId));
+          }
           onNext();
         }}
       >
-        {({ values, handleChange, handleBlur, isSubmitting, isValid }) => (
+        {({ values, handleChange, handleBlur, isValid }) => (
           <Form className="mt-8 space-y-8">
             <UploadSpoilImage />
 
@@ -106,9 +165,13 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 name="category"
                 label="Category"
                 placeholder="Select category"
-                options={categoryOptions}
+                options={mergedCategoryOptions}
                 hasAsterisk
+                isLoading={isLoading}
               />
+              {isError && (
+                <p className="text-sm text-red-500">{categoryErrorMessage}</p>
+              )}
 
               <Input
                 name="institution"
@@ -214,20 +277,12 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             </div>
 
             <div className="flex flex-wrap gap-4">
-              {/* <Button
-                type="button"
-                variant="outline"
-                onClick={onBackToSelection}
-              >
-                Back
-              </Button> */}
-
               <Button
                 type="submit"
-                disabled={!isValid || isSubmitting}
+                disabled={!isValid || isCreating || isUpdating}
                 className="w-full"
               >
-                Save and Continue
+                {isCreating || isUpdating ? "Saving..." : "Save and Continue"}
               </Button>
             </div>
           </Form>

@@ -1,9 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import Image from "next/image";
 
-import BackTOp from "@spt/assets/icons/button(1).svg";
+// import BackTOp from "@spt/assets/icons/button(1).svg";
 import Button from "@spt/components/button";
 import SpoilCard from "@spt/components/spoilCard";
 import Stack from "@spt/components/stack";
@@ -14,12 +13,12 @@ import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInsti
 const TrendingSpoil = () => {
   const { data } = useGetInstitutionSpoilsQuery();
 
-    const handleScrollTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  //   const handleScrollTop = () => {
+  //   window.scrollTo({
+  //     top: 0,
+  //     behavior: "smooth",
+  //   });
+  // };
   
   return (
     <WebsiteSection className="my-10 w-full">
@@ -46,9 +45,9 @@ const TrendingSpoil = () => {
           Explore Spoils
         </Button>
       </div>
-      <div onClick={handleScrollTop} className="flex justify-end">
+      {/* <div onClick={handleScrollTop} className="flex justify-end">
         <Image src={BackTOp} alt="back" width={90} height={80} />
-      </div>
+      </div> */}
     </WebsiteSection>
   );
 };

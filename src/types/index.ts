@@ -5,6 +5,7 @@ export interface Lesson {
   content: string;
   file?: File | null;
   fileName?: string;
+  description?: string;
 }
 
 export interface Module {
