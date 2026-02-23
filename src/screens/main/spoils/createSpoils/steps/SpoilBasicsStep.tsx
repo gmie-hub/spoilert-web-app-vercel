@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from "react";
+import { useEffect } from "react";
 
 import { Form, Formik } from "formik";
 
@@ -9,6 +10,8 @@ import Input from "@spt/components/input";
 import Select from "@spt/components/select";
 import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
+import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
+import { useAuthStore } from "@spt/store/authStore";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
@@ -69,6 +72,30 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   const { createSpoilHandler, isLoading: isCreating } =
     useCreateSpoilMutation();
 
+  const storedSpoilId = useAuthStore.getState().createdSpoilId;
+  const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
+
+  useEffect(() => {
+    if (!spoilData) return;
+
+    const mapped = {
+      coverImage: spoilData.cover_image_url ?? null,
+      title: spoilData.title ?? "",
+      category: String(spoilData.category?.id ?? ""),
+      institution: spoilData.institution ?? "",
+      courseCode: spoilData.course_code ?? "",
+      pricing: spoilData.pricing ?? "",
+      amount: spoilData.amount ? String(spoilData.amount) : "",
+      expiryDate: spoilData.expires_at ? String(spoilData.expires_at).split(" ")[0] : "",
+      moduleCount: spoilData.modules_no ? String(spoilData.modules_no) : "",
+      lessonCount: spoilData.lessons_no ? String(spoilData.lessons_no) : "",
+      description: spoilData.description ?? "",
+      learningOutcome: spoilData.what_to_learn ?? "",
+    };
+
+    onChange(mapped);
+  }, [spoilData, onChange]);
+
   const apiCategoryOptions =
     Categories?.data?.map((c) => ({
       label: c.name,
@@ -105,10 +132,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           if (!res) return; // request failed, stay on this step
 
           const createdId =
-            res?.data?.id ??
-            res?.data?.spoil_id ??
-            res?.data?.data?.id ??
-            null;
+            res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
 
           if (!createdId) return; // no id returned, stay on this step
 
@@ -118,7 +142,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           onNext();
         }}
       >
-        {({ values, handleChange, handleBlur,  isValid }) => (
+        {({ values, handleChange, handleBlur, isValid }) => (
           <Form className="mt-8 space-y-8">
             <UploadSpoilImage />
 
@@ -248,10 +272,10 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             <div className="flex flex-wrap gap-4">
               <Button
                 type="submit"
-                disabled={!isValid  || isCreating}
+                disabled={!isValid || isCreating}
                 className="w-full"
               >
-                { isCreating ? "Saving..." : "Save and Continue"}
+                {isCreating ? "Saving..." : "Save and Continue"}
               </Button>
             </div>
           </Form>

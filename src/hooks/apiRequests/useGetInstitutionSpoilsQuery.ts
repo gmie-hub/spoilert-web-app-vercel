@@ -7,7 +7,9 @@ import { SpoilResponse } from "@spt/utils/spoils";
 
 export const useGetInstitutionSpoilsQuery = () => {
   const fetchInstitutionSpoils = async (): Promise<SpoilResponse> => {
-    return (await api.get(`spoils?per_page=30&is_institution=1`))?.data;
+    // return (await api.get(`spoils?per_page=30&is_institution=1`))?.data;
+        return (await api.get(`spoils?per_page=30`))?.data;
+
   };
 
   const { data, isLoading, error, isError } = useQuery<

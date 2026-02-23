@@ -60,7 +60,7 @@ export const useCreateLessonMutation = () => {
       const res = await mutation.mutateAsync(formData);
       toast.success("Lesson created successfully");
 
-      queryClient.invalidateQueries({ queryKey: ["modules"] });
+      queryClient.invalidateQueries({ queryKey: ["lessons"] });
 
       return res;
     } catch (error: any) {
