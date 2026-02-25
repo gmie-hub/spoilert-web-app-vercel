@@ -21,7 +21,7 @@ export const useCreateSpoilMutation = () => {
     payload: FormData,
   ): Promise<CreateSpoilResponse> => {
     return (
-      await api.post("/spoils", payload, {
+      await api.post("/spoils1", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       })
     ).data;
@@ -39,7 +39,8 @@ export const useCreateSpoilMutation = () => {
   const createSpoilHandler = async (
     _: any,
     { setSubmitting }: any,
-    createModuleHandler?: (payload: { title: string; description: string; spoil_id: number }) => Promise<any>
+    createModuleHandler?: (payload: { title: string; description: string; spoil_id: number }) => Promise<any>,
+    createLessonHandler?: (moduleId: number | string, lessons: { title: string; type: string; content?: string; file?: File | null; description?: string }[]) => Promise<any>,
   ) => {
     try {
       const formData = new FormData();
@@ -65,13 +66,51 @@ export const useCreateSpoilMutation = () => {
       if (basics.lessonCount)
         formData.append("lessons_no", String(basics.lessonCount));
 
-      const file = basics.coverImage ?? basics.image ?? null;
-      if (file) {
-        if (file instanceof File) formData.append("image", file);
-        else if (Array.isArray(file) && file[0] instanceof File)
-          formData.append("image", file[0]);
-        else if ((file as any).file instanceof File)
-          formData.append("image", (file as any).file);
+      // If a scheduled premiere was set, include it as `premiere_at` in ISO format
+      if (basics.scheduledDate) {
+		formData.append("premiere_at", basics.scheduledDate);
+	  }
+	  
+
+    // If draft flag is set in basics, append it for the API
+      if (basics.is_draft) {
+        try {
+          formData.append("is_draft", String(basics.is_draft === true ? 1 : basics.is_draft));
+        } catch (e) {
+          console.warn("Failed to append is_draft", e);
+        }
+	}
+
+	  const storedCover = basics.coverImage ?? basics.image ?? null;
+      if (storedCover) {
+        // if it's already a File (selected this session)
+        if (storedCover instanceof File) {
+          formData.append("image", storedCover);
+        } else if (Array.isArray(storedCover) && storedCover[0] instanceof File) {
+          formData.append("image", storedCover[0]);
+        } else if ((storedCover as any).file instanceof File) {
+          formData.append("image", (storedCover as any).file);
+        } else if (typeof storedCover === "object" && (storedCover as any).dataUrl) {
+          // persisted data URL: convert to File
+          const { dataUrl, name, type } = storedCover as any;
+          try {
+            const blob = await (await fetch(dataUrl)).blob();
+            const filename = name ?? `cover.${type?.split("/")[1] ?? "jpg"}`;
+            const fileFromDataUrl = new File([blob], filename, { type: type ?? blob.type });
+            formData.append("image", fileFromDataUrl);
+          } catch (convErr) {
+            console.warn("Failed to convert persisted cover image to File", convErr);
+          }
+        } else if (typeof storedCover === "string") {
+          // if it's a URL string (maybe remote), try to fetch and append
+          try {
+            const blob = await (await fetch(storedCover)).blob();
+            const fileFromUrl = new File([blob], "cover.jpg", { type: blob.type });
+            formData.append("image", fileFromUrl);
+          } catch (urlErr) {
+            console.warn("Failed to fetch cover image URL", urlErr);
+          }
+        }
       }
 
       const res = await mutation.mutateAsync(formData);
@@ -89,11 +128,27 @@ export const useCreateSpoilMutation = () => {
           for (const module of outline.modules) {
             try {
               console.log("Creating module:", module);
-              await createModuleHandler({
+              const moduleRes = await createModuleHandler({
                 title: module.title,
                 description: module.description,
                 spoil_id: createdId,
               });
+
+              // extract created module id from response
+              const moduleId = moduleRes?.data?.id ?? moduleRes?.data?.module_id ?? moduleRes?.data?.data?.id ?? null;
+
+              // create lessons under the created module if handler provided
+              if (moduleId && Array.isArray(module.lessons) && module.lessons.length > 0) {
+                if (typeof createLessonHandler === "function") {
+                  try {
+                    await createLessonHandler(moduleId, module.lessons);
+                  } catch (lessonErr) {
+                    console.error("Error creating lessons for module", moduleId, lessonErr);
+                  }
+                } else {
+                  console.warn("createLessonHandler not provided; skipping lesson creation for module", moduleId);
+                }
+              }
             } catch (modError) {
               console.error("Error creating module", module, modError);
               // continue with next module

@@ -6,6 +6,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 
 import CameraIcon from "@spt/assets/icons/camera.svg";
+import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 const SUPPORTED_FORMATS = [
   "image/jpeg",
@@ -25,16 +26,29 @@ const UploadSpoilImage = () => {
 
   const accept = "image/*";
 
-  // Build a preview URL when a File is selected
+  // read persisted basics for fallback preview when field value is not a File
+  const storedBasics = useCreateSpoilStore((s) => s.basics);
+
+  // Build a preview URL when a File is selected or when a persisted data URL exists
   const previewUrl = useMemo(() => {
     if (field.value instanceof File) {
       return URL.createObjectURL(field.value);
     }
+    if (field.value && typeof field.value === "object" && (field.value as any).dataUrl) {
+      return (field.value as any).dataUrl;
+    }
     if (typeof field.value === "string" && field.value) {
       return field.value; // already a URL
     }
+    if (storedBasics?.coverImage && typeof storedBasics.coverImage === "object" && (storedBasics.coverImage as any).dataUrl) {
+      return (storedBasics.coverImage as any).dataUrl;
+    }
+    if (storedBasics?.coverImage && typeof storedBasics.coverImage === "string") {
+      return storedBasics.coverImage;
+    }
+
     return null;
-  }, [field.value]);
+  }, [field.value, storedBasics]);
 
   const handleClick = () => inputRef.current?.click();
 
@@ -55,7 +69,24 @@ const UploadSpoilImage = () => {
       return;
     }
 
+    // set Formik field to the File for immediate use in this session
     helpers.setValue(file);
+
+    // persist a lightweight preview object in the draft store (data URL + metadata)
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      try {
+        const prev = useCreateSpoilStore.getState().basics;
+        useCreateSpoilStore.getState().setBasics?.({
+          ...prev,
+          coverImage: { dataUrl, name: file.name, type: file.type },
+        });
+      } catch (err) {
+        // ignore store errors
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (

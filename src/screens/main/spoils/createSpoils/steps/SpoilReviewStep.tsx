@@ -2,10 +2,14 @@
 
 import { type FC, useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
+import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
 import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import CreateCommunityModal from "../components/CreateCommunityModal";
 import CreateCommunitySuccessModal from "../components/CreateCommunitySuccessModal";
@@ -62,6 +66,8 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
 
   const { createSpoilHandler } = useCreateSpoilMutation();
   const { createModuleHandler } = useCreateModuleMutation();
+  const { createLessonHandler } = useCreateLessonMutation();
+  const router = useRouter();
 
   const handlePublishClick = async () => {
     try {
@@ -71,11 +77,17 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       if (basics?.title) formData.append("title", basics.title);
       if (outline) formData.append("outline", JSON.stringify(outline));
 
-      const response = await createSpoilHandler(formData, {}, createModuleHandler);
+      const response = await createSpoilHandler(
+        formData,
+        {},
+        createModuleHandler,
+        createLessonHandler,
+      );
 
       if (response?.data?.id) {
         console.log("Spoil created successfully with ID:", response.data.id);
-        // Optionally, handle success state here
+        // Show the review modal on full success (spoil + modules + lessons)
+        setIsReviewModalOpen(true);
       }
     } catch (error) {
       console.error("Error creating spoil:", error);
@@ -110,10 +122,91 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
     setIsSchedulePremiereModalOpen(true);
   };
 
+  const handleSaveToDraftClick = async () => {
+    try {
+      // mark draft in persisted basics
+      setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
+
+      // call same publish endpoints (create spoil -> modules -> lessons)
+      const res = await createSpoilHandler(
+        new FormData(),
+        { setSubmitting: (v: boolean) => {} },
+        createModuleHandler,
+        createLessonHandler,
+      );
+      if (res?.data?.id) {
+        console.log("Draft saved as spoil with ID:", res.data.id);
+      }
+      try {
+        // clear persisted draft and step before navigating away
+        try {
+          resetDraft?.();
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("advanced-spoil-step");
+          }
+        } catch (clearErr) {
+          // ignore clear errors
+          // eslint-disable-next-line no-console
+          console.error("Failed to clear draft storage:", clearErr);
+        }
+
+        router.push("/create-spoils");
+      } catch (e) {
+        // ignore navigation errors
+        // eslint-disable-next-line no-console
+        console.error("Navigation to /create-spoils failed", e);
+      }
+      // after saving to draft, go back to previous step
+      // onPrevious();
+    } catch (e) {
+      console.error("Failed to save draft and create resources:", e);
+      // still go back to previous step
+      onPrevious();
+    }
+  };
+
   const handleSchedulePremiereSubmit = (values: SchedulePremiereFormState) => {
     setScheduledDateTime(values);
-    setIsSchedulePremiereModalOpen(false);
-    setIsCreateCommunityModalOpen(true);
+
+    // persist schedule into the draft basics
+    try {
+      setBasicsInDraft?.({
+        ...(storedBasics ?? {}),
+        scheduledDate: values.date,
+        scheduledTime: values.time,
+      } as any);
+    } catch (e) {
+      // do not block UI on failure
+      // eslint-disable-next-line no-console
+      console.error("Failed to persist scheduled date into draft:", e);
+    }
+
+    // Also trigger the same publish flow (create spoil -> modules -> lessons)
+    (async () => {
+      try {
+        // createSpoilHandler reads data from the persisted draft store internally
+        const res = await createSpoilHandler(
+          new FormData(),
+          { setSubmitting: (v: boolean) => {} },
+          createModuleHandler,
+          createLessonHandler,
+        );
+
+        // Only show the scheduled confirmation modal when create spoil succeeded
+        if (res?.data?.id) {
+          setIsSchedulePremiereModalOpen(false);
+          setIsSpoilScheduledModalOpen(true);
+        } else {
+          // fallback: close schedule modal and open create-community flow
+          setIsSchedulePremiereModalOpen(false);
+          // setIsCreateCommunityModalOpen(true);
+        }
+      } catch (err) {
+        console.error("Scheduled publish failed:", err);
+        setIsSchedulePremiereModalOpen(false);
+        // setIsCreateCommunityModalOpen(true);
+      }
+    })();
   };
 
   const handleCreateCommunity = () => {
@@ -129,22 +222,66 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
 
   const handleSpoilScheduledClose = () => {
     setIsSpoilScheduledModalOpen(false);
-    // Optionally navigate away or perform other actions
+    // clear persisted draft and step before navigating away
+    try {
+      resetDraft?.();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("advanced-spoil-step");
+      }
+    } catch (clearErr) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to clear draft storage:", clearErr);
+    }
+
+    // navigate to create spoils page
+    try {
+      router.push("/create-spoils");
+    } catch (e) {
+      // ignore navigation errors
+      // eslint-disable-next-line no-console
+      console.error("Navigation to /create-spoils failed", e);
+    }
   };
 
   const handleCreateCommunitySuccessClose = () => {
     setIsCreateCommunitySuccessModalOpen(false);
-    // Optionally navigate away or perform other actions
+    // clear persisted draft and step before navigating away
+    try {
+      resetDraft?.();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("advanced-spoil-step");
+      }
+    } catch (clearErr) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to clear draft storage:", clearErr);
+    }
+
+    // navigate to create spoils page
+    try {
+      router.push("/create-spoils");
+    } catch (e) {
+      // ignore navigation errors
+      // eslint-disable-next-line no-console
+      console.error("Navigation to /create-spoils failed", e);
+    }
   };
-  
- const storedSpoilId = useAuthStore.getState().createdSpoilId;
+
+  const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
 
-  // Prefer the API payload, fall back to `basics` prop if API data not available
+  // Prefer the API payload, fall back to `basics` prop, then persisted draft
+  const storedBasics = useCreateSpoilStore((s) => s.basics);
+  const setBasicsInDraft = useCreateSpoilStore((s) => s.setBasics);
+  const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
   const displayBasics: BasicsFormData | undefined =
-    spoilData != null ? mapSpoilDataToForm(spoilData) : basics;
+    spoilData != null
+      ? mapSpoilDataToForm(spoilData)
+      : (basics ?? storedBasics);
 
-  
+  // Prefer the API payload for outline, fall back to `outline` prop, then persisted draft
+  const storedOutline = useCreateSpoilStore((s) => s.outline);
+  const displayOutline = spoilData ?? outline ?? storedOutline;
+
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
       <div>
@@ -156,16 +293,21 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       <div className="space-y-4">
         <p>Review the Spoil you created and publish</p>
 
-        <SpoilBasicsSection basics={displayBasics as BasicsFormData} onEdit={onEditBasics} />
+        <SpoilBasicsSection
+          basics={displayBasics as BasicsFormData}
+          onEdit={onEditBasics}
+        />
 
-        <SpoilOutlineSection outline={spoilData} onEdit={onEditOutline} />
-       
+        <SpoilOutlineSection
+          outline={displayOutline as any}
+          onEdit={onEditOutline}
+        />
       </div>
 
       <ReviewActionButtons
         onPublish={handlePublishClick}
         onSchedulePremiere={handleSchedulePremiereClick}
-        onSaveToDraft={onPrevious}
+        onSaveToDraft={handleSaveToDraftClick}
       />
 
       <ReviewModal

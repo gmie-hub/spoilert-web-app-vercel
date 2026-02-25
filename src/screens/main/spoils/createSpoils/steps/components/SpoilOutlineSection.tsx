@@ -24,6 +24,7 @@ const SpoilOutlineSection: FC<SpoilOutlineSectionProps> = ({
     else next.add(id);
     setOpenModules(next);
   };
+  console.log("Rendering SpoilOutlineSection with outline:", outline);
 
   return (
     <section className="flex flex-col gap-4 overflow-hidden">

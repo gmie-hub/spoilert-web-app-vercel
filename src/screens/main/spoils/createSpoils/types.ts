@@ -13,6 +13,11 @@ export interface BasicsFormData {
   lessonCount: string;
   description: string;
   learningOutcome: string;
+  // optional scheduled premiere fields
+  scheduledDate?: string;
+  scheduledTime?: string;
+  // draft flag: 1 = draft, 0 = published
+  is_draft?: number | boolean;
 }
 
 export type LessonTypeOption = "video" | "pdf" | "text";

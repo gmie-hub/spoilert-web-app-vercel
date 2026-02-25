@@ -40,8 +40,7 @@ interface LessonModalProps {
 }
 
 const lessonTypeOptions = [
-  { label: "Video", value: "video" },
-  { label: "Pdf", value: "pdf" },
+  { label: "File", value: "file" },
   { label: "Text", value: "text" },
 ];
 

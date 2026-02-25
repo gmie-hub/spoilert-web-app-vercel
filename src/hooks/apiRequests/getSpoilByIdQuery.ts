@@ -13,7 +13,7 @@ const fetchSpoilById = async (id: number | string) => {
 };
 
 export const useGetSpoilByIdQuery = (spoilId?: number | string | null) => {
-	const storedSpoilId = useAuthStore.getState().createdSpoilId;
+	const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
 	const resolvedSpoilId = spoilId ?? storedSpoilId;
 
 	const { data, isLoading, isError, error } = useQuery({

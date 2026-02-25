@@ -42,7 +42,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   onChange,
   onNext,
   // onBackToSelection,
-  onCreated,
+ 
 }) => {
   const {
     data: Categories,
@@ -51,10 +51,9 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
     categoryErrorMessage,
   } = useGetAllCategoriesQuery();
 
-  const isCreating = false;
-  const isUpdating = false;
 
-  const storedSpoilId = useAuthStore.getState().createdSpoilId;
+
+  const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
   const setBasicsInDraft = useCreateSpoilStore((s) => s.setBasics);
 

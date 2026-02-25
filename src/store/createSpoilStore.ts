@@ -24,6 +24,9 @@ const initialBasics: BasicsFormData = {
   lessonCount: "",
   description: "",
   learningOutcome: "",
+  scheduledDate: "",
+  scheduledTime: "",
+  is_draft: 0,
 };
 
 const initialOutline: OutlineData = {

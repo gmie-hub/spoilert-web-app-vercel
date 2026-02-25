@@ -114,13 +114,13 @@ const AdvancedSpoil = () => {
             onNext={goToNextStep}
             selectedType="advanced"
             onBackToSelection={handleBackToSelection}
-            onCreated={(id: number) => {
-              setCreatedSpoilId(id);
-              setOutlineData(
-                (prev) => ({ ...prev, spoil_id: id } as OutlineData),
-              );
-              setCreatedSpoilIdInStore?.(id);
-            }}
+            // onCreated={(id: number) => {
+            //   setCreatedSpoilId(id);
+            //   setOutlineData(
+            //     (prev) => ({ ...prev, spoil_id: id } as OutlineData),
+            //   );
+            //   setCreatedSpoilIdInStore?.(id);
+            // }}
           />
         );
       case 1:
