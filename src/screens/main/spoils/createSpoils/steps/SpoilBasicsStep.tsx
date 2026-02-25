@@ -17,7 +17,15 @@ import { useAuthStore } from "@spt/store/authStore";
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
 
+import {
+  lessonOptions,
+  mapSpoilDataToForm,
+  moduleOptions,
+  pricingOptions,
+} from "./spoilBasicsHelpers";
+
 import type { BasicsFormData, SpoilTypeOption } from "../types";
+
 
 interface SpoilBasicsStepProps {
   data: BasicsFormData;
@@ -28,21 +36,7 @@ interface SpoilBasicsStepProps {
   onCreated?: (id: number) => void;
 }
 
-const pricingModels = ["free", "Paid", "Subscription"];
-
-const buildNumberOptions = (limit: number) =>
-  Array.from({ length: limit }, (_, index) => {
-    const value = String(index + 1);
-    return { value, label: value };
-  });
-
-const pricingOptions = pricingModels.map((pricing) => ({
-  label: pricing,
-  value: pricing,
-}));
-
-const moduleOptions = buildNumberOptions(20);
-const lessonOptions = buildNumberOptions(60);
+// constants and helpers moved to ./spoilBasicsHelpers.ts
 
 const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
@@ -69,25 +63,16 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   useEffect(() => {
     if (!spoilData) return;
 
-    const mapped = {
-      coverImage: spoilData.cover_image_url ?? null,
-      title: spoilData.title ?? "",
-      category: String(spoilData.category?.id ?? ""),
-      institution: spoilData.institution ?? "",
-      courseCode: spoilData.course_code ?? "",
-      pricing: spoilData.pricing ?? "",
-      amount: spoilData.amount ? String(spoilData.amount) : "",
-      expiryDate: spoilData.expires_at
-        ? String(spoilData.expires_at).split(" ")[0]
-        : "",
-      moduleCount: spoilData.modules_no ? String(spoilData.modules_no) : "",
-      lessonCount: spoilData.lessons_no ? String(spoilData.lessons_no) : "",
-      description: spoilData.description ?? "",
-      learningOutcome: spoilData.what_to_learn ?? "",
-    };
+    const mapped = mapSpoilDataToForm(spoilData);
 
     onChange(mapped);
   }, [spoilData, onChange]);
+
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const mergedCategoryOptions =
     Categories?.data?.map((c) => ({
@@ -120,6 +105,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 formikHelpers,
               );
               if (!res) return;
+              scrollToTop();
               onNext();
             } catch {
               // update handler shows toast
@@ -146,10 +132,11 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           if (typeof onCreated === "function") {
             onCreated(Number(createdId));
           }
+          scrollToTop();
           onNext();
         }}
       >
-        {({ values, handleChange, handleBlur, isValid }) => (
+        {({ values, handleChange, handleBlur, isValid, setTouched, errors, touched }) => (
           <Form className="mt-8 space-y-8">
             <UploadSpoilImage />
 
@@ -197,7 +184,10 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 name="amount"
                 label="Amount"
                 placeholder="Enter amount"
-                type="number"
+                // type="text"
+                // className="no-spinner"
+                // inputMode="numeric"
+                // pattern="[0-9]*"
                 // hasAsterisk
               />
 
@@ -255,6 +245,9 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 placeholder="Write a description about the project"
                 className="w-full rounded-2xl border border-gray-200 bg-[#FBFBFB] px-4 py-3 text-sm focus:border-[var(--color-blue)] focus:outline-none"
               />
+              {touched.description && errors.description && (
+                <p className="text-xs text-red-500">{errors.description}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -274,13 +267,25 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 placeholder="Write what they will learn"
                 className="w-full rounded-2xl border border-gray-200 bg-[#FBFBFB] px-4 py-3 text-sm focus:border-[var(--color-blue)] focus:outline-none"
               />
+              {touched.learningOutcome && errors.learningOutcome && (
+                <p className="text-xs text-red-500">{errors.learningOutcome}</p>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-4">
               <Button
                 type="submit"
-                disabled={!isValid || isCreating || isUpdating}
+                disabled={isCreating || isUpdating}
                 className="w-full"
+                onClick={() =>
+                  setTouched(
+                    Object.keys(values).reduce((acc, k) => {
+                      // @ts-ignore
+                      acc[k] = true;
+                      return acc;
+                    }, {} as Record<string, boolean>),
+                  )
+                }
               >
                 {isCreating || isUpdating ? "Saving..." : "Save and Continue"}
               </Button>

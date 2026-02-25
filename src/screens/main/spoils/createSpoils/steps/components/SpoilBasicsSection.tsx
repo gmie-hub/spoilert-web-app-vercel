@@ -3,14 +3,13 @@ import { FC } from "react";
 import Image from "next/image";
 
 import EditIcon from "@spt/assets/icons/white-edit.svg";
-import CoverImage from "@spt/assets/images/start-learning.svg";
 
 import InfoItem from "./InfoItem";
 
 import type { BasicsFormData } from "../../types";
 
 interface SpoilBasicsSectionProps {
-  basics: BasicsFormData;
+  basics?: BasicsFormData;
   onEdit?: () => void;
 }
 
@@ -33,66 +32,68 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
       <div className="space-y-8">
         <div className="flex gap-2">
           <div className="overflow-hidden">
-            {basics.coverImage ? (
-              <img
-                src={URL.createObjectURL(basics.coverImage as unknown as Blob)}
-                alt="Cover"
-                className="object-cover"
-              />
+            {basics && basics.coverImage ? (
+              typeof basics.coverImage === "string" ? (
+                <Image
+                width={64}
+                  height={64}
+                  src={basics.coverImage}
+                  alt="Cover"
+                  className="object-cover"
+                />
+              ) : (
+                <Image
+                  width={60}
+                  height={40}
+                  src={URL.createObjectURL(
+                    basics.coverImage as unknown as Blob,
+                  )}
+                  alt="Cover"
+                  className="object-cover"
+                />
+              )
             ) : (
               <div className="flex items-center justify-center text-gray-400">
                 <Image
-                  src={CoverImage}
+                  src={''}
                   alt="cover placeholder"
-                  width={80}
-                  height={60}
+                  width={64}
+                  height={64}
                 />
               </div>
             )}
           </div>
 
-          <button className="font-medium text-blue hover:underline">
+          {/* <button className="font-medium text-blue hover:underline">
             Change Cover Image
-          </button>
+          </button> */}
         </div>
 
         {/* Basic Info Grid */}
         <div className="flex flex-col gap-4">
-          <InfoItem
-            label="Spoil Title"
-            value={basics.title || "Basic Design Principles"}
-          />
+          <InfoItem label="Spoil Title" value={basics?.title || "n/a"} />
 
           <hr className="border-gray-200" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <InfoItem
-              label="Category"
-              value={basics.category || "UI/UX Design"}
-            />
-            <InfoItem label="Pricing" value={basics.pricing || "Paid"} />
+            <InfoItem label="Category" value={basics?.category || "n/a"} />
+            <InfoItem label="Pricing" value={basics?.pricing || "NA"} />
           </div>
 
           <hr className="border-gray-200" />
 
-          <InfoItem
-            label="Institution"
-            value={basics.institution || "Unknown Institution"}
-          />
+          <InfoItem label="Institution" value={basics?.institution || "n/a"} />
 
           <hr className="border-gray-200" />
 
           <div className="grid grid-cols-1 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
-            <InfoItem
-              label="Course Code"
-              value={basics.courseCode || "CHM204"}
-            />
+            <InfoItem label="Course Code" value={basics?.courseCode || "n/a"} />
             <InfoItem
               label="Amount"
               value={
-                basics.amount
+                basics?.amount
                   ? `N${Number(basics.amount).toLocaleString()}`
-                  : "Free"
+                  : "N/A"
               }
             />
           </div>
@@ -100,35 +101,25 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
           <hr className="border-gray-200" />
 
           <div className="grid grid-cols-1 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
-            <InfoItem
-              label="Expiry Date"
-              value={basics.expiryDate || "20-05-2025"}
-            />
-            <InfoItem label="Modules" value={basics.moduleCount || "10"} />
+            <InfoItem label="Expiry Date" value={basics?.expiryDate || "n/a"} />
+            <InfoItem label="Modules" value={basics?.moduleCount || "10"} />
           </div>
 
           <hr className="border-gray-200" />
 
-          <InfoItem label="Lessons" value={basics.lessonCount || "10"} />
+          <InfoItem label="Lessons" value={basics?.lessonCount || "10"} />
 
           <hr className="border-gray-200" />
 
-          <InfoItem
-            label="Description"
-            value={
-              basics.description ||
-              "Understanding Design Principles is a comprehensive Spoil that takes you through the foundational concepts of creating effective and visually appealing designs."
-            }
-          />
+          <InfoItem label="Description" value={basics?.description || "n/a"} />
 
           <hr className="border-gray-200" />
 
           <InfoItem
             label="What Will They Learn"
             value={
-              basics.learningOutcome ||
-              "Understanding Design Principles is a comprehensive Spoil that takes you through the foundational concepts of creating effective and visually appealing designs."
-            }
+              basics?.learningOutcome ||
+"N/A"            }
           />
 
           <hr className="border-gray-200" />
