@@ -9,8 +9,6 @@ import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Modal from "@spt/components/modal";
 import Textarea from "@spt/components/textarea";
-import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
-import useUpdateModuleMutation from "@spt/hooks/apiRequests/useUpdateModuleMutation";
 
 interface ModuleFormState {
   title: string;
@@ -45,8 +43,8 @@ const ModuleModal: FC<ModuleModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const { createModuleHandler, isLoading: isCreatingModule } = useCreateModuleMutation();
-  const { updateModuleHandler, isUpdating } = useUpdateModuleMutation();
+  const isCreatingModule = false;
+  const isUpdating = false;
 
   return (
     <Modal
@@ -59,42 +57,10 @@ const ModuleModal: FC<ModuleModalProps> = ({
         enableReinitialize
         validationSchema={moduleValidationSchema}
         onSubmit={async (values, helpers) => {
-          const payload = {
-            title: values.title.trim(),
-            description: values.description.trim(),
-          };
-
-          // Editing: call PATCH /modules/:id
-          if (isEditing && editingId) {
-            try {
-              await updateModuleHandler({
-                moduleId: editingId,
-                ...payload,
-              });
-              onSubmit(values, helpers);
-              onClose();
-            } catch {
-              // updateModuleHandler shows toast
-              helpers.setSubmitting(false);
-            }
-            return;
-          }
-
-          // Creating: call POST /modules
-          if (!isEditing && createModuleHandler) {
-            try {
-              const res = await createModuleHandler(payload as any);
-              const serverModuleId = res?.data?.id ?? res?.data?.module?.id ?? undefined;
-              onSubmit(values, helpers, serverModuleId);
-              onClose();
-            } catch {
-              helpers.setSubmitting(false);
-            }
-            return;
-          }
-
-          // Fallback: delegate to parent
+          // Always save locally via parent onSubmit (draft store is updated upstream)
           onSubmit(values, helpers);
+          onClose();
+          helpers.setSubmitting(false);
         }}
       >
         {() => (

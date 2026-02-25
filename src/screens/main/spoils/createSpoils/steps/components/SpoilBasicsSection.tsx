@@ -35,22 +35,22 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
             {basics && basics.coverImage ? (
               typeof basics.coverImage === "string" ? (
                 <Image
-                width={64}
+                  width={64}
                   height={64}
                   src={basics.coverImage}
                   alt="Cover"
                   className="object-cover"
                 />
-              ) : (
+              ) : basics.coverImage instanceof File ? (
                 <Image
                   width={60}
                   height={40}
-                  src={URL.createObjectURL(
-                    basics.coverImage as unknown as Blob,
-                  )}
+                  src={URL.createObjectURL(basics.coverImage)}
                   alt="Cover"
                   className="object-cover"
                 />
+              ) : (
+                <div className="text-gray-400">Invalid cover image</div>
               )
             ) : (
               <div className="flex items-center justify-center text-gray-400">

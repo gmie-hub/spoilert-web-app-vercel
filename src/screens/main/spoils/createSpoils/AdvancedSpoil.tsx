@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import CustomStepper from "@spt/components/stepper";
 import { useAuthStore } from "@spt/store/authStore";
+import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilOutlineStep from "./steps/SpoilOutlineStep";
@@ -52,11 +53,11 @@ const AdvancedSpoil = () => {
     sessionStorage.setItem(STEP_KEY, String(activeStep));
   }, [activeStep]);
 
-  const [basicsData, setBasicsData] =
-    useState<BasicsFormData>(initialBasicsState);
-  const [outlineData, setOutlineData] =
-    useState<OutlineData>(initialOutlineState);
-  const [createdSpoilId, setCreatedSpoilId] = useState<number | null>(null);
+  const basicsData = useCreateSpoilStore((s) => s.basics);
+  const setBasicsData = useCreateSpoilStore((s) => s.setBasics);
+  const outlineData = useCreateSpoilStore((s) => s.outline);
+  const setOutlineData = useCreateSpoilStore((s) => s.setOutline);
+  const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
 
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
 
@@ -138,7 +139,14 @@ const AdvancedSpoil = () => {
             outline={outlineData}
             selectedType="advanced"
             onPrevious={goToPreviousStep}
-            onSubmit={() => {}}
+            onSubmit={() => {
+              // after successful publish the review step will call this to reset local draft
+              resetDraft();
+              setCreatedSpoilIdInStore?.(null);
+              setActiveStep(0);
+              sessionStorage.removeItem(STEP_KEY);
+              router.push("/create-spoils");
+            }}
           />
         );
       default:

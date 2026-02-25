@@ -9,10 +9,9 @@ import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
-import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
-import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
@@ -52,13 +51,12 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
     categoryErrorMessage,
   } = useGetAllCategoriesQuery();
 
-  const { createSpoilHandler, isLoading: isCreating } =
-    useCreateSpoilMutation();
-  const { updateSpoilHandler, isLoading: isUpdating } =
-    useUpdateSpoilMutation();
+  const isCreating = false;
+  const isUpdating = false;
 
   const storedSpoilId = useAuthStore.getState().createdSpoilId;
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
+  const setBasicsInDraft = useCreateSpoilStore((s) => s.setBasics);
 
   useEffect(() => {
     if (!spoilData) return;
@@ -95,43 +93,8 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
         validateOnBlur={true}
         onSubmit={async (values, formikHelpers) => {
           onChange(values);
-
-          // if we have a stored spoil id, update instead of create
-          if (storedSpoilId) {
-            try {
-              const res = await updateSpoilHandler(
-                storedSpoilId,
-                values,
-                formikHelpers,
-              );
-              if (!res) return;
-              scrollToTop();
-              onNext();
-            } catch {
-              // update handler shows toast
-            }
-            return;
-          }
-
-          // otherwise create a new spoil
-          let res: any;
-          try {
-            res = await createSpoilHandler(values, formikHelpers);
-          } catch {
-            // createSpoilHandler handles toasts; stay on this step
-            return;
-          }
-
-          if (!res) return; // request failed, stay on this step
-
-          const createdId =
-            res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
-
-          if (!createdId) return; // no id returned, stay on this step
-
-          if (typeof onCreated === "function") {
-            onCreated(Number(createdId));
-          }
+          // persist into draft store instead of calling API here
+          setBasicsInDraft(values);
           scrollToTop();
           onNext();
         }}
@@ -275,7 +238,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             <div className="flex flex-wrap gap-4">
               <Button
                 type="submit"
-                disabled={isCreating || isUpdating}
+                disabled={false}
                 className="w-full"
                 onClick={() =>
                   setTouched(
@@ -287,7 +250,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                   )
                 }
               >
-                {isCreating || isUpdating ? "Saving..." : "Save and Continue"}
+                {"Save and Continue"}
               </Button>
             </div>
           </Form>

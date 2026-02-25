@@ -3,6 +3,8 @@
 import { type FC, useState } from "react";
 
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
+import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
+import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
 
 import CreateCommunityModal from "../components/CreateCommunityModal";
@@ -58,8 +60,27 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
   const [scheduledDateTime, setScheduledDateTime] =
     useState<SchedulePremiereFormState | null>(null);
 
-  const handlePublishClick = () => {
-    setIsReviewModalOpen(true);
+  const { createSpoilHandler } = useCreateSpoilMutation();
+  const { createModuleHandler } = useCreateModuleMutation();
+
+  const handlePublishClick = async () => {
+    try {
+      const formData = new FormData();
+
+      // Assuming `basics` and `outline` are available in the component
+      if (basics?.title) formData.append("title", basics.title);
+      if (outline) formData.append("outline", JSON.stringify(outline));
+
+      const response = await createSpoilHandler(formData, {}, createModuleHandler);
+
+      if (response?.data?.id) {
+        console.log("Spoil created successfully with ID:", response.data.id);
+        // Optionally, handle success state here
+      }
+    } catch (error) {
+      console.error("Error creating spoil:", error);
+      // Optionally, handle error state here
+    }
   };
 
   const handleCloseModal = () => {
@@ -115,67 +136,15 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
     setIsCreateCommunitySuccessModalOpen(false);
     // Optionally navigate away or perform other actions
   };
-
-  const storedSpoilId = useAuthStore.getState().createdSpoilId;
+  
+ const storedSpoilId = useAuthStore.getState().createdSpoilId;
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
 
   // Prefer the API payload, fall back to `basics` prop if API data not available
   const displayBasics: BasicsFormData | undefined =
     spoilData != null ? mapSpoilDataToForm(spoilData) : basics;
 
-  // Map various possible API shapes into the `OutlineData` shape expected by the UI
-  const mapApiToOutline = (api: any) => {
-    if (!api) return { modules: [] } as OutlineData;
-
-    // Try common module containers
-    const modulesRaw =
-      api.modules || api.modules_data || api.outline?.modules || [];
-    // Lessons might be embedded under each module, or provided as a top-level list
-    const lessonsPool = api.lessons || api.module_lessons || [];
-
-    const normalizeLesson = (l: any) => ({
-      id: l.id ?? l.lesson_id ?? Math.random().toString(36).slice(2, 9),
-      title: l.title ?? l.name ?? l.lesson_title ?? "Untitled Lesson",
-      type: (l.type || l.lesson_type || "text").toString().toLowerCase(),
-      content: l.content ?? l.body ?? "",
-      file: l.file ?? l.file_url ?? null,
-      fileName: l.file_name ?? l.fileName ?? l.filename ?? undefined,
-    });
-
-    const modules = (Array.isArray(modulesRaw) ? modulesRaw : []).map(
-      (m: any, idx: number) => {
-        const moduleId = m.id ?? m.module_id ?? idx;
-        // lessons directly on module
-        let lessons: any[] = [];
-        if (Array.isArray(m.lessons) && m.lessons.length)
-          lessons = m.lessons.map(normalizeLesson);
-        else if (Array.isArray(lessonsPool) && lessonsPool.length)
-          lessons = lessonsPool
-            .filter(
-              (ls: any) =>
-                ls.module_id === moduleId ||
-                ls.module === moduleId ||
-                ls.module?.id === moduleId,
-            )
-            .map(normalizeLesson);
-
-        return {
-          id: moduleId,
-          title: m.title ?? m.name ?? `Module ${idx + 1}`,
-          description: m.description ?? m.desc ?? "",
-          lessons,
-        } as any;
-      },
-    );
-
-    return {
-      modules,
-      spoil_id: api.id ?? api.spoil_id ?? undefined,
-    } as OutlineData;
-  };
-
-  const outlineForUI = mapApiToOutline(spoilData);
-
+  
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
       <div>
@@ -187,12 +156,10 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       <div className="space-y-4">
         <p>Review the Spoil you created and publish</p>
 
-        <SpoilBasicsSection
-          basics={displayBasics as BasicsFormData}
-          onEdit={onEditBasics}
-        />
+        <SpoilBasicsSection basics={displayBasics as BasicsFormData} onEdit={onEditBasics} />
 
-        <SpoilOutlineSection outline={outlineForUI} onEdit={onEditOutline} />
+        <SpoilOutlineSection outline={spoilData} onEdit={onEditOutline} />
+       
       </div>
 
       <ReviewActionButtons
