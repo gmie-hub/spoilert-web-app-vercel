@@ -13,8 +13,6 @@ import PlayIcon from "@spt/assets/icons/play.svg";
 import TrashIcon from "@spt/assets/icons/trash.svg";
 import Button from "@spt/components/button";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
-import useDeleteLesson from "@spt/hooks/apiRequests/useDeleteLesson";
-import useDeleteModule from "@spt/hooks/apiRequests/useDeleteModule";
 
 import type { Module } from "../types";
 
@@ -44,29 +42,17 @@ const ModuleCard: FC<ModuleCardProps> = ({
   const [deleteModuleOpen, setDeleteModuleOpen] = useState(false);
   const [deleteLessonId, setDeleteLessonId] = useState<string | null>(null);
 
-  const { deleteModuleHandler, isLoading: isDeleting } = useDeleteModule();
-
-  const handleDeleteModule = async () => {
-    try {
-      await deleteModuleHandler(Number(module.id));
-      setDeleteModuleOpen(false);
-      onDelete();
-    } catch {
-      // error toast shown by hook; keep modal open for retry
-    }
+  const handleDeleteModule = () => {
+    // remove module locally from the draft/outline via parent handler
+    setDeleteModuleOpen(false);
+    onDelete();
   };
-
-  const { deleteLessonHandler, isLoading: isDeletingLesson } = useDeleteLesson();
 
   const handleDeleteLesson = async () => {
     if (!deleteLessonId) return;
-    try {
-      await deleteLessonHandler(Number(deleteLessonId));
-      setDeleteLessonId(null);
-      onDeleteLesson(deleteLessonId);
-    } catch {
-      // toast shown by hook; keep modal open for retry
-    }
+    // remove lesson locally from the draft/outline via parent handler
+    setDeleteLessonId(null);
+    onDeleteLesson(deleteLessonId);
   };
 
   return (
@@ -195,7 +181,7 @@ const ModuleCard: FC<ModuleCardProps> = ({
         open={deleteModuleOpen}
         title={`Are You Sure You Want To Delete This Module?`}
         description="You won't be able to recover it once it is deleted"
-        isLoading={isDeleting}
+        isLoading={false}
         onConfirm={handleDeleteModule}
         onCancel={() => setDeleteModuleOpen(false)}
       />
@@ -204,7 +190,7 @@ const ModuleCard: FC<ModuleCardProps> = ({
         open={deleteLessonId !== null}
         title={`Are You Sure You Want To Delete This Lesson?`}
         description="You won't be able to recover it once it is deleted"
-        isLoading={isDeletingLesson}
+        isLoading={false}
         onConfirm={handleDeleteLesson}
         onCancel={() => setDeleteLessonId(null)}
       />

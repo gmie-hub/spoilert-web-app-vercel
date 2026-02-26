@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useMemo } from "react";
+import { type FC } from "react";
 
 import Image from "next/image";
 import { FiPlus } from "react-icons/fi";
@@ -9,8 +9,6 @@ import AddCircleIcon from "@spt/assets/icons/add-circle.svg";
 import EditIcon from "@spt/assets/icons/edit.svg";
 import Button from "@spt/components/button";
 import NoData from "@spt/components/noData";
-import { useGetAllModulesQuery } from "@spt/hooks/apiRequests/useGetAllModuleQuery";
-import { useGetLessonQuery } from "@spt/hooks/apiRequests/useGetLessonQuery";
 import { useOutlineManager } from "@spt/hooks/useOutlineManager";
 
 import LessonModal from "../components/LessonModal";
@@ -52,48 +50,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
 
-  const { data: serverModulesRaw } = useGetAllModulesQuery();
-
-  const spoilId = data.spoil_id ?? null;
-
-  // Fetch all lessons for this spoil in one call
-  const { data: allLessons } = useGetLessonQuery(spoilId);
-
-  // Group lessons by module_id on the frontend
-  const lessonsGrouped = useMemo(() => {
-    const map: Record<string, typeof allLessons> = {};
-    for (const lesson of allLessons) {
-      const key = String(lesson.module_id);
-      if (!map[key]) map[key] = [];
-      map[key].push(lesson);
-    }
-    return map;
-  }, [allLessons]);
-
-  // map server modules to local Module shape, merging in fetched lessons
-  const serverModules = useMemo(() => {
-    if (!serverModulesRaw?.length) return [];
-    return serverModulesRaw.map((m) => {
-      const serverLessons = lessonsGrouped[String(m.id)] ?? [];
-      return {
-        id: String(m.id),
-        title: m.title,
-        description: m.description,
-        lessons: serverLessons.map((l) => ({
-          id: String(l.id),
-          title: l.title,
-          type: l.type,
-          content: l.content ?? "",
-          file: null as File | null,
-          fileName: l.file ?? undefined,
-          description: l.description ?? "",
-        })),
-      };
-    });
-  }, [serverModulesRaw, lessonsGrouped]);
-
-  const modulesToRender = serverModules.length > 0 ? serverModules : data.modules;
-
+  const modulesToRender = data.modules;
   const hasModules = modulesToRender.length > 0;
 
   return (

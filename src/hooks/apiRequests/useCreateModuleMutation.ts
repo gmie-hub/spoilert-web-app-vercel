@@ -43,10 +43,10 @@ export const useCreateModuleMutation = () => {
   const createModuleHandler = async (payload: CreateModulePayload) => {
     try {
       const res = await mutation.mutateAsync(payload);
-      toast.success("Module added");
+      // toast.success("Module added");
 
         queryClient.invalidateQueries({
-            queryKey: ["modules"],
+            queryKey: ["spoil"],
           });
 
       return res;

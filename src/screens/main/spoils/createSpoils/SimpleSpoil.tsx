@@ -90,43 +90,50 @@ const SimpleSpoil = () => {
   };
 
   return (
-    <Stack
-      mr={{ xs: 2, md: 20 }}
-      ml={{ xs: 2, md: 10 }}
-      my={{ xs: 2, md: 6 }}
-      spacing={4}
-    >
-      <Stack spacing={1}>
-        <p className="text-sm font-medium text-gray-500">Simple Spoil</p>
-        <h3 className="text-2xl font-semibold text-black">
-          Create a Simple Spoil
-        </h3>
-      </Stack>
+    <div className="min-h-screen flex items-center justify-center">
+      <Stack
+        mr={{ xs: 2, md: 20 }}
+        ml={{ xs: 2, md: 10 }}
+        my={{ xs: 2, md: 6 }}
+        spacing={4}
+      >
+        <div className="flex w-full items-start gap-6">
+          <div className="w-64">
+            <Stack spacing={1}>
+              <p className="text-sm font-medium text-gray-500">Simple Spoil</p>
+              <h3 className="text-2xl font-semibold text-black">
+                Create a Simple Spoil
+              </h3>
+            </Stack>
+          </div>
 
-      <div className="w-full">
-        {activeStep === "basics" ? (
-          <SpoilBasicsStep
-            data={basicsData}
-            onChange={setBasicsData}
-            onNext={() => setActiveStep("review")}
-            selectedType="simple"
-            onBackToSelection={handleBackToSelection}
-            onCreated={(id: number) => {
-              setCreatedSpoilId(id);
-              setCreatedSpoilIdInStore?.(id);
-            }}
-          />
-        ) : (
-          <SpoilReviewStep
-            basics={basicsData}
-            outline={emptyOutline}
-            selectedType="simple"
-            onPrevious={() => setActiveStep("basics")}
-            onSubmit={handleSubmitSpoil}
-          />
-        )}
-      </div>
-    </Stack>
+          <div className="flex-1 w-full">
+            {activeStep === "basics" ? (
+              <SpoilBasicsStep
+                data={basicsData}
+                onChange={setBasicsData}
+                onNext={() => setActiveStep("review")}
+                selectedType="simple"
+                onBackToSelection={handleBackToSelection}
+                onCreated={(id: number) => {
+                  setCreatedSpoilId(id);
+                  setCreatedSpoilIdInStore?.(id);
+                }}
+              />
+            ) : (
+              <SpoilReviewStep
+                basics={basicsData}
+                outline={emptyOutline}
+                selectedType="simple"
+                onPrevious={() => setActiveStep("basics")}
+                onSubmit={handleSubmitSpoil}
+                onEditBasics={() => setActiveStep("basics")}
+              />
+            )}
+          </div>
+        </div>
+      </Stack>
+    </div>
   );
 };
 

@@ -1,7 +1,9 @@
 export type SpoilTypeOption = "simple" | "advanced";
 
+export type CoverImagePersisted = { dataUrl: string; name: string; type: string };
+
 export interface BasicsFormData {
-  coverImage?: File | null;
+  coverImage?: File | CoverImagePersisted | null;
   title: string;
   category: string;
   institution: string;
@@ -13,6 +15,17 @@ export interface BasicsFormData {
   lessonCount: string;
   description: string;
   learningOutcome: string;
+  // optional scheduled premiere fields
+  scheduledDate?: string;
+  scheduledTime?: string;
+  // draft flag: 1 = draft, 0 = published
+  is_draft?: number | boolean;
+  // spoil type for simple vs advanced
+  type?: SpoilTypeOption;
+  // simple-spoil specific lesson fields (optional)
+  lessonType?: "file" | "text";
+  lessonContent?: string;
+  lessonFile?: File | null;
 }
 
 export type LessonTypeOption = "video" | "pdf" | "text";

@@ -6,8 +6,8 @@ import Stack from "@mui/material/Stack";
 import { useRouter } from "next/navigation";
 
 import CustomStepper from "@spt/components/stepper";
-import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilOutlineStep from "./steps/SpoilOutlineStep";
@@ -53,13 +53,12 @@ const AdvancedSpoil = () => {
     sessionStorage.setItem(STEP_KEY, String(activeStep));
   }, [activeStep]);
 
-  const [basicsData, setBasicsData] =
-    useState<BasicsFormData>(initialBasicsState);
-  const [outlineData, setOutlineData] =
-    useState<OutlineData>(initialOutlineState);
-  const [createdSpoilId, setCreatedSpoilId] = useState<number | null>(null);
+  const basicsData = useCreateSpoilStore((s) => s.basics);
+  const setBasicsData = useCreateSpoilStore((s) => s.setBasics);
+  const outlineData = useCreateSpoilStore((s) => s.outline);
+  const setOutlineData = useCreateSpoilStore((s) => s.setOutline);
+  const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
 
-  const { createSpoilHandler } = useCreateSpoilMutation();
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
 
   const goToNextStep = () =>
@@ -71,39 +70,39 @@ const AdvancedSpoil = () => {
     router.push("/create-spoils");
   };
 
-  const resetAll = () => {
-    setBasicsData(initialBasicsState);
-    setOutlineData(initialOutlineState);
-    setCreatedSpoilId(null);
-    setActiveStep(0);
-    sessionStorage.removeItem(STEP_KEY);
-    router.push("/create-spoils");
-  };
+  // const resetAll = () => {
+  //   setBasicsData(initialBasicsState);
+  //   setOutlineData(initialOutlineState);
+  //   setCreatedSpoilId(null);
+  //   setActiveStep(0);
+  //   sessionStorage.removeItem(STEP_KEY);
+  //   router.push("/create-spoils");
+  // };
 
-  const handleSubmitSpoil = async () => {
-    if (createdSpoilId) {
-      resetAll();
-      return;
-    }
+  // const handleSubmitSpoil = async () => {
+  //   if (createdSpoilId) {
+  //     resetAll();
+  //     return;
+  //   }
 
-    try {
-      const res = await createSpoilHandler(basicsData, {});
-      const createdId =
-        res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
+  //   try {
+  //     const res = await createSpoilHandler(basicsData, {});
+  //     const createdId =
+  //       res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
 
-      if (createdId) {
-        setCreatedSpoilId(Number(createdId));
-        setOutlineData(
-          (prev) => ({ ...prev, spoil_id: createdId } as OutlineData),
-        );
-        setCreatedSpoilIdInStore?.(Number(createdId));
-      }
-    } catch {
-      // createSpoilHandler shows toast
-    } finally {
-      resetAll();
-    }
-  };
+  //     if (createdId) {
+  //       setCreatedSpoilId(Number(createdId));
+  //       setOutlineData(
+  //         (prev) => ({ ...prev, spoil_id: createdId } as OutlineData),
+  //       );
+  //       setCreatedSpoilIdInStore?.(Number(createdId));
+  //     }
+  //   } catch {
+  //     // createSpoilHandler shows toast
+  //   } finally {
+  //     resetAll();
+  //   }
+  // };
 
   const renderStepContent = () => {
     switch (activeStep) {
@@ -115,13 +114,13 @@ const AdvancedSpoil = () => {
             onNext={goToNextStep}
             selectedType="advanced"
             onBackToSelection={handleBackToSelection}
-            onCreated={(id: number) => {
-              setCreatedSpoilId(id);
-              setOutlineData(
-                (prev) => ({ ...prev, spoil_id: id } as OutlineData),
-              );
-              setCreatedSpoilIdInStore?.(id);
-            }}
+            // onCreated={(id: number) => {
+            //   setCreatedSpoilId(id);
+            //   setOutlineData(
+            //     (prev) => ({ ...prev, spoil_id: id } as OutlineData),
+            //   );
+            //   setCreatedSpoilIdInStore?.(id);
+            // }}
           />
         );
       case 1:
@@ -140,7 +139,16 @@ const AdvancedSpoil = () => {
             outline={outlineData}
             selectedType="advanced"
             onPrevious={goToPreviousStep}
-            onSubmit={handleSubmitSpoil}
+            onSubmit={() => {
+              // after successful publish the review step will call this to reset local draft
+              resetDraft();
+              setCreatedSpoilIdInStore?.(null);
+              setActiveStep(0);
+              sessionStorage.removeItem(STEP_KEY);
+              router.push("/create-spoils");
+            }}
+            onEditBasics={() => setActiveStep(0)}
+            onEditOutline={() => setActiveStep(1)}
           />
         );
       default:

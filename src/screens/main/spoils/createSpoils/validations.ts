@@ -5,7 +5,6 @@ const SUPPORTED_IMAGE_FORMATS = [
   "image/jpg",
   "image/png",
   "image/gif",
-  "image/webp",
 ];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -13,16 +12,11 @@ export const basicsValidationSchema = yup.object({
   coverImage: yup
     .mixed()
     .required("Cover image is required")
-    .test(
-      "fileType",
-      "Unsupported image format. Use JPEG, PNG, GIF, or WebP",
-      (value) => {
-        if (!value) return false;
-        if (value instanceof File)
-          return SUPPORTED_IMAGE_FORMATS.includes(value.type);
-        return true; // already uploaded / URL
-      },
-    )
+    .test("fileType", "The image must be a file of type: jpeg, png, jpg, gif", (value) => {
+      if (!value) return false;
+      if (value instanceof File) return SUPPORTED_IMAGE_FORMATS.includes(value.type);
+      return true; // already uploaded / URL
+    })
     .test("fileSize", "Image must be less than 5 MB", (value) => {
       if (!value) return false;
       if (value instanceof File) return value.size <= MAX_IMAGE_SIZE;
@@ -33,14 +27,37 @@ export const basicsValidationSchema = yup.object({
   institution: yup.string().trim(),
   courseCode: yup.string().trim(),
   pricing: yup.string().trim().required("Select a pricing model"),
-  amount: yup
-    .string()
-    .trim()
-    .matches(/^(?:\d+)(?:\.\d{1,2})?$/, "Enter a valid amount")
-    .required("Amount is required"),
+  // amount: yup.string().when("pricing", (pricing: any, schema: yup.StringSchema) => {
+  //   const p = typeof pricing === "string" ? pricing.trim().toLowerCase() : "";
+  //   if (p !== "free") {
+  //     return schema
+  //       .trim()
+  //       .matches(/^(?:\d+)(?:\.\d{1,2})?$/, "Enter a valid amount")
+  //       .required("Amount is required");
+  //   }
+  //   return schema.trim().notRequired().nullable();
+  // }),
+
+amount: yup
+  .string()
+  .trim()
+  .when("pricing", (pricingValue, schema) => {
+    const pricing = pricingValue?.[0]; // 👈 FIX
+
+    if (pricing !== "free") {
+      return schema
+        .required("Amount is required")
+        .matches(/^(?:\d+)(?:\.\d{1,2})?$/, "Enter a valid amount");
+    }
+
+    return schema
+      .notRequired()
+      .nullable()
+      .transform(() => null);
+  }),
   expiryDate: yup.string().trim().nullable(),
   moduleCount: yup.string().trim().nullable(),
   lessonCount: yup.string().trim().nullable(),
-  description: yup.string().trim(),
+  description: yup.string().trim().required('required '),
   learningOutcome: yup.string().trim(),
 });
