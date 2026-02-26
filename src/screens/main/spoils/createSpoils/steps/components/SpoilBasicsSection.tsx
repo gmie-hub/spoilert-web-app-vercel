@@ -7,16 +7,18 @@ import EditIcon from "@spt/assets/icons/white-edit.svg";
 
 import InfoItem from "./InfoItem";
 
-import type { BasicsFormData } from "../../types";
+import type { BasicsFormData, SpoilTypeOption } from "../../types";
 
 interface SpoilBasicsSectionProps {
   basics?: BasicsFormData;
   onEdit?: () => void;
+  selectedType?: SpoilTypeOption;
 }
 
 const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
   basics,
   onEdit,
+  selectedType,
 }) => {
   const [blobPreview, setBlobPreview] = useState<string | null>(null);
 
@@ -135,6 +137,22 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
               basics?.learningOutcome ||
 "N/A"            }
           />
+
+          {selectedType === "simple" && (
+            <>
+              <hr className="border-gray-200" />
+              <InfoItem
+                label="Spoil Content"
+                value={
+                  basics?.lessonType === "text"
+                    ? basics?.lessonContent ?? "n/a"
+                    : basics?.lessonFile && (basics.lessonFile as any).name
+                      ? (basics.lessonFile as any).name
+                      : "Uploaded File"
+                }
+              />
+            </>
+          )}
 
           <hr className="border-gray-200" />
         </div>

@@ -18,6 +18,12 @@ export interface BasicsFormData {
   scheduledTime?: string;
   // draft flag: 1 = draft, 0 = published
   is_draft?: number | boolean;
+  // spoil type for simple vs advanced
+  type?: SpoilTypeOption;
+  // simple-spoil specific lesson fields (optional)
+  lessonType?: "file" | "text";
+  lessonContent?: string;
+  lessonFile?: File | null;
 }
 
 export type LessonTypeOption = "video" | "pdf" | "text";

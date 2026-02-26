@@ -21,7 +21,7 @@ export const useCreateSpoilMutation = () => {
     payload: FormData,
   ): Promise<CreateSpoilResponse> => {
     return (
-      await api.post("/spoils1", payload, {
+      await api.post("/spoils", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       })
     ).data;
@@ -45,8 +45,14 @@ export const useCreateSpoilMutation = () => {
     try {
       const formData = new FormData();
 
-      // Retrieve data directly from useCreateSpoilStore
-      const { basics, outline } = useCreateSpoilStore.getState();
+      // Determine source of basics: either passed-in basics object (simple spoil flow)
+      // or the persisted draft in the createSpoilStore (advanced flow).
+      const maybeBasics = _;
+      const isPassedBasics = maybeBasics && !(maybeBasics instanceof FormData) && typeof maybeBasics === "object" && (maybeBasics.title || maybeBasics.lessonType || maybeBasics.lessonContent || maybeBasics.lessonFile);
+
+      const { basics: storeBasics, outline: storeOutline } = useCreateSpoilStore.getState();
+      const basics = isPassedBasics ? maybeBasics : storeBasics;
+      const outline = isPassedBasics ? storeOutline : storeOutline;
 
       if (basics.title) formData.append("title", basics.title);
       if (basics.pricing) formData.append("pricing", basics.pricing);
@@ -80,6 +86,43 @@ export const useCreateSpoilMutation = () => {
           console.warn("Failed to append is_draft", e);
         }
 	}
+
+      // If this is a simple-spoil, append simple-specific fields (whether basics came from args or store)
+      if (basics && basics.type === "simple") {
+        try {
+          formData.append("type", "simple");
+
+          if (basics.lessonType) formData.append("lesson_type", basics.lessonType);
+          if (basics.lessonContent) formData.append("lesson_content", basics.lessonContent);
+
+          const lessonFileRaw = (basics as any).lessonFile ?? null;
+          if (lessonFileRaw instanceof File) {
+            formData.append("lesson_file", lessonFileRaw);
+          } else if (lessonFileRaw && typeof lessonFileRaw === "object" && (lessonFileRaw as any).dataUrl) {
+            // persisted file object with dataUrl -> convert to File
+            try {
+              const { dataUrl, name, type } = lessonFileRaw as any;
+              const blob = await (await fetch(dataUrl)).blob();
+              const filename = name ?? `lesson.${type?.split("/")[1] ?? "bin"}`;
+              const fileFromDataUrl = new File([blob], filename, { type: type ?? blob.type });
+              formData.append("lesson_file", fileFromDataUrl);
+            } catch (convErr) {
+              console.warn("Failed to convert persisted lesson file to File", convErr);
+            }
+          } else if (lessonFileRaw && typeof lessonFileRaw === "string") {
+            // URL string -> try fetch
+            try {
+              const blob = await (await fetch(lessonFileRaw)).blob();
+              const fileFromUrl = new File([blob], "lesson.bin", { type: blob.type });
+              formData.append("lesson_file", fileFromUrl);
+            } catch (urlErr) {
+              console.warn("Failed to fetch lesson file URL", urlErr);
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to append simple-spoil lesson fields", e);
+        }
+      }
 
 	  const storedCover = basics.coverImage ?? basics.image ?? null;
       if (storedCover) {

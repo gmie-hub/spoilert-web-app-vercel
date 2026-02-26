@@ -147,6 +147,8 @@ const AdvancedSpoil = () => {
               sessionStorage.removeItem(STEP_KEY);
               router.push("/create-spoils");
             }}
+            onEditBasics={() => setActiveStep(0)}
+            onEditOutline={() => setActiveStep(1)}
           />
         );
       default:

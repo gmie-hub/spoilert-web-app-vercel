@@ -8,11 +8,13 @@ import { Form, Formik } from "formik";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
+import Textarea from "@spt/components/textarea";
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
 import { useAuthStore } from "@spt/store/authStore";
 import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
+import ContentUpload from "../components/ContentUpload";
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
 
@@ -41,8 +43,8 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
   onChange,
   onNext,
+  selectedType,
   // onBackToSelection,
- 
 }) => {
   const {
     data: Categories,
@@ -91,9 +93,18 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
         validateOnChange={true}
         validateOnBlur={true}
         onSubmit={async (values, formikHelpers) => {
-          onChange(values);
+          // prepare values to persist
+          const toPersist: Partial<BasicsFormData> = { ...values };
+
+          if (selectedType === "simple") {
+            // ensure spoil `type` and lesson fields are stored for simple spoils
+            toPersist.type = "simple";
+            // lesson fields are already present on `values` (lessonType, lessonContent, lessonFile)
+          }
+
+          onChange(toPersist as BasicsFormData);
           // persist into draft store instead of calling API here
-          setBasicsInDraft(values);
+          setBasicsInDraft(toPersist as BasicsFormData);
           scrollToTop();
           onNext();
         }}
@@ -175,19 +186,25 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 </p>
               </div>
 
-              <Select
-                name="moduleCount"
-                label="Modules"
-                placeholder="Select number of modules"
-                options={moduleOptions}
-              />
+              {selectedType !== "simple" && (
+                <>
+                  <Select
+                    name="moduleCount"
+                    label="Modules"
+                    placeholder="Select number of modules"
+                    options={moduleOptions}
+                  />
 
-              <Select
-                name="lessonCount"
-                label="Lessons"
-                placeholder="Select number of lessons"
-                options={lessonOptions}
-              />
+                  <Select
+                    name="lessonCount"
+                    label="Lessons"
+                    placeholder="Select number of lessons"
+                    options={lessonOptions}
+                  />
+                </>
+              )}
+
+          
             </div>
 
             <div className="space-y-2">
@@ -233,6 +250,35 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 <p className="text-xs text-red-500">{errors.learningOutcome}</p>
               )}
             </div>
+
+                {selectedType === "simple" && (
+                <div className="space-y-4">
+                  <Select
+                    name="lessonType"
+                    label="Lesson Type"
+                    placeholder="Select type"
+                    options={[
+                      { label: "File", value: "file" },
+                      { label: "Text", value: "text" },
+                    ]}
+                  />
+
+                  {values.lessonType === "text" ? (
+                    <Textarea
+                      name="lessonContent"
+                      label="Lesson Content"
+                      rows={5}
+                      placeholder="Type in content"
+                    />
+                  ) : (
+                    <ContentUpload
+                      name="lessonFile"
+                      label="Content Upload"
+                      accept={undefined}
+                    />
+                  )}
+                </div>
+              )}
 
             <div className="flex flex-wrap gap-4">
               <Button

@@ -43,6 +43,7 @@ interface SpoilReviewStepProps {
 const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
   basics,
   outline,
+  selectedType,
   onPrevious,
   onSubmit,
   onEditBasics,
@@ -295,13 +296,16 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
 
         <SpoilBasicsSection
           basics={displayBasics as BasicsFormData}
+          selectedType={selectedType}
           onEdit={onEditBasics}
         />
 
-        <SpoilOutlineSection
-          outline={displayOutline as any}
-          onEdit={onEditOutline}
-        />
+        {selectedType !== "simple" && (
+          <SpoilOutlineSection
+            outline={displayOutline as any}
+            onEdit={onEditOutline}
+          />
+        )}
       </div>
 
       <ReviewActionButtons
