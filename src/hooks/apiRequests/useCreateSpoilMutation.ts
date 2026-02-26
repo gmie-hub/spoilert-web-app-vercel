@@ -83,9 +83,9 @@ export const useCreateSpoilMutation = () => {
       if (basics.is_draft) {
         try {
           formData.append("is_draft", String(basics.is_draft === true ? 1 : basics.is_draft));
-        } catch (e) {
-          console.warn("Failed to append is_draft", e);
-        }
+        } catch {
+            // Failed to fetch cover image URL
+          }
 	}
 
       // If this is a simple-spoil, append simple-specific fields (whether basics came from args or store)
@@ -107,8 +107,8 @@ export const useCreateSpoilMutation = () => {
               const filename = name ?? `lesson.${type?.split("/")[1] ?? "bin"}`;
               const fileFromDataUrl = new File([blob], filename, { type: type ?? blob.type });
               formData.append("lesson_file", fileFromDataUrl);
-            } catch (convErr) {
-              console.warn("Failed to convert persisted lesson file to File", convErr);
+            } catch {
+              // Failed to convert persisted lesson file to File
             }
           } else if (lessonFileRaw && typeof lessonFileRaw === "string") {
             // URL string -> try fetch
@@ -116,13 +116,13 @@ export const useCreateSpoilMutation = () => {
               const blob = await (await fetch(lessonFileRaw)).blob();
               const fileFromUrl = new File([blob], "lesson.bin", { type: blob.type });
               formData.append("lesson_file", fileFromUrl);
-            } catch (urlErr) {
-              console.warn("Failed to fetch lesson file URL", urlErr);
+            } catch {
+              // Failed to fetch lesson file URL
             }
           }
-        } catch (e) {
-          console.warn("Failed to append simple-spoil lesson fields", e);
-        }
+        } catch {
+            // Failed to fetch cover image URL
+          }
       }
 
 	  const storedCover = basics.coverImage ?? basics.image ?? null;
@@ -142,8 +142,8 @@ export const useCreateSpoilMutation = () => {
             const filename = name ?? `cover.${type?.split("/")[1] ?? "jpg"}`;
             const fileFromDataUrl = new File([blob], filename, { type: type ?? blob.type });
             formData.append("image", fileFromDataUrl);
-          } catch (convErr) {
-            console.warn("Failed to convert persisted cover image to File", convErr);
+          } catch {
+            // Failed to convert persisted cover image to File
           }
         } else if (typeof storedCover === "string") {
           // if it's a URL string (maybe remote), try to fetch and append
@@ -151,8 +151,8 @@ export const useCreateSpoilMutation = () => {
             const blob = await (await fetch(storedCover)).blob();
             const fileFromUrl = new File([blob], "cover.jpg", { type: blob.type });
             formData.append("image", fileFromUrl);
-          } catch (urlErr) {
-            console.warn("Failed to fetch cover image URL", urlErr);
+          } catch {
+            // Failed to fetch cover image URL
           }
         }
       }
@@ -165,13 +165,9 @@ export const useCreateSpoilMutation = () => {
         useAuthStore.getState().setCreatedSpoilId?.(Number(createdId));
 
         // Call module creation endpoint for each module in outline
-        console.log("Created Spoil ID:", createdId);
-        console.log("Modules to create:", outline.modules);
-
         if (typeof createModuleHandler === "function") {
           for (const module of outline.modules) {
             try {
-              console.log("Creating module:", module);
               const moduleRes = await createModuleHandler({
                 title: module.title,
                 description: module.description,
@@ -186,27 +182,25 @@ export const useCreateSpoilMutation = () => {
                 if (typeof createLessonHandler === "function") {
                   try {
                     await createLessonHandler(moduleId, module.lessons);
-                  } catch (lessonErr) {
-                    console.log("Error creating lessons for module", moduleId, lessonErr);
+                  } catch {
+                    // Error creating lessons for module
                   }
                 } else {
-                  console.warn("createLessonHandler not provided; skipping lesson creation for module", moduleId);
+                  // createLessonHandler not provided; skipping lesson creation for module
                 }
               }
-            } catch (modError) {
-              console.error("Error creating module", module, modError);
-              // continue with next module
+            } catch {
+              // Error creating module, continue with next module
             }
           }
         } else {
-          console.warn("createModuleHandler not provided; skipping module creation");
+          // createModuleHandler not provided; skipping module creation
         }
       }
 
       toast.success("Spoil created successfully 🎉");
       return res;
     } catch (error: any) {
-      console.error("Error creating spoil or modules:", error);
       toast.error(
         error?.response?.data?.error ||
           error?.response?.data?.message ||

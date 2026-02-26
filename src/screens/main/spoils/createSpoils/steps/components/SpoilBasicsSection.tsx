@@ -30,9 +30,9 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
       return () => {
         try {
           URL.revokeObjectURL(url);
-        } catch (e) {
-          // ignore
-        }
+        }catch {
+            // Failed to fetch cover image URL
+          }
         setBlobPreview(null);
       };
     }

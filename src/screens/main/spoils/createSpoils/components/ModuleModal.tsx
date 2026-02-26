@@ -38,7 +38,6 @@ const moduleValidationSchema = yup.object({
 const ModuleModal: FC<ModuleModalProps> = ({
   open,
   isEditing,
-  editingId,
   initialValues,
   onClose,
   onSubmit,

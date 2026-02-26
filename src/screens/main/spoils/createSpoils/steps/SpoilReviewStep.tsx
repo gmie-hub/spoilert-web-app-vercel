@@ -89,10 +89,9 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
         // Show the review modal on full success (spoil + modules + lessons)
         setIsReviewModalOpen(true);
       }
-    } catch (error) {
-      // error handled by toast or UI
-      // Optionally, handle error state here
-    }
+    } catch {
+            // Failed to fetch cover image URL
+          }
   };
 
   const handleCloseModal = () => {
@@ -158,7 +157,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       }
       // after saving to draft, go back to previous step
       // onPrevious();
-    } catch (e) {
+    } catch {
       // error handled by toast or UI
       // still go back to previous step
       onPrevious();
@@ -201,7 +200,8 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
           setIsSchedulePremiereModalOpen(false);
           // setIsCreateCommunityModalOpen(true);
         }
-      } catch (err) {
+      } 
+      catch  {
         // error handled by toast or UI
         setIsSchedulePremiereModalOpen(false);
         // setIsCreateCommunityModalOpen(true);

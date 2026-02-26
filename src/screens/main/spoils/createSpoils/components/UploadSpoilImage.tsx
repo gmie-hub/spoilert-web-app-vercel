@@ -82,9 +82,9 @@ const UploadSpoilImage = () => {
           ...prev,
           coverImage: { dataUrl, name: file.name, type: file.type } as { dataUrl: string; name: string; type: string },
         });
-      } catch (err) {
-        // ignore
-      }
+      } catch {
+            // Failed to fetch cover image URL
+          }
     };
     reader.readAsDataURL(file);
   };
