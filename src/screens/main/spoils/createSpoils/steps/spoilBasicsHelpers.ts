@@ -1,4 +1,4 @@
-import type { BasicsFormData } from "./types";
+import type { BasicsFormData } from "../types";
 
 export const pricingModels = ["free", "Paid", "Subscription"];
 
