@@ -27,6 +27,7 @@ export const useCreateSpoilMutation = () => {
     ).data;
   };
 
+  
   const mutation = useMutation<
     CreateSpoilResponse,
     AxiosError<ApiErrorResponse>,
