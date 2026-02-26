@@ -92,7 +92,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
         validationSchema={basicsValidationSchema}
         validateOnChange={true}
         validateOnBlur={true}
-        onSubmit={async (values, formikHelpers) => {
+        onSubmit={async (values) => {
           // prepare values to persist
           const toPersist: Partial<BasicsFormData> = { ...values };
 
@@ -109,7 +109,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
           onNext();
         }}
       >
-        {({ values, handleChange, handleBlur, isValid, setTouched, errors, touched }) => (
+        {({ values, handleChange, handleBlur,  setTouched, errors, touched }) => (
           <Form className="mt-8 space-y-8">
             <UploadSpoilImage />
 

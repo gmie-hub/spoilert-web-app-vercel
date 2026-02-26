@@ -68,7 +68,6 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
               {previewUrl ? (
                 // use native <img> for blob/data URLs, next/image for remote URLs
                 previewUrl.startsWith("blob:") || previewUrl.startsWith("data:") ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={previewUrl} alt="Cover" className="h-16 w-16 object-cover" />
                 ) : (
                   <Image width={64} height={64} src={previewUrl} alt="Cover" className="object-cover" />

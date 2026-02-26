@@ -1,7 +1,8 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { BasicsFormData, OutlineData } from "@spt/types";
+import { BasicsFormData } from "@spt/screens/main/spoils/createSpoils/types";
+import type {  OutlineData } from "@spt/types";
 
 interface CreateSpoilDraftState {
   basics: BasicsFormData;
@@ -44,7 +45,7 @@ export const useCreateSpoilStore = create<CreateSpoilDraftState>()(
     }),
     {
       name: "advanced-spoil-draft",
-      getStorage: () => (typeof window !== "undefined" ? window.sessionStorage : undefined),
+      storage: createJSONStorage(() => window.sessionStorage),
     },
   ),
 );

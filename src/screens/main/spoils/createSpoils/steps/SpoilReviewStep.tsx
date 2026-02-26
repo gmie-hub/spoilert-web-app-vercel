@@ -86,12 +86,11 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       );
 
       if (response?.data?.id) {
-        console.log("Spoil created successfully with ID:", response.data.id);
         // Show the review modal on full success (spoil + modules + lessons)
         setIsReviewModalOpen(true);
       }
     } catch (error) {
-      console.error("Error creating spoil:", error);
+      // error handled by toast or UI
       // Optionally, handle error state here
     }
   };
@@ -131,12 +130,12 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       // call same publish endpoints (create spoil -> modules -> lessons)
       const res = await createSpoilHandler(
         new FormData(),
-        { setSubmitting: (v: boolean) => {} },
+        { setSubmitting: (_: boolean) => {} },
         createModuleHandler,
         createLessonHandler,
       );
       if (res?.data?.id) {
-        console.log("Draft saved as spoil with ID:", res.data.id);
+        // Draft saved, ID: res.data.id
       }
       try {
         // clear persisted draft and step before navigating away
@@ -160,7 +159,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       // after saving to draft, go back to previous step
       // onPrevious();
     } catch (e) {
-      console.error("Failed to save draft and create resources:", e);
+      // error handled by toast or UI
       // still go back to previous step
       onPrevious();
     }
@@ -188,7 +187,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
         // createSpoilHandler reads data from the persisted draft store internally
         const res = await createSpoilHandler(
           new FormData(),
-          { setSubmitting: (v: boolean) => {} },
+          { setSubmitting: (_: boolean) => {} },
           createModuleHandler,
           createLessonHandler,
         );
@@ -203,7 +202,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
           // setIsCreateCommunityModalOpen(true);
         }
       } catch (err) {
-        console.error("Scheduled publish failed:", err);
+        // error handled by toast or UI
         setIsSchedulePremiereModalOpen(false);
         // setIsCreateCommunityModalOpen(true);
       }

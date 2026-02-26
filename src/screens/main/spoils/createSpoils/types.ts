@@ -1,7 +1,9 @@
 export type SpoilTypeOption = "simple" | "advanced";
 
+export type CoverImagePersisted = { dataUrl: string; name: string; type: string };
+
 export interface BasicsFormData {
-  coverImage?: File | null;
+  coverImage?: File | CoverImagePersisted | null;
   title: string;
   category: string;
   institution: string;

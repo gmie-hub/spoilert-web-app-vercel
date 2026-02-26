@@ -27,7 +27,7 @@ export const useCreateSpoilMutation = () => {
     ).data;
   };
 
-  
+
   const mutation = useMutation<
     CreateSpoilResponse,
     AxiosError<ApiErrorResponse>,
@@ -187,7 +187,7 @@ export const useCreateSpoilMutation = () => {
                   try {
                     await createLessonHandler(moduleId, module.lessons);
                   } catch (lessonErr) {
-                    console.error("Error creating lessons for module", moduleId, lessonErr);
+                    console.log("Error creating lessons for module", moduleId, lessonErr);
                   }
                 } else {
                   console.warn("createLessonHandler not provided; skipping lesson creation for module", moduleId);

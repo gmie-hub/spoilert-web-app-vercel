@@ -80,10 +80,10 @@ const UploadSpoilImage = () => {
         const prev = useCreateSpoilStore.getState().basics;
         useCreateSpoilStore.getState().setBasics?.({
           ...prev,
-          coverImage: { dataUrl, name: file.name, type: file.type },
+          coverImage: { dataUrl, name: file.name, type: file.type } as { dataUrl: string; name: string; type: string },
         });
       } catch (err) {
-        // ignore store errors
+        // ignore
       }
     };
     reader.readAsDataURL(file);

@@ -76,14 +76,11 @@ const lessonValidationSchema = yup.object({
 const LessonModal: FC<LessonModalProps> = ({
   open,
   isEditing,
-  editingId,
   initialValues,
-  moduleId,
   onClose,
   onSubmit,
 }) => {
-  const isCreatingLesson = false;
-  const isUpdating = false;
+
 
   const handleFormSubmit = async (
     values: LessonFormState,
