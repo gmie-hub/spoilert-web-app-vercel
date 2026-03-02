@@ -106,7 +106,7 @@ const Overview: FC<OverviewProps> = ({ onNext }) => {
               type="submit"
             //   variant="darkBlue"
               disabled={isSubmitting}
-              className="mt-2 w-full !rounded-2xl !bg-[#8FA8B0] !py-4 text-xl font-semibold text-white hover:!bg-[#809AA3]"
+              className="mt-2 w-full"
               onClick={() =>
                 setTouched(
                   Object.keys(values).reduce(

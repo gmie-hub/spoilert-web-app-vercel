@@ -46,7 +46,7 @@ const SpoilQuiz = () => {
         <h3 className="text-2xl font-semibold text-black">Create Quiz</h3>
       </Stack>
 
-      <Stack direction={{ xs: "column", lg: "row" }} spacing={{ xs: 4, lg: 6 }}>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 4, lg: 6 }}>
         <div className="w-full rounded-3xl bg-white p-6 shadow-sm lg:max-w-xs">
           <h4 className="text-xl font-semibold text-gray-900">Quiz Progress</h4>
 
