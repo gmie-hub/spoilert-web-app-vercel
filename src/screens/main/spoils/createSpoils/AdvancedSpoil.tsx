@@ -13,30 +13,10 @@ import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilOutlineStep from "./steps/SpoilOutlineStep";
 import SpoilReviewStep from "./steps/SpoilReviewStep";
 
-import type { BasicsFormData, OutlineData } from "./types";
 
 const steps = ["Spoil Basics", "Spoil Outline", "Spoil Review"];
 
-const initialBasicsState: BasicsFormData = {
-  coverImage: null,
-  title: "",
-  category: "",
-  institution: "",
-  courseCode: "",
-  pricing: "",
-  amount: "",
-  expiryDate: "",
-  moduleCount: "",
-  lessonCount: "",
-  description: "",
-  learningOutcome: "",
-};
 
-const initialOutlineState: OutlineData = {
-  modules: [],
-  preQuiz: undefined,
-  postQuiz: undefined,
-};
 
 const STEP_KEY = "advanced-spoil-step";
 
