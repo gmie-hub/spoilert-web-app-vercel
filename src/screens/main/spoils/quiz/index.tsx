@@ -15,13 +15,19 @@ const SpoilQuiz = () => {
 
   const goToNextStep = () =>
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
+  const goToPreviousStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
 
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
         return <Overview onNext={goToNextStep} />;
       case 1:
-        return <AddQuestions />;
+        return (
+          <AddQuestions
+            onAddQuestions={goToNextStep}
+            onPrevious={goToPreviousStep}
+          />
+        );
       case 2:
         return <Review />;
       default:

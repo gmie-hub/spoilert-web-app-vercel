@@ -5,6 +5,7 @@ import { FC } from "react";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
+import { Card } from "@spt/components";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Textarea from "@spt/components/textarea";
@@ -39,12 +40,18 @@ const validationSchema = Yup.object({
     .max(500, "Description cannot exceed 500 characters")
     .required("Description is required"),
   numberOfQuestions: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? undefined : value,
+    )
     .typeError("Number of questions must be a number")
     .integer("Number of questions must be a whole number")
     .min(1, "Number of questions must be at least 1")
     .max(100, "Number of questions cannot exceed 100")
     .required("Number of questions is required"),
   timeLimit: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? undefined : value,
+    )
     .typeError("Time limit must be a number")
     .integer("Time limit must be a whole number")
     .min(1, "Time limit must be at least 1 minute")
@@ -54,7 +61,7 @@ const validationSchema = Yup.object({
 
 const Overview: FC<OverviewProps> = ({ onNext }) => {
   return (
-    <div className="rounded-3xl p-6 md:p-8">
+    <Card >
       <Formik<OverviewFormValues>
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -66,7 +73,7 @@ const Overview: FC<OverviewProps> = ({ onNext }) => {
       >
         {({ values, isSubmitting, setTouched }) => (
           <Form className="space-y-6">
-            <h2 className="text-4 font-semibold text-[#212121]">Overview</h2>
+            <h2 className="text-3xl font-semibold text-[#212121]">Overview</h2>
 
             <Input
               name="title"
@@ -97,9 +104,9 @@ const Overview: FC<OverviewProps> = ({ onNext }) => {
 
             <Button
               type="submit"
-              variant="lightBlue"
+            //   variant="darkBlue"
               disabled={isSubmitting}
-              className="mt-2 w-full !rounded-2xl !py-4 text-xl font-semibold text-white"
+              className="mt-2 w-full !rounded-2xl !bg-[#8FA8B0] !py-4 text-xl font-semibold text-white hover:!bg-[#809AA3]"
               onClick={() =>
                 setTouched(
                   Object.keys(values).reduce(
@@ -114,7 +121,7 @@ const Overview: FC<OverviewProps> = ({ onNext }) => {
           </Form>
         )}
       </Formik>
-    </div>
+    </Card>
   );
 };
 
