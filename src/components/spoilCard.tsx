@@ -42,7 +42,7 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
       <div className="relative w-full h-[237px] overflow-hidden">
         <Image
           src={spoil?.cover_image_url}
-          alt={spoil.title}
+          alt={spoil?.title}
           fill
           className="object-cover"
         />
@@ -57,50 +57,50 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
       <div className="p-4 space-y-3">
         {/* Title */}
         <h3 className="text-[18px] font-medium text-[var(--color-black)] line-clamp-2">
-          {spoil.title}
+          {spoil?.title}
         </h3>
 
         {/* Price */}
         <p className="text-[18px] font-semibold text-[var(--color-black)]">
           ₦
-          {spoil.display_amount?.toLocaleString() ||
-            spoil.amount?.toLocaleString()}
+          {spoil?.display_amount?.toLocaleString() ||
+            spoil?.amount?.toLocaleString()}
         </p>
 
         {/* Tutor */}
         <HStack spacing="gap-2" alignItems="center">
           <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">
-            {spoil.tutor.avatar ? (
+            {spoil?.tutor?.avatar ? (
               <Image
-                src={spoil.tutor.avatar}
+                src={spoil?.tutor?.avatar}
                 alt="tutor"
                 fill
                 className="object-cover"
               />
             ) : (
               <span className="flex items-center justify-center w-full h-full text-[10px] font-semibold text-gray-600">
-                {spoil.tutor.first_name[0]}
-                {spoil.tutor.last_name[0]}
+                {spoil?.tutor?.first_name[0]}
+                {spoil?.tutor?.last_name[0]}
               </span>
             )}
           </div>
 
           <p className="text-xs  text-[var(--color-gray-dark)] truncate">
-            {spoil.tutor.first_name} {spoil.tutor.last_name}
+            {spoil?.tutor?.first_name} {spoil?.tutor?.last_name}
           </p>
         </HStack>
 
         {/* Category + Rating */}
         <Stack spacing="gap-2">
           <span className="text-[10px] px-2 py-1 rounded-full text-[var(--color-blue)] bg-[var(--color-blue-lightest)] w-fit">
-            {spoil.category?.name || "Uncategorized"}
+            {spoil?.category?.name || "Uncategorized"}
           </span>
 
           <HStack spacing="gap-1" alignItems="center">
             <Image src={RatingIcon} alt="rating" width={20} height={20} />
             <p className="text-[1wpx] text-[var(--color-black-dark)] ">
-              {spoil.average_rating?.toFixed(1) || "0.0"} (
-              {spoil.ratings_count || 0})
+              {spoil?.average_rating?.toFixed(1) || "0.0"} (
+              {spoil?.ratings_count || 0})
             </p>
           </HStack>
         </Stack>
