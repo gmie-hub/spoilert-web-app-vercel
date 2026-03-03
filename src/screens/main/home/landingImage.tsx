@@ -4,16 +4,24 @@
 import { useEffect, useState } from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import HeroImage3 from "@spt/assets/images/Hero(3).png";
 import HeroImage1 from "@spt/assets/images/Hero(4).png";
 import HeroImage2 from "@spt/assets/images/Hero(5).png";
 import Button from "@spt/components/button";
+import { useAuthStore } from "@spt/store/authStore";
+
+
+export default function HeroSlider() {
 
 const slides = [HeroImage1.src, HeroImage2.src, HeroImage3.src];
 
-export default function HeroSlider() {
+
   const [index, setIndex] = useState(0);
+  const authUser = useAuthStore((state) => state.user);
+  const router = useRouter();
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,10 +74,16 @@ export default function HeroSlider() {
             <Button variant="default" className="rounded-full px-4 py-2 text-sm sm:text-base">
               Download App
             </Button>
+            {!authUser && (
+              <Button
+                variant="whiteOutline"
+                className="rounded-full px-4 py-2 text-sm sm:text-base"
+                onClick={() => router.push("/auth/signin")}
+              >
+                Get Started
+              </Button>
+            )}
 
-            <Button variant="whiteOutline" className="rounded-full px-4 py-2 text-sm sm:text-base">
-              Get Started
-            </Button>
           </div>
 
           {/* Dots */}
