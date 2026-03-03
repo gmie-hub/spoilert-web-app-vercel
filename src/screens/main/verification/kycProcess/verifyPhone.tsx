@@ -15,7 +15,7 @@ interface FormValues {
 }
 
 const initialValues: FormValues = {
-  countryCode: "+44",
+  countryCode: "+234",
   phoneNumber: "",
 };
 
@@ -24,7 +24,12 @@ const validationSchema = object().shape({
   phoneNumber: validations.phoneNumber,
 });
 
-const VerifyPhoneNumberStep = ({ onNext }: { onNext: () => void }) => {
+interface VerifyPhoneNumberStepProps {
+  onNext: () => void;
+  onSuccess?: () => void;
+}
+
+const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps) => {
   const { sendOtpHandler, isLoading } = useVerifyPhoneMutation();
 
   const handleSubmit = async (
@@ -39,16 +44,21 @@ const VerifyPhoneNumberStep = ({ onNext }: { onNext: () => void }) => {
       localStorage.setItem("countryCode", values.countryCode);
       localStorage.setItem("phoneNumber", values.phoneNumber);
 
-      onNext();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onNext();
+      }
     } finally {
       actions.setSubmitting(false);
     }
   };
 
   const COUNTRY_OPTIONS = [
+    { value: "+234", label: "🇳🇬 +234" },
+
     { value: "+44", label: "🇬🇧 +44" },
     { value: "+1", label: "🇺🇸 +1" },
-    { value: "+234", label: "🇳🇬 +234" },
   ];
 
   return (

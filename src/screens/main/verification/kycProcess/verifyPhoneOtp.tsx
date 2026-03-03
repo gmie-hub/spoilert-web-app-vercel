@@ -105,7 +105,11 @@ import OtpVerificationLayout from "@spt/components/OtpVerificationLayout";
 import { usePhoneResendOtpMutation } from "@spt/hooks/apiRequests/usePhoneResendOtpMutation";
 import { useVerifyOtpMutation } from "@spt/hooks/apiRequests/usePhoneVerifyOtpMutation";
 
-const VerifyPhoneOtp = () => {
+interface VerifyPhoneOtpProps {
+  onNext: () => void;
+}
+
+const VerifyPhoneOtp = ({ onNext }: VerifyPhoneOtpProps) => {
   const router = useRouter();
   const [phone, setPhone] = useState(""); // default/fallback number
   const [timer, setTimer] = useState(27);
@@ -161,12 +165,13 @@ const VerifyPhoneOtp = () => {
                 Enter the code to verify your phone number.
               </>
             }
-            onSubmit={(code, actions) =>
-              verifyOtpHandler(
-                { code }, // <-- ensure this matches your API payload
-                actions,
-              )
-            }
+            onSubmit={async (code, actions) => {
+              await verifyOtpHandler(
+                { code },
+                actions
+              );
+              onNext(); // Call onNext after successful verification
+            }}
           />
 
           {/* Resend OTP */}

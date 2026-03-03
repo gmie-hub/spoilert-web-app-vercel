@@ -26,6 +26,7 @@ interface User {
   profile: any;
   total_spoils_created: any;
   followers_count: any;
+  verification_status:number
 }
 
 interface AuthState {

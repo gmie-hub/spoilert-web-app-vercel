@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useRef, useState } from "react";
@@ -23,7 +22,9 @@ import ProfileNavIcon from "@spt/assets/icons/profileNav.svg";
 import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import UserImage from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
+import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUserVerificationDetailsQuery";
 import { useAuthStore } from "@spt/store/authStore";
+
 // Simple click outside hook
 function useClickOutside(
   ref: React.RefObject<HTMLElement | null>,
@@ -42,13 +43,7 @@ function useClickOutside(
   }, [ref, handler]);
 }
 
-const navLinks = [
-  { icon: Home, name: "Home", href: "/" },
-  { icon: Learnings, name: "My Learnings", href: "/learnings" },
-  { icon: CreateSpoilIcon, name: "Create Spoil", href: "/create-spoils" },
-  { icon: CommunityIcon, name: "Community", href: "/community" },
-  { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
-];
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -60,7 +55,32 @@ const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   const authUser = useAuthStore((state) => state.user);
+  const { userVerificationDetails, verificationItems, isLoading: isUserLoading, isError: isUserError, errorMessage: userErrorMessage } = useGetUserVerificationDetails(authUser?.id || 0);
+
+  React.useEffect(() => {
+    if (authUser && userVerificationDetails?.data?.[0]?.status !== undefined) {
+      const token = useAuthStore.getState().token ?? "";
+      setAuth({
+        user: { ...authUser, verification_status: userVerificationDetails.data[0].status },
+        token,
+      });
+    }
+  }, [userVerificationDetails, authUser]);
+
+  // Correct property access for first verification item
+  console.log("User details from header:",userVerificationDetails &&  userVerificationDetails?.data[0]?.status);
+  
+  const navLinks = [
+  { icon: Home, name: "Home", href: "/" },
+  { icon: Learnings, name: "My Learnings", href: "/learnings" },
+  { icon: CreateSpoilIcon, name: "Create Spoil", href: authUser?.kyc_verified_at === null ? "/create-spoils/kyc-process" : "/create-spoils" },
+  { icon: CommunityIcon, name: "Community", href: "/community" },
+  { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
+];
+
 
   const icons = [
     { alt: "notification", src: NotificationIcon },

@@ -87,8 +87,12 @@ export interface BankData {
 export interface BankResponse {
   message: string;
   status: boolean;
-  data: BankData[];
-}
+  data: {
+    data: BankData[];
+    // Add other properties here if needed, e.g. pagination
+    // total?: number;
+    // page?: number;
+  };}
 
 /* ================================
    Hook
