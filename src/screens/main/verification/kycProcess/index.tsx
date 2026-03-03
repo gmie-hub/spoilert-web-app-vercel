@@ -30,10 +30,6 @@ const KYCProcess = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showBankSuccess, setShowBankSuccess] = useState(false);
 
-  if (verificationStatus === 0) return <KYCInProgress />;
-  if (verificationStatus === 1) return <KYCRejected />;
-  if (verificationStatus === 2) return <KYCApproved />;
-
   const goToNextStep = () => {
     setActiveStep((prev) => prev + 1);
   };
@@ -58,6 +54,9 @@ const KYCProcess = () => {
         setShowSuccess(true);
       }} />;
     }
+    if (verificationStatus === 0) return <KYCInProgress />;
+    if (verificationStatus === 1) return <KYCRejected />;
+    if (verificationStatus === 2) return <KYCApproved />;
     switch (activeStep + 1) {
       case 1:
         return <SelectCountryStep onNext={goToNextStep} />;
