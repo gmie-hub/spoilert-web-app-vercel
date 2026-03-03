@@ -26,7 +26,7 @@ import Button from "@spt/components/button";
 import { useAuthStore } from "@spt/store/authStore";
 // Simple click outside hook
 function useClickOutside(
-  ref: React.RefObject<HTMLElement>,
+  ref: React.RefObject<HTMLElement | null>,
   handler: () => void
 ) {
   React.useEffect(() => {
@@ -53,7 +53,7 @@ const navLinks = [
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const logout = useAuthStore((state) => state.logout);
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
