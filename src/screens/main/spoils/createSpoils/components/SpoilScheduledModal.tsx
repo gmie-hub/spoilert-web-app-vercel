@@ -67,7 +67,21 @@ const SpoilScheduledModal: FC<SpoilScheduledModalProps> = ({
       </div>
 
       <div className="flex flex-col gap-4 mt-4">
-        <Button onClick={onClose}>Okay</Button>
+        <Button
+          onClick={() => {
+            try {
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("advanced-spoil-draft");
+                sessionStorage.removeItem("advanced-spoil-draft");
+              }
+            } catch (e) {
+              // ignore errors
+            }
+            onClose();
+          }}
+        >
+          Okay
+        </Button>
       </div>
     </Modal>
   );

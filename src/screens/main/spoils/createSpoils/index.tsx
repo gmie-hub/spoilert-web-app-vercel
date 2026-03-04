@@ -49,6 +49,16 @@ const CreateSpoil = () => {
     const setCreatedSpoilId = useAuthStore.getState().setCreatedSpoilId;
     setCreatedSpoilId?.(null);
 
+    // Remove spoil step keys from sessionStorage
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("advanced-spoil-step");
+        sessionStorage.removeItem("simple-spoil-step");
+      }
+    } catch (e) {
+      // ignore errors
+    }
+
     if (selectedType === "advanced") {
       router.push("/create-spoils/advance-spoil");
     } else {

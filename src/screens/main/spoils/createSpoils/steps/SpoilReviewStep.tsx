@@ -72,6 +72,16 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
 
   const handlePublishClick = async () => {
     try {
+      // Remove advanced-spoil-draft from storage
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("advanced-spoil-draft");
+          sessionStorage.removeItem("advanced-spoil-draft");
+        }
+      } catch (e) {
+        // ignore errors
+      }
+
       const formData = new FormData();
 
       // Assuming `basics` and `outline` are available in the component
@@ -123,6 +133,16 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
 
   const handleSaveToDraftClick = async () => {
     try {
+      // Remove advanced-spoil-draft from storage
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("advanced-spoil-draft");
+          sessionStorage.removeItem("advanced-spoil-draft");
+        }
+      } catch (e) {
+        // ignore errors
+      }
+
       // mark draft in persisted basics
       setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
 

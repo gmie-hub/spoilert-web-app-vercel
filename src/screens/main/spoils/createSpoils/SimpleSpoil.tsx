@@ -90,15 +90,16 @@ const SimpleSpoil = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center px-2 sm:px-4">
       <Stack
-        mr={{ xs: 2, md: 20 }}
-        ml={{ xs: 2, md: 10 }}
+        mr={{ xs: 0, md: 20 }}
+        ml={{ xs: 0, md: 10 }}
         my={{ xs: 2, md: 6 }}
         spacing={4}
+        sx={{ width: '100%' }}
       >
-        <div className="flex w-full items-start gap-6">
-          <div className="w-64">
+        <div className="flex flex-col md:flex-row w-full items-start gap-4 md:gap-6">
+          <div className="w-full md:w-64 mb-4 md:mb-0">
             <Stack spacing={1}>
               <p className="text-sm font-medium text-gray-500">Simple Spoil</p>
               <h3 className="text-2xl font-semibold text-black">
