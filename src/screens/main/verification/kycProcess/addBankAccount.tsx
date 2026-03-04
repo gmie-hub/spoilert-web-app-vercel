@@ -31,7 +31,7 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
      FETCH BANKS
   ================================ */
   const { data, isLoading } = useGetBanksQuery(bankSearch);
-console.log(data?.data,'data?.data')
+
   const bankOptions =
     data &&  data?.data?.data?.map((bank: any) => ({
       value: bank?.code,

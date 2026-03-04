@@ -23,7 +23,7 @@ const SelectCountryStep = ({ onNext }: { onNext: () => void }) => {
     try {
       const stored = localStorage.getItem("selectedCountry");
       return { country: stored ?? "" };
-    } catch (e) {
+    } catch  {
       return { country: "" };
     }
   }, []);

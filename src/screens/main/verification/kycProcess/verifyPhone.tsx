@@ -38,7 +38,7 @@ const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps
         countryCode: storedCountry ?? "+234",
         phoneNumber: storedPhone ?? "",
       };
-    } catch (e) {
+    } catch {
       return { countryCode: "+234", phoneNumber: "" };
     }
   }, []);

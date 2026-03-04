@@ -2,7 +2,6 @@
 
 import React from "react";
 
-import { useRouter } from "next/navigation";
 
 import SuccessIcon from "@spt/assets/icons/doneblue.svg";
 import SuccessState from "@spt/components/successState";
@@ -10,7 +9,6 @@ import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUser
 import { useAuthStore } from "@spt/store/authStore";
 
 const BankAccAddedSucessful = ({ onShowKYCInProgress }: { onShowKYCInProgress: () => void }) => {
-  const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
   const setAuth = useAuthStore((s) => s.setAuth);
 
@@ -26,7 +24,7 @@ const BankAccAddedSucessful = ({ onShowKYCInProgress }: { onShowKYCInProgress: (
         const token = useAuthStore.getState().token ?? "";
         setAuth({ user: { ...authUser, verification_status: newStatus }, token });
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   };

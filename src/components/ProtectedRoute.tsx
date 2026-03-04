@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+
 import { useRouter } from "next/navigation";
+
 import { useAuthStore } from "@spt/store/authStore";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {

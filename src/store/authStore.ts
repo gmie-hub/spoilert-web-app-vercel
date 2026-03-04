@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
             "spoilert-web&site#",
           ];
           keysToRemove.forEach((k) => localStorage.removeItem(k));
-        } catch (e) {
+        } catch  {
           // ignore if localStorage is unavailable
         }
       },

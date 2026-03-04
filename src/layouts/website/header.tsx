@@ -41,7 +41,7 @@ const Header = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const authUser = useAuthStore((state) => state.user);
-  const { userVerificationDetails, verificationItems, isLoading: isUserLoading, isError: isUserError, errorMessage: userErrorMessage } = useGetUserVerificationDetails(authUser?.id || 0);
+  const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
 
   React.useEffect(() => {
     const newStatus = userVerificationDetails?.data?.[0]?.status;
