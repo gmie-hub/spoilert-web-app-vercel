@@ -26,6 +26,7 @@ interface User {
   profile: any;
   total_spoils_created: any;
   followers_count: any;
+  verification_status:number
 }
 
 interface AuthState {
@@ -47,7 +48,21 @@ export const useAuthStore = create<AuthState>()(
       setCreatedSpoilId: (id: number | null) => set({ createdSpoilId: id }),
       logout: () => {
         set({ user: null, token: null, createdSpoilId: null });
-        localStorage.removeItem("spoilert-web&site#"); // clears persisted data
+        try {
+          // Remove app-specific persisted stores and KYC-related localStorage items
+          const keysToRemove = [
+            "bankDetails",
+            "countryCode",
+            "kycActiveStep",
+            "phoneNumber",
+            "selectedCountry",
+            "advanced-spoil-draft",
+            "spoilert-web&site#",
+          ];
+          keysToRemove.forEach((k) => localStorage.removeItem(k));
+        } catch  {
+          // ignore if localStorage is unavailable
+        }
       },
     }),
     {

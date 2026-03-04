@@ -33,9 +33,9 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
   const { data, isLoading } = useGetBanksQuery(bankSearch);
 
   const bankOptions =
-    data?.data?.map((bank: any) => ({
-      value: bank.code,
-      label: bank.name,
+    data &&  data?.data?.data?.map((bank: any) => ({
+      value: bank?.code,
+      label: bank?.name,
     })) || [];
 
   /* ================================
@@ -51,15 +51,15 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
      VERIFY ACCOUNT FUNCTION
   ================================ */
   const verifyAccount = async (accountNumber: string, bankCode: string) => {
-    if (accountNumber.length !== 10 || !bankCode) return;
+    if (accountNumber?.length !== 10 || !bankCode) return;
 
-    const bankObj = data?.data?.find((b: any) => b.code === bankCode);
+    const bankObj = data?.data?.data?.find((b: any) => b.code === bankCode);
     if (!bankObj) return;
 
     const result = await verifyBankHandler(accountNumber, bankObj.id);
 
     if (result?.data?.res?.account_name) {
-      setAccountName(result.data.res.account_name);
+      setAccountName(result?.data?.res?.account_name);
     } else {
       setAccountName(null);
     }
@@ -91,7 +91,7 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
   ) => {
     if (!accountName) return;
 
-    const bankObj = data?.data?.find((b: any) => b.code === values.bankName);
+    const bankObj = data?.data?.data?.find((b: any) => b.code === values.bankName);
     if (!bankObj) return;
 
     // ✅ Save everything as ONE object
@@ -142,6 +142,7 @@ const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
 
                 {/* Bank Select */}
                 <Select
+                filterOnFrontend={false}
                   name="bankName"
                   label="Bank Name"
                   searchable={true}

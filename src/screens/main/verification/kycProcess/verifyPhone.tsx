@@ -1,5 +1,7 @@
 "use client";
 
+import React, { useMemo } from "react";
+
 import { Form, Formik, FormikHelpers } from "formik";
 import { object } from "yup";
 
@@ -14,18 +16,32 @@ interface FormValues {
   phoneNumber: string;
 }
 
-const initialValues: FormValues = {
-  countryCode: "+44",
-  phoneNumber: "",
-};
-
 const validationSchema = object().shape({
   countryCode: validations.countryCode,
   phoneNumber: validations.phoneNumber,
 });
 
-const VerifyPhoneNumberStep = ({ onNext }: { onNext: () => void }) => {
+interface VerifyPhoneNumberStepProps {
+  onNext: () => void;
+  onSuccess?: () => void;
+}
+
+const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps) => {
   const { sendOtpHandler, isLoading } = useVerifyPhoneMutation();
+
+  const initialValues = useMemo<FormValues>(() => {
+    try {
+      const storedCountry = localStorage.getItem("countryCode");
+      const storedPhone = localStorage.getItem("phoneNumber");
+
+      return {
+        countryCode: storedCountry ?? "+234",
+        phoneNumber: storedPhone ?? "",
+      };
+    } catch {
+      return { countryCode: "+234", phoneNumber: "" };
+    }
+  }, []);
 
   const handleSubmit = async (
     values: FormValues,
@@ -39,16 +55,33 @@ const VerifyPhoneNumberStep = ({ onNext }: { onNext: () => void }) => {
       localStorage.setItem("countryCode", values.countryCode);
       localStorage.setItem("phoneNumber", values.phoneNumber);
 
-      onNext();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onNext();
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to send OTP";
+
+      // If backend indicates phone is already verified, skip to VerifyIdentity
+      if (message === "Phone already verified.") {
+        onNext();
+        return;
+      }
     } finally {
       actions.setSubmitting(false);
     }
   };
 
   const COUNTRY_OPTIONS = [
+    { value: "+234", label: "🇳🇬 +234" },
+
     { value: "+44", label: "🇬🇧 +44" },
     { value: "+1", label: "🇺🇸 +1" },
-    { value: "+234", label: "🇳🇬 +234" },
   ];
 
   return (

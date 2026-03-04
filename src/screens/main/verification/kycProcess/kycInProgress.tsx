@@ -11,7 +11,7 @@ const KYCInProgress = () => {
           title="Your Verification Is Still In Progress "
           description="Once your verification is complete, you will be notified, and you will be able to create Spoils."
           buttonLabel="Okay"
-          href="/auth/signin"
+          href="/"
         />
       </div>
     </div>
