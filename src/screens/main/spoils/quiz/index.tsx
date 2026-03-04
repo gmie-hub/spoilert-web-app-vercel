@@ -10,26 +10,56 @@ import AddQuestions from "./steps/addQuestions";
 import Overview from "./steps/overview";
 import Review from "./steps/review";
 
+import type { QuizOverviewDraft, QuizQuestion } from "./types";
+
+const initialOverviewValues: QuizOverviewDraft = {
+  title: "",
+  description: "",
+  numberOfQuestions: "",
+  timeLimit: "",
+};
+
 const SpoilQuiz = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const [overview, setOverview] =
+    useState<QuizOverviewDraft>(initialOverviewValues);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
 
   const goToNextStep = () =>
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   const goToPreviousStep = () => setActiveStep((prev) => Math.max(prev - 1, 0));
+  const goToStep = (stepIndex: number) => setActiveStep(stepIndex);
 
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
-        return <Overview onNext={goToNextStep} />;
+        return (
+          <Overview
+            initialValues={overview}
+            onSaveAndNext={(values) => {
+              setOverview(values);
+              goToNextStep();
+            }}
+          />
+        );
       case 1:
         return (
           <AddQuestions
-            onAddQuestions={goToNextStep}
+            questions={questions}
+            onQuestionsChange={setQuestions}
+            onNext={goToNextStep}
             onPrevious={goToPreviousStep}
           />
         );
       case 2:
-        return <Review />;
+        return (
+          <Review
+            overview={overview}
+            questions={questions}
+            onEditOverview={() => goToStep(0)}
+            onEditQuestions={() => goToStep(1)}
+          />
+        );
       default:
         return null;
     }

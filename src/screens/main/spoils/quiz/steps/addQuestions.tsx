@@ -1,63 +1,121 @@
 "use client";
 
-import type { FC } from "react";
+import { useMemo, useState } from "react";
 
-import Image from "next/image";
+import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
 
-import EmptyImageIcon from "@spt/assets/icons/Empty Image.svg";
-import { Card } from "@spt/components";
-import Button from "@spt/components/button";
+import QuestionEmptyState from "../components/QuestionEmptyState";
+import QuestionFormModal from "../components/QuestionFormModal";
+import QuestionOutlineList from "../components/QuestionOutlineList";
+
+import type { QuizQuestion } from "../types";
 
 interface AddQuestionsProps {
+  onNext: () => void;
   onPrevious: () => void;
-  onAddQuestions: () => void;
+  questions: QuizQuestion[];
+  onQuestionsChange: (nextQuestions: QuizQuestion[]) => void;
 }
 
-const AddQuestions: FC<AddQuestionsProps> = ({ onPrevious, onAddQuestions }) => {
+const AddQuestions = ({
+  onNext,
+  onPrevious,
+  questions,
+  onQuestionsChange,
+}: AddQuestionsProps) => {
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+
+  const editingQuestion = useMemo(
+    () =>
+      questions.find((question) => question.id === editingQuestionId) ?? null,
+    [editingQuestionId, questions],
+  );
+
+  const openCreateQuestionModal = () => {
+    setEditingQuestionId(null);
+    setIsQuestionModalOpen(true);
+  };
+
+  const openEditQuestionModal = (questionId: string) => {
+    setEditingQuestionId(questionId);
+    setIsQuestionModalOpen(true);
+  };
+
+  const closeQuestionModal = () => {
+    setEditingQuestionId(null);
+    setIsQuestionModalOpen(false);
+  };
+
+  const saveQuestion = (question: QuizQuestion) => {
+    const nextQuestions = (() => {
+      const index = questions.findIndex(
+        (existingQuestion) => existingQuestion.id === question.id,
+      );
+
+      if (index === -1) {
+        return [...questions, question];
+      }
+
+      return questions.map((existingQuestion) =>
+        existingQuestion.id === question.id ? question : existingQuestion,
+      );
+    })();
+
+    onQuestionsChange(nextQuestions);
+    closeQuestionModal();
+  };
+
+  const requestDeleteQuestion = (questionId: string) => {
+    setDeletingQuestionId(questionId);
+  };
+
+  const deleteQuestion = () => {
+    if (!deletingQuestionId) {
+      return;
+    }
+
+    onQuestionsChange(
+      questions.filter((question) => question.id !== deletingQuestionId),
+    );
+    setDeletingQuestionId(null);
+  };
+
   return (
-    <Card className="rounded-3xl bg-[#F8F8F8]">
-      <div className="space-y-7">
-        <h2 className="text-3xl font-semibold text-[#212121]">Add Questions</h2>
+    <>
+      {questions.length === 0 ? (
+        <QuestionEmptyState
+          onAddQuestion={openCreateQuestionModal}
+          onPrevious={onPrevious}
+        />
+      ) : (
+        <QuestionOutlineList
+          questions={questions}
+          onAddQuestion={openCreateQuestionModal}
+          onDeleteQuestion={requestDeleteQuestion}
+          onEditQuestion={openEditQuestionModal}
+          onNext={onNext}
+          onPrevious={onPrevious}
+        />
+      )}
 
-        <div className="flex flex-col items-center text-center">
-          <Image
-            src={EmptyImageIcon}
-            alt="No questions added"
-            width={133}
-            height={158}
-            className="h-auto w-[133px]"
-            priority
-          />
+      <QuestionFormModal
+        open={isQuestionModalOpen}
+        editingQuestion={editingQuestion}
+        onClose={closeQuestionModal}
+        onSave={saveQuestion}
+      />
 
-          <h3 className="mt-6 text-2xl font-semibold text-[#212121] md:text-4xl">
-            No Question Has Been Added Yet
-          </h3>
-          <p className="mt-2 text-lg text-[#5A5A5A] md:text-2xl">
-            Add questions to create your quiz
-          </p>
-        </div>
-
-        <div className="space-y-4 pt-2">
-          <Button
-            type="button"
-            variant="darkBlue"
-            className="w-full !rounded-2xl !bg-[#013B4D] !py-4 text-xl font-semibold text-white hover:!bg-[#0D4F63]"
-            onClick={onAddQuestions}
-          >
-            Add Questions
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full !rounded-2xl !border-[#DADADA] !py-4 text-xl font-semibold !text-[#013B4D] hover:!bg-[#013B4D] hover:!text-white"
-            onClick={onPrevious}
-          >
-            Previous
-          </Button>
-        </div>
-      </div>
-    </Card>
+      <DeleteConfirmationModal
+        open={deletingQuestionId !== null}
+        title="Are You Sure You Want To Delete This Question?"
+        description="You won't be able to recover it once it is deleted"
+        isLoading={false}
+        onConfirm={deleteQuestion}
+        onCancel={() => setDeletingQuestionId(null)}
+      />
+    </>
   );
 };
 

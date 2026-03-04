@@ -10,23 +10,12 @@ import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Textarea from "@spt/components/textarea";
 
-interface OverviewFormValues {
-  title: string;
-  description: string;
-  numberOfQuestions: string;
-  timeLimit: string;
-}
+import type { QuizOverviewDraft } from "../types";
 
 interface OverviewProps {
-  onNext: () => void;
+  initialValues: QuizOverviewDraft;
+  onSaveAndNext: (values: QuizOverviewDraft) => void;
 }
-
-const initialValues: OverviewFormValues = {
-  title: "",
-  description: "",
-  numberOfQuestions: "",
-  timeLimit: "",
-};
 
 const validationSchema = Yup.object({
   title: Yup.string()
@@ -59,16 +48,17 @@ const validationSchema = Yup.object({
     .required("Time limit is required"),
 });
 
-const Overview: FC<OverviewProps> = ({ onNext }) => {
+const Overview: FC<OverviewProps> = ({ initialValues, onSaveAndNext }) => {
   return (
-    <Card >
-      <Formik<OverviewFormValues>
+    <Card>
+      <Formik<QuizOverviewDraft>
         initialValues={initialValues}
+        enableReinitialize
         validationSchema={validationSchema}
         validateOnBlur
         validateOnChange
-        onSubmit={() => {
-          onNext();
+        onSubmit={(values) => {
+          onSaveAndNext(values);
         }}
       >
         {({ values, isSubmitting, setTouched }) => (
@@ -104,14 +94,14 @@ const Overview: FC<OverviewProps> = ({ onNext }) => {
 
             <Button
               type="submit"
-            //   variant="darkBlue"
+              variant="darkBlue"
               disabled={isSubmitting}
               className="mt-2 w-full"
               onClick={() =>
                 setTouched(
                   Object.keys(values).reduce(
                     (acc, key) => ({ ...acc, [key]: true }),
-                    {} as Record<keyof OverviewFormValues, boolean>,
+                    {} as Record<keyof QuizOverviewDraft, boolean>,
                   ),
                 )
               }
