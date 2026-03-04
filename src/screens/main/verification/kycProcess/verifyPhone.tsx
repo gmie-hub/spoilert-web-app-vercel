@@ -1,5 +1,7 @@
 "use client";
 
+import React, { useMemo } from "react";
+
 import { Form, Formik, FormikHelpers } from "formik";
 import { object } from "yup";
 
@@ -14,11 +16,6 @@ interface FormValues {
   phoneNumber: string;
 }
 
-const initialValues: FormValues = {
-  countryCode: "+234",
-  phoneNumber: "",
-};
-
 const validationSchema = object().shape({
   countryCode: validations.countryCode,
   phoneNumber: validations.phoneNumber,
@@ -31,6 +28,20 @@ interface VerifyPhoneNumberStepProps {
 
 const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps) => {
   const { sendOtpHandler, isLoading } = useVerifyPhoneMutation();
+
+  const initialValues = useMemo<FormValues>(() => {
+    try {
+      const storedCountry = localStorage.getItem("countryCode");
+      const storedPhone = localStorage.getItem("phoneNumber");
+
+      return {
+        countryCode: storedCountry ?? "+234",
+        phoneNumber: storedPhone ?? "",
+      };
+    } catch (e) {
+      return { countryCode: "+234", phoneNumber: "" };
+    }
+  }, []);
 
   const handleSubmit = async (
     values: FormValues,
@@ -48,6 +59,18 @@ const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps
         onSuccess();
       } else {
         onNext();
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to send OTP";
+
+      // If backend indicates phone is already verified, skip to VerifyIdentity
+      if (message === "Phone already verified.") {
+        onNext();
+        return;
       }
     } finally {
       actions.setSubmitting(false);

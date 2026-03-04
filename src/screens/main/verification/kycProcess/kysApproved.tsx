@@ -11,9 +11,9 @@ const KYCApproved = () => {
           title="Verification Approved. 🎉 "
           description="Your verification has been successfully approved! You can now start creating Spoils."
           buttonLabel="Start Creating Spoils"
-          href="/auth/signin"
+          href="/create-spoils"
           showSecondBtn
-          secondBtnLabel="Bck to Home"
+          secondBtnLabel="Back to Home"
           onSecondBtnClick={() => {}}
         />
       </div>

@@ -1,4 +1,7 @@
+
 "use client";
+
+import React, { useMemo } from "react";
 
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
@@ -11,15 +14,19 @@ interface FormValues {
   country: string;
 }
 
-const initialValues: FormValues = {
-  country: "",
-};
-
 const validationSchema = Yup.object({
   country: validations.country,
 });
 
 const SelectCountryStep = ({ onNext }: { onNext: () => void }) => {
+  const initialValues = useMemo<FormValues>(() => {
+    try {
+      const stored = localStorage.getItem("selectedCountry");
+      return { country: stored ?? "" };
+    } catch (e) {
+      return { country: "" };
+    }
+  }, []);
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>,

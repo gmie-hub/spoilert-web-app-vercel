@@ -40,38 +40,48 @@ const KYCProcess = () => {
 
   const renderStepContent = () => {
     if (showSuccess) {
-      return <PhoneNoVerifySucessful onContinue={() => {
-        setShowSuccess(false);
-        goToNextStep();
-      }} />;
+      return (
+        <PhoneNoVerifySucessful
+          onContinue={() => {
+            setShowSuccess(false);
+            goToNextStep();
+          }}
+        />
+      );
     }
     if (showBankSuccess) {
-      return <BankAccAddedSucessful />;
-    }
-    if (showOtp) {
-      return <VerifyPhoneOtp onNext={() => {
-        setShowOtp(false);
-        setShowSuccess(true);
+      return <BankAccAddedSucessful onShowKYCInProgress={() => {
+        setShowBankSuccess(false);
       }} />;
     }
+    if (showOtp) {
+      return (
+        <VerifyPhoneOtp
+          onNext={() => {
+            setShowOtp(false);
+            setShowSuccess(true);
+          }}
+        />
+      );
+    }
     if (verificationStatus === 0) return <KYCInProgress />;
-    if (verificationStatus === 1) return <KYCRejected />;
-    if (verificationStatus === 2) return <KYCApproved />;
+    if (verificationStatus === 1) return <KYCApproved />;
+    if (verificationStatus === 2) return <KYCRejected />;
+
     switch (activeStep + 1) {
       case 1:
         return <SelectCountryStep onNext={goToNextStep} />;
       case 2:
         return (
-          <VerifyPhoneNumberStep onNext={goToNextStep} onSuccess={() => setShowOtp(true)} />
+          <VerifyPhoneNumberStep
+            onNext={goToNextStep}
+            onSuccess={() => setShowOtp(true)}
+          />
         );
       case 3:
-        return (
-          <VerifyIdentity onNext={goToNextStep} />
-        );
+        return <VerifyIdentity onNext={goToNextStep} />;
       case 4:
-        return (
-          <AddBankAccountStep onNext={() => setShowBankSuccess(true)} />
-        );
+        return <AddBankAccountStep onNext={() => setShowBankSuccess(true)} />;
       default:
         return null;
     }
@@ -98,9 +108,7 @@ const KYCProcess = () => {
         />
       </Stack>
 
-      <Card>
-        {renderStepContent()}
-      </Card>
+      <Card>{renderStepContent()}</Card>
     </Stack>
   );
 };

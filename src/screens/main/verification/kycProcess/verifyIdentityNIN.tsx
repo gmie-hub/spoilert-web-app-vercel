@@ -154,11 +154,27 @@ const VerifyIdentity = ({ onNext }: { onNext: () => void }) => {
     if (!values.docImage) return;
 
     // ✅ endpoint auto handles NG vs others internally
-    await verifyIdentityHandler(
-      { image: values.docImage },
-      actions.setSubmitting
-    );
-    onNext();
+    try {
+      await verifyIdentityHandler(
+        { image: values.docImage },
+        actions.setSubmitting
+      );
+      onNext();
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "";
+
+      // If verification of NIN already exists, proceed to bank account step
+      if (
+        message === "Verification of type nin already exists for this user."
+      ) {
+        onNext();
+      }
+      // other errors are already handled/toasted in the hook
+    }
   };
   
   return (

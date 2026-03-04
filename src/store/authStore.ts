@@ -48,7 +48,21 @@ export const useAuthStore = create<AuthState>()(
       setCreatedSpoilId: (id: number | null) => set({ createdSpoilId: id }),
       logout: () => {
         set({ user: null, token: null, createdSpoilId: null });
-        localStorage.removeItem("spoilert-web&site#"); // clears persisted data
+        try {
+          // Remove app-specific persisted stores and KYC-related localStorage items
+          const keysToRemove = [
+            "bankDetails",
+            "countryCode",
+            "kycActiveStep",
+            "phoneNumber",
+            "selectedCountry",
+            "advanced-spoil-draft",
+            "spoilert-web&site#",
+          ];
+          keysToRemove.forEach((k) => localStorage.removeItem(k));
+        } catch (e) {
+          // ignore if localStorage is unavailable
+        }
       },
     }),
     {

@@ -23,25 +23,8 @@ import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import UserImage from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
 import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUserVerificationDetailsQuery";
+import useClickOutside from "@spt/hooks/useClickOutside";
 import { useAuthStore } from "@spt/store/authStore";
-
-// Simple click outside hook
-function useClickOutside(
-  ref: React.RefObject<HTMLElement | null>,
-  handler: () => void
-) {
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        handler();
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, handler]);
-}
 
 
 
@@ -61,18 +44,20 @@ const Header = () => {
   const { userVerificationDetails, verificationItems, isLoading: isUserLoading, isError: isUserError, errorMessage: userErrorMessage } = useGetUserVerificationDetails(authUser?.id || 0);
 
   React.useEffect(() => {
-    if (authUser && userVerificationDetails?.data?.[0]?.status !== undefined) {
-      const token = useAuthStore.getState().token ?? "";
-      setAuth({
-        user: { ...authUser, verification_status: userVerificationDetails.data[0].status },
-        token,
-      });
+    const newStatus = userVerificationDetails?.data?.[0]?.status;
+    if (authUser && newStatus !== undefined) {
+      // Only update the store if the verification status actually changed
+      if (authUser.verification_status !== newStatus) {
+        const token = useAuthStore.getState().token ?? "";
+        setAuth({
+          user: { ...authUser, verification_status: newStatus },
+          token,
+        });
+      }
     }
-  }, [userVerificationDetails, authUser]);
+  }, [userVerificationDetails?.data?.[0]?.status, authUser?.verification_status, authUser?.id, setAuth]);
 
-  // Correct property access for first verification item
-  console.log("User details from header:",userVerificationDetails &&  userVerificationDetails?.data[0]?.status);
-  
+
   const navLinks = [
   { icon: Home, name: "Home", href: "/" },
   { icon: Learnings, name: "My Learnings", href: "/learnings" },
@@ -343,29 +328,45 @@ const Header = () => {
             })}
           </div>
 
-          {/* Mobile Auth Buttons - Only show on mobile (hidden on md+ since buttons are in header) */}
+          {/* Mobile Auth Buttons - show login/signup when logged out; show logout when logged in */}
           <div className="md:hidden flex flex-col sm:flex-row gap-3 pt-2 border-t border-gray-100">
-            <Button
-              variant="outline"
-              className="w-full sm:w-1/2 rounded-full"
-              onClick={() => {
-                router.push("/auth/signin");
-                setIsMenuOpen(false);
-              }}
-            >
-              Login
-            </Button>
+            {authUser ? (
+              <Button
+                variant="outline"
+                className="w-full sm:w-1/2 rounded-full"
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                  router.push("/");
+                }}
+              >
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-1/2 rounded-full"
+                  onClick={() => {
+                    router.push("/auth/signin");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Login
+                </Button>
 
-            <Button
-              variant="default"
-              className="w-full sm:w-1/2 rounded-full"
-              onClick={() => {
-                router.push("/auth/signup");
-                setIsMenuOpen(false);
-              }}
-            >
-              Sign Up For Free
-            </Button>
+                <Button
+                  variant="default"
+                  className="w-full sm:w-1/2 rounded-full"
+                  onClick={() => {
+                    router.push("/auth/signup");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Sign Up For Free
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -51,12 +51,13 @@ export const useVerifyPhoneMutation = () => {
       // optional: navigate to next step for OTP verification
       // router.push("/auth/phone-verification");
     } catch (error: any) {
-      toast.error(
+      const message =
         error?.response?.data?.error ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Failed to send OTP",
-      );
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to send OTP";
+      toast.error(message);
+      throw error;
     } finally {
       setSubmitting(false);
     }
