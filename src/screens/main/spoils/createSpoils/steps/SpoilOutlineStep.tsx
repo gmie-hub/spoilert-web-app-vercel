@@ -3,6 +3,7 @@
 import { type FC } from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FiPlus } from "react-icons/fi";
 
 import AddCircleIcon from "@spt/assets/icons/add-circle.svg";
@@ -31,6 +32,8 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
   onNext,
   onPrevious,
 }) => {
+  const router = useRouter();
+
   const {
     moduleModalState,
     lessonModalState,
@@ -45,7 +48,6 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     closeLessonModal,
     handleLessonSubmit,
     handleDeleteLesson,
-    openQuizModal,
     closeQuizModal,
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
@@ -88,7 +90,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             type="button"
             variant="outline"
             className="justify-between"
-            onClick={() => openQuizModal("pre")}
+            onClick={() => router.push("/spoils/create-quiz?type=pre")}
           >
             <Image
               src={data.preQuiz ? EditIcon : AddCircleIcon}
@@ -102,7 +104,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             type="button"
             variant="outline"
             className="justify-between"
-            onClick={() => openQuizModal("post")}
+            onClick={() => router.push("/spoils/create-quiz?type=post")}
           >
             <Image
               src={data.postQuiz ? EditIcon : AddCircleIcon}

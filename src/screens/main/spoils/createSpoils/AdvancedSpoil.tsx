@@ -43,6 +43,7 @@ const AdvancedSpoil = () => {
 
   const goToNextStep = () =>
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
+  
   const goToPreviousStep = () =>
     setActiveStep((prev) => Math.max(prev - 1, 0));
 

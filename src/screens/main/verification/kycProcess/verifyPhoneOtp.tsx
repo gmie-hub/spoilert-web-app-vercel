@@ -6,25 +6,30 @@
 
 // import NewMessageIcon from "@spt/assets/icons/New message-rafiki 1.svg";
 // import OtpVerificationLayout from "@spt/components/OtpVerificationLayout";
-// import { useResendOtpMutation } from "@spt/hooks/apiRequests/resendOtpMutation";
+// import { usePhoneResendOtpMutation } from "@spt/hooks/apiRequests/usePhoneResendOtpMutation";
 // import { useVerifyOtpMutation } from "@spt/hooks/apiRequests/usePhoneVerifyOtpMutation";
 
 // const VerifyPhoneOtp = () => {
 //   const router = useRouter();
-//   const [phone, setPhone] = useState("+2340000000000"); // default/fallback number
+//   const [phone, setPhone] = useState(""); // default/fallback number
 //   const [timer, setTimer] = useState(27);
 
-//   const { resendOtpHandler, isLoading: isResending } = useResendOtpMutation();
+//   const { resendOtpHandler, isLoading: isResending } =
+//     usePhoneResendOtpMutation();
 //   const { verifyOtpHandler, isLoading: isVerifying } = useVerifyOtpMutation();
 
 //   useEffect(() => {
+//     if (typeof window === "undefined") return;
 //     const storedPhone = localStorage.getItem("userPhone");
 //     if (storedPhone) setPhone(storedPhone);
 //   }, []);
 
 //   // Handle Resend OTP
 //   const handleResendOtp = async () => {
-//     await resendOtpHandler({ countryCode: "234", phoneNumber: phone }, { setSubmitting: () => {} });
+//     await resendOtpHandler({
+//       setSubmitting: () => {},
+//     });
+
 //     setTimer(27);
 //   };
 
@@ -62,7 +67,10 @@
 //               </>
 //             }
 //             onSubmit={(code, actions) =>
-//               verifyOtpHandler({ otpCode: code }, actions)
+//               verifyOtpHandler(
+//                 { code }, // <-- ensure this matches your API payload
+//                 actions,
+//               )
 //             }
 //           />
 
@@ -119,6 +127,7 @@ const VerifyPhoneOtp = ({ onNext }: VerifyPhoneOtpProps) => {
   const { verifyOtpHandler, isLoading: isVerifying } = useVerifyOtpMutation();
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const storedPhone = localStorage.getItem("userPhone");
     if (storedPhone) setPhone(storedPhone);
   }, []);
