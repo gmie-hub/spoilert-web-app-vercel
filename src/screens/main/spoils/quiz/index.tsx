@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import Stack from "@mui/material/Stack";
-import { useRouter, useSearchParams } from "next/navigation";
+import {  useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 import CustomStepper from "@spt/components/stepper";
@@ -27,7 +27,6 @@ const SpoilQuiz = () => {
   const [overview, setOverview] =
     useState<QuizOverviewDraft>(initialOverviewValues);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const quizType = (searchParams?.get("type") ?? "").toLowerCase();
   const moduleId = searchParams?.get("module_id") ?? null;
@@ -70,12 +69,12 @@ const SpoilQuiz = () => {
             onEditQuestions={() => goToStep(1)}
             onPublish={async () => {
               try {
-                const quizDraft = {
-                  overview,
-                  questions,
-                  type: quizType || "module",
-                  module_id: quizType === "pre" || quizType === "post" ? undefined : moduleId,
-                };
+                // const quizDraft = {
+                //   overview,
+                //   questions,
+                //   type: quizType || "module",
+                //   module_id: quizType === "pre" || quizType === "post" ? undefined : moduleId,
+                // };
 
                 // persist directly into the advanced-spoil-draft store
                 try {
@@ -119,7 +118,7 @@ const SpoilQuiz = () => {
                 toast.success("Quiz saved to draft");
                 // return to outline / create-spoils page
                 // router.push("/spoils/create-spoils");
-              } catch (e) {
+              } catch  {
                 // ignore
                 toast.error("Failed to save quiz draft");
               }

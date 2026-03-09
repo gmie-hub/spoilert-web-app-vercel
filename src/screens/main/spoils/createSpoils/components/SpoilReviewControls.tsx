@@ -1,7 +1,9 @@
 "use client";
 
 import { type FC, useState } from "react";
+
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
@@ -9,6 +11,7 @@ import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutat
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
+import api from "@spt/utils/apiClient";
 
 import CreateCommunityModal from "../components/CreateCommunityModal";
 import CreateCommunitySuccessModal from "../components/CreateCommunitySuccessModal";
@@ -18,10 +21,8 @@ import ScheduleSpoilPremiereModal, {
   type SchedulePremiereFormState,
 } from "../components/ScheduleSpoilPremiereModal";
 import SpoilScheduledModal from "../components/SpoilScheduledModal";
+import ReviewActionButtons from "../steps/components/ReviewActionButtons";
 
-import ReviewActionButtons from "./ReviewActionButtons";
-import api from "@spt/utils/apiClient";
-import toast from "react-hot-toast";
 
 interface Props {
   onPrevious: () => void;
