@@ -74,7 +74,7 @@ const SpoilScheduledModal: FC<SpoilScheduledModalProps> = ({
                 localStorage.removeItem("advanced-spoil-draft");
                 sessionStorage.removeItem("advanced-spoil-draft");
               }
-            } catch (e) {
+            } catch  {
               // ignore errors
             }
             onClose();

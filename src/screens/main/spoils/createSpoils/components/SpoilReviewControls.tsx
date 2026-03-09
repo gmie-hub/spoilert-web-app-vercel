@@ -73,7 +73,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
               checkQuiz(m.quiz, `Module ${idx + 1} quiz`);
             }
           });
-        } catch (e) {
+        } catch  {
           // ignore
         }
 
@@ -92,7 +92,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
           localStorage.removeItem("advanced-spoil-draft");
           sessionStorage.removeItem("advanced-spoil-draft");
         }
-      } catch (e) {
+      } catch {
         // ignore errors
       }
 
@@ -149,7 +149,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
             await createFullQuiz(preQuiz, "pre");
             await createFullQuiz(postQuiz, "post");
-          } catch (e) {
+          } catch  {
             // ignore errors
           }
         },
@@ -207,14 +207,14 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
               // eslint-disable-next-line no-console
               console.error("Failed to create module quiz", err);
             }
-          } catch (e) {
+          } catch  {
             // ignore
           }
         },
 
-        onLessonsCreated: async (_moduleId: number | string, _lessonRes?: any) => {
-          // no-op for now
-        },
+        // onLessonsCreated: async (_moduleId: number | string, _lessonRes?: any) => {
+        //   // no-op for now
+        // },
       };
 
       const response = await createSpoilHandler(
@@ -254,7 +254,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
           localStorage.removeItem("advanced-spoil-draft");
           sessionStorage.removeItem("advanced-spoil-draft");
         }
-      } catch (e) {
+      } catch  {
         // ignore
       }
 
@@ -263,12 +263,12 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
       const storedBasics = useCreateSpoilStore.getState().basics;
       setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
 
-      const res = await createSpoilHandler(
-        new FormData(),
-        { setSubmitting: (_: boolean) => {} },
-        createModuleHandler,
-        createLessonHandler,
-      );
+    //   const res = await createSpoilHandler(
+    //     new FormData(),
+    //     { setSubmitting: (_: boolean) => {} },
+    //     createModuleHandler,
+    //     createLessonHandler,
+    //   );
 
       try {
         try {
@@ -368,8 +368,8 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
     }
   };
 
-  const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
-  const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
+//   const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
+//   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
 
   return (
     <>

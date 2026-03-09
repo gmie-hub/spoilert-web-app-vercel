@@ -55,7 +55,7 @@ const CreateSpoil = () => {
         sessionStorage.removeItem("advanced-spoil-step");
         sessionStorage.removeItem("simple-spoil-step");
       }
-    } catch (e) {
+    } catch {
       // ignore errors
     }
 
