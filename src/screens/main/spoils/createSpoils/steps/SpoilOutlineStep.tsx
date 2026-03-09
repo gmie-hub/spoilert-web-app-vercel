@@ -104,7 +104,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             type="button"
             variant="outline"
             className="justify-between"
-            onClick={() => router.push("/spoils/create-quiz?type=post")}
+              onClick={() => router.push("/spoils/create-quiz?type=post")}
           >
             <Image
               src={data.postQuiz ? EditIcon : AddCircleIcon}

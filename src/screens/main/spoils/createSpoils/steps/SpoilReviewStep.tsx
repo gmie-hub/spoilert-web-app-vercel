@@ -25,6 +25,8 @@ import ReviewActionButtons from "./components/ReviewActionButtons";
 import SpoilBasicsSection from "./components/SpoilBasicsSection";
 import SpoilOutlineSection from "./components/SpoilOutlineSection";
 import { mapSpoilDataToForm } from "./spoilBasicsHelpers";
+import api from "@spt/utils/apiClient";
+import toast from "react-hot-toast";
 
 import type { BasicsFormData, OutlineData, SpoilTypeOption } from "../types";
 
@@ -72,6 +74,43 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
 
   const handlePublishClick = async () => {
     try {
+      // Validate persisted quiz drafts (pre/post/module) before making API calls
+      const validateDraftQuizzes = () => {
+        const errors: string[] = [];
+        try {
+          const basics = useCreateSpoilStore.getState().basics ?? {};
+          const outline = useCreateSpoilStore.getState().outline ?? { modules: [] };
+
+          const checkQuiz = (quiz: any, label: string) => {
+            if (!quiz) return;
+            const qCount = Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.overview?.numberOfQuestions ? Number(quiz.overview.numberOfQuestions) : 0);
+            const timeLimit = quiz.overview?.timeLimit ?? quiz.time_limit ?? null;
+            if (!qCount || qCount <= 0) errors.push(`${label}: add at least one question`);
+            if (!timeLimit) errors.push(`${label}: time limit is required`);
+          };
+
+          checkQuiz((basics as any).preQuiz, "Pre-spoil quiz");
+          checkQuiz((basics as any).postQuiz, "Post-spoil quiz");
+
+          (outline.modules || []).forEach((m: any, idx: number) => {
+            if (m.quiz) {
+              checkQuiz(m.quiz, `Module ${idx + 1} quiz`);
+            }
+          });
+        } catch (e) {
+          // ignore
+        }
+
+        if (errors.length > 0) {
+          // show first error as toast and also console
+          toast.error(errors.join("; "));
+          return false;
+        }
+        return true;
+      };
+
+      if (!validateDraftQuizzes()) return;
+
       // Remove advanced-spoil-draft from storage
       try {
         if (typeof window !== "undefined") {
@@ -88,11 +127,143 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       if (basics?.title) formData.append("title", basics.title);
       if (outline) formData.append("outline", JSON.stringify(outline));
 
+      // prepare callbacks to create quiz after spoil/module creation
+      const callbacks = {
+        onSpoilCreated: async (spoilId: number | string) => {
+          try {
+            // read pre/post quiz from persisted basics in advanced-spoil-draft
+            const basics = useCreateSpoilStore.getState().basics ?? {};
+            const preQuiz = (basics as any).preQuiz;
+            const postQuiz = (basics as any).postQuiz;
+
+            const createFullQuiz = async (quiz: any, type: string) => {
+              if (!quiz) return;
+              const fd = new FormData();
+              if (quiz.title) fd.append("title", quiz.title);
+              fd.append("type", type);
+              fd.append("spoil_id", String(spoilId));
+              if (quiz.description) fd.append("description", quiz.description ?? "");
+
+              // number of questions
+              const noOfQuestions = (quiz.overview?.numberOfQuestions && String(quiz.overview.numberOfQuestions)) || (Array.isArray(quiz.questions) ? String(quiz.questions.length) : "0");
+              fd.append("no_of_questions", noOfQuestions);
+
+              // time limit
+              if (quiz.overview?.timeLimit) fd.append("time_limit", String(quiz.overview.timeLimit));
+
+              // pass mark if provided
+              if (quiz.overview?.pass_mark) fd.append("pass_mark", String(quiz.overview.pass_mark));
+
+              // questions: transform to expected shape. Use array JSON string.
+              if (Array.isArray(quiz.questions) && quiz.questions.length > 0) {
+                const questionsPayload = quiz.questions.map((q: any) => {
+                  // derive answer: prefer explicit q.answer, otherwise look for option with isCorrect
+                  let answerVal = q.answer ?? q.correctAnswer ?? "";
+                  if (!answerVal && Array.isArray(q.options)) {
+                    const found = (q.options as any[]).find((opt: any) => opt && (opt.isCorrect === true || opt.is_correct === true || opt.correct === true));
+                    if (found) answerVal = found.text ?? found.label ?? found;
+                  }
+
+                  return {
+                    question: q.prompt ?? q.question ?? "",
+                    type: q.type ?? "multiple_choice",
+                    options: JSON.stringify((q.options ?? []).map((opt: any) => (opt && (opt.text ?? opt)) ?? opt)),
+                    answer: answerVal ?? "",
+                  };
+                });
+                fd.append("questions", JSON.stringify(questionsPayload));
+              }
+
+              try {
+                await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                toast.success(`Saved ${type} quiz`);
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error(`Failed to create ${type} quiz`, err);
+              }
+            };
+
+            await createFullQuiz(preQuiz, "pre");
+            await createFullQuiz(postQuiz, "post");
+          } catch (e) {
+            // ignore errors
+          }
+        },
+
+        onModuleCreated: async (moduleId: number | string, moduleRes?: any, originalModule?: any) => {
+          try {
+            // Try to read the module quiz from persisted outline in the create-spoil store
+            const outline = useCreateSpoilStore.getState().outline ?? { modules: [] };
+            const localModuleId = originalModule?.id ?? null;
+            let quizConfig: any = null;
+
+            if (localModuleId) {
+              const localModule = (outline.modules || []).find((m: any) => String(m.id) === String(localModuleId));
+              if (localModule && (localModule as any).quiz) {
+                quizConfig = (localModule as any).quiz;
+              }
+            }
+
+            // No fallback to sessionStorage: prefer persisted outline module quiz only
+
+            if (!quizConfig) return;
+
+            // Build FormData from the quizConfig and POST to /quiz using the server moduleId
+            const fd = new FormData();
+            if (quizConfig.title) fd.append("title", quizConfig.title);
+            fd.append("type", "module");
+            fd.append("module_id", String(moduleId));
+            if (moduleRes && (moduleRes?.data?.spoil_id || moduleRes?.data?.module?.spoil_id)) {
+              fd.append("spoil_id", String(moduleRes?.data?.spoil_id ?? moduleRes?.data?.module?.spoil_id));
+            }
+            if (quizConfig.description) fd.append("description", quizConfig.description);
+            const noOfQuestions = (quizConfig.overview?.numberOfQuestions && String(quizConfig.overview.numberOfQuestions)) || (Array.isArray(quizConfig.questions) ? String(quizConfig.questions.length) : "0");
+            fd.append("no_of_questions", noOfQuestions);
+            if (quizConfig.overview?.timeLimit) fd.append("time_limit", String(quizConfig.overview.timeLimit));
+            if (quizConfig.overview?.pass_mark) fd.append("pass_mark", String(quizConfig.overview.pass_mark));
+
+            // include questions array if present
+            if (Array.isArray(quizConfig.questions) && quizConfig.questions.length > 0) {
+              const questionsPayload = quizConfig.questions.map((q: any) => {
+                let answerVal = q.answer ?? q.correctAnswer ?? "";
+                if (!answerVal && Array.isArray(q.options)) {
+                  const found = (q.options as any[]).find((opt: any) => opt && (opt.isCorrect === true || opt.is_correct === true || opt.correct === true));
+                  if (found) answerVal = found.text ?? found.label ?? found;
+                }
+
+                return {
+                  question: q.prompt ?? q.question ?? "",
+                  type: q.type ?? "multiple_choice",
+                  options: JSON.stringify((q.options ?? []).map((opt: any) => (opt && (opt.text ?? opt)) ?? opt)),
+                  answer: answerVal ?? "",
+                };
+              });
+              fd.append("questions", JSON.stringify(questionsPayload));
+            }
+
+            try {
+              await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
+              toast.success("Saved module quiz");
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.error("Failed to create module quiz", err);
+            }
+          } catch (e) {
+            // ignore
+          }
+        },
+
+        onLessonsCreated: async (_moduleId: number | string, _lessonRes?: any) => {
+          // no-op for now
+        },
+      };
+
       const response = await createSpoilHandler(
         formData,
         {},
         createModuleHandler,
         createLessonHandler,
+        callbacks,
       );
 
       if (response?.data?.id) {

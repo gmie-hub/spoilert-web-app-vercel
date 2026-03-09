@@ -3,8 +3,11 @@
 import { useState } from "react";
 
 import Stack from "@mui/material/Stack";
+import { useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 import CustomStepper from "@spt/components/stepper";
+import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import AddQuestions from "./steps/addQuestions";
 import Overview from "./steps/overview";
@@ -24,6 +27,13 @@ const SpoilQuiz = () => {
   const [overview, setOverview] =
     useState<QuizOverviewDraft>(initialOverviewValues);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const quizType = (searchParams?.get("type") ?? "").toLowerCase();
+  const moduleId = searchParams?.get("module_id") ?? null;
+
+  const setOutline = useCreateSpoilStore((s) => s.setOutline);
+  const setBasics = useCreateSpoilStore((s) => s.setBasics);
 
   const goToNextStep = () =>
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -58,6 +68,62 @@ const SpoilQuiz = () => {
             questions={questions}
             onEditOverview={() => goToStep(0)}
             onEditQuestions={() => goToStep(1)}
+            onPublish={async () => {
+              try {
+                const quizDraft = {
+                  overview,
+                  questions,
+                  type: quizType || "module",
+                  module_id: quizType === "pre" || quizType === "post" ? undefined : moduleId,
+                };
+
+                // persist directly into the advanced-spoil-draft store
+                try {
+                  const currentBasics = useCreateSpoilStore.getState().basics ?? {};
+                  const quizPayload = {
+                    id: String(Date.now()),
+                    overview: overview,
+                    questions: questions,
+                    title: overview.title,
+                    description: overview.description,
+                  } as any;
+
+                  if (quizType === "pre" || quizType === "post") {
+                    // save full quiz (overview + questions) inside basics
+                    try {
+                      setBasics({ ...(currentBasics as any), ...(quizType === "pre" ? { preQuiz: quizPayload } : { postQuiz: quizPayload }) } as any);
+                    } catch {
+                      // ignore store errors
+                    }
+                  }
+
+                  if (quizType === "module") {
+                    if (!moduleId) {
+                      toast.error("Module id is missing; cannot save module quiz into draft");
+                    } else {
+                      const currentOutline = useCreateSpoilStore.getState().outline ?? { modules: [] };
+                      const updatedModules = (currentOutline.modules || []).map((m: any) =>
+                        String(m.id) === String(moduleId) ? { ...m, quiz: quizPayload } : m,
+                      );
+                      try {
+                        setOutline({ ...(currentOutline as any), modules: updatedModules } as any);
+                      } catch {
+                        // ignore store errors
+                      }
+                    }
+                  }
+                } catch {
+                  // ignore any storage errors
+                }
+
+                toast.success("Quiz saved to draft");
+                // return to outline / create-spoils page
+                // router.push("/spoils/create-spoils");
+              } catch (e) {
+                // ignore
+                toast.error("Failed to save quiz draft");
+              }
+            }}
           />
         );
       default:

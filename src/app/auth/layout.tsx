@@ -19,12 +19,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <QueryProvider>
-        <body className={inter.className}>
-          <AuthLayout>{children}</AuthLayout>
-        </body>
-      </QueryProvider>
-    </html>
+    <QueryProvider>
+      <div className={inter.className}>
+        <AuthLayout>{children}</AuthLayout>
+      </div>
+    </QueryProvider>
   );
 }

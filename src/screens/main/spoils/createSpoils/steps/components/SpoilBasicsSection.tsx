@@ -30,9 +30,9 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
       return () => {
         try {
           URL.revokeObjectURL(url);
-        }catch {
-            // Failed to fetch cover image URL
-          }
+        } catch {
+          // Failed to fetch cover image URL
+        }
         setBlobPreview(null);
       };
     }
@@ -46,7 +46,10 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
     if (!basics || !basics.coverImage) return null;
     if (basics.coverImage instanceof File) return blobPreview;
     if (typeof basics.coverImage === "string") return basics.coverImage;
-    if (typeof basics.coverImage === "object" && (basics.coverImage as any).dataUrl)
+    if (
+      typeof basics.coverImage === "object" &&
+      (basics.coverImage as any).dataUrl
+    )
       return (basics.coverImage as any).dataUrl;
     return null;
   }, [basics, blobPreview]);
@@ -64,20 +67,36 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
 
       <div className="space-y-8">
         <div className="flex gap-2">
-            <div className="overflow-hidden">
-              {previewUrl ? (
-                // use native <img> for blob/data URLs, next/image for remote URLs
-                previewUrl.startsWith("blob:") || previewUrl.startsWith("data:") ? (
-                  <img src={previewUrl} alt="Cover" className="h-16 w-16 object-cover" />
-                ) : (
-                  <Image width={64} height={64} src={previewUrl} alt="Cover" className="object-cover" />
-                )
+          <div className="overflow-hidden">
+            {previewUrl ? (
+              // use native <img> for blob/data URLs, next/image for remote URLs
+              previewUrl.startsWith("blob:") ||
+              previewUrl.startsWith("data:") ? (
+                <img
+                  src={previewUrl}
+                  alt="Cover"
+                  className="h-16 w-16 object-cover"
+                />
               ) : (
-                <div className="flex items-center justify-center text-gray-400">
-                  <Image src={CameraIcon} alt="cover placeholder" width={64} height={64} />
-                </div>
-              )}
-            </div>
+                <Image
+                  width={64}
+                  height={64}
+                  src={previewUrl}
+                  alt="Cover"
+                  className="object-cover"
+                />
+              )
+            ) : (
+              <div className="flex items-center justify-center text-gray-400">
+                <Image
+                  src={CameraIcon}
+                  alt="cover placeholder"
+                  width={64}
+                  height={64}
+                />
+              </div>
+            )}
+          </div>
 
           {/* <button className="font-medium text-blue hover:underline">
             Change Cover Image
@@ -117,12 +136,16 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
 
           <div className="grid grid-cols-1 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
             <InfoItem label="Expiry Date" value={basics?.expiryDate || "n/a"} />
-            <InfoItem label="Modules" value={basics?.moduleCount || "10"} />
+            {selectedType !== "simple" && (
+              <InfoItem label="Modules" value={basics?.moduleCount || "10"} />
+            )}
           </div>
 
           <hr className="border-gray-200" />
 
-          <InfoItem label="Lessons" value={basics?.lessonCount || "10"} />
+          {selectedType !== "simple" && (
+            <InfoItem label="Lessons" value={basics?.lessonCount || "10"} />
+          )}
 
           <hr className="border-gray-200" />
 
@@ -132,9 +155,7 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
 
           <InfoItem
             label="What Will They Learn"
-            value={
-              basics?.learningOutcome ||
-"N/A"            }
+            value={basics?.learningOutcome || "N/A"}
           />
 
           {selectedType === "simple" && (
@@ -144,7 +165,7 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
                 label="Spoil Content"
                 value={
                   basics?.lessonType === "text"
-                    ? basics?.lessonContent ?? "n/a"
+                    ? (basics?.lessonContent ?? "n/a")
                     : basics?.lessonFile && (basics.lessonFile as any).name
                       ? (basics.lessonFile as any).name
                       : "Uploaded File"

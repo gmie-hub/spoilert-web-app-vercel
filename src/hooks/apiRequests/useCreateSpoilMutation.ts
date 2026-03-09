@@ -42,6 +42,12 @@ export const useCreateSpoilMutation = () => {
     { setSubmitting }: any,
     createModuleHandler?: (payload: { title: string; description: string; spoil_id: number }) => Promise<any>,
     createLessonHandler?: (moduleId: number | string, lessons: { title: string; type: string; content?: string; file?: File | null; description?: string }[]) => Promise<any>,
+    callbacks?: {
+      onSpoilCreated?: (spoilId: number | string) => void;
+      // originalModule is the local/module object from the outline (client id)
+      onModuleCreated?: (moduleId: number | string, moduleData?: any, originalModule?: any) => void;
+      onLessonsCreated?: (moduleId: number | string, lessonRes?: any) => void;
+    },
   ) => {
     try {
       const formData = new FormData();
@@ -163,35 +169,53 @@ export const useCreateSpoilMutation = () => {
         res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
       if (createdId) {
         useAuthStore.getState().setCreatedSpoilId?.(Number(createdId));
+        // notify caller about spoil creation
+        try {
+          callbacks?.onSpoilCreated?.(createdId);
+        } catch {
+          // ignore callback errors
+        }
 
         // Call module creation endpoint for each module in outline
         if (typeof createModuleHandler === "function") {
           for (const module of outline.modules) {
-            try {
-              const moduleRes = await createModuleHandler({
-                title: module.title,
-                description: module.description,
-                spoil_id: createdId,
-              });
+              try {
+                const moduleRes = await createModuleHandler({
+                  title: module.title,
+                  description: module.description,
+                  spoil_id: createdId,
+                });
 
-              // extract created module id from response
-              const moduleId = moduleRes?.data?.id ?? moduleRes?.data?.module_id ?? moduleRes?.data?.data?.id ?? null;
+                // extract created module id from response
+                const moduleId = moduleRes?.data?.id ?? moduleRes?.data?.module_id ?? moduleRes?.data?.data?.id ?? null;
 
-              // create lessons under the created module if handler provided
-              if (moduleId && Array.isArray(module.lessons) && module.lessons.length > 0) {
-                if (typeof createLessonHandler === "function") {
-                  try {
-                    await createLessonHandler(moduleId, module.lessons);
-                  } catch {
-                    // Error creating lessons for module
-                  }
-                } else {
-                  // createLessonHandler not provided; skipping lesson creation for module
+                // notify caller about module creation (include original module object)
+                try {
+                  if (moduleId) callbacks?.onModuleCreated?.(moduleId, moduleRes, module);
+                } catch {
+                  // ignore callback errors
                 }
+
+                // create lessons under the created module if handler provided
+                if (moduleId && Array.isArray(module.lessons) && module.lessons.length > 0) {
+                  if (typeof createLessonHandler === "function") {
+                    try {
+                      const lessonRes = await createLessonHandler(moduleId, module.lessons);
+                      try {
+                        callbacks?.onLessonsCreated?.(moduleId, lessonRes);
+                      } catch {
+                        // ignore callback errors
+                      }
+                    } catch {
+                      // Error creating lessons for module
+                    }
+                  } else {
+                    // createLessonHandler not provided; skipping lesson creation for module
+                  }
+                }
+              } catch {
+                // Error creating module, continue with next module
               }
-            } catch {
-              // Error creating module, continue with next module
-            }
           }
         } else {
           // createModuleHandler not provided; skipping module creation

@@ -4,6 +4,7 @@ import type { FC } from "react";
 import { useState } from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 import AddIcon from "@spt/assets/icons/add.svg";
@@ -42,11 +43,13 @@ const ModuleCard: FC<ModuleCardProps> = ({
   const [deleteModuleOpen, setDeleteModuleOpen] = useState(false);
   const [deleteLessonId, setDeleteLessonId] = useState<string | null>(null);
 
+  
   const handleDeleteModule = () => {
     // remove module locally from the draft/outline via parent handler
     setDeleteModuleOpen(false);
     onDelete();
   };
+  const router = useRouter();
 
   const handleDeleteLesson = async () => {
     if (!deleteLessonId) return;
@@ -111,7 +114,11 @@ const ModuleCard: FC<ModuleCardProps> = ({
                 Add Lesson
               </Button>
 
-              <Button type="button" variant="outline">
+              <Button
+                onClick={() => router.push(`/spoils/create-quiz?type=module&module_id=${module.id}`)}
+                type="button"
+                variant="outline"
+              >
                 <Image src={AddIcon} alt="add" width={20} height={20} />
                 Create Quiz
               </Button>

@@ -19,6 +19,7 @@ interface ReviewProps {
   questions: QuizQuestion[];
   onEditOverview: () => void;
   onEditQuestions: () => void;
+  onPublish?: () => Promise<void> | void;
 }
 
 const Review: FC<ReviewProps> = ({
@@ -26,6 +27,7 @@ const Review: FC<ReviewProps> = ({
   questions,
   onEditOverview,
   onEditQuestions,
+  onPublish,
 }) => {
   return (
     <Card className="rounded-3xl md:max-w-2xl">
@@ -95,6 +97,7 @@ const Review: FC<ReviewProps> = ({
         <Button
           type="button"
           variant="darkBlue"
+          onClick={() => onPublish && onPublish()}
           className="w-full !rounded-2xl !bg-[#013B4D] font-semibold text-white hover:!bg-[#0D4F63]"
         >
           Publish Quiz
