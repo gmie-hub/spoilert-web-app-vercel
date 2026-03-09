@@ -5,11 +5,9 @@ import { type FC, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
 import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
-import { useAuthStore } from "@spt/store/authStore";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 import api from "@spt/utils/apiClient";
 
@@ -305,7 +303,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
       try {
         const res = await createSpoilHandler(
           new FormData(),
-          { setSubmitting: (_: boolean) => {} },
+          { setSubmitting: () => {} },
           createModuleHandler,
           createLessonHandler,
         );
