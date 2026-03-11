@@ -1,8 +1,11 @@
 "use client";
 
+import React from "react";
+
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 
 import FacebookIcon from "@spt/assets/icons/FacebookBlue.svg";
@@ -11,13 +14,24 @@ import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
 import { useLoginMutation } from "@spt/hooks/apiRequests/useSigninMutation";
+import { useAuthStore } from "@spt/store/authStore";
 import { validations } from "@spt/utils/validation";
 
 // Key for localStorage
 const REMEMBER_ME_KEY = "rememberMeCredentials";
 
 const Login = () => {
+  const router = useRouter();
   const { loginHandler, isLoading } = useLoginMutation();
+  const { token, user } = useAuthStore();
+
+  // if we already have a token & user in store, redirect to home
+  React.useEffect(() => {
+    if (token && user) {
+      router.push("/");
+    }
+  }, [token, user, router]);
+
   const validationSchema = Yup.object().shape({
     email: validations.email,
     password: validations.passwordLogin,

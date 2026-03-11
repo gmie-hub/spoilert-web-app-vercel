@@ -18,15 +18,18 @@ const validationSchema = Yup.object({
   country: validations.country,
 });
 
-const SelectCountryStep = ({ onNext }: { onNext: () => void }) => {
+const SelectCountryStep = ({ onNext, userVerificationDetails }: { onNext: () => void; userVerificationDetails?: any }) => {
+
   const initialValues = useMemo<FormValues>(() => {
     try {
       const stored = localStorage.getItem("selectedCountry");
-      return { country: stored ?? "" };
+      const suggested = userVerificationDetails?.data?.[0]?.user?.country;
+      return { country: stored ?? suggested ?? "" };
     } catch  {
-      return { country: "" };
+      const suggested = userVerificationDetails?.data?.[0]?.user?.country;
+      return { country: suggested ?? "" };
     }
-  }, []);
+  }, [userVerificationDetails]);
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>,
@@ -39,6 +42,8 @@ const SelectCountryStep = ({ onNext }: { onNext: () => void }) => {
     // move to next step here if you use router or stepper
     onNext();
   };
+
+  
 
   return (
     <Formik

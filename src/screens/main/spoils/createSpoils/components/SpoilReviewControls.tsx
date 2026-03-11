@@ -96,6 +96,34 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
       const formData = new FormData();
 
+      // Helper to post questions for a created quiz id with fallbacks
+      const postQuestionsForQuiz = async (createdQuizId: any, questionsPayload: any[], typeLabel = "quiz") => {
+        if (!createdQuizId || !questionsPayload || questionsPayload.length === 0) return null;
+
+        // Try main questions endpoint first
+        try {
+          const questionsRes = await api.post("/questions", { quiz_id: createdQuizId, questions: questionsPayload });
+          // eslint-disable-next-line no-console
+          console.log(`Posted ${typeLabel} questions to /questions:`, questionsRes?.data ?? questionsRes);
+          return questionsRes;
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn(`Posting to /questions failed for ${typeLabel} quiz id ${createdQuizId}, trying fallback...`, err);
+        }
+
+        // Fallback: try nested quiz questions endpoint
+        try {
+          const altRes = await api.post(`/quiz/${createdQuizId}/questions`, { questions: questionsPayload });
+          // eslint-disable-next-line no-console
+          console.log(`Posted ${typeLabel} questions to /quiz/${createdQuizId}/questions:`, altRes?.data ?? altRes);
+          return altRes;
+        } catch (err2) {
+          // eslint-disable-next-line no-console
+          console.error(`Failed to post ${typeLabel} questions for quiz ${createdQuizId}`, err2);
+          throw err2;
+        }
+      };
+
       // prepare callbacks to create quiz after spoil/module creation
       const callbacks = {
         onSpoilCreated: async (spoilId: number | string) => {
@@ -118,30 +146,57 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
               if (quiz.overview?.timeLimit) fd.append("time_limit", String(quiz.overview.timeLimit));
               if (quiz.overview?.pass_mark) fd.append("pass_mark", String(quiz.overview.pass_mark));
 
+              let questionsPayload: any[] = [];
               if (Array.isArray(quiz.questions) && quiz.questions.length > 0) {
-                const questionsPayload = quiz.questions.map((q: any) => {
+                // Build questions payload matching endpoint expectations
+                questionsPayload = quiz.questions.map((q: any) => {
+                  const questionType = q.type ?? "multiple_choice";
                   let answerVal = q.answer ?? q.correctAnswer ?? "";
+                  
+                  // For multiple_choice, find the correct answer from options
                   if (!answerVal && Array.isArray(q.options)) {
                     const found = (q.options as any[]).find((opt: any) => opt && (opt.isCorrect === true || opt.is_correct === true || opt.correct === true));
                     if (found) answerVal = found.text ?? found.label ?? found;
                   }
 
-                  return {
+                  const baseQuestion = {
                     question: q.prompt ?? q.question ?? "",
-                    type: q.type ?? "multiple_choice",
-                    options: JSON.stringify((q.options ?? []).map((opt: any) => (opt && (opt.text ?? opt)) ?? opt)),
+                    type: questionType,
                     answer: answerVal ?? "",
                   };
+
+                  // Only include options for multiple_choice questions
+                  if (questionType === "multiple_choice" && Array.isArray(q.options) && q.options.length > 0) {
+                    const optionsArray = (q.options as any[]).map((opt: any) => (opt && (opt.text ?? opt.label ?? opt)) ?? opt);
+                    return { ...baseQuestion, options: optionsArray };
+                  }
+
+                  return baseQuestion;
                 });
-                fd.append("questions", JSON.stringify(questionsPayload));
               }
 
               try {
-                await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
-                toast.success(`Saved ${type} quiz`);
+                // create quiz metadata first
+                const quizRes = await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                const createdQuizId = quizRes?.data?.id ?? quizRes?.data?.quiz?.id ?? quizRes?.data?.data?.id ?? null;
+                // eslint-disable-next-line no-console
+                console.log(`${type} quiz created with ID:`, createdQuizId, "Questions payload:", questionsPayload, "raw resp:", quizRes?.data ?? quizRes);
+                if (createdQuizId && questionsPayload.length > 0) {
+                  try {
+                    await postQuestionsForQuiz(createdQuizId, questionsPayload, type);
+                    toast.success(`Saved ${type} quiz`);
+                  } catch (qErr) {
+                    // eslint-disable-next-line no-console
+                    console.error(`Failed to create ${type} questions`, qErr);
+                    toast.error(`Failed to create ${type} questions`);
+                  }
+                } else {
+                  toast.success(`Saved ${type} quiz`);
+                }
               } catch (err) {
                 // eslint-disable-next-line no-console
                 console.error(`Failed to create ${type} quiz`, err);
+                toast.error(`Failed to create ${type} quiz`);
               }
             };
 
@@ -180,30 +235,57 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
             if (quizConfig.overview?.timeLimit) fd.append("time_limit", String(quizConfig.overview.timeLimit));
             if (quizConfig.overview?.pass_mark) fd.append("pass_mark", String(quizConfig.overview.pass_mark));
 
+            let questionsPayload: any[] = [];
             if (Array.isArray(quizConfig.questions) && quizConfig.questions.length > 0) {
-              const questionsPayload = quizConfig.questions.map((q: any) => {
+              // Build questions payload matching endpoint expectations
+              questionsPayload = quizConfig.questions.map((q: any) => {
+                const questionType = q.type ?? "multiple_choice";
                 let answerVal = q.answer ?? q.correctAnswer ?? "";
+                
+                // For multiple_choice, find the correct answer from options
                 if (!answerVal && Array.isArray(q.options)) {
                   const found = (q.options as any[]).find((opt: any) => opt && (opt.isCorrect === true || opt.is_correct === true || opt.correct === true));
                   if (found) answerVal = found.text ?? found.label ?? found;
                 }
 
-                return {
+                const baseQuestion = {
                   question: q.prompt ?? q.question ?? "",
-                  type: q.type ?? "multiple_choice",
-                  options: JSON.stringify((q.options ?? []).map((opt: any) => (opt && (opt.text ?? opt)) ?? opt)),
+                  type: questionType,
                   answer: answerVal ?? "",
                 };
+
+                // Only include options for multiple_choice questions
+                if (questionType === "multiple_choice" && Array.isArray(q.options) && q.options.length > 0) {
+                  const optionsArray = (q.options as any[]).map((opt: any) => (opt && (opt.text ?? opt.label ?? opt)) ?? opt);
+                  return { ...baseQuestion, options: optionsArray };
+                }
+
+                return baseQuestion;
               });
-              fd.append("questions", JSON.stringify(questionsPayload));
             }
 
             try {
-              await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
-              toast.success("Saved module quiz");
+              // create quiz metadata first
+              const quizRes = await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
+              const createdQuizId = quizRes?.data?.id ?? quizRes?.data?.quiz?.id ?? quizRes?.data?.data?.id ?? null;
+              // eslint-disable-next-line no-console
+              console.log("Module quiz created with ID:", createdQuizId, "Questions payload:", questionsPayload, "raw resp:", quizRes?.data ?? quizRes);
+              if (createdQuizId && questionsPayload.length > 0) {
+                try {
+                  await postQuestionsForQuiz(createdQuizId, questionsPayload, "module");
+                  toast.success("Saved module quiz");
+                } catch (qErr) {
+                  // eslint-disable-next-line no-console
+                  console.error("Failed to create module questions", qErr);
+                  toast.error("Failed to create module questions");
+                }
+              } else {
+                toast.success("Saved module quiz");
+              }
             } catch (err) {
               // eslint-disable-next-line no-console
               console.error("Failed to create module quiz", err);
+              toast.error("Failed to create module quiz");
             }
           } catch  {
             // ignore
@@ -261,12 +343,12 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
       const storedBasics = useCreateSpoilStore.getState().basics;
       setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
 
-    //   const res = await createSpoilHandler(
-    //     new FormData(),
-    //     { setSubmitting: (_: boolean) => {} },
-    //     createModuleHandler,
-    //     createLessonHandler,
-    //   );
+      // const res = await createSpoilHandler(
+      //   new FormData(),
+      //   { setSubmitting: (_: boolean) => {} },
+      //   createModuleHandler,
+      //   createLessonHandler,
+      // );
 
       try {
         try {

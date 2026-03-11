@@ -24,9 +24,10 @@ const validationSchema = object().shape({
 interface VerifyPhoneNumberStepProps {
   onNext: () => void;
   onSuccess?: () => void;
+  userVerificationDetails?: any;
 }
 
-const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps) => {
+const VerifyPhoneNumberStep = ({ onNext, onSuccess, userVerificationDetails }: VerifyPhoneNumberStepProps) => {
   const { sendOtpHandler, isLoading } = useVerifyPhoneMutation();
 
   const initialValues = useMemo<FormValues>(() => {
@@ -34,14 +35,39 @@ const VerifyPhoneNumberStep = ({ onNext, onSuccess }: VerifyPhoneNumberStepProps
       const storedCountry = localStorage.getItem("countryCode");
       const storedPhone = localStorage.getItem("phoneNumber");
 
+      const rawSuggestedCountry =
+        userVerificationDetails?.data?.[0]?.user?.country_code;
+      const suggestedPhone =
+        userVerificationDetails?.data?.[0]?.user?.phone_number;
+
+      const suggestedCountry = rawSuggestedCountry
+        ? rawSuggestedCountry.startsWith("+")
+          ? rawSuggestedCountry
+          : `+${rawSuggestedCountry}`
+        : undefined;
+
       return {
-        countryCode: storedCountry ?? "+234",
-        phoneNumber: storedPhone ?? "",
+        countryCode: storedCountry ?? suggestedCountry ?? "+234",
+        phoneNumber: storedPhone ?? suggestedPhone ?? "",
       };
     } catch {
-      return { countryCode: "+234", phoneNumber: "" };
+      const rawSuggestedCountry =
+        userVerificationDetails?.data?.[0]?.user?.country_code;
+      const suggestedPhone =
+        userVerificationDetails?.data?.[0]?.user?.phone_number;
+
+      const suggestedCountry = rawSuggestedCountry
+        ? rawSuggestedCountry.startsWith("+")
+          ? rawSuggestedCountry
+          : `+${rawSuggestedCountry}`
+        : undefined;
+
+      return {
+        countryCode: suggestedCountry ?? "+234",
+        phoneNumber: suggestedPhone ?? "",
+      };
     }
-  }, []);
+  }, [userVerificationDetails]);
 
   const handleSubmit = async (
     values: FormValues,
