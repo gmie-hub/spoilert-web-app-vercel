@@ -1,9 +1,10 @@
 "use client";
 
 import type { FC } from "react";
-
+import { useCallback } from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import EditIcon from "@spt/assets/icons/white-edit.svg";
 import { Card } from "@spt/components";
@@ -29,6 +30,19 @@ const Review: FC<ReviewProps> = ({
   onEditQuestions,
   onPublish,
 }) => {
+  const router = useRouter();
+
+  const handlePublish = useCallback(async () => {
+    if (!onPublish) return;
+    try {
+      await onPublish();
+      router.back();
+    } catch (e) {
+      // keep original behavior: don't navigate on failure
+      // eslint-disable-next-line no-console
+      console.error("Publish failed:", e);
+    }
+  }, [onPublish, router]);
   return (
     <Card className="rounded-3xl md:max-w-2xl">
       <div className="space-y-6">
@@ -97,7 +111,7 @@ const Review: FC<ReviewProps> = ({
         <Button
           type="button"
           variant="darkBlue"
-          onClick={() => onPublish && onPublish()}
+          onClick={handlePublish}
           className="w-full !rounded-2xl !bg-[#013B4D] font-semibold text-white hover:!bg-[#0D4F63]"
         >
           Publish Quiz
