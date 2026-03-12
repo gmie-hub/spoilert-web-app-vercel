@@ -21,14 +21,10 @@ interface CompletionViewProps {
 }
 
 export const CompletionView = ({
-  answeredQuestionsCount,
   correctAnswersCount,
   normalizedQuestions,
   pageTitle,
-  preSpoilQuizPassMark,
-  preSpoilQuizTimeLimit,
   quizDetailsData,
-  spoilTitle,
   onStartSpoil,
 }: CompletionViewProps) => (
   <div className="mx-auto mt-10 max-w-[650px]">

@@ -109,13 +109,13 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
             // use extracted helper to create quiz and post questions
             try {
               await createQuizAndQuestions(preQuiz, { type: "pre", spoilId });
-            } catch (e) {
+            } catch {
               // ignore per original behavior
             }
 
             try {
               await createQuizAndQuestions(postQuiz, { type: "post", spoilId });
-            } catch (e) {
+            } catch {
               // ignore per original behavior
             }
           } catch  {
@@ -140,7 +140,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
             try {
               await createQuizAndQuestions(quizConfig, { type: "module", moduleId, moduleRes });
-            } catch (e) {
+            } catch {
               // ignore per original behavior
             }
           } catch  {

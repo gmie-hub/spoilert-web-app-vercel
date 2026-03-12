@@ -5,8 +5,9 @@ import { FiArrowRight, FiDownload } from "react-icons/fi";
 
 import CompletedIcon from "@spt/assets/icons/completed.svg";
 
-import type { LearningItem, MyLearningTabKey } from "../types";
 import MyLearningProgressBar from "./MyLearningProgressBar";
+
+import type { LearningItem, MyLearningTabKey } from "../types";
 
 interface MyLearningCardProps {
   item: LearningItem;
