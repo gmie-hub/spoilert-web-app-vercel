@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import BlueShareIcon from "@spt/assets/icons/blueshare-2 (6) 1.svg";
 import BookIcon from "@spt/assets/icons/bookIcon.svg";
@@ -12,6 +15,8 @@ import SaveIcon from "@spt/assets/icons/share.svg";
 import StarIcon from "@spt/assets/icons/star.svg";
 import ThumbUp from "@spt/assets/icons/vuesax.svg";
 import HeroImage3 from "@spt/assets/images/Hero.png";
+import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import { SpoilDetailsData } from "@spt/utils/spoils";
 
 import Button from "../../../../components/button";
 import Card from "../../../../components/card";
@@ -20,129 +25,238 @@ import VStack from "../../../../components/vstack";
 
 import Details from "./details";
 
-const SpoilDetails: React.FC = () => {
+interface SpoilDetailsProps {
+  spoilId: number | string;
+}
+
+const formatExpiryDate = (value?: string | null) => {
+  if (!value) return "No expiry date";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return `Expires on ${date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })}`;
+};
+
+const formatPrice = (spoil: SpoilDetailsData) => {
+  const amount = spoil.display_amount ?? spoil.amount;
+
+  if (spoil.pricing?.toLowerCase() === "free") {
+    return "Free";
+  }
+
+  if (typeof amount === "number") {
+    return `₦${amount.toLocaleString()}`;
+  }
+
+  return spoil.pricing || "Pricing unavailable";
+};
+
+const getTutorName = (spoil: SpoilDetailsData) => {
+  const firstName = spoil.tutor?.first_name ?? "";
+  const lastName = spoil.tutor?.last_name ?? "";
+  const fullName = `${firstName} ${lastName}`.trim();
+
+  return fullName || "Unknown tutor";
+};
+
+const getTutorInitials = (spoil: SpoilDetailsData) => {
+  const firstInitial = spoil.tutor?.first_name?.[0] ?? "";
+  const lastInitial = spoil.tutor?.last_name?.[0] ?? "";
+
+  return `${firstInitial}${lastInitial}`.toUpperCase() || "NA";
+};
+
+const LoadingState = () => (
+  <section className="w-full bg-white relative">
+    <div className="h-[280px] sm:h-[320px] md:h-[420px] w-full animate-pulse bg-gray-100" />
+    <section className="px-5 lg:px-25 py-8">
+      <div className="space-y-4">
+        <div className="h-4 w-48 rounded bg-gray-100" />
+        <div className="h-10 w-80 rounded bg-gray-100" />
+        <div className="h-24 w-full max-w-3xl rounded bg-gray-100" />
+      </div>
+    </section>
+  </section>
+);
+
+const ErrorState = ({ message }: { message: string }) => (
+  <section className="px-5 lg:px-25 py-16">
+    <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-red-700">
+      {message}
+    </div>
+  </section>
+);
+
+const EmptyState = () => (
+  <section className="px-5 lg:px-25 py-16">
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 text-gray-600">
+      Spoil details are unavailable.
+    </div>
+  </section>
+);
+
+const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
+  const router = useRouter();
+  const { data: spoil, isLoading, isError, errorMessage } =
+    useGetSpoilDetailsQuery(spoilId);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (isError) {
+    return <ErrorState message={errorMessage} />;
+  }
+
+  if (!spoil) {
+    return <EmptyState />;
+  }
+
+  const tutorName = getTutorName(spoil);
+  const heroImage = spoil.cover_image_url || HeroImage3;
+  const isFallbackHeroImage = !spoil.cover_image_url;
+  const price = formatPrice(spoil);
+  const spoilOverviewHref = `/spoil/${spoil.id}`;
+
   return (
     <section className="w-full bg-white relative">
-      {/* HERO */}
       <div className="relative w-full h-[280px] sm:h-[320px] md:h-[420px] overflow-hidden">
         <Image
-          src={HeroImage3.src}
-          alt="spoil media"
+          src={heroImage}
+          alt={spoil.title}
           fill
+          sizes="100vw"
+          quality={95}
+          placeholder={isFallbackHeroImage ? "blur" : "empty"}
           className="object-cover"
           priority
         />
       </div>
 
-      {/* MAIN WRAPPER */}
       <section className="px-5 lg:px-25">
-        <div className="relative   pb-10 grid lg:grid-cols-[1fr_360px] gap-8">
-          {/* LEFT DETAILS */}
-          <div className="pt-6">
-            <p className="text-sm text-gray-500 mb-1">
-              BCH 404 • Biological Pharmacology
-            </p>
+        <div className="relative pb-10 grid lg:grid-cols-[1fr_360px] gap-8">
+          <div className="pt-8">
+            {/* <p className="text-sm text-gray-500 mb-1">{buildMetaLabel(spoil)}</p> */}
 
-            <HStack spacing="gap-3" className="mt-4 flex-wrap">
-              <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm">
-                UI/UX Design
+            <h1 className="text-lg text-[#212529] md:text-xl">
+              {spoil.title}
+            </h1>
+
+            <HStack spacing="gap-2" className="mt-3 flex-wrap">
+              <span className="px-3 py-1 rounded-md bg-blue-lightest text-blue text-sm">
+                {spoil.category?.name || "Uncategorized"}
               </span>
 
-              <span className="px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-sm flex items-center gap-1">
-                
-                <Image src={StarIcon} alt="StarIcon" width={20} height={20} />
-                4.5 (16)
+              <span className="px-3 py-1 rounded-md border border-gray-lightest text-black text-xs flex items-center gap-1">
+                <Image src={StarIcon} alt="Star rating" width={20} height={20} />
+                {(spoil.average_rating ?? 0).toFixed(1)} ({spoil.ratings_count ?? 0})
               </span>
             </HStack>
+
             <div className="w-full pt-4 block lg:hidden">
               <HStack
                 spacing="gap-2"
-                className="text-xs text-gray-500 whitespace-nowrap"
+                className="text-xs text-gray-500 whitespace-nowrap flex-wrap"
               >
-                <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 rounded-full">
-                  <Image src={Profile} alt="Profile" width={20} height={20} />{" "}
-                  12 Enrolled
+                <span className="flex items-center gap-1 px-3 py-2 bg-[#F6F6F6] rounded-md">
+                  <Image src={Profile} alt="Enrolled users" width={20} height={20} />
+                  {spoil.enrolled_users ?? 0} Enrolled
                 </span>
-                <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 rounded-full">
-                  <Image src={BookIcon} alt="BookIcon" width={20} height={20} />{" "}
-                  5 Modules
+                <span className="flex items-center gap-1 px-3 py-2 bg-[#F6F6F6] rounded-md">
+                  <Image src={BookIcon} alt="Modules" width={20} height={20} />
+                  {spoil.modules_no ?? 0} Modules
                 </span>
-                <span className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-full">
-                  <Image
-                    src={ClockIcon}
-                    alt="ClockIcon"
-                    width={20}
-                    height={20}
-                  />
-                  <p className="text-sm">12hrs 10min</p>
+                <span className="flex items-center gap-2 px-3 py-2 bg-[#F6F6F6] rounded-md">
+                  <Image src={ClockIcon} alt="Lessons" width={20} height={20} />
+                  <p className="text-sm">{spoil.lessons_no ?? 0} Lessons</p>
                 </span>
               </HStack>
             </div>
 
-            <HStack spacing="gap-4" className="mt-4 text-sm text-gray-600">
-              <button className="flex items-center gap-1 hover:text-black">
-                <Image src={SaveIcon} alt="rating" width={11} height={10} />
+            <HStack spacing="gap-2" className="mt-4 text-blue">
+              <button className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg">
+                <Image src={SaveIcon} alt="Save spoil" width={15} height={15} />
                 Save
               </button>
-              <button className="flex items-center gap-1 hover:text-black">
-                <Image
-                  src={BlueShareIcon}
-                  alt="rating"
-                  width={11}
-                  height={15}
-                />
+              <button className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg">
+                <Image src={BlueShareIcon} alt="Share spoil" width={20} height={20} />
                 Share
               </button>
             </HStack>
 
-            <HStack spacing="gap-4" className="mt-4 text-sm text-gray-600">
+            <HStack spacing="gap-4" className="mt-4 text-sm text-gray-dark">
               <div className="flex items-center gap-1 hover:text-black">
-                <Image src={ThumbUp} alt="ThumbUp" width={16} height={16} />
-                <p>12</p>
+                <Image src={ThumbUp} alt="Likes" width={20} height={20} />
+                <p>{spoil.likes_count ?? 0}</p>
               </div>
               <div className="flex items-center gap-1 hover:text-black">
-                <Image src={ShareIcon} alt="rating" width={11} height={15} />
-                <p>12</p>
+                <Image src={ShareIcon} alt="Shares" width={20} height={20} />
+                <p>{spoil.shares_count ?? 0}</p>
               </div>
             </HStack>
 
-            <p className="mt-4 text-sm text-red-500 flex items-center gap-2">
-              <Image src={Calender} alt="Calender" width={20} height={20} />
-              Expires on the 25th July, 2025
+            <p className="mt-4 text-red flex items-center gap-1">
+              <Image src={Calender} alt="Expiry date" width={20} height={20} />
+              {formatExpiryDate(spoil.expires_at)}
             </p>
 
-            <p className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-              <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs">
-                👤
-              </span>
-              Ogunusola Omorinola
-            </p>
-            {/* MOBILE ACTION */}
+            <div className="mt-4 flex items-center gap-2 text-sm text-gray-700">
+              {spoil.tutor?.avatar ? (
+                <div className="relative h-6 w-6 overflow-hidden rounded-full bg-gray-200">
+                  <Image
+                    src={spoil.tutor.avatar}
+                    alt={tutorName}
+                    fill
+                    sizes="24px"
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <span className="w-6 h-6 rounded-full bg-gray flex items-center justify-center text-sm">
+                  {getTutorInitials(spoil)}
+                </span>
+              )}
+              {tutorName}
+            </div>
+
             <div className="lg:hidden">
-              <VStack spacing="gap-4" className="pt-2 w-1/2">
+              <VStack spacing="gap-4" className="pt-4 w-full sm:w-1/2">
                 <Button
                   variant="lightBlue"
                   className="w-full py-3 bg-sky-50 text-sky-700 border border-sky-100"
                 >
-                  Sponsor Spoil →
-                </Button>{" "}
-                <Button variant="darkBlue" className="w-full py-3">
+                  Sponsor Spoil
+                </Button>
+                <Button
+                  variant="darkBlue"
+                  className="w-full py-3"
+                  onClick={() => router.push(spoilOverviewHref)}
+                >
                   Buy Spoil
                 </Button>
               </VStack>
             </div>
           </div>
 
-          {/* FLOATING CARD (DESKTOP) */}
           <div className="hidden lg:block relative">
             <div className="absolute -top-36 right-0 w-[340px]">
-              <Card className="rounded-2xl bg-white shadow-2xl ring-1 ring-gray-100">
-                <VStack spacing="gap-6" className=" w-full items-start">
-                  <p className="text-2xl font-semibold text-[#0F172A] ">
-                    ₦150,000
-                  </p>
+              <Card className="rounded-2xl bg-white shadow-2xl ring-1 ring-gray-100 px-6 md:min-w-sm">
+                <VStack spacing="gap-6" className="w-full items-start">
+                  <p className="text-lg font-semibold text-black">{price}</p>
 
-                  <Button variant="darkBlue" className="w-full py-3">
+                  <Button
+                    variant="darkBlue"
+                    className="w-full py-3"
+                    onClick={() => router.push(spoilOverviewHref)}
+                  >
                     Buy Spoil
                   </Button>
 
@@ -150,40 +264,30 @@ const SpoilDetails: React.FC = () => {
                     variant="lightBlue"
                     className="w-full py-3 bg-white text-sky-700 border border-sky-100"
                   >
-                    Sponsor Spoil →
+                    Sponsor Spoil
                   </Button>
 
                   <div className="w-full border-t pt-4 border-[#E7E7E7]">
                     <HStack
                       spacing="gap-2"
-                      className="text-xs text-gray-500 whitespace-nowrap"
+                      className="text-xs text-gray-500 whitespace-nowrap flex-wrap"
                     >
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 rounded-full">
+                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
                         <Image
                           src={Profile}
-                          alt="Profile"
-                          width={20}
-                          height={20}
-                        />{" "}
-                        12 Enrolled
-                      </span>
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 rounded-full">
-                        <Image
-                          src={BookIcon}
-                          alt="book"
-                          width={20}
-                          height={20}
-                        />{" "}
-                        5 Modules
-                      </span>
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 rounded-full">
-                        <Image
-                          src={ClockIcon}
-                          alt="ClockIcon"
+                          alt="Enrolled users"
                           width={20}
                           height={20}
                         />
-                        12hrs 10min
+                        {spoil.enrolled_users ?? 0} Enrolled
+                      </span>
+                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
+                        <Image src={BookIcon} alt="Modules" width={20} height={20} />
+                        {spoil.modules_no ?? 0} Modules
+                      </span>
+                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
+                        <Image src={ClockIcon} alt="Lessons" width={20} height={20} />
+                        {spoil.lessons_no ?? 0} Lessons
                       </span>
                     </HStack>
                   </div>
@@ -193,7 +297,7 @@ const SpoilDetails: React.FC = () => {
           </div>
         </div>
 
-        <Details />
+        <Details spoil={spoil} />
       </section>
     </section>
   );

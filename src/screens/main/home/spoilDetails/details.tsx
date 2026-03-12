@@ -1,160 +1,283 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import Image from "next/image";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
-import Orange from "@spt/assets/icons/orange-arrow-right.svg";
+import PDFIcon from "@spt/assets/icons/pdf.svg";
+import PlayIcon from "@spt/assets/icons/play.svg";
 import PolyIcon from "@spt/assets/icons/Polygon 1.svg";
+import QuizIcon from "@spt/assets/icons/question-chat-svgrepo-com 1.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
-import StarWhitecon from "@spt/assets/icons/star.svg";
+import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import Tabs from "../../../../components/tabs";
 
-const sampleDescription = `Understanding Design principles is a comprehensive Spoil...`; // truncated for brevity
+interface DetailsProps {
+  spoil: SpoilDetailsData;
+}
 
-const learnItems = [
-  "How to identify the X principles of design.",
-  "Understanding balance, contrast, and hierarchy in design",
-  "The role of typography in effective communication",
-  "How to use color theory to evoke emotions.",
-  "Designing user-friendly interfaces.",
-];
+type OutlineItem = {
+  id: string;
+  title: string;
+  type: "lesson" | "quiz";
+  lessonType?: string | null;
+};
 
-const reviews = [
-  {
-    id: 1,
-    name: "Omorinsola Ogunsola",
-    rating: 4,
-    text: "I totally like the Spoil. It was simple and well easy...",
-    date: "10/01/2025",
-    time: "11:40am",
-  },
-  {
-    id: 2,
-    name: "Omorinsola Ogunsola",
-    rating: 4,
-    text: "I totally like the Spoil. It was simple and well easy...",
-    date: "10/01/2025",
-    time: "11:40am",
-  },
-  {
-    id: 3,
-    name: "Omorinsola Ogunsola",
-    rating: 4,
-    text: "I totally like the Spoil. It was simple and well easy...",
-    date: "10/01/2025",
-    time: "11:40am",
-  },
-];
+const splitLearningOutcomes = (value?: string | null) => {
+  if (!value) return [];
 
-const ReviewCard = ({ review }: { review: (typeof reviews)[0] }) => (
-  <div className="bg-white rounded-lg p-4 border border-[#F3F3F3] shadow-[0_4px_14px_rgba(13,38,59,0.04)]">
-    <div className="flex items-start gap-3">
-      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-        <span className="text-xs text-gray-500">{review.name[0]}</span>
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium">{review.name}</span>
-            <div className="flex items-center gap-1">
-              {/* {Array.from({ length: 5 }).map((_, i) => (
-                <RatingIcon key={i} filled={i < review.rating} />
-                
-              ))} */}
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Image
-                  key={i}
-                  src={i < review.rating ? RatingIcon : StarWhitecon}
-                  alt="rating"
-                  width={20}
-                  height={20}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        <p className="text-sm text-gray-700 mt-3">{review.text}</p>
-        <div className="text-xs text-gray-400 mt-3">
-          {review.date} | {review.time}
-        </div>
-      </div>
-    </div>
-  </div>
-);
+  const separator = value.includes("\n") ? /\r?\n/ : /,(?!\d)/;
 
-export default function Details() {
+  return value
+    .split(separator)
+    .map((item) => item.replace(/^[-*]\s*/, "").trim())
+    .filter(Boolean);
+};
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "No expiry date";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const getLessonIcon = (type?: string | null) => {
+  switch (type?.toLowerCase()) {
+    case "pdf":
+      return PDFIcon;
+    case "video":
+      return PlayIcon;
+    default:
+      return PlayIcon;
+  }
+};
+
+const buildModuleOutlineItems = (spoil: SpoilDetailsData, moduleId: number) => {
+  const module = spoil.modules?.find((item) => item.id === moduleId);
+  const lessons: OutlineItem[] =
+    module?.lessons?.map((lesson) => ({
+      id: `lesson-${lesson.id}`,
+      title: lesson.title,
+      type: "lesson",
+      lessonType: lesson.type,
+    })) ?? [];
+
+  const moduleQuiz = spoil.quizzes?.find(
+    (quiz) => Number(quiz.module_id) === moduleId,
+  );
+
+  if (moduleQuiz) {
+    lessons.push({
+      id: `quiz-${moduleQuiz.id}`,
+      title: moduleQuiz.title || "Quiz",
+      type: "quiz",
+    });
+  }
+
+  return lessons;
+};
+
+export default function Details({ spoil }: DetailsProps) {
   const [expanded, setExpanded] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [openModuleIds, setOpenModuleIds] = useState<Set<number>>(
+    () => new Set(spoil.modules?.[0] ? [spoil.modules[0].id] : []),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     const handleResize = () => setIsSmallScreen(window.innerWidth < 1024);
+
     handleResize();
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    setOpenModuleIds(new Set(spoil.modules?.[0] ? [spoil.modules[0].id] : []));
+  }, [spoil.id, spoil.modules]);
+
+  const description =
+    spoil.description?.trim() || "No description has been added for this spoil yet.";
+  const learningItems = splitLearningOutcomes(spoil.what_to_learn);
+  const modules = spoil.modules ?? [];
+
+  const moduleOutline = useMemo(
+    () =>
+      modules.map((module) => ({
+        ...module,
+        items: buildModuleOutlineItems(spoil, module.id),
+      })),
+    [modules, spoil],
+  );
+
+  const toggleModule = (moduleId: number) => {
+    setOpenModuleIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(moduleId)) next.delete(moduleId);
+      else next.add(moduleId);
+
+      return next;
+    });
+  };
+
   const overviewContent = (
     <div className="w-full">
-      <div className="text-gray-700 text-sm leading-7 mb-4 max-w-[720px]">
+      <div className="text-gray-700 leading-7 mb-4 mt-4">
         <p
-          className={`transition-all duration-300 ${expanded ? "max-h-full" : "max-h-[8rem] overflow-hidden"}`}
+          className={`transition-all duration-300 ${
+            expanded ? "max-h-full" : "max-h-[8rem] overflow-hidden"
+          }`}
         >
-          {sampleDescription}
+          {description}
         </p>
-        <button
-          onClick={() => setExpanded((s) => !s)}
-          className="mt-2 text-blue-600 text-sm font-medium flex items-center gap-2 hover:underline"
-        >
-          {expanded ? "Show less" : "Show more"}
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M6 9l6 6 6-6"
-              stroke="#0B5FFF"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        {description.length > 240 && (
+          <button
+            onClick={() => setExpanded((state) => !state)}
+            className="mt-2 text-blue-600 text-sm font-medium flex items-center gap-2 hover:underline"
+          >
+            {expanded ? "Show less" : "Show more"}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 9l6 6 6-6"
+                stroke="#0B5FFF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       <h4 className="text-base font-semibold mt-6 mb-4">What you will learn</h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
-        {learnItems.map((item, idx) => (
-          <div key={idx} className="flex items-start gap-3">
-            {/* <span className="w-3 h-3 bg-blue-600 rotate-45 mt-2 inline-block" /> */}
-            <Image src={PolyIcon} alt="rating" width={20} height={20} />
-
-            <p className="text-gray-700 text-sm">{item}</p>
-          </div>
-        ))}
-      </div>
+      {learningItems.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
+          {learningItems.map((item, index) => (
+            <div key={`${item}-${index}`} className="flex items-start gap-3">
+              <Image src={PolyIcon} alt="Learning outcome" width={20} height={20} />
+              <p className="text-gray-700 text-sm">{item}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500">
+          No learning outcomes have been added for this spoil yet.
+        </p>
+      )}
     </div>
   );
 
   const outlineContent = (
-    <div className="text-sm text-gray-600">
-      Spoil outline content goes here. Replace with lessons or sections.
+    <div className="space-y-4 pt-4">
+      {moduleOutline.length > 0 ? (
+        moduleOutline.map((module, index) => {
+          const isOpen = openModuleIds.has(module.id);
+
+          return (
+            <div
+              key={module.id}
+              className="overflow-hidden rounded-2xl border border-[#E7E7E7] bg-white"
+            >
+              <button
+                type="button"
+                onClick={() => toggleModule(module.id)}
+                className="flex w-full items-center justify-between px-5 py-4 text-left"
+                aria-expanded={isOpen}
+              >
+                <div>
+                  <p className="text-xs text-[#9CA3AF]">Module {index + 1}</p>
+                  <h4 className="mt-1 text-[18px] font-medium text-[#1F2937]">
+                    {module.title}
+                  </h4>
+                </div>
+
+                <span className="text-[#6B7280]">
+                  {isOpen ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="border-t border-[#E7E7E7] bg-[#FCFCFC]">
+                  {module.items.length > 0 ? (
+                    <ul>
+                      {module.items.map((item, itemIndex) => (
+                        <li
+                          key={item.id}
+                          className={`flex items-center gap-3 px-5 py-4 text-sm text-[#4B5563] ${
+                            itemIndex > 0 ? "border-t border-[#E7E7E7]" : ""
+                          }`}
+                        >
+                          <Image
+                            src={
+                              item.type === "quiz"
+                                ? QuizIcon
+                                : getLessonIcon(item.lessonType)
+                            }
+                            alt={item.type === "quiz" ? "Quiz" : "Lesson"}
+                            width={16}
+                            height={16}
+                            className="shrink-0"
+                          />
+                          <span>{item.title}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="px-5 py-4 text-sm text-gray-500">
+                      No lessons have been added for this module yet.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })
+      ) : (
+        <div className="rounded-2xl border border-[#E7E7E7] bg-white p-5 text-sm text-gray-500">
+          No modules have been added for this spoil yet.
+        </div>
+      )}
+
+      {moduleOutline.length === 0 && (
+        <div className="text-sm text-gray-500">
+          <p>
+            This spoil contains {spoil.modules_no ?? 0} modules and {spoil.lessons_no ?? 0} lessons.
+          </p>
+          <p className="mt-2">Expiry date: {formatDate(spoil.expires_at)}.</p>
+        </div>
+      )}
     </div>
   );
 
   const reviewsContent = (
-    <div className="space-y-4">
-      {reviews.map((r) => (
-        <ReviewCard key={r.id} review={r} />
-      ))}
-      <div className="mt-4 text-right">
-        <a
-          className="text-orange-500 font-medium inline-flex items-center gap-2 hover:underline"
-          href="#"
-        >
-          See All Reviews
-          <Image src={Orange} alt="rating" width={20} height={20} />
-        </a>
+    <div className="rounded-lg border border-[#F3F3F3] bg-white p-4 shadow-[0_4px_14px_rgba(13,38,59,0.04)]">
+      <div className="flex items-center gap-2">
+        <Image src={RatingIcon} alt="Average rating" width={20} height={20} />
+        <p className="text-base font-semibold text-[#0F172A]">
+          {(spoil.average_rating ?? 0).toFixed(1)} / 5
+        </p>
       </div>
+      <p className="mt-3 text-sm text-gray-700">
+        {spoil.ratings_count ?? 0} rating{spoil.ratings_count === 1 ? "" : "s"} recorded so far.
+      </p>
+      <p className="mt-2 text-sm text-gray-500">
+        Detailed written reviews are not available from this endpoint yet.
+      </p>
     </div>
   );
 
@@ -172,35 +295,15 @@ export default function Details() {
   return (
     <section className="w-full mb-20">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 ">
+        <div className="lg:col-span-7">
           <Tabs tabs={tabs} />
         </div>
+
         {!isSmallScreen && (
-          <aside className="lg:col-span-4">
+          <aside className="lg:col-span-5">
             <div className="bg-white rounded-xl shadow-sm border border-[#F1F1F1] p-4">
-              <h5 className="font-semibold text-sm mb-3">Reviews</h5>
-              <div className="space-y-4">
-                {reviews.map((r) => (
-                  <ReviewCard key={r.id} review={r} />
-                ))}
-              </div>
-              <div className="mt-4 text-left">
-                <a
-                  className="text-orange-500 font-medium inline-flex items-center gap-2 hover:underline"
-                  href="#"
-                >
-                  See All Reviews
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M5 12h14M13 5l7 7-7 7"
-                      stroke="#F2994A"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
-              </div>
+              <h5 className="font-semibold text-lg mb-3 text-black">Reviews</h5>
+              {reviewsContent}
             </div>
           </aside>
         )}

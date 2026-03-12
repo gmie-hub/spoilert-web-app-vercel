@@ -1,9 +1,5 @@
-import SpoilDetails from "@spt/screens/main/home/spoilDetails/spoilDetails";
+import { notFound } from "next/navigation";
 
 export default function SpoilDetailsPage() {
-  return (
-    <div>
-      <SpoilDetails />
-    </div>
-  );
+  notFound();
 }

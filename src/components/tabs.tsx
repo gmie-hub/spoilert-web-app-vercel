@@ -17,7 +17,7 @@ const Tabs = ({ tabs }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex w-full flex-col">
       {/* <div className="flex w-fit border-b border-gray-200 cursor-pointer">
         {tabs.map((tab, index) => (
           <button
@@ -49,7 +49,7 @@ const Tabs = ({ tabs }: TabsProps) => {
         ))}
       </div>
 
-      <div className="mt-4 p-4 rounded">
+      <div className="w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -57,7 +57,7 @@ const Tabs = ({ tabs }: TabsProps) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.3 }}
-            className="flex justify-center"
+            className="w-full"
           >
             {tabs[activeTab].content}
           </motion.div>
