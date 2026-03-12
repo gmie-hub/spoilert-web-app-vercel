@@ -187,20 +187,41 @@ const Header = () => {
 
         {hasHydrated && authUser && (
           <Stack direction="row" spacing={{ xs: 2, md: 2 }} alignItems="center" className="md:flex">
-            {icons.map((icon, index) => (
-              <div
-                key={index}
-                className="bg-gray-faint h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center"
-              >
-                <Image
-                  src={icon.src}
-                  alt={icon.alt}
-                  width={14.5}
-                  height={14.5}
-                  className="md:h-[24px] md:w-[24px]"
-                />
-              </div>
-            ))}
+            {icons.map((icon, index) => {
+              const handleIconClick = () => {
+                // navigate to notifications page when notification icon is clicked
+                if (icon.alt === "notification") {
+                  router.push("/notifications");
+                  return;
+                }
+
+                // example: chat icon could navigate to messages (adjust as needed)
+                if (icon.alt === "chat") {
+                  router.push("/messages");
+                }
+              };
+
+              return (
+                <div
+                  key={index}
+                  role="button"
+                  onClick={handleIconClick}
+                  tabIndex={0}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") handleIconClick();
+                  }}
+                  className="bg-gray-faint h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center cursor-pointer"
+                >
+                  <Image
+                    src={icon.src}
+                    alt={icon.alt}
+                    width={14.5}
+                    height={14.5}
+                    className="md:h-[24px] md:w-[24px]"
+                  />
+                </div>
+              );
+            })}
 
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>
