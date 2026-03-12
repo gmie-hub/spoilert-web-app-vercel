@@ -9,7 +9,6 @@ import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutat
 import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
-import api from "@spt/utils/apiClient";
 
 import CreateCommunityModal from "../components/CreateCommunityModal";
 import CreateCommunitySuccessModal from "../components/CreateCommunitySuccessModal";
@@ -20,6 +19,7 @@ import ScheduleSpoilPremiereModal, {
 } from "../components/ScheduleSpoilPremiereModal";
 import SpoilScheduledModal from "../components/SpoilScheduledModal";
 import ReviewActionButtons from "../steps/components/ReviewActionButtons";
+import { createQuizAndQuestions } from "../utils/quizHelpers";
 
 
 interface Props {
@@ -96,6 +96,8 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
       const formData = new FormData();
 
+      // quiz/question creation logic extracted to ../utils/quizHelpers.createQuizAndQuestions
+
       // prepare callbacks to create quiz after spoil/module creation
       const callbacks = {
         onSpoilCreated: async (spoilId: number | string) => {
@@ -104,49 +106,18 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
             const preQuiz = (basics as any).preQuiz;
             const postQuiz = (basics as any).postQuiz;
 
-            const createFullQuiz = async (quiz: any, type: string) => {
-              if (!quiz) return;
-              const fd = new FormData();
-              if (quiz.title) fd.append("title", quiz.title);
-              fd.append("type", type);
-              fd.append("spoil_id", String(spoilId));
-              if (quiz.description) fd.append("description", quiz.description ?? "");
+            // use extracted helper to create quiz and post questions
+            try {
+              await createQuizAndQuestions(preQuiz, { type: "pre", spoilId });
+            } catch (e) {
+              // ignore per original behavior
+            }
 
-              const noOfQuestions = (quiz.overview?.numberOfQuestions && String(quiz.overview.numberOfQuestions)) || (Array.isArray(quiz.questions) ? String(quiz.questions.length) : "0");
-              fd.append("no_of_questions", noOfQuestions);
-
-              if (quiz.overview?.timeLimit) fd.append("time_limit", String(quiz.overview.timeLimit));
-              if (quiz.overview?.pass_mark) fd.append("pass_mark", String(quiz.overview.pass_mark));
-
-              if (Array.isArray(quiz.questions) && quiz.questions.length > 0) {
-                const questionsPayload = quiz.questions.map((q: any) => {
-                  let answerVal = q.answer ?? q.correctAnswer ?? "";
-                  if (!answerVal && Array.isArray(q.options)) {
-                    const found = (q.options as any[]).find((opt: any) => opt && (opt.isCorrect === true || opt.is_correct === true || opt.correct === true));
-                    if (found) answerVal = found.text ?? found.label ?? found;
-                  }
-
-                  return {
-                    question: q.prompt ?? q.question ?? "",
-                    type: q.type ?? "multiple_choice",
-                    options: JSON.stringify((q.options ?? []).map((opt: any) => (opt && (opt.text ?? opt)) ?? opt)),
-                    answer: answerVal ?? "",
-                  };
-                });
-                fd.append("questions", JSON.stringify(questionsPayload));
-              }
-
-              try {
-                await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
-                toast.success(`Saved ${type} quiz`);
-              } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error(`Failed to create ${type} quiz`, err);
-              }
-            };
-
-            await createFullQuiz(preQuiz, "pre");
-            await createFullQuiz(postQuiz, "post");
+            try {
+              await createQuizAndQuestions(postQuiz, { type: "post", spoilId });
+            } catch (e) {
+              // ignore per original behavior
+            }
           } catch  {
             // ignore errors
           }
@@ -167,43 +138,10 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
             if (!quizConfig) return;
 
-            const fd = new FormData();
-            if (quizConfig.title) fd.append("title", quizConfig.title);
-            fd.append("type", "module");
-            fd.append("module_id", String(moduleId));
-            if (moduleRes && (moduleRes?.data?.spoil_id || moduleRes?.data?.module?.spoil_id)) {
-              fd.append("spoil_id", String(moduleRes?.data?.spoil_id ?? moduleRes?.data?.module?.spoil_id));
-            }
-            if (quizConfig.description) fd.append("description", quizConfig.description);
-            const noOfQuestions = (quizConfig.overview?.numberOfQuestions && String(quizConfig.overview.numberOfQuestions)) || (Array.isArray(quizConfig.questions) ? String(quizConfig.questions.length) : "0");
-            fd.append("no_of_questions", noOfQuestions);
-            if (quizConfig.overview?.timeLimit) fd.append("time_limit", String(quizConfig.overview.timeLimit));
-            if (quizConfig.overview?.pass_mark) fd.append("pass_mark", String(quizConfig.overview.pass_mark));
-
-            if (Array.isArray(quizConfig.questions) && quizConfig.questions.length > 0) {
-              const questionsPayload = quizConfig.questions.map((q: any) => {
-                let answerVal = q.answer ?? q.correctAnswer ?? "";
-                if (!answerVal && Array.isArray(q.options)) {
-                  const found = (q.options as any[]).find((opt: any) => opt && (opt.isCorrect === true || opt.is_correct === true || opt.correct === true));
-                  if (found) answerVal = found.text ?? found.label ?? found;
-                }
-
-                return {
-                  question: q.prompt ?? q.question ?? "",
-                  type: q.type ?? "multiple_choice",
-                  options: JSON.stringify((q.options ?? []).map((opt: any) => (opt && (opt.text ?? opt)) ?? opt)),
-                  answer: answerVal ?? "",
-                };
-              });
-              fd.append("questions", JSON.stringify(questionsPayload));
-            }
-
             try {
-              await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
-              toast.success("Saved module quiz");
-            } catch (err) {
-              // eslint-disable-next-line no-console
-              console.error("Failed to create module quiz", err);
+              await createQuizAndQuestions(quizConfig, { type: "module", moduleId, moduleRes });
+            } catch (e) {
+              // ignore per original behavior
             }
           } catch  {
             // ignore
@@ -261,12 +199,12 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
       const storedBasics = useCreateSpoilStore.getState().basics;
       setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
 
-    //   const res = await createSpoilHandler(
-    //     new FormData(),
-    //     { setSubmitting: (_: boolean) => {} },
-    //     createModuleHandler,
-    //     createLessonHandler,
-    //   );
+      // const res = await createSpoilHandler(
+      //   new FormData(),
+      //   { setSubmitting: (_: boolean) => {} },
+      //   createModuleHandler,
+      //   createLessonHandler,
+      // );
 
       try {
         try {

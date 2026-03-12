@@ -159,7 +159,7 @@ const QuestionFormModal: FC<QuestionFormModalProps> = ({
                 />
               )}
 
-              {values.type === "fill_in_blank" && (
+              {values.type === "fill_in_the_blank" && (
                 <Textarea
                   name="answer"
                   label="Enter the Answer"
@@ -189,7 +189,7 @@ export default QuestionFormModal;
 
 const questionFormValidationSchema = Yup.object({
   answer: Yup.string().when("type", {
-    is: "fill_in_blank",
+    is: "fill_in_the_blank",
     then: (schema) => schema.trim().required("Answer is required"),
     otherwise: (schema) => schema.trim(),
   }),
@@ -218,6 +218,6 @@ const questionFormValidationSchema = Yup.object({
   }),
   prompt: Yup.string().trim().required("Question is required"),
   type: Yup.mixed<QuizQuestionType>()
-    .oneOf(["multiple_choice", "fill_in_blank"], "Select a question type")
+    .oneOf(["multiple_choice", "fill_in_the_blank"], "Select a question type")
     .required("Select a question type"),
 });

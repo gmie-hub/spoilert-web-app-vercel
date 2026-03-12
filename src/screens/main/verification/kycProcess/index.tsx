@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Stack from "@mui/material/Stack";
 
 import { Card, Stepper } from "@spt/components";
+import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUserVerificationDetailsQuery";
 import { useAuthStore } from "@spt/store/authStore";
 
 import AddBankAccountStep from "./addBankAccount";
@@ -22,6 +23,7 @@ import VerifyPhoneOtp from "./verifyPhoneOtp";
 const KYCProcess = () => {
   const authUser = useAuthStore((state) => state.user);
   const verificationStatus = authUser?.verification_status;
+  const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
 
   // All hooks must be called before any return
   const [activeStep, setActiveStep] = useState(0);
@@ -29,9 +31,18 @@ const KYCProcess = () => {
   const [showOtp, setShowOtp] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showBankSuccess, setShowBankSuccess] = useState(false);
+  const [forceRetry, setForceRetry] = useState(false);
+
+  // Mark all steps as complete when verificationStatus is 0 or 1
+  useEffect(() => {
+    if (verificationStatus === 0 || verificationStatus === 1) {
+      setActiveStep(steps.length);
+    }
+  }, [verificationStatus]);
 
   const goToNextStep = () => {
     setActiveStep((prev) => prev + 1);
+    setForceRetry(false);
   };
 
   const isStepSkipped = (step: number) => {
@@ -64,24 +75,33 @@ const KYCProcess = () => {
         />
       );
     }
+    if (forceRetry) return <SelectCountryStep onNext={goToNextStep} userVerificationDetails={userVerificationDetails} />;
     if (verificationStatus === 0) return <KYCInProgress />;
     if (verificationStatus === 1) return <KYCApproved />;
-    if (verificationStatus === 2) return <KYCRejected />;
+    // Only show the Rejected screen automatically when the user hasn't retried
+    // and is still on the initial step. If they've started the flow (activeStep>0)
+    // or triggered a retry, let the stepper UI render the appropriate step.
+    if (verificationStatus === 2 && !forceRetry && activeStep === 0)
+      return <KYCRejected onRetry={() => { setActiveStep(0); setForceRetry(true); }} />;
 
     switch (activeStep + 1) {
       case 1:
-        return <SelectCountryStep onNext={goToNextStep} />;
+        return <SelectCountryStep onNext={goToNextStep} userVerificationDetails={userVerificationDetails} />;
       case 2:
         return (
           <VerifyPhoneNumberStep
             onNext={goToNextStep}
             onSuccess={() => setShowOtp(true)}
+            userVerificationDetails={userVerificationDetails}
           />
         );
       case 3:
-        return <VerifyIdentity onNext={goToNextStep} />;
+        return <VerifyIdentity onNext={goToNextStep} userVerificationDetails={userVerificationDetails} />;
       case 4:
-        return <AddBankAccountStep onNext={() => setShowBankSuccess(true)} />;
+        return <AddBankAccountStep onNext={() => setShowBankSuccess(true)}
+        
+        // userVerificationDetails={userVerificationDetails}
+         />;
       default:
         return null;
     }

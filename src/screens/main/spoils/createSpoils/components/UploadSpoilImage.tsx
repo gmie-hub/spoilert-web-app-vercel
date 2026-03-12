@@ -1,7 +1,7 @@
 import { ChangeEvent, useMemo, useRef } from "react";
 
 import Stack from "@mui/material/Stack";
-import { useField } from "formik";
+import { useField, useFormikContext } from "formik";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -77,9 +77,12 @@ const UploadSpoilImage = () => {
     reader.onload = () => {
       const dataUrl = reader.result as string;
       try {
+        // merge current Formik values into persisted basics to avoid overwriting user input
+        const { values } = useFormikContext();
         const prev = useCreateSpoilStore.getState().basics;
         useCreateSpoilStore.getState().setBasics?.({
-          ...prev,
+          ...(prev ?? {}),
+          ...(values ?? {}),
           coverImage: { dataUrl, name: file.name, type: file.type } as { dataUrl: string; name: string; type: string },
         });
       } catch {

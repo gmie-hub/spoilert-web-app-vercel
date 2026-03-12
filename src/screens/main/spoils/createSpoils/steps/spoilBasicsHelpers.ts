@@ -1,6 +1,6 @@
 import type { BasicsFormData } from "../types";
 
-export const pricingModels = ["free", "Paid", "Subscription"];
+export const pricingModels = ["free", "paid", "subscription"];
 
 export const buildNumberOptions = (limit: number) =>
   Array.from({ length: limit }, (_, index) => {

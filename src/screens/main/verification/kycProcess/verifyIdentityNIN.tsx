@@ -1,106 +1,4 @@
-// "use client";
 
-// import { useState } from "react";
-
-// import { Form, Formik, FormikHelpers } from "formik";
-// import * as Yup from "yup";
-
-// import CustomUpload from "@spt/components/customUpload";
-// import Input from "@spt/components/input";
-// import StepLayout from "@spt/components/kycLayout";
-
-// interface FormValues {
-//   nin: string;
-//   ninImage: File | null;
-// }
-
-// const initialValues: FormValues = {
-//   nin: "",
-//   ninImage: null,
-// };
-
-// const validationSchema = Yup.object({
-//   nin: Yup.string()
-//     .length(11, "NIN must be 11 digits")
-//     .required("NIN is required"),
-//   ninImage: Yup.mixed().required("NIN image is required"),
-// });
-
-// const VerifyIdentity = () => {
-//   const [showWhy, setShowWhy] = useState(false);
-//   const handleSubmit = (
-//     values: FormValues,
-//     actions: FormikHelpers<FormValues>,
-//   ) => {
-//     actions.setSubmitting(false);
-//     // proceed to next step
-//   };
-
-//   return (
-//     <Formik
-//       initialValues={initialValues}
-//       validationSchema={validationSchema}
-//       onSubmit={handleSubmit}
-//     >
-//       {() => (
-//         <Form>
-//           <StepLayout
-//             step={3}
-//             totalSteps={4}
-//             title="Verify Your NIN"
-//             buttonLabel="Verify"
-//             onButtonClick={() => {
-//               document.querySelector<HTMLFormElement>("form")?.requestSubmit();
-//             }}
-//           >
-//             <div className="w-full space-y-5">
-//               {/* NIN INPUT */}
-//               <Input name="nin" label="NIN Number" placeholder="NIN number" />
-
-//               <CustomUpload
-//                 name="profileImage"
-//                 placeholder="Upload Image"
-//                 label="Upload a photo of your NIN"
-//               />
-//               <div className="w-full bg-[#E0F4FD]  rounded-lg">
-//                 <button
-//                   type="button"
-//                   onClick={() => setShowWhy((prev) => !prev)}
-//                   className="flex w-full items-center justify-between rounded-lg  px-4 py-3 text-sm text-blue-700"
-//                 >
-//                   <div className="flex items-center gap-2">
-//                     <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-blue-dark)] text-[var(--color-blue-dark)] text-xs font-bold">
-//                       i
-//                     </span>
-//                     <span className="text-[#212529]">Why we need your NIN</span>
-//                   </div>
-
-//                   <span
-//                     className={`transition-transform ${
-//                       showWhy ? "rotate-180" : ""
-//                     }`}
-//                   >
-//                     ⌃
-//                   </span>
-//                 </button>
-
-//                 {showWhy && (
-//                   <div className="rounded-b-lg px-4 pb-4 pt-2 text-sm  text-[#495057] ">
-//                     We need your NIN to verify your identity and ensure the
-//                     security of your account. Be rest assured that we do not
-//                     have access to your bank details.
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           </StepLayout>
-//         </Form>
-//       )}
-//     </Formik>
-//   );
-// };
-
-// export default VerifyIdentity;
 "use client";
 
 import { useEffect, useState } from "react";
@@ -109,7 +7,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
 import CustomUpload from "@spt/components/customUpload";
-import Input from "@spt/components/input";
+// import Input from "@spt/components/input";
 import StepLayout from "@spt/components/kycLayout";
 import { useVerifyIdentityMutation } from "@spt/hooks/apiRequests/useVerifyIdentityMutation";
 
@@ -123,20 +21,22 @@ const initialValues: FormValues = {
   docImage: null,
 };
 
-const buildValidation = (isNigeria: boolean) =>
+const buildValidation = (isNigeria: boolean, hasExistingDocument: boolean) =>
   Yup.object({
-    nin: isNigeria
-      ? Yup.string()
-          .length(11, "NIN must be 11 digits")
-          .required("NIN is required")
-      : Yup.string().notRequired(),
+    // nin: isNigeria
+    //   ? Yup.string()
+    //       .length(11, "NIN must be 11 digits")
+    //       .required("NIN is required")
+    //   : Yup.string().notRequired(),
 
-    docImage: Yup.mixed().required(
-      isNigeria ? "NIN image is required" : "ID image is required"
-    ),
+    docImage: hasExistingDocument
+      ? Yup.mixed().notRequired()
+      : Yup.mixed().required(
+          isNigeria ? "NIN image is required" : "ID image is required"
+        ),
   });
 
-const VerifyIdentity = ({ onNext }: { onNext: () => void }) => {
+const VerifyIdentity = ({ onNext, userVerificationDetails }: { onNext: () => void; userVerificationDetails?: any }) => {
   const { verifyIdentityHandler, isLoading } =
     useVerifyIdentityMutation();
 
@@ -151,14 +51,21 @@ const VerifyIdentity = ({ onNext }: { onNext: () => void }) => {
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    if (!values.docImage) return;
+    // If user did not upload a new document but an existing verification
+    // (with a URL) exists, skip calling the endpoint and go to next.
+    if (!values.docImage) {
+      if (userVerificationDetails?.data?.[0]?.url) {
+        actions.setSubmitting(false);
+        onNext();
+        return;
+      }
+
+      return;
+    }
 
     // ✅ endpoint auto handles NG vs others internally
     try {
-      await verifyIdentityHandler(
-        { image: values.docImage },
-        actions.setSubmitting
-      );
+      await verifyIdentityHandler({ image: values.docImage }, actions.setSubmitting);
       onNext();
     } catch (error: any) {
       const message =
@@ -177,11 +84,13 @@ const VerifyIdentity = ({ onNext }: { onNext: () => void }) => {
     }
   };
   
+  const hasExistingDocument = Boolean(userVerificationDetails?.data?.[0]?.url);
+
   return (
     <Formik
       enableReinitialize
       initialValues={initialValues}
-      validationSchema={buildValidation(isNigeria)}
+      validationSchema={buildValidation(isNigeria, hasExistingDocument)}
       onSubmit={handleSubmit}
     >
       {() => (
@@ -199,14 +108,36 @@ const VerifyIdentity = ({ onNext }: { onNext: () => void }) => {
           >
             <div className="space-y-5">
 
+                {/* Existing verification info (if any) */}
+                {userVerificationDetails?.data?.[0] && (
+                  <div className="rounded-md bg-gray-50 border border-gray-200 p-3 text-sm">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Existing verification:</span>{" "}
+                      {userVerificationDetails?.data?.[0]?.type ?? "-"}
+                    </p>
+                    {userVerificationDetails?.data?.[0]?.url && (
+                      <p className="mt-2">
+                        <a
+                          href={userVerificationDetails?.data?.[0]?.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          View submitted document
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                )}
+
               {/* 🇳🇬 ONLY SHOW NIN INPUT FOR NIGERIA */}
-              {isNigeria && (
+              {/* {isNigeria && (
                 <Input
                   name="nin"
                   label="NIN Number"
                   placeholder="Enter your NIN"
                 />
-              )}
+              )} */}
 
               {/* 📸 ONE UPLOAD FIELD FOR BOTH FLOWS */}
               <CustomUpload

@@ -26,13 +26,15 @@ interface User {
   profile: any;
   total_spoils_created: any;
   followers_count: any;
-  verification_status:number
+  verification_status:number | null;
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
   createdSpoilId?: number | null;
+  // indicates whether the store has been rehydrated from storage
+  hasHydrated?: boolean;
   setAuth: (auth: { user: User; token: string }) => void;
   logout: () => void;
   setCreatedSpoilId?: (id: number | null) => void;
@@ -44,6 +46,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       createdSpoilId: null,
+      hasHydrated: false,
       setAuth: ({ user, token }) => set({ user, token }),
       setCreatedSpoilId: (id: number | null) => set({ createdSpoilId: id }),
       logout: () => {
@@ -67,6 +70,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "spoilert-web&site#", // key in localStorage
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.hasHydrated = true;
+        }
+      },
     }
   )
 );

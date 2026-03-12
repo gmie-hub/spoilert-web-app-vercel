@@ -66,7 +66,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
     onChange(mapped);
   }, [spoilData, onChange]);
-
+  
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });

@@ -1,4 +1,4 @@
-export type QuizQuestionType = "multiple_choice" | "fill_in_blank";
+export type QuizQuestionType = "multiple_choice" | "fill_in_the_blank";
 
 export interface QuizQuestionOption {
   id: string;

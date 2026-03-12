@@ -24,6 +24,8 @@ import UserImage from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
 import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUserVerificationDetailsQuery";
 import useClickOutside from "@spt/hooks/useClickOutside";
+import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
+import MobileMenu from "@spt/layouts/website/MobileMenu";
 import { useAuthStore } from "@spt/store/authStore";
 
 
@@ -31,8 +33,8 @@ import { useAuthStore } from "@spt/store/authStore";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const logout = useAuthStore((state) => state.logout);
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
   const router = useRouter();
@@ -41,6 +43,7 @@ const Header = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const authUser = useAuthStore((state) => state.user);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
 
   React.useEffect(() => {
@@ -58,13 +61,20 @@ const Header = () => {
   }, [userVerificationDetails?.data?.[0]?.status, authUser?.verification_status, authUser?.id, setAuth]);
 
 
+  const createSpoilHref =
+    userVerificationDetails?.data?.[0]?.status === 1
+      ? "/create-spoils"
+      // : authUser?.kyc_verified_at === null
+      : "/create-spoils/kyc-process"
+      // : "/create-spoils";
+
   const navLinks = [
-  { icon: Home, name: "Home", href: "/" },
-  { icon: Learnings, name: "My Learnings", href: "/learnings" },
-  { icon: CreateSpoilIcon, name: "Create Spoil", href: authUser?.kyc_verified_at === null ? "/create-spoils/kyc-process" : "/create-spoils" },
-  { icon: CommunityIcon, name: "Community", href: "/community" },
-  { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
-];
+    { icon: Home, name: "Home", href: "/" },
+    { icon: Learnings, name: "My Learnings", href: "/learnings" },
+    { icon: CreateSpoilIcon, name: "Create Spoil", href: createSpoilHref },
+    { icon: CommunityIcon, name: "Community", href: "/community" },
+    { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
+  ];
 
 
   const icons = [
@@ -154,7 +164,7 @@ const Header = () => {
         </div>
 
         {/* RIGHT SIDE: AUTH BUTTONS - Hidden on mobile, shown on md+ */}
-        {!authUser && (
+        {hasHydrated && !authUser && (
           <div className="hidden md:flex items-center gap-2 lg:gap-4">
             <Button
               variant="outline"
@@ -175,22 +185,43 @@ const Header = () => {
           </div>
         )}
 
-        {authUser && (
+        {hasHydrated && authUser && (
           <Stack direction="row" spacing={{ xs: 2, md: 2 }} alignItems="center" className="md:flex">
-            {icons.map((icon, index) => (
-              <div
-                key={index}
-                className="bg-gray-faint h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center"
-              >
-                <Image
-                  src={icon.src}
-                  alt={icon.alt}
-                  width={14.5}
-                  height={14.5}
-                  className="md:h-[24px] md:w-[24px]"
-                />
-              </div>
-            ))}
+            {icons.map((icon, index) => {
+              const handleIconClick = () => {
+                // navigate to notifications page when notification icon is clicked
+                if (icon.alt === "notification") {
+                  router.push("/notifications");
+                  return;
+                }
+
+                // example: chat icon could navigate to messages (adjust as needed)
+                if (icon.alt === "chat") {
+                  router.push("/messages");
+                }
+              };
+
+              return (
+                <div
+                  key={index}
+                  role="button"
+                  onClick={handleIconClick}
+                  tabIndex={0}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") handleIconClick();
+                  }}
+                  className="bg-gray-faint h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center cursor-pointer"
+                >
+                  <Image
+                    src={icon.src}
+                    alt={icon.alt}
+                    width={14.5}
+                    height={14.5}
+                    className="md:h-[24px] md:w-[24px]"
+                  />
+                </div>
+              );
+            })}
 
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>
@@ -229,8 +260,7 @@ const Header = () => {
                     className="block w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-100 rounded-b-lg"
                     onClick={() => {
                       setIsDropdownOpen(false);
-                      logout();
-                      router.push("/");
+                      setIsLogoutConfirmOpen(true);
                     }}
                   >
                     Logout
@@ -298,78 +328,21 @@ const Header = () => {
       </div>
 
       {/* ================= MOBILE/TABLET DROPDOWN MENU ================= */}
-      {isMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white py-4 sm:py-5 space-y-4 sm:space-y-6 px-4 sm:px-6">
-          {/* Mobile Nav Links */}
-          <div className="flex flex-col gap-1 sm:gap-2">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-[#0B2C3D] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Image
-                    src={link?.icon}
-                    alt="icon"
-                    width={18}
-                    height={18}
-                    className={isActive ? "brightness-0 invert" : ""}
-                  />
-                  {link.name}
-                </Link>
-              );
-            })}
-          </div>
+      <MobileMenu
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+        navLinks={navLinks}
+        pathname={pathname}
+        authUser={authUser}
+        setIsLogoutConfirmOpen={setIsLogoutConfirmOpen}
+        router={router}
+      />
 
-          {/* Mobile Auth Buttons - show login/signup when logged out; show logout when logged in */}
-          <div className="md:hidden flex flex-col sm:flex-row gap-3 pt-2 border-t border-gray-100">
-            {authUser ? (
-              <Button
-                variant="outline"
-                className="w-full sm:w-1/2 rounded-full"
-                onClick={() => {
-                  logout();
-                  setIsMenuOpen(false);
-                  router.push("/");
-                }}
-              >
-                Logout
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-1/2 rounded-full"
-                  onClick={() => {
-                    router.push("/auth/signin");
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Login
-                </Button>
-
-                <Button
-                  variant="default"
-                  className="w-full sm:w-1/2 rounded-full"
-                  onClick={() => {
-                    router.push("/auth/signup");
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Sign Up For Free
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ================= LOGOUT CONFIRMATION MODAL ================= */}
+      <LogoutConfirmModal
+        open={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+      />
     </header>
   );
 };

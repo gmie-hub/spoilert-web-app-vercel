@@ -27,7 +27,7 @@ export const QUESTION_TYPE_OPTIONS: QuestionTypeOption[] = [
   },
   {
     label: "Fill in the Blank",
-    value: "fill_in_blank",
+    value: "fill_in_the_blank",
   },
 ];
 
@@ -69,7 +69,7 @@ export const buildQuestionFromDraft = (
   const questionType = draft.type as QuizQuestionType;
   const prompt = draft.prompt.trim();
   const answer =
-    questionType === "fill_in_blank" ? draft.answer.trim() : "";
+    questionType === "fill_in_the_blank" ? draft.answer.trim() : "";
   const options =
     questionType === "multiple_choice"
       ? draft.options.slice(0, MULTIPLE_CHOICE_MAX_OPTIONS).map((option) => ({
@@ -100,7 +100,7 @@ export const validateQuestionDraft = (
     errors.prompt = "Question is required";
   }
 
-  if (draft.type === "fill_in_blank" && !draft.answer.trim()) {
+  if (draft.type === "fill_in_the_blank" && !draft.answer.trim()) {
     errors.answer = "Answer is required";
   }
 

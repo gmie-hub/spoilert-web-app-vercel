@@ -23,7 +23,7 @@ const validationSchema = object().shape({
   bankName: validations.bankName,
 });
 
-const AddBankAccountStep = ({ onNext }: { onNext: () => void }) => {
+const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerificationDetails?: any }) => {
   const [bankSearch, setBankSearch] = useState("");
   const [accountName, setAccountName] = useState<string | null>(null);
 
