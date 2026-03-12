@@ -17,12 +17,13 @@ export default function PreSpoilQuizPage({ spoilId }: PreSpoilQuizPageProps) {
     return <LoadingState />;
   }
 
-  if (screen.status === "error") {
-    return <MessageState message={screen.message} tone="error" />;
-  }
-
-  if (screen.status === "empty") {
-    return <MessageState message={screen.message} />;
+  if (screen.status !== "ready") {
+    return (
+      <MessageState
+        message={screen.message}
+        tone={screen.status === "error" ? "error" : "default"}
+      />
+    );
   }
 
   return (

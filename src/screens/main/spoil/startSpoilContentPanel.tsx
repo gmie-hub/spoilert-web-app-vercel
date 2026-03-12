@@ -37,6 +37,7 @@ export const StartSpoilContentPanel = ({
   onOpenLessonContent,
 }: StartSpoilContentPanelProps) => {
   const tutorName = getTutorName(spoil);
+  const spoilDescription = spoil.description?.trim() || "";
 
   return (
     <div className="min-w-0">
@@ -114,9 +115,7 @@ export const StartSpoilContentPanel = ({
           </div>
 
           <p className="mt-5 max-w-[820px] text-[15px] leading-8 text-[#6B7280]">
-            {activeLesson?.description?.trim() ||
-              spoil.description?.trim() ||
-              "No lesson overview is available yet."}
+            {spoilDescription || "No lesson overview is available yet."}
           </p>
         </div>
 
