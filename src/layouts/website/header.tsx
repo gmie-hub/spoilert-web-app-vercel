@@ -70,7 +70,7 @@ const Header = () => {
 
   const navLinks = [
     { icon: Home, name: "Home", href: "/" },
-    { icon: Learnings, name: "My Learnings", href: "/learnings" },
+    { icon: Learnings, name: "My Learnings", href: "/my-learnings" },
     { icon: CreateSpoilIcon, name: "Create Spoil", href: createSpoilHref },
     { icon: CommunityIcon, name: "Community", href: "/community" },
     { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
@@ -102,7 +102,9 @@ const Header = () => {
           {/* NAV LINKS - Hidden on mobile & tablet, shown on lg+ */}
           <nav className="hidden xl:flex items-center gap-2 2xl:gap-3">
             {navLinks?.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive =
+                pathname === link.href ||
+                (link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
               return (
                 <Link
@@ -131,7 +133,9 @@ const Header = () => {
           {/* NAV LINKS - Condensed icons only for lg screens (between tablet and xl) */}
           <nav className="hidden lg:flex xl:hidden items-center gap-1">
             {navLinks?.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive =
+                pathname === link.href ||
+                (link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
               return (
                 <Link
