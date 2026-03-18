@@ -341,6 +341,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
           </div>
         </div>
 
+
         <Details spoil={spoil} />
 
         <BuySpoilPaymentModal
