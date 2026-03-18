@@ -16,6 +16,7 @@ import {
 interface StartSpoilContentPanelProps {
   activeLesson: SpoilLesson | null;
   activeLessonIsCompleted: boolean;
+  isCompletingLesson: boolean;
   completedLessonsCount: number;
   heroImage: string | StaticImageData;
   learningItems: string[];
@@ -28,6 +29,7 @@ interface StartSpoilContentPanelProps {
 export const StartSpoilContentPanel = ({
   activeLesson,
   activeLessonIsCompleted,
+  isCompletingLesson,
   completedLessonsCount,
   heroImage,
   learningItems,
@@ -37,7 +39,7 @@ export const StartSpoilContentPanel = ({
   onOpenLessonContent,
 }: StartSpoilContentPanelProps) => {
   const tutorName = getTutorName(spoil);
-  const spoilDescription = spoil.description?.trim() || "";
+  const spoilDescription = spoil?.description?.trim() || "";
 
   return (
     <div className="min-w-0">
@@ -45,7 +47,7 @@ export const StartSpoilContentPanel = ({
         <div className="relative aspect-[16/9] min-h-[240px] w-full">
           <Image
             src={heroImage}
-            alt={activeLesson?.title || spoil.title}
+            alt={activeLesson?.title || spoil?.title}
             fill
             sizes="(max-width: 1024px) 100vw, 70vw"
             className="object-cover"
@@ -88,14 +90,14 @@ export const StartSpoilContentPanel = ({
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="rounded-[8px] bg-[#F2F4F5] px-3 py-1.5 text-xs font-medium text-[#6B7280]">
-              {spoil.category?.name || "General"}
+              {spoil?.category?.name || "General"}
             </span>
 
             <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-              {spoil.tutor?.avatar ? (
+              {spoil?.tutor?.avatar ? (
                 <div className="relative h-7 w-7 overflow-hidden rounded-full bg-gray-200">
                   <Image
-                    src={spoil.tutor.avatar}
+                    src={spoil?.tutor?.avatar}
                     alt={tutorName}
                     fill
                     sizes="28px"
@@ -151,10 +153,14 @@ export const StartSpoilContentPanel = ({
           className={`mt-10 w-full rounded-[14px] py-4 ${
             activeLessonIsCompleted ? "bg-[#0E6076] hover:bg-[#0E6076]" : ""
           }`}
-          disabled={!activeLesson || activeLessonIsCompleted}
+          disabled={!activeLesson || activeLessonIsCompleted || isCompletingLesson}
           onClick={onCompleteLesson}
         >
-          {activeLessonIsCompleted ? "Lesson Completed" : "Complete Lesson"}
+          {activeLessonIsCompleted
+            ? "Lesson Completed"
+            : isCompletingLesson
+              ? "Completing..."
+              : "Complete Lesson"}
         </Button>
       </div>
     </div>

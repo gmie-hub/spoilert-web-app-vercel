@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
@@ -10,6 +11,7 @@ import WebsiteSection from "@spt/components/websiteSection";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
 
 const InstitutionSpoils = () => {
+  const router = useRouter();
   const { data } = useGetInstitutionSpoilsQuery();
 
   return (
@@ -30,7 +32,15 @@ const InstitutionSpoils = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-white rounded-xl shadow-lg overflow-hidden p-4 flex flex-col sm:flex-row items-start gap-4"
+            className="bg-white rounded-xl shadow-lg overflow-hidden p-4 flex flex-col sm:flex-row items-start gap-4 cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                router.push(`/spoil-details/${spoil.id}`);
+              }
+            }}
           >
             {/* Thumbnail image (top on mobile, left on sm+) */}
             {spoil?.cover_image_url && (
@@ -64,9 +74,10 @@ const InstitutionSpoils = () => {
               <h3 className="pb-1 text-base sm:text-lg font-medium text-[var(--color-black)]">
                 {spoil.title}
               </h3>
-              <p className="pb-2 text-sm sm:text-lg font-semibold text-gray-900">
+            {  spoil.pricing === "free" ?     <p className="pb-2 text-sm sm:text-lg font-semibold text-gray-900"> Free </p>
+              :       <p className="pb-2 text-sm sm:text-lg font-semibold text-gray-900">
                 ₦{spoil.display_amount?.toLocaleString()}
-              </p>
+              </p>}
 
               <div className="flex items-center gap-3 my-3">
                 <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">

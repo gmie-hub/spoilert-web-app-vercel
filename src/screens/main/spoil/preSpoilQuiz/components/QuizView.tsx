@@ -16,6 +16,7 @@ interface QuizViewProps {
   currentQuestion: NormalizedQuestion;
   currentQuestionIndex: number;
   isLastQuestion: boolean;
+  isSubmitting?: boolean;
   normalizedQuestions: NormalizedQuestion[];
   quizDetailsData: QuizDetailsData;
   remainingSeconds: number | null;
@@ -31,6 +32,7 @@ export const QuizView = ({
   currentQuestion,
   currentQuestionIndex,
   isLastQuestion,
+  isSubmitting = false,
   normalizedQuestions,
   quizDetailsData,
   remainingSeconds,
@@ -147,8 +149,17 @@ export const QuizView = ({
         </div>
       )}
 
-      <Button variant="darkBlue" className="mt-7 w-full py-3" onClick={onNext}>
-        {isLastQuestion ? "Submit and End Quiz" : "Next"}
+      <Button
+        variant="darkBlue"
+        className="mt-7 w-full py-3"
+        disabled={isSubmitting}
+        onClick={onNext}
+      >
+        {isLastQuestion && isSubmitting
+          ? "Submitting..."
+          : isLastQuestion
+            ? "Submit and End Quiz"
+            : "Next"}
       </Button>
 
       {currentQuestionIndex > 0 && (

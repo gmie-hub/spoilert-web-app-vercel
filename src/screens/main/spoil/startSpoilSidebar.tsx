@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FiChevronDown, FiChevronUp, FiLock } from "react-icons/fi";
 
 import CalendarIcon from "@spt/assets/icons/calendar.svg";
@@ -19,7 +20,7 @@ interface StartSpoilSidebarProps {
   activeLesson: SpoilLesson | null;
   activeModule: SpoilModule | null;
   canCompleteSpoil: boolean;
-  completedLessonIds: Set<number>;
+  isCompletingSpoil: boolean;
   modules: SpoilModule[];
   openModuleIds: Set<number>;
   spoil: SpoilDetailsData;
@@ -34,7 +35,7 @@ export const StartSpoilSidebar = ({
   activeLesson,
   activeModule,
   canCompleteSpoil,
-  completedLessonIds,
+  isCompletingSpoil,
   modules,
   openModuleIds,
   spoil,
@@ -43,7 +44,27 @@ export const StartSpoilSidebar = ({
   onSelectLesson,
   onSelectModule,
   onToggleModule,
-}: StartSpoilSidebarProps) => (
+}: StartSpoilSidebarProps) => {
+  const router = useRouter();
+
+  const canTakePostQuiz = (() => {
+    // backend may provide overall percentage as numeric or string fields
+    const pctNum = Number(spoil?.percentage_completed ?? spoil?.percentage_completed?.toString?.());
+    const rawProgress =
+      (spoil as any)?.progress_percentage ?? (spoil as any)?.learner_spoil?.progress_percentage ?? null;
+
+    if (!Number.isNaN(pctNum) && pctNum >= 100) return true;
+    if (rawProgress && String(rawProgress) === "100.00") return true;
+
+    return false;
+  })();
+
+  const handleTakePostQuiz = () => {
+    if (!canTakePostQuiz) return;
+    router.push(`/spoil/${spoil.id}/post-spoil-quiz`);
+  };
+
+  return (
   <aside className="rounded-[24px] border border-[#E6E6E6] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)]">
     <div className="flex items-center justify-between">
       <h2 className="text-[18px] font-semibold text-[#212529]">Spoil Content</h2>
@@ -68,7 +89,7 @@ export const StartSpoilSidebar = ({
         modules.map((module, index) => {
           const isOpen = openModuleIds.has(module.id);
           const isActive = module.id === activeModule?.id;
-          const moduleCompleted = isModuleComplete(module, completedLessonIds);
+          const moduleCompleted = isModuleComplete(module);
 
           return (
             <div
@@ -123,7 +144,7 @@ export const StartSpoilSidebar = ({
                     <div className="space-y-2">
                       {module.lessons.map((lesson) => {
                         const isLessonActive = lesson.id === activeLesson?.id;
-                        const isLessonCompleted = completedLessonIds.has(lesson.id);
+                        const isLessonCompleted = lesson.status === "completed";
 
                         return (
                           <button
@@ -174,14 +195,22 @@ export const StartSpoilSidebar = ({
         <FiLock className="mt-1 shrink-0 text-[#7C93A0]" size={16} />
         <span>
           <span className="font-medium text-[#4B5C65]">Post Spoil Quiz</span> -
-          {" "}You have to complete all modules to unlock your certificate
+          {" "}
+          {canTakePostQuiz
+            ? "You have unlocked the post-spoil quiz."
+            : "You have to complete all modules to unlock your certificate"}
         </span>
       </p>
 
       <Button
         variant="darkBlue"
-        disabled
-        className="mt-4 w-full cursor-not-allowed rounded-[12px] bg-[#8FB0BA] py-3 text-white hover:bg-[#8FB0BA]"
+        disabled={!canTakePostQuiz}
+        onClick={handleTakePostQuiz}
+        className={`mt-4 w-full rounded-[12px] py-3 text-white ${
+          !canTakePostQuiz
+            ? "cursor-not-allowed bg-[#8FB0BA] hover:bg-[#8FB0BA]"
+            : ""
+        }`}
       >
         Take Post-Spoil Quiz
       </Button>
@@ -189,15 +218,16 @@ export const StartSpoilSidebar = ({
 
     <Button
       variant="darkBlue"
-      disabled={!canCompleteSpoil}
+      // disabled={!canCompleteSpoil || isCompletingSpoil}
       className={`mt-6 w-full rounded-[14px] py-3 ${
-        canCompleteSpoil
+        canCompleteSpoil && !isCompletingSpoil
           ? ""
           : "cursor-not-allowed bg-[#9CB4BC] hover:bg-[#9CB4BC]"
       }`}
       onClick={onCompleteSpoil}
     >
-      Complete Spoil
+      {isCompletingSpoil ? "Completing..." : "Complete Spoil"}
     </Button>
   </aside>
-);
+  );
+};

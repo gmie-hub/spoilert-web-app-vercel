@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 
 // import BackTOp from "@spt/assets/icons/button(1).svg";
 import Button from "@spt/components/button";
@@ -11,6 +12,7 @@ import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInsti
 
 
 const TrendingSpoil = () => {
+  const router = useRouter();
   const { data } = useGetInstitutionSpoilsQuery();
 
   //   const handleScrollTop = () => {
@@ -36,7 +38,18 @@ const TrendingSpoil = () => {
         {/* ✅ Grid Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
           {data?.data?.data?.slice(0, 50)?.map((spoil, index) => (
-            <SpoilCard key={index} spoil={spoil} index={index} isInstitution />
+            <div
+              key={spoil.id ?? index}
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") router.push(`/spoil-details/${spoil.id}`);
+              }}
+              className="cursor-pointer"
+            >
+              <SpoilCard spoil={spoil} index={index} isInstitution />
+            </div>
           ))}
         </div>
       </Stack>

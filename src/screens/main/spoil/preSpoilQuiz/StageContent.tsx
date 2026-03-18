@@ -62,6 +62,7 @@ export const PreSpoilQuizStageContent = ({
         currentQuestion={screen.currentQuestion}
         currentQuestionIndex={screen.currentQuestionIndex}
         isLastQuestion={screen.isLastQuestion}
+        isSubmitting={screen.isSubmitting}
         normalizedQuestions={screen.normalizedQuestions}
         quizDetailsData={screen.quizDetailsData}
         remainingSeconds={screen.remainingSeconds}

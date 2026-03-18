@@ -4,6 +4,7 @@ import React from "react";
 
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import ArrowIcon from "@spt/assets/icons/arrow-right-icon.svg";
 import ThumbUp from "@spt/assets/icons/vuesax.svg";
@@ -17,13 +18,17 @@ interface Props {
 }
 
 const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
+  const router = useRouter();
+  const handleNavigate = () => router.push(`/spoil-details/${spoil.id}`);
+
   return (
     <motion.div
-      className="bg-white rounded-2xl shadow-[0px_4px_40px_0px_#1E1E1E12] border border-gray-100 overflow-hidden w-full items-stretch "
+      className="bg-white rounded-2xl shadow-[0px_4px_40px_0px_#1E1E1E12] border border-gray-100 overflow-hidden w-full items-stretch cursor-pointer"
       initial={{ opacity: 0, y: 25 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.15 }}
       whileHover={{ y: -6 }}
+      onClick={handleNavigate}
     >
       {/* Top Content */}
       <div className="p-4 space-y-3">
@@ -74,9 +79,13 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
 
         {/* Price + Category */}
         <div className="flex items-center justify-between  text-[var(--color-black)]">
-          <p className="text-sm font-bold text-gray-900">
-            ₦{spoil.display_amount?.toLocaleString()}
-          </p>
+         {spoil.pricing === "free" ? (
+            <p className="text-sm font-bold text-gray-900">Free</p>
+          ) : (
+            <p className="text-sm font-bold text-gray-900">
+              ₦{spoil.display_amount?.toLocaleString()}
+            </p>
+          )}
 
           <span className="text-[11px]  rounded-full bg-[var(--color-blue-lightest)]   text-[var(--color-blue)]">
             {spoil.category?.name || "Category"}
@@ -113,7 +122,8 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
             <Image src={ArrowIcon} alt="arrow" width={16} height={16} />
           }
           variant="blueOutline"
-          type="submit"
+          type="button"
+          onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
         >
           View More
         </Button>

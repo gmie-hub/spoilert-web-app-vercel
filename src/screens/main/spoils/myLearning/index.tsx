@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { useRouter, useSearchParams } from "next/navigation";
 
 import MyLearningEmptyState from "./components/MyLearningEmptyState";
@@ -19,13 +17,8 @@ export default function MyLearningPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = getActiveTab(searchParams.get("tab"));
-  const { ongoingItems, completedItems, isLoading, isError, errorMessage } =
-    useMyLearningData();
-
-  const activeItems = useMemo(
-    () => (activeTab === "completed" ? completedItems : ongoingItems),
-    [activeTab, completedItems, ongoingItems],
-  );
+  const { items, isLoading, isError, errorMessage } =
+    useMyLearningData(activeTab);
 
   const handleTabChange = (tab: MyLearningTabKey) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -34,12 +27,12 @@ export default function MyLearningPage() {
   };
 
   const handleCardAction = (item: LearningItem) => {
-    if (activeTab === "completed") {
-      router.push(`/my-learnings/certificate/${item.id}`);
-      return;
-    }
-
+    // Treat card primary action as 'continue learning' (navigate to start)
     router.push(`/spoil/${item.id}/start`);
+  };
+
+  const handleCertificateAction = (item: LearningItem) => {
+    router.push(`/my-learnings/certificate/${item.id}`);
   };
 
   return (
@@ -58,15 +51,16 @@ export default function MyLearningPage() {
             <div className="p-6 text-sm text-red-600">{errorMessage}</div>
           ) : null}
 
-          {!isLoading && !isError && activeItems.length > 0 ? (
+          {!isLoading && !isError && items.length > 0 ? (
             <MyLearningList
-              items={activeItems}
-              tab={activeTab}
-              onAction={handleCardAction}
-            />
+                items={items}
+                tab={activeTab}
+                onAction={handleCardAction}
+                onCertificate={handleCertificateAction}
+              />
           ) : null}
 
-          {!isLoading && !isError && activeItems.length === 0 ? (
+          {!isLoading && !isError && items.length === 0 ? (
             <MyLearningEmptyState
               tab={activeTab}
               onExplore={() => router.push("/")}

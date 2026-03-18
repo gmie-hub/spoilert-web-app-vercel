@@ -90,10 +90,7 @@ export const getInitialSelection = (spoil: SpoilDetailsData) => {
   };
 };
 
-export const isModuleComplete = (
-  module: SpoilModule,
-  completedLessonIds: Set<number>,
-) => {
+export const isModuleComplete = (module: SpoilModule) => {
   if ((module.percentage_completed ?? 0) >= 100) {
     return true;
   }
@@ -102,5 +99,5 @@ export const isModuleComplete = (
     return false;
   }
 
-  return module.lessons.every((lesson) => completedLessonIds.has(lesson.id));
+  return module.lessons.every((lesson) => lesson.status === "completed");
 };

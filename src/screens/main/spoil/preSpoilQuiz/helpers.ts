@@ -25,6 +25,24 @@ export const getPreSpoilQuiz = ({
   spoilQuizzes?.find((quiz) => quiz.type?.toLowerCase() === "pre") ??
   null;
 
+export const getSpoilQuizByType = ({
+  quizData,
+  spoilQuizzes,
+  type = "pre",
+}: {
+  quizData?: QuizDatum[];
+  spoilQuizzes?: QuizDatum[];
+  type?: string;
+}) => {
+  const wanted = String(type ?? "pre").toLowerCase();
+
+  return (
+    quizData?.find((quiz) => quiz.type?.toLowerCase() === wanted) ??
+    spoilQuizzes?.find((quiz) => quiz.type?.toLowerCase() === wanted) ??
+    null
+  );
+};
+
 export const normalizeQuestions = (
   questions: QuizDetailsData["questions"] | undefined,
 ): NormalizedQuestion[] =>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import useSubmitQuizAttemptMutation from "@spt/hooks/apiRequests/useSubmitQuizAttemptMutation";
 import type { QuizDetailsData } from "@spt/types/quiz";
 
 import {
@@ -27,6 +28,8 @@ export const usePreSpoilQuizFlow = ({
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [visitedQuestions, setVisitedQuestions] = useState<number[]>([0]);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+
+  const { submitQuizAttempt, isSubmitting } = useSubmitQuizAttemptMutation();
 
   const currentQuestion = normalizedQuestions[currentQuestionIndex] ?? null;
   const isLastQuestion =
@@ -127,9 +130,18 @@ export const usePreSpoilQuizFlow = ({
     setCurrentQuestionIndex(index);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (isLastQuestion) {
-      setQuizStage("completed");
+      if (quizDetailsData?.id) {
+        const result = await submitQuizAttempt(quizDetailsData.id, responses);
+
+        if (result) {
+          setQuizStage("completed");
+        }
+      } else {
+        setQuizStage("completed");
+      }
+
       return;
     }
 
@@ -151,6 +163,7 @@ export const usePreSpoilQuizFlow = ({
     handleResponseChange,
     handleStartQuiz,
     isLastQuestion,
+    isSubmitting,
     quizStage,
     remainingSeconds,
     responses,

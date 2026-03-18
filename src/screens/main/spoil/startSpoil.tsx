@@ -11,6 +11,8 @@ import CommunityIcon from "@spt/assets/icons/community.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
 import HeroImage from "@spt/assets/images/Hero.png";
 import Button from "@spt/components/button";
+import useCompleteLessonMutation from "@spt/hooks/apiRequests/useCompleteLessonMutation";
+import useCompleteSpoilMutation from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 
 import { Breadcrumbs } from "./preSpoilQuiz/components/Breadcrumbs";
@@ -27,14 +29,13 @@ interface StartSpoilPageProps {
 
 export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   const router = useRouter();
+  const { completeLessonHandler, isCompletingLesson } = useCompleteLessonMutation();
+  const { completeSpoilHandler, isCompletingSpoil } = useCompleteSpoilMutation();
   const { data: spoil, isLoading, isError, errorMessage } =
     useGetSpoilDetailsQuery(spoilId);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null);
-  const [completedLessonIds, setCompletedLessonIds] = useState<Set<number>>(
-    new Set(),
-  );
   const [openModuleIds, setOpenModuleIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
@@ -46,7 +47,6 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     setOpenModuleIds(
       initialSelection.moduleId ? new Set([initialSelection.moduleId]) : new Set(),
     );
-    setCompletedLessonIds(new Set());
   }, [spoil]);
 
   const modules = spoil?.modules ?? [];
@@ -62,7 +62,17 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
       ),
     [modules],
   );
-  const completedLessonsCount = completedLessonIds.size;
+  const completedLessonsCount = useMemo(
+    () =>
+      modules.reduce(
+        (count, module) =>
+          count +
+          (module.lessons?.filter((lesson) => lesson.status === "completed")
+            .length ?? 0),
+        0,
+      ),
+    [modules],
+  );
 
   const activeModule = useMemo(
     () => modules.find((module) => module.id === activeModuleId) ?? modules[0] ?? null,
@@ -92,7 +102,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
 
   const heroImage = spoil.cover_image_url || HeroImage;
   const activeLessonIsCompleted = activeLesson
-    ? completedLessonIds.has(activeLesson.id)
+    ? activeLesson.status === "completed"
     : false;
   const canCompleteSpoil = totalLessons > 0 && completedLessonsCount >= totalLessons;
 
@@ -138,16 +148,34 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     window.open(activeLesson.content_url, "_blank", "noopener,noreferrer");
   };
 
-  const handleCompleteLesson = () => {
+  const handleCompleteLesson = async () => {
     if (!activeLesson) {
       return;
     }
 
-    setCompletedLessonIds((current) => {
-      const next = new Set(current);
-      next.add(activeLesson.id);
-      return next;
-    });
+    if (isCompletingLesson) {
+      return;
+    }
+
+    const response = await completeLessonHandler(activeLesson.id);
+
+    if (!response) {
+      return;
+    }
+  };
+
+  const handleCompleteSpoil = async () => {
+    if (isCompletingSpoil) {
+      return;
+    }
+
+    const response = await completeSpoilHandler(spoil.id);
+
+    if (response) {
+      // After successfully completing a spoil, take the learner to My Learnings
+      // and show the completed tab so they can access their certificate.
+      router.push(`/my-learnings?tab=completed`);
+    }
   };
 
   return (
@@ -191,11 +219,11 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
               activeLesson={activeLesson}
               activeModule={activeModule}
               canCompleteSpoil={canCompleteSpoil}
-              completedLessonIds={completedLessonIds}
+              isCompletingSpoil={isCompletingSpoil}
               modules={modules}
               openModuleIds={openModuleIds}
               spoil={spoil}
-              onCompleteSpoil={() => router.push(`/spoil/${spoil.id}`)}
+              onCompleteSpoil={handleCompleteSpoil}
               onHide={() => setIsSidebarVisible(false)}
               onSelectLesson={handleSelectLesson}
               onSelectModule={handleSelectModule}
@@ -218,6 +246,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
             <StartSpoilContentPanel
               activeLesson={activeLesson}
               activeLessonIsCompleted={activeLessonIsCompleted}
+              isCompletingLesson={isCompletingLesson}
               completedLessonsCount={completedLessonsCount}
               heroImage={heroImage}
               learningItems={learningItems}

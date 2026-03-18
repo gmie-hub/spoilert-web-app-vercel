@@ -9,11 +9,11 @@ import { useGetQuizDetailsQuery } from "@spt/hooks/apiRequests/useGetQuizDetails
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import type { QuizDetailsData } from "@spt/types/quiz";
 
-import { getPreSpoilQuizPageContent } from "./content";
+import { getSpoilQuizPageContent } from "./content";
 import {
   type NormalizedQuestion,
   type QuizStage,
-  getPreSpoilQuiz,
+  getSpoilQuizByType,
   normalizeQuestions,
 } from "./helpers";
 import { usePreSpoilQuizFlow } from "./usePreSpoilQuizFlow";
@@ -22,6 +22,7 @@ import type { QuizStatItem } from "./types";
 
 interface UsePreSpoilQuizScreenParams {
   spoilId: number | string;
+  quizType?: "pre" | "post" | string;
 }
 
 interface PreSpoilQuizBaseState {
@@ -40,6 +41,7 @@ export interface ReadyPreSpoilQuizScreenState extends PreSpoilQuizBaseState {
   isLastQuestion: boolean;
   isQuizDetailsError: boolean;
   isQuizDetailsLoading: boolean;
+  isSubmitting: boolean;
   normalizedQuestions: NormalizedQuestion[];
   preSpoilQuizPassMark?: string;
   preSpoilQuizTimeLimit?: number;
@@ -67,6 +69,7 @@ type PreSpoilQuizScreenState =
 
 export const usePreSpoilQuizScreen = ({
   spoilId,
+  quizType = "pre",
 }: UsePreSpoilQuizScreenParams): PreSpoilQuizScreenState => {
   const router = useRouter();
   const [quizStage, setQuizStage] = useState<QuizStage>("intro");
@@ -80,14 +83,13 @@ export const usePreSpoilQuizScreen = ({
   } = useGetSpoilDetailsQuery(spoilId);
   const { quizData } = useGetQuizBySpoilId(resolvedSpoilId);
 
-  const preSpoilQuiz = useMemo(
-    () =>
-      getPreSpoilQuiz({
-        quizData,
-        spoilQuizzes: spoil?.quizzes,
-      }),
-    [quizData, spoil?.quizzes],
-  );
+  const preSpoilQuiz = useMemo(() => {
+    return getSpoilQuizByType({
+      quizData,
+      spoilQuizzes: spoil?.quizzes,
+      type: quizType,
+    });
+  }, [quizData, spoil?.quizzes, quizType]);
 
   const {
     quizDetailsData,
@@ -114,6 +116,7 @@ export const usePreSpoilQuizScreen = ({
     handleResponseChange,
     handleStartQuiz,
     isLastQuestion,
+    isSubmitting,
     remainingSeconds,
     responses,
     visitedQuestions,
@@ -137,9 +140,10 @@ export const usePreSpoilQuizScreen = ({
     return { message: "Quiz overview is unavailable.", status: "empty" };
   }
 
-  const pageContent = getPreSpoilQuizPageContent({
-    preSpoilQuiz,
+  const pageContent = getSpoilQuizPageContent({
+    quizDatum: preSpoilQuiz,
     spoil,
+    type: quizType,
   });
 
   const handleBack = () => {
@@ -175,6 +179,7 @@ export const usePreSpoilQuizScreen = ({
     isLastQuestion,
     isQuizDetailsError,
     isQuizDetailsLoading,
+    isSubmitting,
     normalizedQuestions,
     pageTitle: pageContent.pageTitle,
     preSpoilQuizPassMark: preSpoilQuiz?.pass_mark,

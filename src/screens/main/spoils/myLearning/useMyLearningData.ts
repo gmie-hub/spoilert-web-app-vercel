@@ -2,14 +2,11 @@
 
 import { useMemo } from "react";
 
-import { useQueries } from "@tanstack/react-query";
-
 import FallbackCoverImage from "@spt/assets/images/homeimg.png";
-import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuery";
-import api from "@spt/utils/apiClient";
-import type { SpoilDatum, SpoilDetailsData } from "@spt/utils/spoils";
+import useGetLearnerSpoilsQuery from "@spt/hooks/apiRequests/useGetLearnerSpoilsQuery";
+import { useAuthStore } from "@spt/store/authStore";
 
-import type { LearningItem } from "./types";
+import type { LearningItem, MyLearningTabKey } from "./types";
 
 const clampProgress = (value: number | null | undefined) => {
   if (typeof value !== "number" || Number.isNaN(value)) {
@@ -19,96 +16,107 @@ const clampProgress = (value: number | null | undefined) => {
   return Math.max(0, Math.min(100, Math.round(value)));
 };
 
-const mapToLearningItem = (
-  spoil: SpoilDetailsData,
-  fallbackSpoil?: SpoilDatum,
-): LearningItem => ({
-  id: spoil.id,
-  title: spoil.title,
-  category: spoil.category?.name || fallbackSpoil?.category?.name || "General",
-  coverImage: spoil.cover_image_url || fallbackSpoil?.cover_image_url || FallbackCoverImage,
-  progress: clampProgress(spoil.percentage_completed),
-});
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === "number" && !Number.isNaN(value)) {
+    return value;
+  }
 
-const fetchSpoilDetails = async (spoilId: number) => {
-  const response = await api.get<{ data: SpoilDetailsData }>(`/spoils/${spoilId}`);
-  return response.data.data;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  return null;
 };
 
-export const useMyLearningData = () => {
-  const {
-    data: spoilsResponse,
-    isLoading: isAllSpoilsLoading,
-    isError: isAllSpoilsError,
-    errorMessage: allSpoilsErrorMessage,
-  } = useGetAllSpoilsQuery();
+const mapToLearningItem = (
+  spoil: {
+    id: number;
+    spoil_id?: number;
+    spoil?: {
+      id?: number;
+      title?: string;
+      cover_image_url?: string;
+      category?: {
+        name?: string;
+      } | null;
+    } | null;
+    title?: string;
+    spoil_title?: string;
+    cover_image_url?: string;
+    cover_image?: string;
+    percentage_completed?: number | null;
+    progress_percentage?: string | number | null;
+    progress?: number | null;
+    category?: {
+      name?: string;
+    } | null;
+    category_name?: string;
+  },
+): LearningItem => ({
+  id: spoil.spoil?.id || spoil.spoil_id || spoil.id,
+  title: spoil.spoil?.title || spoil.title || spoil.spoil_title || "Untitled Spoil",
+  category: spoil.spoil?.category?.name || spoil.category?.name || spoil.category_name || "General",
+  coverImage:
+    spoil.spoil?.cover_image_url ||
+    spoil.cover_image_url ||
+    spoil.cover_image ||
+    FallbackCoverImage,
+  progress: clampProgress(
+    toNumber(spoil.percentage_completed) ??
+      toNumber(spoil.progress_percentage) ??
+      toNumber(spoil.progress),
+  ),
+  raw: spoil,
+});
 
-  const enrolledSpoils = useMemo(
-    () =>
-      (spoilsResponse?.data?.data ?? []).filter((spoil) => spoil.is_enrolled),
-    [spoilsResponse?.data?.data],
+export const useMyLearningData = (status: MyLearningTabKey) => {
+  const user = useAuthStore((state) => state.user);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const userId = user?.id;
+  // For the 'ongoing' tab we want to include both 'ongoing' and 'not_started'
+  // learner spoils. Call the query twice and merge results.
+  const isOngoingTab = status === "ongoing";
+
+  // Call both hooks unconditionally to preserve hook order — control fetching
+  // using the `enabled` flag so the `not_started` request only runs when
+  // the ongoing tab is active. For the completed tab, request `completed`.
+  const primaryStatus: any = isOngoingTab ? "ongoing" : "completed";
+  const primaryQuery = useGetLearnerSpoilsQuery(primaryStatus, userId, true);
+  const notStartedQuery = useGetLearnerSpoilsQuery("not_started", userId, isOngoingTab);
+
+  const combinedSpoils = useMemo(() => {
+    const primary = primaryQuery?.spoils ?? [];
+    const notStarted = notStartedQuery?.spoils ?? [];
+
+    if (!isOngoingTab) return primary;
+
+    // merge and dedupe by spoil id; prefer ongoing records over not_started
+    const map = new Map<number, typeof primary[0] | typeof notStarted[0]>();
+    [...notStarted, ...primary].forEach((s) => {
+      const id = (s.spoil?.id ?? s.spoil_id ?? s.id) as number;
+      if (id != null) map.set(id, s);
+    });
+
+    return Array.from(map.values());
+  }, [primaryQuery?.spoils, notStartedQuery?.spoils, isOngoingTab]);
+
+  const items = useMemo(
+    () => (combinedSpoils ?? []).map((spoil) => mapToLearningItem(spoil)),
+    [combinedSpoils],
   );
 
-  const detailQueries = useQueries({
-    queries: enrolledSpoils.map((spoil) => ({
-      queryKey: ["my-learning-spoil", spoil.id],
-      queryFn: () => fetchSpoilDetails(spoil.id),
-      staleTime: 1000 * 60 * 5,
-    })),
-  });
+  const isLoading = (isOngoingTab ? (primaryQuery.isLoading || notStartedQuery.isLoading) : primaryQuery.isLoading) ?? false;
+  const isError = (isOngoingTab ? (primaryQuery.isError || notStartedQuery.isError) : primaryQuery.isError) ?? false;
+  const errorMessage = primaryQuery.errorMessage || notStartedQuery.errorMessage || "";
 
-  const detailById = useMemo(
-    () =>
-      new Map(
-        detailQueries
-          .map((query) => query.data)
-          .filter((queryData): queryData is SpoilDetailsData => Boolean(queryData))
-          .map((spoil) => [spoil.id, spoil]),
-      ),
-    [detailQueries],
-  );
-
-  const learningItems = useMemo(
-    () =>
-      enrolledSpoils
-        .map((spoil) => {
-          const detailedSpoil = detailById.get(spoil.id);
-
-          if (!detailedSpoil) {
-            return null;
-          }
-
-          return mapToLearningItem(detailedSpoil, spoil);
-        })
-        .filter((item): item is LearningItem => Boolean(item)),
-    [detailById, enrolledSpoils],
-  );
-
-  const ongoingItems = useMemo(
-    () => learningItems.filter((item) => item.progress < 100),
-    [learningItems],
-  );
-  const completedItems = useMemo(
-    () => learningItems.filter((item) => item.progress >= 100),
-    [learningItems],
-  );
-
-  const isDetailsLoading =
-    enrolledSpoils.length > 0 &&
-    detailQueries.some((query) => query.isPending || query.isLoading);
-  const firstDetailsError = detailQueries.find((query) => query.isError)?.error;
 
   return {
-    ongoingItems,
-    completedItems,
-    isLoading: isAllSpoilsLoading || isDetailsLoading,
-    isError: isAllSpoilsError || Boolean(firstDetailsError),
-    errorMessage:
-      allSpoilsErrorMessage ||
-      firstDetailsError?.message ||
-      "Failed to load your learnings.",
+    items,
+    isLoading: !hasHydrated || isLoading,
+    isError: hasHydrated ? isError : false,
+    errorMessage,
   };
 };
 
 export default useMyLearningData;
-

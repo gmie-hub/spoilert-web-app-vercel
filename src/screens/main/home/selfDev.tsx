@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import WebsiteSection from "@spt/components/websiteSection";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
@@ -9,6 +10,7 @@ import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInsti
 import HStack from "@spt/components/hstack";
 
 const SelfDev = () => {
+  const router = useRouter();
   const { data } = useGetInstitutionSpoilsQuery();
 
   // Get first 6 spoils
@@ -37,19 +39,40 @@ const SelfDev = () => {
           {/* LEFT COLUMN */}
           <div className="bg-[var(--color-blue-lightest)] rounded-2xl p-4 sm:p-6 space-y-5 shadow-lg">
             {leftSpoils.map((spoil, index) => (
-              <SpoilCard spoil={spoil} key={spoil.id} index={index} />
+              <div
+                key={spoil.id}
+                role="button"
+                tabIndex={0}
+                className="cursor-pointer"
+                onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") router.push(`/spoil-details/${spoil.id}`);
+                }}
+              >
+                <SpoilCard spoil={spoil} index={index} />
+              </div>
             ))}
           </div>
 
           {/* RIGHT COLUMN */}
           <div className="bg-[var(--color-blue-lightest)] rounded-2xl p-4 sm:p-6 space-y-5 shadow-lg">
             {rightSpoils.map((spoil, index) => (
-              <SpoilCard
-                className="bg[#EFFCFF]"
-                spoil={spoil}
+              <div
                 key={spoil.id}
-                index={index}
-              />
+                role="button"
+                tabIndex={0}
+                className="cursor-pointer"
+                onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") router.push(`/spoil-details/${spoil.id}`);
+                }}
+              >
+                <SpoilCard
+                  className="bg[#EFFCFF]"
+                  spoil={spoil}
+                  index={index}
+                />
+              </div>
             ))}
           </div>
         </div>

@@ -91,3 +91,43 @@ export const getPreSpoilQuizPageContent = ({
     quizStats: getSpoilStats(spoil),
   };
 };
+
+export const getSpoilQuizPageContent = ({
+  quizDatum,
+  spoil,
+  type = "pre",
+}: {
+  quizDatum: QuizDatum | null;
+  spoil: SpoilDetailsData;
+  type?: string;
+}): PreSpoilQuizPageContent => {
+  const t = String(type ?? "pre").toLowerCase();
+
+  if (quizDatum) {
+    return {
+      description:
+        quizDatum.description ||
+        (t === "post"
+          ? `Test your knowledge after completing ${spoil.title}.`
+          : `Test your knowledge before starting ${spoil.title}.`),
+      pageCrumbLabel: t === "post" ? "Take Post-Spoil Quiz" : "Take Pre-Spoil Quiz",
+      pageTitle: quizDatum.title || (t === "post" ? "Post-Spoil Quiz" : "Pre-Spoil Quiz"),
+      primaryButtonLabel: "Start Quiz",
+      quizStats:
+        t === "post"
+          ? getSpoilStats(spoil)
+          : getPreQuizStats({ attempts: spoil.pre_spoil_quiz?.attempts ?? 0, preSpoilQuiz: quizDatum }),
+    };
+  }
+
+  return {
+    description:
+      t === "post"
+        ? `No post-spoil quiz is required for ${spoil.title}.`
+        : `No pre-spoil quiz is required for ${spoil.title}. You can begin learning immediately.`,
+    pageCrumbLabel: t === "post" ? "Post-Spoil Quiz" : "Start Spoil",
+    pageTitle: spoil.title,
+    primaryButtonLabel: t === "post" ? "View Spoil" : "Start Spoil",
+    quizStats: getSpoilStats(spoil),
+  };
+};

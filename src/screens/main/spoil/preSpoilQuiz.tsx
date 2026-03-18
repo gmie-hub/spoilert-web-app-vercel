@@ -8,10 +8,11 @@ import { usePreSpoilQuizScreen } from "./preSpoilQuiz/usePreSpoilQuizScreen";
 
 interface PreSpoilQuizPageProps {
   spoilId: number | string;
+  quizType?: "pre" | "post" | string;
 }
 
-export default function PreSpoilQuizPage({ spoilId }: PreSpoilQuizPageProps) {
-  const screen = usePreSpoilQuizScreen({ spoilId });
+export default function PreSpoilQuizPage({ spoilId, quizType = "pre" }: PreSpoilQuizPageProps) {
+  const screen = usePreSpoilQuizScreen({ spoilId, quizType });
 
   if (screen.status === "loading") {
     return <LoadingState />;

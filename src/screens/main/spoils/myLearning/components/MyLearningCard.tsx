@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import Image from "next/image";
 import { FiArrowRight, FiDownload } from "react-icons/fi";
 
@@ -13,17 +15,41 @@ interface MyLearningCardProps {
   item: LearningItem;
   tab: MyLearningTabKey;
   onAction: (item: LearningItem) => void;
+  onCertificate?: (item: LearningItem) => void;
 }
 
 export const MyLearningCard = ({
   item,
   tab,
   onAction,
+  onCertificate,
 }: MyLearningCardProps) => {
   const isCompleted = tab === "completed";
 
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (!isCompleted) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onAction(item);
+    }
+  };
+
   return (
-    <article className="rounded-[16px] border border-[#F0F2F4] bg-white p-3 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-4">
+    <article
+      {...(isCompleted
+        ? {
+            role: "button",
+            tabIndex: 0,
+            onClick: () => onAction(item),
+            onKeyDown: handleCardKeyDown,
+            className:
+              "rounded-[16px] border border-[#F0F2F4] bg-white p-3 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-4 cursor-pointer",
+          }
+        : {
+            className:
+              "rounded-[16px] border border-[#F0F2F4] bg-white p-3 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-4",
+          })}
+    >
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative h-[88px] w-full overflow-hidden rounded-[14px] bg-[#EAECEF] sm:w-[112px] sm:shrink-0">
           <Image
@@ -56,7 +82,15 @@ export const MyLearningCard = ({
 
           <button
             type="button"
-            onClick={() => onAction(item)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isCompleted) {
+                if (onCertificate) onCertificate(item);
+                return;
+              }
+
+              onAction(item);
+            }}
             className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#0B5368] underline underline-offset-4"
           >
             {isCompleted ? "View & Download Certificate" : "Continue Learning"}

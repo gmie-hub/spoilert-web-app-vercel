@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ import SaveIcon from "@spt/assets/icons/share.svg";
 import StarIcon from "@spt/assets/icons/star.svg";
 import ThumbUp from "@spt/assets/icons/vuesax.svg";
 import HeroImage3 from "@spt/assets/images/Hero.png";
+import useBuySpoilMutation from "@spt/hooks/apiRequests/useBuySpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import { SpoilDetailsData } from "@spt/utils/spoils";
 
@@ -23,6 +24,7 @@ import Card from "../../../../components/card";
 import HStack from "../../../../components/hstack";
 import VStack from "../../../../components/vstack";
 
+import BuySpoilPaymentModal from "./BuySpoilPaymentModal";
 import Details from "./details";
 
 interface SpoilDetailsProps {
@@ -48,15 +50,15 @@ const formatExpiryDate = (value?: string | null) => {
 const formatPrice = (spoil: SpoilDetailsData) => {
   const amount = spoil.display_amount ?? spoil.amount;
 
-  if (spoil.pricing?.toLowerCase() === "free") {
+  if (spoil?.pricing?.toLowerCase() === "free") {
     return "Free";
   }
 
   if (typeof amount === "number") {
-    return `₦${amount.toLocaleString()}`;
+    return `₦${amount?.toLocaleString()}`;
   }
 
-  return spoil.pricing || "Pricing unavailable";
+  return spoil?.pricing || "Pricing unavailable";
 };
 
 const getTutorName = (spoil: SpoilDetailsData) => {
@@ -105,6 +107,8 @@ const EmptyState = () => (
 
 const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const router = useRouter();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const { buySpoilHandler, isLoading: isBuyingSpoil } = useBuySpoilMutation();
   const { data: spoil, isLoading, isError, errorMessage } =
     useGetSpoilDetailsQuery(spoilId);
 
@@ -123,8 +127,48 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const tutorName = getTutorName(spoil);
   const heroImage = spoil.cover_image_url || HeroImage3;
   const isFallbackHeroImage = !spoil.cover_image_url;
+  const isFreeSpoil = spoil?.pricing?.toLowerCase() === "free";
   const price = formatPrice(spoil);
   const spoilOverviewHref = `/spoil/${spoil.id}`;
+  const hasProgress = Number(spoil?.percentage_completed ?? 0) > 0;
+  const isEnrolled = Boolean(spoil?.is_enrolled);
+  const shouldContinue = isEnrolled || hasProgress;
+  const spoilAmount =
+    typeof spoil.display_amount === "number"
+      ? spoil.display_amount
+      : typeof spoil.amount === "number"
+        ? spoil.amount
+        : 0;
+  const certificateFee = Number(spoil.certificate_fee) || 0;
+
+  const handleMakePayment = async () => {
+    const response = await buySpoilHandler(spoil.id, "FLUTTERWAVE");
+
+    if (response) {
+      setIsPaymentModalOpen(false);
+    }
+
+    return response;
+  };
+
+  const handlePrimaryCtaClick = async () => {
+    // If the user is already enrolled or has progress, go straight to the spoil start
+    if (shouldContinue) {
+      router.push(`/spoil/${spoil.id}/start`);
+      return;
+    }
+    if (isFreeSpoil) {
+      const response = await handleMakePayment();
+
+      if (response) {
+        router.push(spoilOverviewHref);
+      }
+
+      return;
+    }
+
+    setIsPaymentModalOpen(true);
+  };
 
   return (
     <section className="w-full bg-white relative">
@@ -238,9 +282,9 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                 <Button
                   variant="darkBlue"
                   className="w-full py-3"
-                  onClick={() => router.push(spoilOverviewHref)}
+                  onClick={handlePrimaryCtaClick}
                 >
-                  Buy Spoil
+                    {shouldContinue ? "Continue Learning" : isFreeSpoil ? "Start Spoil" : "Buy Spoil"}
                 </Button>
               </VStack>
             </div>
@@ -255,9 +299,9 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                   <Button
                     variant="darkBlue"
                     className="w-full py-3"
-                    onClick={() => router.push(spoilOverviewHref)}
+                    onClick={handlePrimaryCtaClick}
                   >
-                    Buy Spoil
+                    {shouldContinue ? "Continue Learning" : isFreeSpoil ? "Start Spoil" : "Buy Spoil"}
                   </Button>
 
                   <Button
@@ -298,6 +342,16 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
         </div>
 
         <Details spoil={spoil} />
+
+        <BuySpoilPaymentModal
+          open={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          spoilTitle={spoil.title}
+          costFee={spoilAmount}
+          certificateFee={certificateFee}
+          onMakePayment={handleMakePayment}
+          isMakingPayment={isBuyingSpoil}
+        />
       </section>
     </section>
   );
