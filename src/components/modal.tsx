@@ -95,7 +95,7 @@ interface ModalProps {
 
 const sizeMap: Record<NonNullable<ModalProps["size"]>, string> = {
   sm: "max-w-md",
-  md: "max-w-lg",
+  md: "max-w-xl",
   lg: "max-w-2xl",
 };
 
