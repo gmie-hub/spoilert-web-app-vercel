@@ -59,6 +59,17 @@ export const StartSpoilSidebar = ({
     return false;
   })();
 
+  const isSpoilCompleted = (() => {
+    const pctNum = Number(spoil?.percentage_completed ?? spoil?.percentage_completed?.toString?.());
+    const rawProgress =
+      (spoil as any)?.progress_percentage ?? (spoil as any)?.learner_spoil?.progress_percentage ?? null;
+
+    if (!Number.isNaN(pctNum) && pctNum >= 100) return true;
+    if (rawProgress && String(rawProgress) === "100.00") return true;
+
+    return false;
+  })();
+
   const handleTakePostQuiz = () => {
     if (!canTakePostQuiz) return;
     router.push(`/spoil/${spoil.id}/post-spoil-quiz`);
@@ -216,18 +227,32 @@ export const StartSpoilSidebar = ({
       </Button>
     </div>
 
-    <Button
-      variant="darkBlue"
-      // disabled={!canCompleteSpoil || isCompletingSpoil}
-      className={`mt-6 w-full rounded-[14px] py-3 ${
-        canCompleteSpoil && !isCompletingSpoil
-          ? ""
-          : "cursor-not-allowed bg-[#9CB4BC] hover:bg-[#9CB4BC]"
-      }`}
-      onClick={onCompleteSpoil}
-    >
-      {isCompletingSpoil ? "Completing..." : "Complete Spoil"}
-    </Button>
+    {isSpoilCompleted ? (
+      <button
+        type="button"
+        onClick={() => router.push('/my-learnings?tab=completed')}
+        className="mt-6 w-full rounded-[14px] py-3 text-center bg-[#ECFDF5] text-[#065F46] font-semibold cursor-pointer"
+      >
+        Spoil Completed
+      </button>
+    ) : (
+      <Button
+        variant="darkBlue"
+        disabled={!canCompleteSpoil || isCompletingSpoil}
+        className={`mt-6 w-full rounded-[14px] py-3 ${
+          canCompleteSpoil && !isCompletingSpoil
+            ? ""
+            : "cursor-not-allowed bg-[#9CB4BC] hover:bg-[#9CB4BC]"
+        }`}
+        onClick={() => {
+          if (!canCompleteSpoil || isCompletingSpoil) return;
+          onCompleteSpoil();
+        }}
+        aria-disabled={!canCompleteSpoil || isCompletingSpoil}
+      >
+        {isCompletingSpoil ? "Completing..." : "Complete Spoil"}
+      </Button>
+    )}
   </aside>
   );
 };
