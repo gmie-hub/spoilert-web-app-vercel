@@ -72,7 +72,7 @@ const Header = () => {
     { icon: Home, name: "Home", href: "/" },
     { icon: Learnings, name: "My Learnings", href: "/my-learnings" },
     { icon: CreateSpoilIcon, name: "Create Spoil", href: createSpoilHref },
-    { icon: CommunityIcon, name: "Community", href: "/communitys" },
+    { icon: CommunityIcon, name: "Community", href: "/community" },
     { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
   ];
 

@@ -1,15 +1,13 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 
+import { useGetAllCommunitiesQuery } from "@spt/hooks/apiRequests/useGetAllCommunitiesQuery";
+import useGetUserCommunitiesQuery from "@spt/hooks/apiRequests/useGetUserCommunitiesQuery";
 import { useAuthStore } from "@spt/store/authStore";
 
-import {
-  type CommunityFilterValue,
-  exploreCommunities,
-  learnerJoinedCommunities,
-  tutorCreatedCommunities,
-} from "./communityData";
+import { type CommunityFilterValue } from "./communityData";
 import { detailCommunity } from "./communityDetailData";
 import {
   type PrimaryTab,
@@ -17,19 +15,56 @@ import {
   type ViewMode,
   primaryTabs,
 } from "./communityPageTypes";
+import CommunityCard from "./components/communityCard";
 import CommunityDetailView from "./components/communityDetailView";
 import CommunityFilterModal from "./components/communityFilterModal";
 import CommunityListView from "./components/communityListView";
+import CommunitySearchBar from "./components/communitySearchBar";
 import CommunityTabs from "./components/communityTabs";
 
+import type { CommunityAudience, CommunityCardItem } from "./communityTypes";
+// Map a backend community object to `CommunityCardItem` shape
+const mapToCard = (c: any): CommunityCardItem => {
+  const name = c.name ?? "";
+  const displayName = typeof name === "string" && name.length > 18 ? `${name.slice(0, 18)}...` : name;
+  let avatarLabel = "";
+  if (c.owner) {
+    const ownerName = `${c.owner.first_name ?? ""} ${c.owner.last_name ?? ""}`.trim() || c.owner.username || "";
+    const partsOwner = ownerName.split(" ").filter(Boolean);
+    avatarLabel = partsOwner.length >= 2 ? `${partsOwner[0][0]}${partsOwner[1][0]}` : (partsOwner[0] || "")[0] || "";
+  } else {
+    const parts = String(name).split(" ").filter(Boolean);
+    avatarLabel = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : (parts[0] || "")[0] || "";
+  }
+  const avatarUrl = c?.spoil?.cover_image_url ?? c?.cover_image_url ?? c?.image ?? null;
+  const locked = typeof c.locked === "number" ? c.locked : (c.locked === true ? 1 : 0);
+  const audience: CommunityAudience = locked === 1 ? "locked" : "free";
+  const members = c.total_members ?? c.total_members_count ?? c.members_count ?? c.members ?? 0;
+
+  return {
+    ...c,
+    id: String(c.id ?? c._id ?? ""),
+    name: displayName,
+    description: c.description ?? c.spoil?.title ?? "",
+    audience,
+    locked,
+    members,
+    avatarLabel: avatarLabel.toUpperCase(),
+    avatarUrl,
+    accentColor: c.accent_color ?? "#6E9BC3",
+  };
+};
+
 const CommunityPage = () => {
-  const user = useAuthStore((state) => state.user);
+  // const user = useAuthStore((state) => state.user); // Unused
   const isTutor = true;
 
-  const [activePrimaryTab, setActivePrimaryTab] = useState<PrimaryTab>("explore");
+  const [activePrimaryTab, setActivePrimaryTab] =
+    useState<PrimaryTab>("explore");
   const [activeTutorTab, setActiveTutorTab] = useState<TutorTab>("joined");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchValue, setSearchValue] = useState("");
+  const [perPage, setPerPage] = useState<number>(20);
   const [detailSearchValue, setDetailSearchValue] = useState("");
   const [submittedDetailSearch, setSubmittedDetailSearch] = useState("");
   const [selectedFilter, setSelectedFilter] =
@@ -43,41 +78,81 @@ const CommunityPage = () => {
     setSubmittedDetailSearch("");
     setDetailSearchValue("");
     setSelectedPostId(null);
+    // Reset pagination when switching tabs
+    setQueryParams((prev) => ({ ...prev, page: 1 }));
   }, [activePrimaryTab, activeTutorTab]);
 
-  const normalizedSearch = searchValue.trim().toLowerCase();
-  const filteredExploreCommunities = exploreCommunities.filter((community) => {
-    const matchesSearch =
-      normalizedSearch.length === 0 ||
-      community.name.toLowerCase().includes(normalizedSearch) ||
-      community.description.toLowerCase().includes(normalizedSearch);
 
-    const matchesFilter =
-      selectedFilter === "all" || community.audience === selectedFilter;
+  const [queryParams, setQueryParams] = useState<{
+    page?: number;
+    paid?: boolean;
+    free?: boolean;
+    search?: string;
+    locked?: number | string | boolean;
+  }>({});
 
-    return matchesSearch && matchesFilter;
-  });
+  // Always keep searchValue in queryParams
+  useEffect(() => {
+    setQueryParams((prev) => ({
+      ...prev,
+      search: searchValue?.trim()?.length ? searchValue : undefined,
+      page: prev.page, // preserve page if set
+    }));
+  }, [searchValue]);
 
-  const myCommunities =
-    activeTutorTab === "created" ? tutorCreatedCommunities : learnerJoinedCommunities;
+  const {
+    data: communitiesData,
+    pagination: communitiesPagination,
+    isLoading: communitiesLoading,
+  } = useGetAllCommunitiesQuery({ ...queryParams, per_page: perPage }, activePrimaryTab === "explore");
 
-  const filteredMyCommunities = myCommunities.filter((community) => {
-    if (searchValue.trim().length === 0) {
-      return true;
-    }
+  const rawCommunities: any[] = Array.isArray(communitiesData)
+    ? communitiesData
+    : // support paginated object { data: [...] } or the raw response
+      (communitiesData ?? []);
 
-    return (
-      community.name.toLowerCase().includes(normalizedSearch) ||
-      community.description.toLowerCase().includes(normalizedSearch)
-    );
-  });
+  const fetchedExploreCommunities: CommunityCardItem[] = (rawCommunities ?? []).map(mapToCard);
+
+  // Do not perform client-side filtering — backend handles search/filter/pagination.
+  const filteredExploreCommunities = fetchedExploreCommunities;
+
+  const user = useAuthStore((state) => state.user);
+
+  const isViewingJoined = activePrimaryTab === "myCommunities" && activeTutorTab === "joined";
+  const isViewingCreated = activePrimaryTab === "myCommunities" && activeTutorTab === "created";
+
+  const {
+    data: joinedData,
+    pagination: joinedPagination,
+    isLoading: joinedLoading,
+  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage }, isViewingJoined, true);
+
+  const {
+    data: createdData,
+    pagination: createdPagination,
+    isLoading: createdLoading,
+  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage, owner_id: user?.id }, isViewingCreated, false);
+
+  const rawJoined: any[] = Array.isArray(joinedData) ? joinedData : (joinedData ?? []);
+  const rawCreated: any[] = Array.isArray(createdData) ? createdData : (createdData ?? []);
+
+  const fetchedJoinedCommunities: CommunityCardItem[] = (rawJoined ?? []).map(mapToCard);
+  const fetchedCreatedCommunities: CommunityCardItem[] = (rawCreated ?? []).map(mapToCard);
+
+  const filteredMyCommunities = isViewingJoined
+    ? fetchedJoinedCommunities
+    : isViewingCreated
+      ? fetchedCreatedCommunities
+      : fetchedExploreCommunities;
 
   const detailFeed = detailCommunity.feed.filter((item) => {
     if (submittedDetailSearch.trim().length === 0) {
       return true;
     }
 
-    const normalizedSubmittedSearch = submittedDetailSearch.trim().toLowerCase();
+    const normalizedSubmittedSearch = submittedDetailSearch
+      .trim()
+      .toLowerCase();
 
     return [
       item.author.name,
@@ -111,12 +186,34 @@ const CommunityPage = () => {
 
   const handleApplyFilter = () => {
     setSelectedFilter(draftFilter);
+
+    const locked = draftFilter === "locked" ? 1 : undefined;
+    const free = draftFilter === "free" ? true : undefined;
+
+    setQueryParams((prev) => ({
+      ...prev,
+      search: searchValue?.trim()?.length ? searchValue : undefined,
+      locked,
+      free,
+      page: 1,
+    }));
+
     setIsFilterModalOpen(false);
+  };
+
+  // handle main search submit (button in `CommunitySearchBar` when `showActionButton=true`)
+  const handleSearchSubmit = () => {
+    setQueryParams((prev) => ({
+      ...prev,
+      search: searchValue?.trim()?.length ? searchValue : undefined,
+      page: 1,
+    }));
   };
 
   const handleResetFilter = () => {
     setDraftFilter("all");
     setSelectedFilter("all");
+    setQueryParams({});
     setIsFilterModalOpen(false);
   };
 
@@ -124,6 +221,15 @@ const CommunityPage = () => {
     setSelectedPostId(postId);
     setViewMode("comments");
   };
+
+  
+
+  const activePagination =
+    activePrimaryTab === "myCommunities"
+      ? activeTutorTab === "joined"
+        ? joinedPagination
+        : createdPagination
+      : communitiesPagination;
 
   return (
     <>
@@ -142,22 +248,73 @@ const CommunityPage = () => {
           </div>
 
           <div className="mt-8">
-            {viewMode === "list" ? (
-              <CommunityListView
-                activePrimaryTab={activePrimaryTab}
-                activeTutorTab={activeTutorTab}
-                filteredExploreCommunities={filteredExploreCommunities}
-                filteredMyCommunities={filteredMyCommunities}
-                isTutor={isTutor}
-                searchValue={searchValue}
-                onSearchChange={setSearchValue}
-                onTutorTabChange={setActiveTutorTab}
-                onOpenFilter={() => {
-                  setDraftFilter(selectedFilter);
-                  setIsFilterModalOpen(true);
-                }}
-                onOpenCommunity={handleOpenCommunity}
-              />
+            {viewMode === "list" && activePrimaryTab === "explore" ? (
+              <div className="space-y-6">
+                <div className="flex items-start gap-2 rounded-xl border border-[#B8E3F8] bg-[#EAF7FF] px-4 py-2 text-sm text-black">
+                  <span className="inline-block mr-2 align-middle">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#B8E3F8"/><text x="10" y="15" textAnchor="middle" fill="#0B5368" fontSize="12" fontFamily="Arial" dy="-2">i</text></svg>
+                  </span>
+                  <p>
+                    Locked communities are exclusive to learners enrolled in their associated spoils. Enroll to gain access.
+                  </p>
+                </div>
+                <div className="max-w-[520px] relative">
+                  <CommunitySearchBar
+                    value={searchValue}
+                    onChange={setSearchValue}
+                    placeholder="Search for a community.."
+                    onFilterClick={() => {
+                      setDraftFilter(selectedFilter);
+                      setIsFilterModalOpen(true);
+                    }}
+                  />
+                
+                </div>
+                {communitiesLoading ? (
+                  <div className="flex min-h-[200px] items-center justify-center">
+                    <span className="text-gray text-lg font-medium">Loading communities...</span>
+                  </div>
+                ) : (
+                  <div className="grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
+                    {filteredExploreCommunities.map((community) => (
+                      <CommunityCard
+                        key={community.id}
+                        community={community}
+                        variant="explore"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : viewMode === "list" ? (
+                <CommunityListView
+                  activePrimaryTab={activePrimaryTab}
+                  activeTutorTab={activeTutorTab}
+                  filteredExploreCommunities={filteredExploreCommunities}
+                    filteredMyCommunities={filteredMyCommunities}
+                  isTutor={isTutor}
+                  searchValue={searchValue}
+                  onSearchChange={setSearchValue}
+                  onSearchSubmit={handleSearchSubmit}
+                  onTutorTabChange={setActiveTutorTab}
+                  onOpenFilter={() => {
+                    setDraftFilter(selectedFilter);
+                    setIsFilterModalOpen(true);
+                  }}
+                  onOpenCommunity={handleOpenCommunity}
+                    isLoading={
+                      activePrimaryTab === "myCommunities" && activeTutorTab === "joined"
+                        ? joinedLoading
+                        : activePrimaryTab === "myCommunities" && activeTutorTab === "created"
+                          ? createdLoading
+                          : communitiesLoading
+                    }
+                    perPage={perPage}
+                    onPerPageChange={(n) => {
+                      setPerPage(n);
+                      setQueryParams((prev) => ({ ...prev, page: 1 }));
+                    }}
+                />
             ) : (
               <CommunityDetailView
                 community={detailCommunity}
@@ -175,9 +332,37 @@ const CommunityPage = () => {
               />
             )}
           </div>
+          {activePagination ? (
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() =>
+                  setQueryParams((prev) => ({ ...prev, page: Math.max((prev.page ?? 1) - 1, 1) }))
+                }
+                disabled={!activePagination?.prev_page_url}
+                className="rounded border px-3 py-1 text-sm"
+              >
+                Prev
+              </button>
+
+              <span className="text-sm text-gray">
+                Page {activePagination.current_page} of {activePagination.last_page}
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setQueryParams((prev) => ({ ...prev, page: (prev.page ?? activePagination.current_page) + 1 }))
+                }
+                disabled={!activePagination?.next_page_url}
+                className="rounded border px-3 py-1 text-sm"
+              >
+                Next
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
-
       <CommunityFilterModal
         open={isFilterModalOpen}
         selectedFilter={draftFilter}
@@ -185,6 +370,8 @@ const CommunityPage = () => {
         onSelect={setDraftFilter}
         onApply={handleApplyFilter}
         onReset={handleResetFilter}
+        communities={fetchedExploreCommunities}
+        onSearch={(term) => setSearchValue(term)}
       />
     </>
   );

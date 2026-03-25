@@ -1,5 +1,7 @@
 "use client";
 
+import { SpoilDatum } from "@spt/utils/spoils";
+
 export type CommunityAudience = "free" | "locked";
 
 export type FeedItemType = "post" | "spoil";
@@ -12,6 +14,11 @@ export interface CommunityCardItem {
   members: number;
   avatarLabel: string;
   accentColor: string;
+  locked:number;
+  avatarUrl?: string | null;
+  spoil_id:number
+  spoil:SpoilDatum;
+  total_members:number
 }
 
 export interface CommunityAuthor {
