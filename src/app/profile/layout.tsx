@@ -1,30 +1,19 @@
-import React from "react";
-
-import { Inter } from "next/font/google";
+import type { ReactNode } from "react";
 
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
+import ProfileShell from "@spt/screens/main/profile";
 
-import "../globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["100", "300", "400", "700", "900"],
-  style: ["normal", "italic"],
-});
-
-export default function RootLayout({
+export default function ProfileLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Header />
-        {children}
-        <Footer />
-      </body>
-    </html>
+    <>
+      <Header />
+      <ProfileShell>{children}</ProfileShell>
+      <Footer />
+    </>
   );
 }
