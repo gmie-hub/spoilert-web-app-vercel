@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useGetAllCommunitiesQuery } from "@spt/hooks/apiRequests/useGetAllCommunitiesQuery";
 import useGetCommunityDetailQuery from "@spt/hooks/apiRequests/useGetCommunityDetailQuery";
 import useGetUserCommunitiesQuery from "@spt/hooks/apiRequests/useGetUserCommunitiesQuery";
+import useGetCommunitiesCreatedByUserQuery from "@spt/hooks/apiRequests/useGetCommunitiesCreatedByUserQuery";
 import { useAuthStore } from "@spt/store/authStore";
 
 import { type CommunityFilterValue } from "./communityData";
@@ -135,7 +136,7 @@ const CommunityPage = () => {
     data: createdData,
     pagination: createdPagination,
     isLoading: createdLoading,
-  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage, owner_id: user?.id }, isViewingCreated, false);
+  } = useGetCommunitiesCreatedByUserQuery({ user_id: user?.id, page: queryParams.page, per_page: perPage }, isViewingCreated);
 
   const rawJoined: any[] = Array.isArray(joinedData) ? joinedData : (joinedData ?? []);
   const rawCreated: any[] = Array.isArray(createdData) ? createdData : (createdData ?? []);

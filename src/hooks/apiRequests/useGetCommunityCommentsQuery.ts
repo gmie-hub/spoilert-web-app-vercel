@@ -29,7 +29,7 @@ export const useGetCommunityCommentsQuery = (
     if (search) parts.push(`search=${encodeURIComponent(String(search))}`);
 
     const queryString = parts.join("&");
-    // const perPage = per_page ?? 20;
+    const perPage = per_page ?? 20;
 
     return (await api.get(`/communities/posts/comment?${queryString ? `${queryString}&` : ""}per_page=${perPage}`))?.data;
   };
