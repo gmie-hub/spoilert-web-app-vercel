@@ -12,7 +12,7 @@ import type { CommunityCardItem } from "../communityTypes";
 interface CommunityCardProps {
   community: CommunityCardItem;
   variant: "explore" | "member";
-  onClick?: () => void;
+  onClick?: (id: string) => void;
 }
 
 const avatarStack = ["A", "B", "C"];
@@ -28,7 +28,7 @@ const CommunityCard = ({ community, variant, onClick }: CommunityCardProps) => {
   // Card click: only navigate or call onClick, never join
   const handleCardClick = () => {
     if (onClick) {
-      onClick();
+      onClick(String(community.id));
       return;
     }
     // Default: navigate to community detail if needed (optional)

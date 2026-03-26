@@ -2,7 +2,7 @@
 
 import type { CommunityFeedItem, CommunityProfile } from "./communityTypes";
 
-const communityFeed: CommunityFeedItem[] = [
+const communityFeeds: CommunityFeedItem[] = [
   {
     id: "mary-post",
     type: "post",
@@ -109,7 +109,7 @@ const communityFeed: CommunityFeedItem[] = [
   },
 ];
 
-const communityComments: CommunityFeedItem[] = [
+const communityCommentss: CommunityFeedItem[] = [
   {
     id: "comment-sophie",
     type: "post",
@@ -190,7 +190,7 @@ const communityComments: CommunityFeedItem[] = [
   },
 ];
 
-export const detailCommunity: CommunityProfile = {
+export const detailCommunitys: CommunityProfile = {
   id: "design-principles",
   name: "Design Principles",
   members: 80,
@@ -200,6 +200,6 @@ export const detailCommunity: CommunityProfile = {
   createdDate: "12-01-2025",
   avatarLabel: "DP",
   accentColor: "#C8D4E3",
-  feed: communityFeed,
-  comments: communityComments,
+  feed: communityFeeds,
+  comments: communityCommentss,
 };

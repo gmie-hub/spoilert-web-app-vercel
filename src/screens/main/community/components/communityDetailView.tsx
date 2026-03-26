@@ -1,8 +1,12 @@
 "use client";
 
+import { useState } from "react";
+
 import Image from "next/image";
 
 import ArrowLeft from "@spt/assets/icons/arrow-left.svg";
+import useGetCommunityCommentsQuery from "@spt/hooks/apiRequests/useGetCommunityCommentsQuery";
+import useGetCommunityPostsQuery from "@spt/hooks/apiRequests/useGetCommunityPostsQuery";
 
 import CommunityComposer from "./communityComposer";
 import CommunityDetailSidebar from "./communityDetailSidebar";
@@ -12,17 +16,19 @@ import CommunitySearchBar from "./communitySearchBar";
 import type { ViewMode } from "../communityPageTypes";
 import type { CommunityFeedItem, CommunityProfile } from "../communityTypes";
 
+
 interface CommunityDetailViewProps {
-  community: CommunityProfile;
+  community?: CommunityProfile | null;
   detailFeed: CommunityFeedItem[];
   detailSearchValue: string;
-  selectedPost: CommunityFeedItem;
+  selectedPost?: CommunityFeedItem | null;
   submittedDetailSearch: string;
   viewMode: ViewMode;
   onBack: () => void;
   onDetailSearchChange: (value: string) => void;
   onDetailSearchSubmit: () => void;
   onOpenComments: (postId: string) => void;
+  isLoading?: boolean;
 }
 
 const CommunityDetailView = ({
@@ -36,8 +42,47 @@ const CommunityDetailView = ({
   onDetailSearchChange,
   onDetailSearchSubmit,
   onOpenComments,
+  isLoading: propsIsLoading,
 }: CommunityDetailViewProps) => {
+  // defensive: allow `community` to be null/undefined and expose loading state
+  const isLoading = typeof propsIsLoading === "boolean" ? propsIsLoading : (community as any) == null;
+  const safeCommunity = (community as any) || {
+    id: "",
+    name: "",
+    members: 0,
+    description: "",
+    spoilTitle: "",
+    createdBy: "",
+    createdDate: "",
+    avatarLabel: "",
+    accentColor: "#C8D4E3",
+    feed: [],
+    comments: [],
+  } as CommunityProfile;
   const isSearchResults = submittedDetailSearch.trim().length > 0;
+
+  const [loadComments, setLoadComments] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+
+  const { data: postsData, isLoading: postsLoading } = useGetCommunityPostsQuery(
+    { community_id: community?.id },
+    Boolean(community?.id),
+  );
+
+  const { data: commentsData, isLoading: commentsLoading } = useGetCommunityCommentsQuery(
+    { community_id: community?.id, post_id: selectedPostId ?? undefined },
+    Boolean(loadComments && selectedPostId),
+  );
+
+  const posts = postsData ?? [];
+
+  const handleOpenCommentsInternal = (postId: string) => {
+    try {
+      setSelectedPostId(String(postId));
+      setLoadComments(true);
+    } catch {}
+    onOpenComments(postId);
+  };
 
   return (
     <div className="space-y-6">
@@ -54,20 +99,20 @@ const CommunityDetailView = ({
         <div className="flex items-center gap-4">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white"
-            style={{ backgroundColor: community.accentColor }}
+            style={{ backgroundColor: safeCommunity.accentColor }}
           >
-            {community.avatarLabel}
+            {safeCommunity.avatarLabel}
           </div>
 
           <div>
             <h2 className="text-xl font-semibold text-black">
-              {community.name}
+              {isLoading ? "Loading..." : safeCommunity.name}
             </h2>
           </div>
         </div>
 
-        <p className="mt-2 text-gray">{community.members} Members</p>
-        <p className="mt-1 text-gray">{community.description}</p>
+        <p className="mt-2 text-gray">{safeCommunity.members} Members</p>
+        <p className="mt-1 text-gray">{safeCommunity.description}</p>
       </div>
 
       {viewMode === "detail" ? (
@@ -87,11 +132,11 @@ const CommunityDetailView = ({
               </h3>
             ) : null}
 
-            {detailFeed.map((item) => (
+            {(postsLoading ? [] : posts).map((item) => (
               <CommunityFeedCard
                 key={item.id}
                 item={item}
-                onOpenComments={onOpenComments}
+                onOpenComments={handleOpenCommentsInternal}
               />
             ))}
 
@@ -105,13 +150,13 @@ const CommunityDetailView = ({
       ) : (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_374px]">
           <div className="space-y-6">
-            <CommunityFeedCard item={selectedPost} />
+            {selectedPost ? <CommunityFeedCard item={selectedPost} /> : null}
             <div>
               <h3 className="text-xl font-semibold text-black">
                 Comments
               </h3>
             </div>
-            {community.comments.map((item) => (
+            {(commentsData ?? []).map((item: any) => (
               <CommunityFeedCard key={item.id} item={item} />
             ))}
             <CommunityComposer placeholder="Write a comment..." />

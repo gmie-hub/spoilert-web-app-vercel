@@ -22,7 +22,7 @@ export const useGetUserCommunitiesQuery = (
     if (includeHasJoined) reqParams.has_joined = true;
     if (typeof owner_id !== "undefined") reqParams.owner_id = owner_id;
 
-    return (await api.get(`/communities`, { params: reqParams })).data;
+    return (await api.get(`/communities/users`, { params: reqParams })).data;
   };
 
   const { data, isLoading, isError, error } = useQuery<any, AxiosError<ApiErrorResponse>>({

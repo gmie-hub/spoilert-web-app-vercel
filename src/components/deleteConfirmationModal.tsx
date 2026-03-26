@@ -14,6 +14,7 @@ interface DeleteConfirmationModalProps {
   description?: string;
   itemName?: string;
   isLoading?: boolean;
+  loadingLabel?: string;
   confirmLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
@@ -27,6 +28,7 @@ const DeleteConfirmationModal: FC<DeleteConfirmationModalProps> = ({
   itemName,
   icon,
   isLoading = false,
+  loadingLabel = "Deleting...",
   confirmLabel = "Yes Delete",
   onConfirm,
   onCancel,
@@ -59,7 +61,7 @@ const DeleteConfirmationModal: FC<DeleteConfirmationModalProps> = ({
             disabled={isLoading}
             className="w-full bg-red text-white hover:bg-red-600"
           >
-            {isLoading ? "Deleting..." : confirmLabel}
+            {isLoading ? loadingLabel : confirmLabel}
           </Button>
 
           <Button

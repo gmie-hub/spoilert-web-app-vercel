@@ -40,6 +40,9 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
   const [isSpoilScheduledModalOpen, setIsSpoilScheduledModalOpen] = useState(false);
   const [scheduledDateTime, setScheduledDateTime] =
     useState<SchedulePremiereFormState | null>(null);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
 
   const { createSpoilHandler } = useCreateSpoilMutation();
   const { createModuleHandler } = useCreateModuleMutation();
@@ -47,6 +50,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
   const router = useRouter();
 
   const handlePublishClick = async () => {
+    setIsPublishing(true);
     try {
       // Validate persisted quiz drafts (pre/post/module) before making API calls
       const validateDraftQuizzes = () => {
@@ -167,6 +171,9 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
     } catch {
       // ignore
     }
+    finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleCloseModal = () => setIsReviewModalOpen(false);
@@ -184,6 +191,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
   const handleSchedulePremiereClick = () => setIsSchedulePremiereModalOpen(true);
 
   const handleSaveToDraftClick = async () => {
+    setIsSavingDraft(true);
     try {
       try {
         if (typeof window !== "undefined") {
@@ -199,26 +207,44 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
       const storedBasics = useCreateSpoilStore.getState().basics;
       setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
 
-      // const res = await createSpoilHandler(
-      //   new FormData(),
-      //   { setSubmitting: (_: boolean) => {} },
-      //   createModuleHandler,
-      //   createLessonHandler,
-      // );
+      // Persist draft to server using createSpoilHandler. createSpoilHandler
+      // reads basics from the store when given a FormData as first arg.
+      let res: any = null;
+      try {
+        res = await createSpoilHandler(
+          new FormData(),
+          { setSubmitting: (_: boolean) => {} },
+          createModuleHandler,
+          createLessonHandler,
+        );
+      } catch (e) {
+        // swallow error but log for debugging
+        // eslint-disable-next-line no-console
+        console.error("Save to draft failed:", e);
+      }
 
       try {
-        try {
-          useCreateSpoilStore.getState().resetDraft?.();
-          if (typeof window !== "undefined") sessionStorage.removeItem("advanced-spoil-step");
-        } catch (clearErr) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to clear draft storage:", clearErr);
-        }
+        const createdId = res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
+        if (createdId) {
+          try {
+            useCreateSpoilStore.getState().resetDraft?.();
+            if (typeof window !== "undefined") sessionStorage.removeItem("advanced-spoil-step");
+          } catch (clearErr) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to clear draft storage:", clearErr);
+          }
 
-        router.push("/create-spoils");
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("Navigation to /create-spoils failed", e);
+          try {
+            router.push("/create-spoils");
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error("Navigation to /create-spoils failed", e);
+          }
+        } else {
+          toast.error("Failed to save draft. Please try again.");
+        }
+      } finally {
+        setIsSavingDraft(false);
       }
     } catch {
       onPrevious();
@@ -239,6 +265,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
     (async () => {
       try {
+        setIsScheduling(true);
         const res = await createSpoilHandler(
           new FormData(),
           { setSubmitting: () => {} },
@@ -254,6 +281,9 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
         }
       } catch {
         setIsSchedulePremiereModalOpen(false);
+      }
+      finally {
+        setIsScheduling(false);
       }
     })();
   };
@@ -313,6 +343,9 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
         onPublish={handlePublishClick}
         onSchedulePremiere={handleSchedulePremiereClick}
         onSaveToDraft={handleSaveToDraftClick}
+        isSavingDraft={isSavingDraft}
+        isPublishing={isPublishing}
+        isScheduling={isScheduling}
       />
 
       <ReviewModal

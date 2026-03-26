@@ -28,10 +28,11 @@ interface CommunityListViewProps {
   onSearchSubmit?: () => void;
   onTutorTabChange: (value: TutorTab) => void;
   onOpenFilter: () => void;
-  onOpenCommunity: () => void;
+  onOpenCommunity: (id: string) => void;
   isLoading?: boolean;
   perPage?: number;
   onPerPageChange?: (n: number) => void;
+  showTutorTabs?: boolean;
 }
 
 const CommunityListView = ({
@@ -49,6 +50,7 @@ const CommunityListView = ({
   isLoading,
   perPage = 20,
   onPerPageChange,
+  showTutorTabs = true,
 }: CommunityListViewProps) => {
   if (activePrimaryTab === "explore") {
     return (
@@ -98,7 +100,7 @@ const CommunityListView = ({
 
   return (
     <div className="space-y-6">
-      {isTutor ? (
+      {isTutor && showTutorTabs ? (
         <CommunityTabs
           tabs={tutorTabs}
           value={activeTutorTab}
@@ -123,7 +125,7 @@ const CommunityListView = ({
             key={community.id}
             community={community}
             variant="member"
-            onClick={onOpenCommunity}
+            onClick={() => onOpenCommunity(community.id)}
           />
         ))}
       </div>

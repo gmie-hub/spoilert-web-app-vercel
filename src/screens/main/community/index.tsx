@@ -4,16 +4,18 @@
 import { useEffect, useState } from "react";
 
 import { useGetAllCommunitiesQuery } from "@spt/hooks/apiRequests/useGetAllCommunitiesQuery";
+import useGetCommunityDetailQuery from "@spt/hooks/apiRequests/useGetCommunityDetailQuery";
 import useGetUserCommunitiesQuery from "@spt/hooks/apiRequests/useGetUserCommunitiesQuery";
 import { useAuthStore } from "@spt/store/authStore";
 
 import { type CommunityFilterValue } from "./communityData";
-import { detailCommunity } from "./communityDetailData";
+// detailCommunity fixture removed — use live API data only
 import {
   type PrimaryTab,
   type TutorTab,
   type ViewMode,
   primaryTabs,
+  tutorTabs,
 } from "./communityPageTypes";
 import CommunityCard from "./components/communityCard";
 import CommunityDetailView from "./components/communityDetailView";
@@ -22,7 +24,7 @@ import CommunityListView from "./components/communityListView";
 import CommunitySearchBar from "./components/communitySearchBar";
 import CommunityTabs from "./components/communityTabs";
 
-import type { CommunityAudience, CommunityCardItem } from "./communityTypes";
+import type { CommunityAudience, CommunityCardItem, CommunityProfile } from "./communityTypes";
 // Map a backend community object to `CommunityCardItem` shape
 const mapToCard = (c: any): CommunityCardItem => {
   const name = c.name ?? "";
@@ -72,12 +74,14 @@ const CommunityPage = () => {
   const [draftFilter, setDraftFilter] = useState<CommunityFilterValue>("all");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
 
   useEffect(() => {
     setViewMode("list");
     setSubmittedDetailSearch("");
     setDetailSearchValue("");
     setSelectedPostId(null);
+    setSelectedCommunityId(null);
     // Reset pagination when switching tabs
     setQueryParams((prev) => ({ ...prev, page: 1 }));
   }, [activePrimaryTab, activeTutorTab]);
@@ -145,7 +149,39 @@ const CommunityPage = () => {
       ? fetchedCreatedCommunities
       : fetchedExploreCommunities;
 
-  const detailFeed = detailCommunity.feed.filter((item) => {
+  // select active community profile (fetched or fallback static)
+  const { data: fetchedCommunityDetail, isLoading: communityDetailLoading } = useGetCommunityDetailQuery(selectedCommunityId  || '', viewMode === "detail" && !!selectedCommunityId);
+
+  console.log(fetchedCommunityDetail,'fetchedCommunityDetail')
+  useEffect(() => {
+    if (fetchedCommunityDetail) {
+      // Log raw API payload to help inspect structure during development
+      // Remove or guard this in production
+      // eslint-disable-next-line no-console
+      console.debug("fetchedCommunityDetail:", fetchedCommunityDetail);
+    }
+  }, [fetchedCommunityDetail]);
+  const activeCommunityProfile: CommunityProfile | null = fetchedCommunityDetail
+    ? {
+        id: String(fetchedCommunityDetail.id ?? fetchedCommunityDetail._id ?? selectedCommunityId ?? ""),
+        name: fetchedCommunityDetail.name ?? "",
+        members: fetchedCommunityDetail.total_members ?? fetchedCommunityDetail.members ?? 0,
+        description: fetchedCommunityDetail.description ?? fetchedCommunityDetail.spoil?.description ?? "",
+        spoilTitle: fetchedCommunityDetail.spoil?.title ?? fetchedCommunityDetail.spoil_title ?? "",
+        createdBy: (fetchedCommunityDetail.owner && `${fetchedCommunityDetail.owner.first_name ?? ""} ${fetchedCommunityDetail.owner.last_name ?? ""}`) || fetchedCommunityDetail.owner?.username || "",
+        createdDate: fetchedCommunityDetail.created_at ?? "",
+        avatarLabel:
+          (fetchedCommunityDetail.owner && ((fetchedCommunityDetail.owner.first_name ?? "")[0] || "")) ||
+          (fetchedCommunityDetail.spoil && fetchedCommunityDetail.spoil.tutor && ((fetchedCommunityDetail.spoil.tutor.first_name ?? "")[0] || "")) ||
+          (fetchedCommunityDetail.name && String(fetchedCommunityDetail.name)[0]) ||
+          "",
+        accentColor: fetchedCommunityDetail.accent_color ?? "#C8D4E3",
+        feed: fetchedCommunityDetail.feed ?? [],
+        comments: fetchedCommunityDetail.comments ?? [],
+      }
+    : null;
+
+  const detailFeed = (activeCommunityProfile?.feed ?? []).filter((item) => {
     if (submittedDetailSearch.trim().length === 0) {
       return true;
     }
@@ -164,10 +200,11 @@ const CommunityPage = () => {
   });
 
   const selectedPost =
-    detailCommunity.feed.find((item) => item.id === selectedPostId) ??
-    detailCommunity.feed[0];
+    (activeCommunityProfile && activeCommunityProfile.feed ? activeCommunityProfile.feed.find((item) => item.id === selectedPostId) : undefined) ??
+    (activeCommunityProfile && activeCommunityProfile.feed ? activeCommunityProfile.feed[0] : undefined);
 
-  const handleOpenCommunity = () => {
+  const handleOpenCommunity = (id: string) => {
+    setSelectedCommunityId(id);
     setViewMode("detail");
     setSelectedPostId(null);
   };
@@ -182,6 +219,7 @@ const CommunityPage = () => {
     setSubmittedDetailSearch("");
     setDetailSearchValue("");
     setSelectedPostId(null);
+    setSelectedCommunityId(null);
   };
 
   const handleApplyFilter = () => {
@@ -245,6 +283,16 @@ const CommunityPage = () => {
               value={activePrimaryTab}
               onChange={setActivePrimaryTab}
             />
+            {activePrimaryTab === "myCommunities" ? (
+              <div className="mt-4">
+                <CommunityTabs
+                  tabs={tutorTabs}
+                  value={activeTutorTab}
+                  onChange={setActiveTutorTab}
+                  variant="pill"
+                />
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-8">
@@ -314,11 +362,14 @@ const CommunityPage = () => {
                       setPerPage(n);
                       setQueryParams((prev) => ({ ...prev, page: 1 }));
                     }}
+                  showTutorTabs={false}
                 />
             ) : (
               <CommunityDetailView
-                community={detailCommunity}
+                community={activeCommunityProfile as any}
                 detailFeed={detailFeed}
+                // show loading state while fetching detail
+                isLoading={communityDetailLoading}
                 detailSearchValue={detailSearchValue}
                 selectedPost={selectedPost}
                 submittedDetailSearch={submittedDetailSearch}
