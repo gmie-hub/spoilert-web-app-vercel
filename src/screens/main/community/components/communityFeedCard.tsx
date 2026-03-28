@@ -17,6 +17,8 @@ import EditIcon from "@spt/assets/icons/edit.svg";
 import MessageIcon from "@spt/assets/icons/message-text.svg";
 import DeleteIcon from "@spt/assets/icons/trash.svg";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
+import useDeleteCommunityCommentMutation from "@spt/hooks/apiRequests/useDeleteCommunityCommentMutation";
+import useDeleteCommunityPostMutation from "@spt/hooks/apiRequests/useDeleteCommunityPostMutation";
 import api from "@spt/utils/apiClient";
 
 import type { CommunityFeedItem } from "../communityTypes";
@@ -24,6 +26,7 @@ import type { CommunityFeedItem } from "../communityTypes";
 interface CommunityFeedCardProps {
   item: CommunityFeedItem;
   onOpenComments?: (id: string) => void;
+  isComment?: boolean;
 }
 
 const imageStyles: Record<string, string> = {
@@ -35,20 +38,23 @@ const imageStyles: Record<string, string> = {
     "bg-[linear-gradient(135deg,#D7E7F4_0%,#EBF6FF_35%,#B9DDF7_60%,#FFFFFF_100%)]",
 };
 
-const CommunityFeedCard = ({
+  const CommunityFeedCard = ({
   item,
   onOpenComments,
+  isComment = false,
 }: CommunityFeedCardProps) => {
   const isSpoil = item.type === "spoil";
   const isInteractivePost = !isSpoil && Boolean(onOpenComments);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
+  const { deletePostHandler, isLoading: deletingPost } = useDeleteCommunityPostMutation();
+  const { deleteCommentHandler, isLoading: deletingComment } = useDeleteCommunityCommentMutation();
 
   // normalize API post shape and provide fallbacks for older item shapes
   const apiPost = (item as any) ?? {};
   const postId = apiPost.id ?? apiPost.post_id ?? "";
-  const content = apiPost.content ?? apiPost.description ?? apiPost.body ?? "";
+  const content = apiPost.content ??apiPost.comment ?? apiPost.description ?? apiPost.body ?? "";
   const files = Array.isArray(apiPost.files) ? apiPost.files : apiPost.image ? [apiPost.image] : [];
   const likesCount = apiPost.total_likes ?? apiPost.likes ?? 0;
   const commentsCount = apiPost.total_comments ?? apiPost.comments ?? 0;
@@ -290,7 +296,7 @@ const CommunityFeedCard = ({
                     role="menuitem"
                   >
                     <Image src={EditIcon} alt="edit" width={20} height={20} />
-                    <span>Edit Post</span>
+                    <span>{isComment ? "Edit Comment" : "Edit Post"}</span>
                   </button>
 
                   <div className="border-t border-[#EEF1F4]" />
@@ -310,7 +316,7 @@ const CommunityFeedCard = ({
                       width={20}
                       height={20}
                     />
-                    <span>Delete Post</span>
+                    <span>{isComment ? "Delete Comment" : "Delete Post"}</span>
                   </button>
                 </div>
               ) : null}
@@ -361,9 +367,22 @@ const CommunityFeedCard = ({
 
       <DeleteConfirmationModal
         open={isDeleteModalOpen}
-        title="Are You Sure You Want To Delete This Post?"
+        title={isComment ? "Are You Sure You Want To Delete This Comment?" : "Are You Sure You Want To Delete This Post?"}
         description="This action cannot be undone."
-        onConfirm={() => setIsDeleteModalOpen(false)}
+        isLoading={isComment ? deletingComment : deletingPost}
+        onConfirm={async () => {
+          try {
+            if (isComment) {
+              await deleteCommentHandler(postId);
+            } else {
+              await deletePostHandler(postId);
+            }
+          } catch {
+            // errors are shown by hook
+          } finally {
+            setIsDeleteModalOpen(false);
+          }
+        }}
         onCancel={() => setIsDeleteModalOpen(false)}
       />
     </article>

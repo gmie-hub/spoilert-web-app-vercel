@@ -142,7 +142,7 @@ const CommunityDetailView = ({
 
             <hr className="my-5 mt-16 border-0 border-t border-[#E8EDF0]" />
 
-            <CommunityComposer placeholder="Write a post..." />
+            <CommunityComposer placeholder="Write a post..." communityId={community?.id} />
           </div>
 
           <CommunityDetailSidebar community={community} />
@@ -157,9 +157,9 @@ const CommunityDetailView = ({
               </h3>
             </div>
             {(commentsData ?? []).map((item: any) => (
-              <CommunityFeedCard key={item.id} item={item} />
+              <CommunityFeedCard key={item.id} item={item} isComment />
             ))}
-            <CommunityComposer placeholder="Write a comment..." />
+            <CommunityComposer placeholder="Write a comment..." isComment postId={selectedPost?.id ?? selectedPostId} />
           </div>
 
           <CommunityDetailSidebar community={community} />

@@ -4,9 +4,9 @@
 import { useEffect, useState } from "react";
 
 import { useGetAllCommunitiesQuery } from "@spt/hooks/apiRequests/useGetAllCommunitiesQuery";
+  import useGetCommunitiesCreatedByUserQuery from "@spt/hooks/apiRequests/useGetCommunitiesCreatedByUserQuery";
 import useGetCommunityDetailQuery from "@spt/hooks/apiRequests/useGetCommunityDetailQuery";
 import useGetUserCommunitiesQuery from "@spt/hooks/apiRequests/useGetUserCommunitiesQuery";
-import useGetCommunitiesCreatedByUserQuery from "@spt/hooks/apiRequests/useGetCommunitiesCreatedByUserQuery";
 import { useAuthStore } from "@spt/store/authStore";
 
 import { type CommunityFilterValue } from "./communityData";

@@ -19,7 +19,7 @@ export const useGetCommunitiesCreatedByUserQuery = (
     if (page) reqParams.page = page;
     reqParams.per_page = per_page ?? 20;
 
-    return (await api.get(`/communities/user`, { params: reqParams })).data;
+    return (await api.get(`/communities`, { params: reqParams })).data;
   };
 
   const { data, isLoading, isError, error } = useQuery<any, AxiosError<ApiErrorResponse>>({

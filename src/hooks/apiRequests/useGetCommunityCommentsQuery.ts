@@ -21,10 +21,13 @@ export const useGetCommunityCommentsQuery = (
 
   const fetchComments = async (): Promise<any> => {
     const parts: string[] = [];
-    if (typeof community_id !== "undefined" && community_id !== null)
-      parts.push(`community_id=${encodeURIComponent(String(community_id))}`);
-    if (typeof post_id !== "undefined" && post_id !== null)
+    // If a post_id is provided prefer querying by post only (examples: ?post_id=3)
+    // Otherwise fall back to community-level comments (?community_id=5)
+    if (typeof post_id !== "undefined" && post_id !== null) {
       parts.push(`post_id=${encodeURIComponent(String(post_id))}`);
+    } else if (typeof community_id !== "undefined" && community_id !== null) {
+      parts.push(`community_id=${encodeURIComponent(String(community_id))}`);
+    }
     if (page) parts.push(`page=${page}`);
     if (search) parts.push(`search=${encodeURIComponent(String(search))}`);
 
