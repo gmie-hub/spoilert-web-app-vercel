@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { SyntheticEvent } from "react";
 
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -29,14 +30,14 @@ interface CommunityFeedCardProps {
   isComment?: boolean;
 }
 
-const imageStyles: Record<string, string> = {
-  "Understanding Design Principles":
-    "bg-[linear-gradient(135deg,#23262F_0%,#454E57_34%,#D4BEA8_34%,#E2D3C6_100%)]",
-  "Creative Workstation":
-    "bg-[linear-gradient(135deg,#12192A_0%,#1D2F53_42%,#0D4FD6_100%)]",
-  "Medical Lab Research":
-    "bg-[linear-gradient(135deg,#D7E7F4_0%,#EBF6FF_35%,#B9DDF7_60%,#FFFFFF_100%)]",
-};
+// const imageStyles: Record<string, string> = {
+//   "Understanding Design Principles":
+//     "bg-[linear-gradient(135deg,#23262F_0%,#454E57_34%,#D4BEA8_34%,#E2D3C6_100%)]",
+//   "Creative Workstation":
+//     "bg-[linear-gradient(135deg,#12192A_0%,#1D2F53_42%,#0D4FD6_100%)]",
+//   "Medical Lab Research":
+//     "bg-[linear-gradient(135deg,#D7E7F4_0%,#EBF6FF_35%,#B9DDF7_60%,#FFFFFF_100%)]",
+// };
 
   const CommunityFeedCard = ({
   item,
@@ -76,7 +77,7 @@ const imageStyles: Record<string, string> = {
   const [hasLikedState, setHasLikedState] = useState<boolean>(Boolean(apiPost.has_liked));
   const [likesState, setLikesState] = useState<number>(likesCount);
 
-  const handleToggleLike = async (event?: React.SyntheticEvent) => {
+  const handleToggleLike = async (event?: SyntheticEvent) => {
     event?.stopPropagation();
     if (!postId) return;
 
@@ -87,7 +88,7 @@ const imageStyles: Record<string, string> = {
 
     try {
       await api.post(`/communities/posts/likes/${postId}`);
-    } catch (err) {
+    } catch  {
       // revert on error
       setHasLikedState((prev) => !prev);
       setLikesState((s) => (hasLikedState ? Math.max(0, s - 1) : s + 1));
@@ -377,8 +378,10 @@ const imageStyles: Record<string, string> = {
             } else {
               await deletePostHandler(postId);
             }
-          } catch {
-            // errors are shown by hook
+          } catch (err) {
+            // errors are shown by hook; log for debugging
+            // eslint-disable-next-line no-console
+            console.warn(err);
           } finally {
             setIsDeleteModalOpen(false);
           }

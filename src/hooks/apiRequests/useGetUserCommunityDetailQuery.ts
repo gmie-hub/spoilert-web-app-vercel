@@ -8,13 +8,14 @@ import api from "@spt/utils/apiClient";
 import type { AxiosError } from "axios";
 
 // Fetch details for a specific user community by id
-export const useGetUserCommunityDetailQuery = (community_id: string | number) => {
+export const useGetUserCommunityDetailQuery = (community_id: string | number, search?: string) => {
   const fetchUserCommunityDetail = async (): Promise<any> => {
-    return (await api.get(`/communities/user?community_id=${community_id}`)).data;
+    const q = search ? `&search=${encodeURIComponent(search)}` : "";
+    return (await api.get(`/communities/user?community_id=${community_id}${q}`)).data;
   };
 
   const { data, isLoading, isError, error } = useQuery<any, AxiosError<ApiErrorResponse>>({
-    queryKey: ["user-community-detail", community_id],
+    queryKey: ["user-community-detail", community_id, search],
     queryFn: fetchUserCommunityDetail,
     enabled: !!community_id,
   });

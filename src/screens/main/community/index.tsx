@@ -24,47 +24,58 @@ import CommunityFilterModal from "./components/communityFilterModal";
 import CommunityListView from "./components/communityListView";
 import CommunitySearchBar from "./components/communitySearchBar";
 import CommunityTabs from "./components/communityTabs";
+import { mapToCard, mapToProfile } from "./mappers";
 
-import type { CommunityAudience, CommunityCardItem, CommunityProfile } from "./communityTypes";
-// Map a backend community object to `CommunityCardItem` shape
-const mapToCard = (c: any): CommunityCardItem => {
-  const name = c.name ?? "";
-  const displayName = typeof name === "string" && name.length > 18 ? `${name.slice(0, 18)}...` : name;
-  let avatarLabel = "";
-  if (c.owner) {
-    const ownerName = `${c.owner.first_name ?? ""} ${c.owner.last_name ?? ""}`.trim() || c.owner.username || "";
-    const partsOwner = ownerName.split(" ").filter(Boolean);
-    avatarLabel = partsOwner.length >= 2 ? `${partsOwner[0][0]}${partsOwner[1][0]}` : (partsOwner[0] || "")[0] || "";
-  } else {
-    const parts = String(name).split(" ").filter(Boolean);
-    avatarLabel = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : (parts[0] || "")[0] || "";
-  }
-  const avatarUrl = c?.spoil?.cover_image_url ?? c?.cover_image_url ?? c?.image ?? null;
-  const locked = typeof c.locked === "number" ? c.locked : (c.locked === true ? 1 : 0);
-  const audience: CommunityAudience = locked === 1 ? "locked" : "free";
-  const members = c.total_members ?? c.total_members_count ?? c.members_count ?? c.members ?? 0;
-
-  return {
-    ...c,
-    id: String(c.id ?? c._id ?? ""),
-    name: displayName,
-    description: c.description ?? c.spoil?.title ?? "",
-    audience,
-    locked,
-    members,
-    avatarLabel: avatarLabel.toUpperCase(),
-    avatarUrl,
-    accentColor: c.accent_color ?? "#6E9BC3",
-  };
-};
+import type { CommunityCardItem, CommunityProfile } from "./communityTypes";
 
 const CommunityPage = () => {
   // const user = useAuthStore((state) => state.user); // Unused
   const isTutor = true;
 
-  const [activePrimaryTab, setActivePrimaryTab] =
-    useState<PrimaryTab>("explore");
-  const [activeTutorTab, setActiveTutorTab] = useState<TutorTab>("joined");
+  const [activePrimaryTab, setActivePrimaryTab] = useState<PrimaryTab>(() => {
+    try {
+      if (typeof window === "undefined") return "explore" as PrimaryTab;
+      const key = `community:activePrimaryTab:${window.location.pathname}`;
+      const raw = localStorage.getItem(key);
+      if (raw === "explore" || raw === "myCommunities") return raw as PrimaryTab;
+    } catch (e) {
+      // ignore
+    }
+    return "explore" as PrimaryTab;
+  });
+  const [activeTutorTab, setActiveTutorTab] = useState<TutorTab>(() => {
+    try {
+      if (typeof window === "undefined") return "joined" as TutorTab;
+      const key = `community:activeTutorTab:${window.location.pathname}`;
+      const raw = localStorage.getItem(key);
+      if (raw === "joined" || raw === "created") return raw as TutorTab;
+    } catch (e) {
+      // ignore
+    }
+    return "joined" as TutorTab;
+  });
+
+  // persist tutor tab selection so refresh keeps the same sub-tab
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const key = `community:activeTutorTab:${window.location.pathname}`;
+      localStorage.setItem(key, activeTutorTab);
+    } catch (e) {
+      // ignore
+    }
+  }, [activeTutorTab]);
+
+  // persist primary tab selection so refresh keeps the same main tab
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const key = `community:activePrimaryTab:${window.location.pathname}`;
+      localStorage.setItem(key, activePrimaryTab);
+    } catch (e) {
+      // ignore
+    }
+  }, [activePrimaryTab]);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchValue, setSearchValue] = useState("");
   const [perPage, setPerPage] = useState<number>(20);
@@ -130,13 +141,13 @@ const CommunityPage = () => {
     data: joinedData,
     pagination: joinedPagination,
     isLoading: joinedLoading,
-  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage }, isViewingJoined, true);
+  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingJoined, true);
 
   const {
     data: createdData,
     pagination: createdPagination,
     isLoading: createdLoading,
-  } = useGetCommunitiesCreatedByUserQuery({ user_id: user?.id, page: queryParams.page, per_page: perPage }, isViewingCreated);
+  } = useGetCommunitiesCreatedByUserQuery({ user_id: user?.id, page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingCreated);
 
   const rawJoined: any[] = Array.isArray(joinedData) ? joinedData : (joinedData ?? []);
   const rawCreated: any[] = Array.isArray(createdData) ? createdData : (createdData ?? []);
@@ -153,7 +164,6 @@ const CommunityPage = () => {
   // select active community profile (fetched or fallback static)
   const { data: fetchedCommunityDetail, isLoading: communityDetailLoading } = useGetCommunityDetailQuery(selectedCommunityId  || '', viewMode === "detail" && !!selectedCommunityId);
 
-  console.log(fetchedCommunityDetail,'fetchedCommunityDetail')
   useEffect(() => {
     if (fetchedCommunityDetail) {
       // Log raw API payload to help inspect structure during development
@@ -162,25 +172,7 @@ const CommunityPage = () => {
       console.debug("fetchedCommunityDetail:", fetchedCommunityDetail);
     }
   }, [fetchedCommunityDetail]);
-  const activeCommunityProfile: CommunityProfile | null = fetchedCommunityDetail
-    ? {
-        id: String(fetchedCommunityDetail.id ?? fetchedCommunityDetail._id ?? selectedCommunityId ?? ""),
-        name: fetchedCommunityDetail.name ?? "",
-        members: fetchedCommunityDetail.total_members ?? fetchedCommunityDetail.members ?? 0,
-        description: fetchedCommunityDetail.description ?? fetchedCommunityDetail.spoil?.description ?? "",
-        spoilTitle: fetchedCommunityDetail.spoil?.title ?? fetchedCommunityDetail.spoil_title ?? "",
-        createdBy: (fetchedCommunityDetail.owner && `${fetchedCommunityDetail.owner.first_name ?? ""} ${fetchedCommunityDetail.owner.last_name ?? ""}`) || fetchedCommunityDetail.owner?.username || "",
-        createdDate: fetchedCommunityDetail.created_at ?? "",
-        avatarLabel:
-          (fetchedCommunityDetail.owner && ((fetchedCommunityDetail.owner.first_name ?? "")[0] || "")) ||
-          (fetchedCommunityDetail.spoil && fetchedCommunityDetail.spoil.tutor && ((fetchedCommunityDetail.spoil.tutor.first_name ?? "")[0] || "")) ||
-          (fetchedCommunityDetail.name && String(fetchedCommunityDetail.name)[0]) ||
-          "",
-        accentColor: fetchedCommunityDetail.accent_color ?? "#C8D4E3",
-        feed: fetchedCommunityDetail.feed ?? [],
-        comments: fetchedCommunityDetail.comments ?? [],
-      }
-    : null;
+  const activeCommunityProfile: CommunityProfile | null = mapToProfile(fetchedCommunityDetail, selectedCommunityId);
 
   const detailFeed = (activeCommunityProfile?.feed ?? []).filter((item) => {
     if (submittedDetailSearch.trim().length === 0) {
@@ -381,10 +373,11 @@ const CommunityPage = () => {
                   setSubmittedDetailSearch(detailSearchValue)
                 }
                 onOpenComments={handleOpenComments}
+                isCreatorView={isViewingCreated}
               />
             )}
           </div>
-          {activePagination ? (
+          {viewMode === "list" && activePagination ? (
             <div className="mt-6 flex items-center justify-center gap-4">
               <button
                 type="button"

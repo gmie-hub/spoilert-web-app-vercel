@@ -213,7 +213,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
       try {
         res = await createSpoilHandler(
           new FormData(),
-          { setSubmitting: (_: boolean) => {} },
+          { setSubmitting: () => {} },
           createModuleHandler,
           createLessonHandler,
         );

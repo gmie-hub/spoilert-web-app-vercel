@@ -30,7 +30,11 @@ export const useDeleteCommunityPostMutation = () => {
       const res = await mutation.mutateAsync(postId);
       try {
         queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-      } catch {}
+      }catch (err) {
+        // Log and continue — query invalidation failure shouldn't block the flow
+        // eslint-disable-next-line no-console
+        console.warn("Failed to invalidate community queries", err);
+      }
       toast.success(res?.message || "Post deleted");
       return res;
     } catch (error: any) {

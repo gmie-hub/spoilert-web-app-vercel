@@ -54,6 +54,15 @@ export interface CommunityProfile {
   members: number;
   description: string;
   spoilTitle: string;
+  spoil?: {
+    title?: string;
+    description?: string;
+    tutor?: {
+      first_name?: string;
+      last_name?: string;
+      id?: string | number;
+    } | null;
+  } | null;
   createdBy: string;
   createdDate: string;
   avatarLabel: string;

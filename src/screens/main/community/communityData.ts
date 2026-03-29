@@ -1,6 +1,5 @@
 "use client";
 
-import type { CommunityCardItem } from "./communityTypes";
 
 export const communityFilters = [
   { value: "all", label: "All Communities" },

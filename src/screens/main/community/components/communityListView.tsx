@@ -48,8 +48,7 @@ const CommunityListView = ({
   onOpenFilter,
   onOpenCommunity,
   isLoading,
-  perPage = 20,
-  onPerPageChange,
+ 
   showTutorTabs = true,
 }: CommunityListViewProps) => {
   if (activePrimaryTab === "explore") {

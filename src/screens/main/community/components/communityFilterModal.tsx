@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import Modal from "@spt/components/modal";
 
@@ -28,26 +28,25 @@ const CommunityFilterModal = ({
   onSelect,
   onApply,
   onReset,
-  communities = [],
   onSearch,
 }: CommunityFilterModalProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredCommunities = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+  // const filteredCommunities = useMemo(() => {
+  //   const term = searchTerm.trim().toLowerCase();
 
-    return communities.filter((c) => {
-      const matchesTerm =
-        term.length === 0 ||
-        c.name.toLowerCase().includes(term) ||
-        (c.description ?? "").toLowerCase().includes(term);
+  //   return communities.filter((c) => {
+  //     const matchesTerm =
+  //       term.length === 0 ||
+  //       c.name.toLowerCase().includes(term) ||
+  //       (c.description ?? "").toLowerCase().includes(term);
 
-      const matchesAudience =
-        selectedFilter === "all" ? true : c.audience === selectedFilter;
+  //     const matchesAudience =
+  //       selectedFilter === "all" ? true : c.audience === selectedFilter;
 
-      return matchesTerm && matchesAudience;
-    });
-  }, [communities, searchTerm, selectedFilter]);
+  //     return matchesTerm && matchesAudience;
+  //   });
+  // }, [communities, searchTerm, selectedFilter]);
 
   const handleApply = () => {
     onSearch?.(searchTerm);

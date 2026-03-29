@@ -15,11 +15,12 @@ export const useGetUserCommunitiesQuery = (
     per_page?: number;
     user_id?: number | string;
     has_joined?: boolean;
+    search?: string;
   },
   enabled = true,
   includeHasJoined = true,
 ) => {
-  const { page, per_page, user_id } = params ?? {};
+  const { page, per_page, user_id, search } = params ?? {};
   const authUserId = useAuthStore((s) => s.user?.id);
   const resolvedUserId = typeof user_id !== "undefined" ? user_id : authUserId;
 
@@ -30,6 +31,7 @@ export const useGetUserCommunitiesQuery = (
 
     if (page) reqParams.page = page;
     reqParams.per_page = per_page ?? 20;
+    if (search && String(search).trim().length) reqParams.search = String(search).trim();
     // if (includeHasJoined) reqParams.has_joined = true;
 
     return (await api.get(`/communities/user`, { params: reqParams })).data;
@@ -41,7 +43,7 @@ export const useGetUserCommunitiesQuery = (
   >({
     queryKey: [
       "user-communities",
-      { page, per_page, user_id, includeHasJoined },
+      { page, per_page, user_id, includeHasJoined, search },
     ],
     queryFn: fetchUserCommunities,
     enabled,

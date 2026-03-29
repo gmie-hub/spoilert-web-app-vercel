@@ -29,11 +29,11 @@ interface CommunityDetailViewProps {
   onDetailSearchSubmit: () => void;
   onOpenComments: (postId: string) => void;
   isLoading?: boolean;
+  isCreatorView?: boolean;
 }
 
 const CommunityDetailView = ({
   community,
-  detailFeed,
   detailSearchValue,
   selectedPost,
   submittedDetailSearch,
@@ -43,6 +43,7 @@ const CommunityDetailView = ({
   onDetailSearchSubmit,
   onOpenComments,
   isLoading: propsIsLoading,
+  isCreatorView,
 }: CommunityDetailViewProps) => {
   // defensive: allow `community` to be null/undefined and expose loading state
   const isLoading = typeof propsIsLoading === "boolean" ? propsIsLoading : (community as any) == null;
@@ -64,12 +65,12 @@ const CommunityDetailView = ({
   const [loadComments, setLoadComments] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
-  const { data: postsData, isLoading: postsLoading } = useGetCommunityPostsQuery(
+  const { data: postsData, isLoading: postsLoading, isError: postsError, errorMessage: postsErrorMessage } = useGetCommunityPostsQuery(
     { community_id: community?.id },
     Boolean(community?.id),
   );
 
-  const { data: commentsData, isLoading: commentsLoading } = useGetCommunityCommentsQuery(
+  const { data: commentsData, isLoading: commentsLoading, isError: commentsError, errorMessage: commentsErrorMessage } = useGetCommunityCommentsQuery(
     { community_id: community?.id, post_id: selectedPostId ?? undefined },
     Boolean(loadComments && selectedPostId),
   );
@@ -77,10 +78,8 @@ const CommunityDetailView = ({
   const posts = postsData ?? [];
 
   const handleOpenCommentsInternal = (postId: string) => {
-    try {
-      setSelectedPostId(String(postId));
-      setLoadComments(true);
-    } catch {}
+    setSelectedPostId(String(postId));
+    setLoadComments(true);
     onOpenComments(postId);
   };
 
@@ -132,20 +131,28 @@ const CommunityDetailView = ({
               </h3>
             ) : null}
 
-            {(postsLoading ? [] : posts).map((item) => (
-              <CommunityFeedCard
-                key={item.id}
-                item={item}
-                onOpenComments={handleOpenCommentsInternal}
-              />
-            ))}
+            {postsLoading ? (
+              <p className="text-gray">Loading posts...</p>
+            ) : postsError ? (
+              <p className="text-red-600">{postsErrorMessage}</p>
+            ) : posts.length === 0 ? (
+              <p className="text-gray">No posts yet</p>
+            ) : (
+              posts.map((item: any) => (
+                <CommunityFeedCard
+                  key={item.id}
+                  item={item}
+                  onOpenComments={handleOpenCommentsInternal}
+                />
+              ))
+            )}
 
             <hr className="my-5 mt-16 border-0 border-t border-[#E8EDF0]" />
 
             <CommunityComposer placeholder="Write a post..." communityId={community?.id} />
           </div>
 
-          <CommunityDetailSidebar community={community} />
+          <CommunityDetailSidebar community={community} isCreatorView={isCreatorView} />
         </div>
       ) : (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_374px]">
@@ -156,13 +163,19 @@ const CommunityDetailView = ({
                 Comments
               </h3>
             </div>
-            {(commentsData ?? []).map((item: any) => (
-              <CommunityFeedCard key={item.id} item={item} isComment />
-            ))}
+            {commentsLoading ? (
+              <p className="text-gray">Loading comments...</p>
+            ) : commentsError ? (
+              <p className="text-red-600">{commentsErrorMessage}</p>
+            ) : (
+              (commentsData ?? []).map((item: any) => (
+                <CommunityFeedCard key={item.id} item={item} isComment />
+              ))
+            )}
             <CommunityComposer placeholder="Write a comment..." isComment postId={selectedPost?.id ?? selectedPostId} />
           </div>
 
-          <CommunityDetailSidebar community={community} />
+          <CommunityDetailSidebar community={community} isCreatorView={isCreatorView} />
         </div>
       )}
     </div>

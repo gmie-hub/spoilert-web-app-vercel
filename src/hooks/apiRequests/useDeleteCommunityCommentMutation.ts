@@ -30,7 +30,11 @@ export const useDeleteCommunityCommentMutation = () => {
       const res = await mutation.mutateAsync(commentId);
       try {
         queryClient.invalidateQueries({ queryKey: ["community-comments"] });
-      } catch {}
+      } catch (err) {
+        // Log and continue — query invalidation failure shouldn't block the flow
+        // eslint-disable-next-line no-console
+        console.warn("Failed to invalidate community comments query", err);
+      }
       toast.success(res?.message || "Comment deleted");
       return res;
     } catch (error: any) {

@@ -78,8 +78,9 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import type { FC, ReactNode } from "react";
-
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 
 interface ModalProps {
@@ -109,30 +110,29 @@ const Modal: FC<ModalProps> = ({
   size = "md",
   showCloseButton = true, // default true
 }) => {
-  if (!open) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!open || !mounted) return null;
+
+  const content = (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-8 py-6">
-      <div
-        className="flex min-h-full items-start justify-center sm:items-center"
-      >
+      <div className="flex min-h-full items-start justify-center sm:items-center">
         <div
           className={`flex max-h-[calc(100svh-3rem)] w-full flex-col rounded-2xl bg-white px-8 py-6 shadow-2xl ${sizeMap[size]}`}
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          // Stop clicks on modal from closing (since background is not clickable)
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <div className="flex shrink-0 items-start justify-between gap-6">
             <div>
-              {title && (
-                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              )}
-              {description && (
-                <p className="mt-1 text-sm text-gray-500">{description}</p>
-              )}
+              {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
+              {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
             </div>
 
             {showCloseButton && (
@@ -147,20 +147,16 @@ const Modal: FC<ModalProps> = ({
             )}
           </div>
 
-          {/* Content */}
-          <div className="scrollbar-hide mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto text-sm text-gray-600">
-            {children}
-          </div>
-          {/* Actions */}
-          {actions && (
-            <div className="mt-8 flex shrink-0 flex-wrap items-center justify-end gap-3">
-              {actions}
-            </div>
-          )}
+          <div className="scrollbar-hide mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto text-sm text-gray-600">{children}</div>
+
+          {actions && <div className="mt-8 flex shrink-0 flex-wrap items-center justify-end gap-3">{actions}</div>}
         </div>
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(content, document.body);
 };
 
 export default Modal;
