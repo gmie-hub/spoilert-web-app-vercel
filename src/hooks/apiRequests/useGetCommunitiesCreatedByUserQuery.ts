@@ -8,26 +8,26 @@ import api from "@spt/utils/apiClient";
 import type { AxiosError } from "axios";
 
 export const useGetCommunitiesCreatedByUserQuery = (
-  params?: { user_id?: number | string; page?: number; per_page?: number; search?: string },
+  params?: { owner_id?: number | string; page?: number; per_page?: number; search?: string },
   enabled = true
 ) => {
-  const { user_id, page, per_page, search } = params ?? {};
+  const { owner_id, page, per_page, search } = params ?? {};
 
   const fetchCreatedByUser = async (): Promise<any> => {
     const reqParams: Record<string, any> = {};
     if (page) reqParams.page = page;
     reqParams.per_page = per_page ?? 20;
-    // if (search && String(search).trim().length) reqParams.search = String(search).trim();
-    if (typeof user_id !== "undefined") reqParams.user_id = user_id;
+    if (search && String(search).trim().length) reqParams.search = String(search).trim();
+    if (typeof owner_id !== "undefined") reqParams.owner_id = owner_id;
 
 
     return (await api.get(`/communities`, { params: reqParams })).data;
   };
 
   const { data, isLoading, isError, error } = useQuery<any, AxiosError<ApiErrorResponse>>({
-    queryKey: ["communities-created-by-user", { user_id, page, per_page, search }],
+    queryKey: ["communities-created-by-user", { owner_id, page, per_page, search }],
     queryFn: fetchCreatedByUser,
-    enabled: Boolean(enabled && typeof user_id !== "undefined"),
+    enabled: Boolean(enabled && typeof owner_id !== "undefined"),
   });
 
   const errorMessage =

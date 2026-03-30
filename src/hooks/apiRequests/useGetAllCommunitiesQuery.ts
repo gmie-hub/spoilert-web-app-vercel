@@ -15,10 +15,11 @@ export const useGetAllCommunitiesQuery = (
     free?: boolean;
     search?: string;
     locked?: number | string | boolean;
+    explore?: boolean;
   },
   enabled = true
 ) => {
-  const { page, per_page, paid, free, search, locked } = params ?? {};
+  const { page, per_page, paid, free, search, locked, explore } = params ?? {};
 
   const fetchCommunities = async (): Promise<any> => {
     const parts: string[] = [];
@@ -27,6 +28,7 @@ export const useGetAllCommunitiesQuery = (
     if (page) parts.push(`page=${page}`);
     if (typeof locked !== "undefined" && locked !== null) parts.push(`locked=${locked}`);
     if (search) parts.push(`search=${encodeURIComponent(String(search))}`);
+    if (explore) parts.push(`explore=true`);
 
     const queryString = parts.join("&");
     const perPage = per_page ?? 20;
@@ -35,7 +37,7 @@ export const useGetAllCommunitiesQuery = (
   };
 
   const { data, isLoading, isError, error } = useQuery<any, AxiosError<ApiErrorResponse>>({
-    queryKey: ["communities", { page, per_page, paid, free, search, locked }],
+    queryKey: ["communities", { page, per_page, paid, free, search, locked, explore }],
     queryFn: fetchCommunities,
     enabled,
   });

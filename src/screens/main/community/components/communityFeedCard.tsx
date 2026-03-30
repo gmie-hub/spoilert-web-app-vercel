@@ -20,7 +20,8 @@ import DeleteIcon from "@spt/assets/icons/trash.svg";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
 import useDeleteCommunityCommentMutation from "@spt/hooks/apiRequests/useDeleteCommunityCommentMutation";
 import useDeleteCommunityPostMutation from "@spt/hooks/apiRequests/useDeleteCommunityPostMutation";
-import api from "@spt/utils/apiClient";
+import useToggleCommunityCommentLikeMutation from "@spt/hooks/apiRequests/useToggleCommunityCommentLikeMutation";
+import useToggleCommunityPostLikeMutation from "@spt/hooks/apiRequests/useToggleCommunityPostLikeMutation";
 
 import type { CommunityFeedItem } from "../communityTypes";
 
@@ -77,6 +78,9 @@ interface CommunityFeedCardProps {
   const [hasLikedState, setHasLikedState] = useState<boolean>(Boolean(apiPost.has_liked));
   const [likesState, setLikesState] = useState<number>(likesCount);
 
+  const { toggleLikeHandler: togglePostLikeHandler } = useToggleCommunityPostLikeMutation();
+  const { toggleLikeHandler: toggleCommentLikeHandler } = useToggleCommunityCommentLikeMutation();
+
   const handleToggleLike = async (event?: SyntheticEvent) => {
     event?.stopPropagation();
     if (!postId) return;
@@ -87,7 +91,11 @@ interface CommunityFeedCardProps {
     setLikesState((s) => (nextLiked ? s + 1 : Math.max(0, s - 1)));
 
     try {
-      await api.post(`/communities/posts/likes/${postId}`);
+      if (isComment) {
+        await toggleCommentLikeHandler(postId);
+      } else {
+        await togglePostLikeHandler(postId);
+      }
     } catch  {
       // revert on error
       setHasLikedState((prev) => !prev);

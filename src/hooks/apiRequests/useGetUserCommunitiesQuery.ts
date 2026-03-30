@@ -15,7 +15,7 @@ export const useGetUserCommunitiesQuery = (
     per_page?: number;
     user_id?: number | string;
     has_joined?: boolean;
-    search?: string;
+    search?: string;  
   },
   enabled = true,
   includeHasJoined = true,

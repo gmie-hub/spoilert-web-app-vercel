@@ -53,7 +53,8 @@ const CommunityPageView = (props: Props) => {
     joinedLoading,
     createdLoading,
     fetchedExploreCommunities,
-  } = props;
+  } = props
+  console.log(filteredMyCommunities,'filteredMyCommunities');
 
   return (
     <>
@@ -162,7 +163,7 @@ const CommunityPageView = (props: Props) => {
                 onDetailSearchChange={() => { /* noop, handled upstream */ }}
                 onDetailSearchSubmit={() => { /* noop, handled upstream */ }}
                 onOpenComments={handleOpenComments}
-                isCreatorView={false}
+                isCreatorView={activeTutorTab === "created"}
               />
             )}
           </div>

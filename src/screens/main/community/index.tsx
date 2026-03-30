@@ -115,7 +115,7 @@ const CommunityPage = () => {
     data: communitiesData,
     pagination: communitiesPagination,
     isLoading: communitiesLoading,
-  } = useGetAllCommunitiesQuery({ ...queryParams, per_page: perPage }, activePrimaryTab === "explore");
+  } = useGetAllCommunitiesQuery({ ...queryParams, per_page: perPage, explore: activePrimaryTab === "explore" }, activePrimaryTab === "explore");
 
   const rawCommunities: any[] = Array.isArray(communitiesData)
     ? communitiesData
@@ -142,13 +142,18 @@ const CommunityPage = () => {
     data: createdData,
     pagination: createdPagination,
     isLoading: createdLoading,
-  } = useGetCommunitiesCreatedByUserQuery({ user_id: user?.id, page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingCreated);
+  } = useGetCommunitiesCreatedByUserQuery({ owner_id: user?.id, page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingCreated);
 
   const rawJoined: any[] = Array.isArray(joinedData) ? joinedData : (joinedData ?? []);
   const rawCreated: any[] = Array.isArray(createdData) ? createdData : (createdData ?? []);
 
-  const fetchedJoinedCommunities: CommunityCardItem[] = (rawJoined ?? []).map(mapToCard);
-  const fetchedCreatedCommunities: CommunityCardItem[] = (rawCreated ?? []).map(mapToCard);
+  const fetchedJoinedCommunities: CommunityCardItem[] = (rawJoined ?? []).map((item: any) =>
+    // support API shape where the community data is nested under `community`
+    mapToCard(item?.community ?? item)
+  );
+  const fetchedCreatedCommunities: CommunityCardItem[] = (rawCreated ?? []).map((item: any) =>
+    mapToCard(item?.community ?? item)
+  );
 
   const filteredMyCommunities = isViewingJoined
     ? fetchedJoinedCommunities
