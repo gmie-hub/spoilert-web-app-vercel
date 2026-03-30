@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "motion/react";
 
@@ -14,7 +14,35 @@ interface TabsProps {
 }
 
 const Tabs = ({ tabs }: TabsProps) => {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<number>(0);
+
+  // Read saved active tab on mount (and when `tabs` changes) to avoid
+  // server/client hydration mismatch by initializing to 0 on the server.
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const key = `tabs-active:${window.location.pathname}:${tabs.map((t) => t.label).join("|")}`;
+      const raw = localStorage.getItem(key);
+      if (raw !== null) {
+        const idx = tabs.findIndex((t) => t.label === raw);
+        if (idx >= 0 && idx < tabs.length) setActiveTab(idx);
+      }
+    } catch  {
+      // ignore read errors (e.g., storage blocked)
+    }
+  }, [tabs]);
+
+  // Persist active tab when it changes.
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const key = `tabs-active:${window.location.pathname}:${tabs.map((t) => t.label).join("|")}`;
+      const label = tabs[activeTab]?.label ?? tabs[0]?.label;
+      if (label) localStorage.setItem(key, label);
+    } catch {
+      // ignore write errors
+    }
+  }, [activeTab, tabs]);
 
   return (
     <div className="flex w-full flex-col">

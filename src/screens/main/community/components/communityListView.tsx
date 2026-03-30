@@ -25,9 +25,14 @@ interface CommunityListViewProps {
   isTutor: boolean;
   searchValue: string;
   onSearchChange: (value: string) => void;
+  onSearchSubmit?: () => void;
   onTutorTabChange: (value: TutorTab) => void;
   onOpenFilter: () => void;
-  onOpenCommunity: () => void;
+  onOpenCommunity: (id: string) => void;
+  isLoading?: boolean;
+  perPage?: number;
+  onPerPageChange?: (n: number) => void;
+  showTutorTabs?: boolean;
 }
 
 const CommunityListView = ({
@@ -38,9 +43,13 @@ const CommunityListView = ({
   isTutor,
   searchValue,
   onSearchChange,
+  // onSearchSubmit,
   onTutorTabChange,
   onOpenFilter,
   onOpenCommunity,
+  isLoading,
+ 
+  showTutorTabs = true,
 }: CommunityListViewProps) => {
   if (activePrimaryTab === "explore") {
     return (
@@ -53,31 +62,44 @@ const CommunityListView = ({
           </p>
         </div>
 
-        <div className="max-w-[520px]">
+        <div className="max-w-[520px] relative flex items-center gap-3">
           <CommunitySearchBar
             value={searchValue}
             onChange={onSearchChange}
             placeholder="Search for a community.."
             onFilterClick={onOpenFilter}
+            // showActionButton omitted so filter icon is visible
           />
+       
+          {isLoading ? (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+              <span className="ml-2 text-gray text-xs animate-pulse">Loading...</span>
+            </div>
+          ) : null}
         </div>
 
-        <div className="grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
-          {filteredExploreCommunities.map((community) => (
-            <CommunityCard
-              key={community.id}
-              community={community}
-              variant="explore"
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex min-h-[200px] items-center justify-center">
+            <span className="text-gray text-lg font-medium">Loading communities...</span>
+          </div>
+        ) : (
+          <div className="grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
+            {filteredExploreCommunities.map((community) => (
+              <CommunityCard
+                key={community.id}
+                community={community}
+                variant="explore"
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {isTutor ? (
+      {isTutor && showTutorTabs ? (
         <CommunityTabs
           tabs={tutorTabs}
           value={activeTutorTab}
@@ -95,13 +117,14 @@ const CommunityListView = ({
         />
       </div>
 
+
       <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {filteredMyCommunities.map((community) => (
           <CommunityCard
             key={community.id}
             community={community}
             variant="member"
-            onClick={onOpenCommunity}
+            onClick={() => onOpenCommunity(community.id)}
           />
         ))}
       </div>
