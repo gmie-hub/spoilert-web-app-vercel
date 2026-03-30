@@ -10,12 +10,14 @@ interface CreateCommunityModalProps {
   open: boolean;
   onClose: () => void;
   onOkay?: () => void;
+  isLoading?: boolean;
 }
 
 const CreateCommunityModal: FC<CreateCommunityModalProps> = ({
   open,
   onClose,
   onOkay,
+  isLoading = false,
 }) => {
   const handleOkayClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -52,7 +54,9 @@ const CreateCommunityModal: FC<CreateCommunityModalProps> = ({
       </div>
 
       <div className="flex flex-col gap-4 mt-4">
-        <Button onClick={handleOkayClick}>Okay</Button>
+        <Button onClick={handleOkayClick} disabled={isLoading}>
+          {isLoading ? "Creating..." : "Okay"}
+        </Button>
       </div>
     </Modal>
   );

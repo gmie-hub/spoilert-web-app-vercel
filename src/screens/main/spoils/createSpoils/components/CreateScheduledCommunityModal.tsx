@@ -11,6 +11,7 @@ interface CreateScheduledCommunityModalProps {
   onCreateCommunity: () => void;
   onSkip: () => void;
   scheduledDateTime: SchedulePremiereFormState | null;
+  isLoading?: boolean;
 }
 
 const CreateScheduledCommunityModal: FC<CreateScheduledCommunityModalProps> = ({
@@ -19,6 +20,7 @@ const CreateScheduledCommunityModal: FC<CreateScheduledCommunityModalProps> = ({
   onCreateCommunity,
   onSkip,
   scheduledDateTime,
+  isLoading = false,
 }) => {
   const formatScheduledDate = () => {
     if (!scheduledDateTime?.date || !scheduledDateTime?.time) {
@@ -53,9 +55,11 @@ const CreateScheduledCommunityModal: FC<CreateScheduledCommunityModalProps> = ({
         </p>
 
         <div className="flex flex-col gap-4">
-          <Button onClick={onCreateCommunity}>Create A Community</Button>
+          <Button onClick={onCreateCommunity} disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create A Community"}
+          </Button>
 
-          <Button variant="outline" onClick={onSkip}>
+          <Button variant="outline" onClick={onSkip} disabled={isLoading}>
             Skip For Now
           </Button>
         </div>
