@@ -11,14 +11,8 @@ import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutat
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
-import CreateCommunityModal from "../components/CreateCommunityModal";
-import CreateCommunitySuccessModal from "../components/CreateCommunitySuccessModal";
-import CreateScheduledCommunityModal from "../components/CreateScheduledCommunityModal";
-import ReviewModal from "../components/ReviewModal";
-import ScheduleSpoilPremiereModal, {
-  type SchedulePremiereFormState,
-} from "../components/ScheduleSpoilPremiereModal";
-import SpoilScheduledModal from "../components/SpoilScheduledModal";
+import SpoilReviewModals from "../components/SpoilReviewModals";
+import type { SchedulePremiereFormState } from "../components/ScheduleSpoilPremiereModal";
 import ReviewActionButtons from "../steps/components/ReviewActionButtons";
 import { createQuizAndQuestions } from "../utils/quizHelpers";
 
@@ -197,6 +191,19 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
     })();
   };
 
+  const handlePublishCommunityOkay = () => {
+    (async () => {
+      try {
+        if (!createdSpoilId) throw new Error("No spoil id available");
+        await createCommunityHandler({ spoil_id: createdSpoilId });
+        setIsPublishCommunityModalOpen(false);
+        setIsCreateCommunitySuccessModalOpen(true);
+      } catch  {
+        // hook already shows toast on error
+      }
+    })();
+  };
+
   const handleSkipCommunityFromReview = () => {
     setIsReviewModalOpen(false);
     onSubmit();
@@ -371,55 +378,32 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
         isScheduling={isScheduling}
       />
 
-      <ReviewModal
-        open={isReviewModalOpen}
-        onClose={handleCloseModal}
-        onCreateCommunity={handleCreateCommunityFromReview}
-        onSkip={handleSkipCommunityFromReview}
-      />
+      <SpoilReviewModals
+        isReviewModalOpen={isReviewModalOpen}
+        onCloseReviewModal={handleCloseModal}
+        onCreateCommunityFromReview={handleCreateCommunityFromReview}
+        onSkipCommunityFromReview={handleSkipCommunityFromReview}
 
-      <CreateCommunityModal
-        open={isPublishCommunityModalOpen}
-        onClose={() => setIsPublishCommunityModalOpen(false)}
-        onOkay={() => {
-          (async () => {
-            try {
-              if (!createdSpoilId) throw new Error("No spoil id available");
-              await createCommunityHandler({ spoil_id: createdSpoilId });
-              setIsPublishCommunityModalOpen(false);
-              setIsCreateCommunitySuccessModalOpen(true);
-            } catch  {
-              // hook already shows toast on error
-            }
-          })();
-        }}
-        isLoading={isCreatingCommunity}
-      />
+        isPublishCommunityModalOpen={isPublishCommunityModalOpen}
+        onClosePublishCommunityModal={() => setIsPublishCommunityModalOpen(false)}
+        onPublishCommunityOkay={handlePublishCommunityOkay}
+        isCreatingCommunity={isCreatingCommunity}
 
-      <ScheduleSpoilPremiereModal
-        open={isSchedulePremiereModalOpen}
-        onClose={() => setIsSchedulePremiereModalOpen(false)}
-        onSubmit={handleSchedulePremiereSubmit}
-      />
+        isSchedulePremiereModalOpen={isSchedulePremiereModalOpen}
+        onCloseSchedulePremiereModal={() => setIsSchedulePremiereModalOpen(false)}
+        onSubmitSchedulePremiere={handleSchedulePremiereSubmit}
 
-      <CreateScheduledCommunityModal
-        open={isCreateCommunityModalOpen}
-        onClose={() => setIsCreateCommunityModalOpen(false)}
+        isCreateCommunityModalOpen={isCreateCommunityModalOpen}
+        onCloseCreateCommunityModal={() => setIsCreateCommunityModalOpen(false)}
         onCreateCommunity={handleCreateCommunity}
-        onSkip={handleSkipCommunity}
+        onSkipCommunity={handleSkipCommunity}
         scheduledDateTime={scheduledDateTime}
-        isLoading={isCreatingCommunity}
-      />
 
-      <SpoilScheduledModal
-        open={isSpoilScheduledModalOpen}
-        onClose={handleSpoilScheduledClose}
-        scheduledDateTime={scheduledDateTime}
-      />
+        isSpoilScheduledModalOpen={isSpoilScheduledModalOpen}
+        onCloseSpoilScheduledModal={handleSpoilScheduledClose}
 
-      <CreateCommunitySuccessModal
-        open={isCreateCommunitySuccessModalOpen}
-        onClose={handleCreateCommunitySuccessClose}
+        isCreateCommunitySuccessModalOpen={isCreateCommunitySuccessModalOpen}
+        onCloseCreateCommunitySuccessModal={handleCreateCommunitySuccessClose}
       />
     </>
   );
