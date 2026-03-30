@@ -200,7 +200,16 @@ export const useCreateSpoilMutation = () => {
                 if (moduleId && Array.isArray(module.lessons) && module.lessons.length > 0) {
                   if (typeof createLessonHandler === "function") {
                     try {
-                      const lessonRes = await createLessonHandler(moduleId, module.lessons);
+                      const lessonRes = await createLessonHandler(
+                        moduleId,
+                        module.lessons.map((lesson) => ({
+                          title: lesson.title,
+                          type: lesson.type,
+                          content: lesson.content,
+                          file: lesson.file instanceof File ? lesson.file : null,
+                          description: lesson.description,
+                        })),
+                      );
                       try {
                         callbacks?.onLessonsCreated?.(moduleId, lessonRes);
                       } catch {

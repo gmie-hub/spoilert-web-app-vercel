@@ -3,15 +3,20 @@
 import { useEffect, useState } from "react";
 
 import Stack from "@mui/material/Stack";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import CustomStepper from "@spt/components/stepper";
+import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import { useAuthStore } from "@spt/store/authStore";
 import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilOutlineStep from "./steps/SpoilOutlineStep";
 import SpoilReviewStep from "./steps/SpoilReviewStep";
+import {
+  mapSpoilDataToForm,
+  mapSpoilDetailsToOutline,
+} from "./steps/spoilBasicsHelpers";
 
 
 const steps = ["Spoil Basics", "Spoil Outline", "Spoil Review"];
@@ -22,6 +27,9 @@ const STEP_KEY = "advanced-spoil-step";
 
 const AdvancedSpoil = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const spoilIdParam = searchParams.get("spoilId");
+  const isEditMode = Boolean(spoilIdParam);
   const [activeStep, setActiveStep] = useState(
     () => {
     if (typeof window === "undefined") return 0;
@@ -40,6 +48,24 @@ const AdvancedSpoil = () => {
   const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
 
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
+  const { data: spoilData, isLoading: isSpoilLoading } =
+    useGetSpoilDetailsQuery(spoilIdParam);
+
+  useEffect(() => {
+    if (!spoilData || !isEditMode) {
+      return;
+    }
+
+    setBasicsData(mapSpoilDataToForm(spoilData));
+    setOutlineData(mapSpoilDetailsToOutline(spoilData));
+    setCreatedSpoilIdInStore?.(Number(spoilData.id));
+  }, [
+    isEditMode,
+    setBasicsData,
+    setCreatedSpoilIdInStore,
+    setOutlineData,
+    spoilData,
+  ]);
 
   const goToNextStep = () =>
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -119,14 +145,15 @@ const AdvancedSpoil = () => {
             basics={basicsData}
             outline={outlineData}
             selectedType="advanced"
+            isEditMode={isEditMode}
+            spoilId={spoilIdParam}
             onPrevious={goToPreviousStep}
             onSubmit={() => {
-              // after successful publish the review step will call this to reset local draft
               resetDraft();
               setCreatedSpoilIdInStore?.(null);
               setActiveStep(0);
               sessionStorage.removeItem(STEP_KEY);
-              router.push("/create-spoils");
+              router.push(isEditMode ? "/profile/my-spoils" : "/create-spoils");
             }}
             onEditBasics={() => setActiveStep(0)}
             onEditOutline={() => setActiveStep(1)}
@@ -136,6 +163,14 @@ const AdvancedSpoil = () => {
         return null;
     }
   };
+
+  if (isEditMode && isSpoilLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-2 sm:px-4">
+        <p className="text-sm text-[#5F6B76]">Loading spoil details...</p>
+      </div>
+    );
+  }
 
   return (
     <Stack
@@ -147,7 +182,7 @@ const AdvancedSpoil = () => {
       <Stack spacing={1}>
         <p className="text-sm font-medium text-gray-500">Advanced Spoil</p>
         <h3 className="text-2xl font-semibold text-black">
-          Create an Advanced Spoil
+          {isEditMode ? "Edit Advanced Spoil" : "Create an Advanced Spoil"}
         </h3>
       </Stack>
 

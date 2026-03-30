@@ -7,8 +7,15 @@ import toast from "react-hot-toast";
 
 import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
 import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
+import useDeleteLesson from "@spt/hooks/apiRequests/useDeleteLesson";
+import useDeleteModule from "@spt/hooks/apiRequests/useDeleteModule";
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
+import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useUpdateLessonMutation from "@spt/hooks/apiRequests/useUpdateLessonMutation";
+import useUpdateModuleMutation from "@spt/hooks/apiRequests/useUpdateModuleMutation";
+import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
+import type { OutlineData } from "@spt/types";
 
 import CreateCommunityModal from "../components/CreateCommunityModal";
 import CreateCommunitySuccessModal from "../components/CreateCommunitySuccessModal";
@@ -19,15 +26,163 @@ import ScheduleSpoilPremiereModal, {
 } from "../components/ScheduleSpoilPremiereModal";
 import SpoilScheduledModal from "../components/SpoilScheduledModal";
 import ReviewActionButtons from "../steps/components/ReviewActionButtons";
+import { mapSpoilDetailsToOutline } from "../steps/spoilBasicsHelpers";
 import { createQuizAndQuestions } from "../utils/quizHelpers";
+
+import type { BasicsFormData, SpoilTypeOption } from "../types";
 
 
 interface Props {
+  isEditMode?: boolean;
+  spoilId?: number | string | null;
+  selectedType: SpoilTypeOption;
   onPrevious: () => void;
   onSubmit: () => void;
 }
 
-const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
+const isServerEntityId = (value: string | number) => /^\d+$/.test(String(value));
+
+const getLessonUpdatePayload = (lesson: OutlineData["modules"][number]["lessons"][number]) => ({
+  lessonId: lesson.id,
+  title: lesson.title,
+  type: lesson.type,
+  content: lesson.type === "text" ? lesson.content : undefined,
+  file: lesson.file instanceof File ? lesson.file : null,
+  description: lesson.description ?? "",
+});
+
+const syncOutlineChanges = async ({
+  spoilId,
+  currentOutline,
+  initialOutline,
+  createModuleHandler,
+  createLessonHandler,
+  updateModuleHandler,
+  updateLessonHandler,
+  deleteModuleHandler,
+  deleteLessonHandler,
+}: {
+  spoilId: number | string;
+  currentOutline: OutlineData;
+  initialOutline: OutlineData;
+  createModuleHandler: (payload: {
+    title: string;
+    description?: string;
+    spoil_id: number | string;
+  }) => Promise<any>;
+  createLessonHandler: (
+    moduleId: number | string,
+    lessons: {
+      title: string;
+      type: string;
+      content?: string;
+      file?: File | null;
+      description?: string;
+    }[],
+  ) => Promise<any>;
+  updateModuleHandler: (payload: {
+    moduleId: number | string;
+    title: string;
+    description?: string;
+  }) => Promise<any>;
+  updateLessonHandler: (payload: {
+    lessonId: number | string;
+    title: string;
+    type: string;
+    content?: string;
+    file?: File | null;
+    description?: string;
+  }) => Promise<any>;
+  deleteModuleHandler: (id: number | string) => Promise<any>;
+  deleteLessonHandler: (id: number | string) => Promise<any>;
+}) => {
+  const initialModules = new Map(
+    initialOutline.modules.map((module) => [String(module.id), module]),
+  );
+  const currentModules = new Map(
+    currentOutline.modules.map((module) => [String(module.id), module]),
+  );
+
+  for (const [moduleId, module] of initialModules.entries()) {
+    if (!currentModules.has(moduleId) && isServerEntityId(moduleId)) {
+      await deleteModuleHandler(moduleId);
+    } else if (currentModules.has(moduleId)) {
+      const currentModule = currentModules.get(moduleId)!;
+      const initialLessons = new Map(
+        module.lessons.map((lesson) => [String(lesson.id), lesson]),
+      );
+      const currentLessons = new Map(
+        currentModule.lessons.map((lesson) => [String(lesson.id), lesson]),
+      );
+
+      for (const [lessonId] of initialLessons.entries()) {
+        if (!currentLessons.has(lessonId) && isServerEntityId(lessonId)) {
+          await deleteLessonHandler(lessonId);
+        }
+      }
+    }
+  }
+
+  for (const module of currentOutline.modules) {
+    if (isServerEntityId(module.id)) {
+      await updateModuleHandler({
+        moduleId: module.id,
+        title: module.title,
+        description: module.description,
+      });
+
+      for (const lesson of module.lessons) {
+        if (isServerEntityId(lesson.id)) {
+          await updateLessonHandler(getLessonUpdatePayload(lesson));
+        } else {
+          await createLessonHandler(module.id, [
+            {
+              title: lesson.title,
+              type: lesson.type,
+              content: lesson.type === "text" ? lesson.content : undefined,
+              file: lesson.file instanceof File ? lesson.file : null,
+              description: lesson.description ?? "",
+            },
+          ]);
+        }
+      }
+
+      continue;
+    }
+
+    const moduleRes = await createModuleHandler({
+      title: module.title,
+      description: module.description,
+      spoil_id: spoilId,
+    });
+    const createdModuleId =
+      moduleRes?.data?.id ??
+      moduleRes?.data?.module_id ??
+      moduleRes?.data?.data?.id ??
+      null;
+
+    if (createdModuleId && module.lessons.length > 0) {
+      await createLessonHandler(
+        createdModuleId,
+        module.lessons.map((lesson) => ({
+          title: lesson.title,
+          type: lesson.type,
+          content: lesson.type === "text" ? lesson.content : undefined,
+          file: lesson.file instanceof File ? lesson.file : null,
+          description: lesson.description ?? "",
+        })),
+      );
+    }
+  }
+};
+
+const SpoilReviewControls: FC<Props> = ({
+  isEditMode = false,
+  spoilId = null,
+  selectedType,
+  onPrevious,
+  onSubmit,
+}) => {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isPublishCommunityModalOpen, setIsPublishCommunityModalOpen] =
     useState(false);
@@ -42,11 +197,69 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
     useState<SchedulePremiereFormState | null>(null);
 
   const { createSpoilHandler } = useCreateSpoilMutation();
+  const { updateSpoilHandler } = useUpdateSpoilMutation();
   const { createModuleHandler } = useCreateModuleMutation();
   const { createLessonHandler } = useCreateLessonMutation();
+  const { updateModuleHandler } = useUpdateModuleMutation();
+  const { updateLessonHandler } = useUpdateLessonMutation();
+  const { deleteModuleHandler } = useDeleteModule();
+  const { deleteLessonHandler } = useDeleteLesson();
+  const { data: spoilDetails } = useGetSpoilDetailsQuery(spoilId);
   const router = useRouter();
 
+  const updateEditedSpoil = async (
+    overrides: Partial<BasicsFormData> = {},
+    options?: { redirectAfterSuccess?: boolean },
+  ) => {
+    if (!isEditMode || !spoilId) {
+      return false;
+    }
+
+    const { basics, outline } = useCreateSpoilStore.getState();
+    const mergedBasics = {
+      ...(basics as BasicsFormData),
+      ...overrides,
+      type: selectedType,
+    };
+
+    await updateSpoilHandler(
+      spoilId,
+      mergedBasics,
+      { setSubmitting: () => {} },
+    );
+
+    if (selectedType !== "simple") {
+      await syncOutlineChanges({
+        spoilId,
+        currentOutline: outline,
+        initialOutline: mapSpoilDetailsToOutline(spoilDetails),
+        createModuleHandler,
+        createLessonHandler,
+        updateModuleHandler,
+        updateLessonHandler,
+        deleteModuleHandler,
+        deleteLessonHandler,
+      });
+    }
+
+    if (options?.redirectAfterSuccess !== false) {
+      onSubmit();
+    }
+
+    return true;
+  };
+
   const handlePublishClick = async () => {
+    if (isEditMode && spoilId) {
+      try {
+        await updateEditedSpoil({ is_draft: 0 });
+      } catch {
+        // update handlers already show toast feedback
+      }
+
+      return;
+    }
+
     try {
       // Validate persisted quiz drafts (pre/post/module) before making API calls
       const validateDraftQuizzes = () => {
@@ -184,6 +397,15 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
   const handleSchedulePremiereClick = () => setIsSchedulePremiereModalOpen(true);
 
   const handleSaveToDraftClick = async () => {
+    if (isEditMode) {
+      try {
+        await updateEditedSpoil({ is_draft: 1 });
+      } catch {
+        // update handlers already show toast feedback
+      }
+      return;
+    }
+
     try {
       try {
         if (typeof window !== "undefined") {
@@ -239,6 +461,22 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
 
     (async () => {
       try {
+        if (isEditMode && spoilId) {
+          await updateEditedSpoil(
+            {
+              scheduledDate: values.date,
+              scheduledTime: values.time,
+              is_draft: 0,
+              expiryDate: useCreateSpoilStore.getState().basics.expiryDate,
+              type: selectedType,
+            },
+            { redirectAfterSuccess: false },
+          );
+          setIsSchedulePremiereModalOpen(false);
+          setIsSpoilScheduledModalOpen(true);
+          return;
+        }
+
         const res = await createSpoilHandler(
           new FormData(),
           { setSubmitting: () => {} },

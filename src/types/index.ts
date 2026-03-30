@@ -3,7 +3,7 @@ export interface Lesson {
   title: string;
   type: "video" | "pdf" | "text";
   content: string;
-  file?: File | null;
+  file?: File | string | null;
   fileName?: string;
   description?: string;
 }
@@ -25,4 +25,5 @@ export interface OutlineData {
   modules: Module[];
   preQuiz?: QuizConfig;
   postQuiz?: QuizConfig;
+  spoil_id?: number | string;
 }

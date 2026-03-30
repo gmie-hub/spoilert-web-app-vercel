@@ -35,7 +35,7 @@ const MySpoilsSection = ({
       case "unpublished":
         return { upcoming: true, tutor_id: user?.id ?? null };
       case "drafts":
-        return { is_draft: true, tutor_id: user?.id ?? null };
+        return { is_draft: true, tutor_id: user?.id ?? null, status: 0 };
       default:
         return { tutor_id: user?.id ?? null };
     }

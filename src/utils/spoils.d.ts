@@ -29,6 +29,7 @@ interface Link {
 export interface SpoilDatum {
   id: number;
   title: string;
+  type?: string;
   slug: string;
   category_id: null | number;
   tutor_id: number;
@@ -44,7 +45,7 @@ export interface SpoilDatum {
   is_active: number;
   status: number;
   is_draft: boolean;
-  premiere_at: null;
+  premiere_at: string | null;
   expires_at: string;
   is_institution: number;
   has_certificate: number;
@@ -83,7 +84,7 @@ export interface SpoilDetailsData {
   is_active: number;
   status: number;
   is_draft: boolean;
-  premiere_at: null;
+  premiere_at: string | null;
   expires_at: string;
   is_institution: number;
   has_certificate: number;
