@@ -20,19 +20,15 @@ export const useToggleCommunityPostLikeMutation = () => {
   });
 
   const toggleLikeHandler = async (postId: string | number) => {
+    const res = await mutation.mutateAsync(postId);
     try {
-      const res = await mutation.mutateAsync(postId);
-      try {
-        queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-        queryClient.invalidateQueries({ queryKey: ["communities"] });
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn("Failed to invalidate community queries", err);
-      }
-      return res;
-    } catch (error) {
-      throw error;
+      queryClient.invalidateQueries({ queryKey: ["community-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Failed to invalidate community queries", err);
     }
+    return res;
   };
 
   return { toggleLikeHandler, isLoading: mutation.isPending };
