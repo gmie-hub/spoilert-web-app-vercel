@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import Stack from "@mui/material/Stack";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
-import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
 
+import { mapSpoilDataToForm } from "./steps/spoilBasicsHelpers";
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilReviewStep from "./steps/SpoilReviewStep";
-import { mapSpoilDataToForm } from "./steps/spoilBasicsHelpers";
 
 import type { BasicsFormData, OutlineData } from "./types";
 

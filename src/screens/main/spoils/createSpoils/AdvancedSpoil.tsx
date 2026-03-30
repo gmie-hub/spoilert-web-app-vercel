@@ -10,18 +10,15 @@ import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQu
 import { useAuthStore } from "@spt/store/authStore";
 import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
-import SpoilBasicsStep from "./steps/SpoilBasicsStep";
-import SpoilOutlineStep from "./steps/SpoilOutlineStep";
-import SpoilReviewStep from "./steps/SpoilReviewStep";
 import {
   mapSpoilDataToForm,
   mapSpoilDetailsToOutline,
 } from "./steps/spoilBasicsHelpers";
-
+import SpoilBasicsStep from "./steps/SpoilBasicsStep";
+import SpoilOutlineStep from "./steps/SpoilOutlineStep";
+import SpoilReviewStep from "./steps/SpoilReviewStep";
 
 const steps = ["Spoil Basics", "Spoil Outline", "Spoil Review"];
-
-
 
 const STEP_KEY = "advanced-spoil-step";
 
