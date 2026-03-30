@@ -54,7 +54,6 @@ const CommunityPageView = (props: Props) => {
     createdLoading,
     fetchedExploreCommunities,
   } = props
-  console.log(filteredMyCommunities,'filteredMyCommunities');
 
   return (
     <>

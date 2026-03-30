@@ -48,7 +48,6 @@ const CommunityDetailSidebar = ({ community, isCreatorView }: CommunityDetailSid
     }
   }, [isError, errorMessage, isLeaveCommunityModalOpen]);
 
-  console.log(safeCommunity, "only_owner value in sidebar");
   const ToggleLock = () => {
     const { updateCommunityHandler, isLoading: isUpdating } = useUpdateCommunityMutation();
     const initialLocked =
