@@ -59,6 +59,7 @@ const CommunityDetailView = ({
     accentColor: "#C8D4E3",
     feed: [],
     comments: [],
+      only_owner:0,
   } as CommunityProfile;
   const isSearchResults = submittedDetailSearch.trim().length > 0;
 

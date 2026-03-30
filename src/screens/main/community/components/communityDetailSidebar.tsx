@@ -10,6 +10,7 @@ import Button from "@spt/components/button";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
 import Modal from "@spt/components/modal";
 import useLeaveCommunityMutation from "@spt/hooks/apiRequests/useLeaveCommunityMutation";
+import useUpdateCommunityMutation from "@spt/hooks/apiRequests/useUpdateCommunityMutation";
 
 import MembersList from "./MembersList";
 
@@ -33,6 +34,7 @@ const CommunityDetailSidebar = ({ community, isCreatorView }: CommunityDetailSid
     accentColor: "#C8D4E3",
     feed: [],
     comments: [],
+    only_owner:0,
   };
 
   const [isLeaveCommunityModalOpen, setIsLeaveCommunityModalOpen] = useState(false);
@@ -46,13 +48,33 @@ const CommunityDetailSidebar = ({ community, isCreatorView }: CommunityDetailSid
     }
   }, [isError, errorMessage, isLeaveCommunityModalOpen]);
 
+  console.log(safeCommunity, "only_owner value in sidebar");
   const ToggleLock = () => {
-    const [locked, setLocked] = useState(false);
+    const { updateCommunityHandler, isLoading: isUpdating } = useUpdateCommunityMutation();
+    const initialLocked =
+      (safeCommunity as any)?.only_owner === 1 ||
+      (safeCommunity as any)?.community?.only_owner === 1 ||
+      false;
+    const [locked, setLocked] = useState<boolean>(initialLocked);
+
+    const handleToggle = async () => {
+      const next = !locked;
+      setLocked(next);
+      try {
+        const communityId = (safeCommunity as any)?.id ?? (safeCommunity as any)?.community?.id;
+        await updateCommunityHandler(communityId, { only_owner: next ? 1 : 0 });
+      } catch (err: any) {
+        // revert on error
+        setLocked((p) => !p);
+        toast.error(err?.response?.data?.message || err?.message || "Failed to update community lock");
+      }
+    };
     return (
       <button
         type="button"
         aria-pressed={locked}
-        onClick={() => setLocked((p) => !p)}
+        onClick={handleToggle}
+        disabled={isUpdating}
         className={`w-12 h-6 rounded-full p-1 flex items-center transition-colors ${locked ? "bg-[#0B5368]" : "bg-[#E6EEF0]"}`}
       >
         <span className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform ${locked ? "translate-x-6" : "translate-x-0"}`} />

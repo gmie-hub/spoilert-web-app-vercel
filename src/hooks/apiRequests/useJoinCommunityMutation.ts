@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import type { ApiErrorResponse } from "@spt/types/error";
@@ -25,6 +25,8 @@ const useJoinCommunityMutation = () => {
     return (await api.post("/communities/join", payload)).data;
   };
 
+  const queryClient = useQueryClient();
+
   const mutation = useMutation<
     JoinCommunityResponse,
     AxiosError<ApiErrorResponse>,
@@ -39,6 +41,14 @@ const useJoinCommunityMutation = () => {
   ) => {
     try {
       const response = await mutation.mutateAsync({ community_id });
+
+      try {
+        await queryClient.invalidateQueries({ queryKey: ["communities"] });
+      } catch (err) {
+        // log and continue
+        // eslint-disable-next-line no-console
+        console.warn("Failed to invalidate communities query", err);
+      }
 
       toast.success(response?.message || "Joined community successfully");
 

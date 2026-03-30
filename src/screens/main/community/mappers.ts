@@ -63,5 +63,6 @@ export const mapToProfile = (fetched: any, selectedCommunityId?: string | null):
     accentColor: fetched.accent_color ?? "#C8D4E3",
     feed: fetched.feed ?? [],
     comments: fetched.comments ?? [],
+    only_owner: (fetched.only_owner ?? fetched.community?.only_owner ?? 0) as number,
   } as CommunityProfile;
 };

@@ -69,4 +69,5 @@ export interface CommunityProfile {
   accentColor: string;
   feed: CommunityFeedItem[];
   comments: CommunityFeedItem[];
+  only_owner:number;
 }
