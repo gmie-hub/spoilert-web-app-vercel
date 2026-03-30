@@ -9,16 +9,20 @@ import CommunityTabs from "./components/communityTabs";
 
 import type { CommunityCardItem, CommunityProfile } from "./communityTypes";
 
-type Props = any;
+type Props = {
+  primaryTabs: any;
+  tutorTabs: any;
+} & any;
 
 const CommunityPageView = (props: Props) => {
   const {
+    primaryTabs,
+    tutorTabs,
     activePrimaryTab,
     setActivePrimaryTab,
     activeTutorTab,
     setActiveTutorTab,
     viewMode,
-    setViewMode,
     searchValue,
     setSearchValue,
     perPage,
@@ -29,8 +33,6 @@ const CommunityPageView = (props: Props) => {
     draftFilter,
     isFilterModalOpen,
     setIsFilterModalOpen,
-    selectedPostId,
-    selectedCommunityId,
     communitiesLoading,
     filteredExploreCommunities,
     filteredMyCommunities,
@@ -63,14 +65,14 @@ const CommunityPageView = (props: Props) => {
 
           <div className="mt-6">
             <CommunityTabs
-              tabs={/* primaryTabs */ (undefined as any)}
+              tabs={primaryTabs}
               value={activePrimaryTab}
               onChange={setActivePrimaryTab}
             />
             {activePrimaryTab === "myCommunities" ? (
               <div className="mt-4">
                 <CommunityTabs
-                  tabs={/* tutorTabs */ (undefined as any)}
+                  tabs={tutorTabs}
                   value={activeTutorTab}
                   onChange={setActiveTutorTab}
                   variant="pill"

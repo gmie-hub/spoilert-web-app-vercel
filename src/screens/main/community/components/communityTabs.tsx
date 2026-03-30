@@ -16,7 +16,7 @@ const CommunityTabs = <T extends string>({
   if (variant === "pill") {
     return (
       <div className="inline-flex rounded-xl bg-[#DDF1F8] p-2">
-        {tabs.map((tab) => {
+        {tabs?.map((tab) => {
           const isActive = tab.value === value;
 
           return (
@@ -40,14 +40,14 @@ const CommunityTabs = <T extends string>({
 
   return (
     <div className="flex w-full gap-12 border-b border-[#E8EDF0]">
-      {tabs.map((tab) => {
-        const isActive = tab.value === value;
+      {tabs?.map((tab) => {
+        const isActive = tab?.value === value;
 
         return (
           <button
             key={tab.value}
             type="button"
-            onClick={() => onChange(tab.value)}
+            onClick={() => onChange(tab?.value)}
             className={`border-b-2 px-2 py-1 text-lg font-medium transition ${
               isActive
                 ? "border-[#0B5368] text-[#0B5368]"

@@ -15,6 +15,8 @@ import {
   type PrimaryTab,
   type TutorTab,
   type ViewMode,
+  primaryTabs,
+  tutorTabs,
 } from "./communityPageTypes";
 import CommunityPageView from "./CommunityPageView";
 import { mapToCard, mapToProfile } from "./mappers";
@@ -257,6 +259,8 @@ const CommunityPage = () => {
 
   return (
     <CommunityPageView
+      primaryTabs={primaryTabs}
+      tutorTabs={tutorTabs}
       activePrimaryTab={activePrimaryTab}
       setActivePrimaryTab={setActivePrimaryTab}
       activeTutorTab={activeTutorTab}
