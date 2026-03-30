@@ -12,9 +12,10 @@ import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMut
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import SpoilReviewModals from "../components/SpoilReviewModals";
-import type { SchedulePremiereFormState } from "../components/ScheduleSpoilPremiereModal";
 import ReviewActionButtons from "../steps/components/ReviewActionButtons";
 import { createQuizAndQuestions } from "../utils/quizHelpers";
+
+import type { SchedulePremiereFormState } from "../components/ScheduleSpoilPremiereModal";
 
 
 interface Props {
