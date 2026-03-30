@@ -80,6 +80,7 @@
 
 import { useEffect, useState } from "react";
 import type { FC, ReactNode } from "react";
+
 import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 

@@ -38,7 +38,7 @@ const CommunityPage = () => {
       const key = `community:activePrimaryTab:${window.location.pathname}`;
       const raw = localStorage.getItem(key);
       if (raw === "explore" || raw === "myCommunities") return raw as PrimaryTab;
-    } catch (e) {
+    } catch  {
       // ignore
     }
     return "explore" as PrimaryTab;
@@ -49,7 +49,7 @@ const CommunityPage = () => {
       const key = `community:activeTutorTab:${window.location.pathname}`;
       const raw = localStorage.getItem(key);
       if (raw === "joined" || raw === "created") return raw as TutorTab;
-    } catch (e) {
+    } catch  {
       // ignore
     }
     return "joined" as TutorTab;
@@ -61,7 +61,7 @@ const CommunityPage = () => {
       if (typeof window === "undefined") return;
       const key = `community:activeTutorTab:${window.location.pathname}`;
       localStorage.setItem(key, activeTutorTab);
-    } catch (e) {
+    } catch  {
       // ignore
     }
   }, [activeTutorTab]);
@@ -72,7 +72,7 @@ const CommunityPage = () => {
       if (typeof window === "undefined") return;
       const key = `community:activePrimaryTab:${window.location.pathname}`;
       localStorage.setItem(key, activePrimaryTab);
-    } catch (e) {
+    } catch {
       // ignore
     }
   }, [activePrimaryTab]);

@@ -27,7 +27,7 @@ const Tabs = ({ tabs }: TabsProps) => {
         const idx = tabs.findIndex((t) => t.label === raw);
         if (idx >= 0 && idx < tabs.length) setActiveTab(idx);
       }
-    } catch (e) {
+    } catch  {
       // ignore read errors (e.g., storage blocked)
     }
   }, [tabs]);
@@ -39,7 +39,7 @@ const Tabs = ({ tabs }: TabsProps) => {
       const key = `tabs-active:${window.location.pathname}:${tabs.map((t) => t.label).join("|")}`;
       const label = tabs[activeTab]?.label ?? tabs[0]?.label;
       if (label) localStorage.setItem(key, label);
-    } catch (e) {
+    } catch {
       // ignore write errors
     }
   }, [activeTab, tabs]);

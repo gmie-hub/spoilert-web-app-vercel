@@ -5,10 +5,10 @@ import { type FC, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
+import useCreateCommunityMutation from "@spt/hooks/apiRequests/useCreateCommunityMutation";
 import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
 import useCreateModuleMutation from "@spt/hooks/apiRequests/useCreateModuleMutation";
 import { useCreateSpoilMutation } from "@spt/hooks/apiRequests/useCreateSpoilMutation";
-import useCreateCommunityMutation from "@spt/hooks/apiRequests/useCreateCommunityMutation";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import CreateCommunityModal from "../components/CreateCommunityModal";
@@ -191,7 +191,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
         if (!createdSpoilId) throw new Error("No spoil id available");
         await createCommunityHandler({ spoil_id: createdSpoilId });
         setIsCreateCommunitySuccessModalOpen(true);
-      } catch (err) {
+      } catch  {
         // if creation fails, keep UX simple: show toast already handled by hook
       }
     })();
@@ -310,7 +310,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
         if (!createdSpoilId) throw new Error("No spoil id available");
         await createCommunityHandler({ spoil_id: createdSpoilId });
         setIsCreateCommunitySuccessModalOpen(true);
-      } catch (err) {
+      } catch {
         // toast handled in hook
       }
     })();
@@ -388,7 +388,7 @@ const SpoilReviewControls: FC<Props> = ({ onPrevious, onSubmit }) => {
               await createCommunityHandler({ spoil_id: createdSpoilId });
               setIsPublishCommunityModalOpen(false);
               setIsCreateCommunitySuccessModalOpen(true);
-            } catch (err) {
+            } catch  {
               // hook already shows toast on error
             }
           })();
