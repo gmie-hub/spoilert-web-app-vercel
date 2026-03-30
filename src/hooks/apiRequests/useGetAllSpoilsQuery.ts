@@ -5,17 +5,46 @@ import { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 import { SpoilResponse } from "@spt/utils/spoils";
 
-export const useGetAllSpoilsQuery = () => {
+interface GetAllSpoilsQueryParams {
+  visibility?: string | null;
+  is_draft?: boolean | null;
+  upcoming?: boolean | null;
+  tutor_id?: number | null;
+}
+
+export const useGetAllSpoilsQuery = (
+  params?: GetAllSpoilsQueryParams,
+  enabled: boolean = true,
+) => {
   const fetchAllSpoils = async (): Promise<SpoilResponse> => {
-    return (await api.get(`spoils?per_page=30`))?.data;
+    return (
+      await api.get("spoils", {
+        params: {
+          per_page: 30,
+          ...(params?.visibility != null
+            ? { visibility: params.visibility }
+            : {}),
+          ...(params?.is_draft != null ? { is_draft: params.is_draft } : {}),
+          ...(params?.upcoming != null ? { upcoming: params.upcoming } : {}),
+          ...(params?.tutor_id != null ? { tutor_id: params.tutor_id } : {}),
+        },
+      })
+    )?.data;
   };
 
   const { data, isLoading, error, isError } = useQuery<
     SpoilResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["institution-spoils"],
+    queryKey: [
+      "all-spoils",
+      params?.visibility ?? null,
+      params?.is_draft ?? null,
+      params?.upcoming ?? null,
+      params?.tutor_id ?? null,
+    ],
     queryFn: fetchAllSpoils,
+    enabled,
   });
 
   const errorMessage =
