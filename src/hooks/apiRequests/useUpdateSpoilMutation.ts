@@ -71,6 +71,20 @@ export const useUpdateSpoilMutation = () => {
           String(values.is_draft === true ? 1 : values.is_draft === false ? 0 : values.is_draft),
         );
       }
+      if (values.is_active != null) {
+        formData.append(
+          "is_active",
+          String(
+            values.is_active === true ? 1 : values.is_active === false ? 0 : values.is_active,
+          ),
+        );
+      }
+      if (values.status != null) {
+        formData.append(
+          "status",
+          String(values.status === true ? 1 : values.status === false ? 0 : values.status),
+        );
+      }
 
       if (values.type === "simple") {
         if (values.lessonType) formData.append("lesson_type", values.lessonType);

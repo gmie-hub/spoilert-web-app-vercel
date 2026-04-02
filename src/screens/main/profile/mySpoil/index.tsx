@@ -5,11 +5,15 @@ import { useDeferredValue, useMemo, useState } from "react";
 import NoData from "@spt/components/noData";
 import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuery";
 import { useAuthStore } from "@spt/store/authStore";
+import type { SpoilDatum } from "@spt/utils/spoils";
 
 import { mySpoilsTabOptions } from "../profileData";
 
 import MySpoilsCard from "./components/mySpoilsCard";
 import MySpoilsSearchBar from "./components/mySpoilsSearchBar";
+import RepublishSpoilModal from "./components/RepublishSpoilModal";
+import RepublishSuccessModal from "./components/RepublishSuccessModal";
+import useRepublishSpoil from "./hooks/useRepublishSpoil";
 
 import type { MySpoilTabId, MySpoilTabOption } from "../types";
 
@@ -24,16 +28,19 @@ const MySpoilsSection = ({
 }: MySpoilsSectionProps) => {
   const [activeTab, setActiveTab] = useState<MySpoilTabId>(initialTab);
   const [searchValue, setSearchValue] = useState("");
+  const [selectedSpoil, setSelectedSpoil] = useState<SpoilDatum | null>(null);
+  const [successSpoil, setSuccessSpoil] = useState<SpoilDatum | null>(null);
   const user = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const deferredSearchValue = useDeferredValue(searchValue);
+  const { republishSpoil, isRepublishing } = useRepublishSpoil();
 
   const queryParams = useMemo(() => {
     switch (activeTab) {
       case "published":
         return { visibility: "published", tutor_id: user?.id ?? null };
       case "unpublished":
-        return { upcoming: true, tutor_id: user?.id ?? null };
+        return { status: 0, tutor_id: user?.id ?? null };
       case "drafts":
         return { is_draft: true, tutor_id: user?.id ?? null, status: 0 };
       default:
@@ -44,6 +51,7 @@ const MySpoilsSection = ({
   const { data, isLoading, isError, errorMessage } =
     useGetAllSpoilsQuery(queryParams, Boolean(hasHydrated) && Boolean(user?.id));
   const spoils = data?.data?.data ?? [];
+  const resultsLayoutClass = "grid-cols-1 md:grid-cols-2";
   const filteredSpoils = useMemo(() => {
     const normalizedSearch = deferredSearchValue.trim().toLowerCase();
 
@@ -65,6 +73,32 @@ const MySpoilsSection = ({
       );
     });
   }, [deferredSearchValue, spoils]);
+
+  const handleRepublishClick = (spoil: SpoilDatum) => {
+    setSelectedSpoil(spoil);
+  };
+
+  const handleRepublishConfirm = async () => {
+    if (!selectedSpoil) {
+      return;
+    }
+
+    try {
+      await republishSpoil(selectedSpoil.id);
+      setSuccessSpoil(selectedSpoil);
+      setSelectedSpoil(null);
+    } catch {
+      // mutation hook already shows feedback and keeps the modal open
+    }
+  };
+
+  const handleCloseRepublishModal = () => {
+    if (isRepublishing) {
+      return;
+    }
+
+    setSelectedSpoil(null);
+  };
 
   return (
     <div>
@@ -102,7 +136,7 @@ const MySpoilsSection = ({
 
       <div className="mt-5 min-h-[420px]">
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className={`grid gap-5 ${resultsLayoutClass}`}>
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`spoil-skeleton-${index}`}
@@ -115,12 +149,13 @@ const MySpoilsSection = ({
             <p className="text-sm text-[#D92D20]">{errorMessage}</p>
           </div>
         ) : filteredSpoils.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className={`grid gap-5 ${resultsLayoutClass}`}>
             {filteredSpoils.map((spoil) => (
               <MySpoilsCard
                 key={spoil.id}
                 spoil={spoil}
                 activeTab={activeTab}
+                onRepublish={handleRepublishClick}
               />
             ))}
           </div>
@@ -149,6 +184,18 @@ const MySpoilsSection = ({
           </div>
         )}
       </div>
+
+      <RepublishSpoilModal
+        open={Boolean(selectedSpoil)}
+        onClose={handleCloseRepublishModal}
+        onConfirm={handleRepublishConfirm}
+        isLoading={isRepublishing}
+      />
+
+      <RepublishSuccessModal
+        open={Boolean(successSpoil)}
+        onClose={() => setSuccessSpoil(null)}
+      />
     </div>
   );
 };

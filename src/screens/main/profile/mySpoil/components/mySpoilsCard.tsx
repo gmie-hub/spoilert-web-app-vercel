@@ -24,14 +24,17 @@ import {
   getSpoilMeta,
 } from "../helpers";
 
+import UnpublishedSpoilCard from "./UnpublishedSpoilCard";
+
 import type { MySpoilTabId } from "../../types";
 
 interface MySpoilsCardProps {
   spoil: SpoilDatum;
   activeTab: MySpoilTabId;
+  onRepublish?: (spoil: SpoilDatum) => void;
 }
 
-const MySpoilsCard = ({ spoil, activeTab }: MySpoilsCardProps) => {
+const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -67,6 +70,16 @@ const MySpoilsCard = ({ spoil, activeTab }: MySpoilsCardProps) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  if (activeTab === "unpublished") {
+    return (
+      <UnpublishedSpoilCard
+        spoil={spoil}
+        spoilHref={spoilHref}
+        onRepublish={onRepublish ?? (() => {})}
+      />
+    );
+  }
 
   if (isDraftCard) {
     return (

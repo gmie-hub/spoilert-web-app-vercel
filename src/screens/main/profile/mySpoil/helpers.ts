@@ -80,3 +80,17 @@ export const formatScheduledSpoilDate = (dateValue?: string | null) => {
 
   return `${month} ${day}${getOrdinalSuffix(day)}, ${year}, ${time}`;
 };
+
+export const isSpoilExpired = (dateValue?: string | null) => {
+  if (!dateValue) {
+    return false;
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return false;
+  }
+
+  return date.getTime() < Date.now();
+};

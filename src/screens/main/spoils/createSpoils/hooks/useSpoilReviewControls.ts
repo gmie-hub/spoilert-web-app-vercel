@@ -69,12 +69,14 @@ export const useSpoilReviewControls = ({
   const { createCommunityHandler, isLoading: isCreatingCommunity } = useCreateCommunityMutation();
   const router = useRouter();
 
-  const routeToCreateSpoils = () => {
+  const routeAfterCompletion = () => {
+    const destination = isEditMode ? "/profile/my-spoils" : "/create-spoils";
+
     try {
-      router.push("/create-spoils");
+      router.push(destination);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error("Navigation to /create-spoils failed", error);
+      console.error(`Navigation to ${destination} failed`, error);
     }
   };
 
@@ -119,7 +121,7 @@ export const useSpoilReviewControls = ({
   const handlePublishClick = async () => {
     if (isEditMode && spoilId) {
       try {
-        await updateEditedSpoil({ is_draft: 0 });
+        await updateEditedSpoil({ is_active: 1, is_draft: 0, status: 0 });
       } catch {
         // update handlers already show toast feedback
       }
@@ -188,7 +190,7 @@ export const useSpoilReviewControls = ({
       const createdId = getCreatedSpoilId(response);
       if (createdId) {
         resetDraftProgress();
-        routeToCreateSpoils();
+        routeAfterCompletion();
       } else {
         toast.error("Failed to save draft. Please try again.");
       }
@@ -222,7 +224,9 @@ export const useSpoilReviewControls = ({
             {
               scheduledDate: values.date,
               scheduledTime: values.time,
+              is_active: 1,
               is_draft: 0,
+              status: 0,
               expiryDate: useCreateSpoilStore.getState().basics.expiryDate,
               type: selectedType,
             },
@@ -311,12 +315,12 @@ export const useSpoilReviewControls = ({
     handleSpoilScheduledClose: () => {
       setIsSpoilScheduledModalOpen(false);
       resetDraftProgress();
-      routeToCreateSpoils();
+      routeAfterCompletion();
     },
     handleCreateCommunitySuccessClose: () => {
       setIsCreateCommunitySuccessModalOpen(false);
       resetDraftProgress();
-      routeToCreateSpoils();
+      routeAfterCompletion();
     },
     setIsPublishCommunityModalOpen,
     setIsSchedulePremiereModalOpen,

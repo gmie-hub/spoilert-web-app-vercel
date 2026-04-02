@@ -89,7 +89,13 @@ const SimpleSpoil = () => {
       try {
         await updateSpoilHandler(
           spoilIdParam,
-          { ...basicsData, type: "simple" },
+          {
+            ...basicsData,
+            type: "simple",
+            is_active: 1,
+            is_draft: 0,
+            status: 0,
+          },
           { setSubmitting: () => {} },
         );
       } catch {

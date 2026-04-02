@@ -20,6 +20,8 @@ export interface BasicsFormData {
   scheduledTime?: string;
   // draft flag: 1 = draft, 0 = published
   is_draft?: number | boolean;
+  is_active?: number | boolean;
+  status?: number | boolean;
   // spoil type for simple vs advanced
   type?: SpoilTypeOption;
   // simple-spoil specific lesson fields (optional)
