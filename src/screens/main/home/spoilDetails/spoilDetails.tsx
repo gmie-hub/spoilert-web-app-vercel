@@ -281,7 +281,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                 </Button>
                 <Button
                   variant="darkBlue"
-                  className="w-full py-3"
+                  className="w-full py-3 cursor-pointer"
                   onClick={handlePrimaryCtaClick}
                 >
                     {shouldContinue ? "Continue Learning" : isFreeSpoil ? "Start Spoil" : "Buy Spoil"}

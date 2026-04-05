@@ -20,6 +20,7 @@ const initialOverviewValues: QuizOverviewDraft = {
   description: "",
   numberOfQuestions: "",
   timeLimit: "",
+  passmark: "",
 };
 
 const SpoilQuiz = () => {
@@ -45,6 +46,7 @@ const SpoilQuiz = () => {
         return (
           <Overview
             initialValues={overview}
+            quizType={quizType}
             onSaveAndNext={(values) => {
               setOverview(values);
               goToNextStep();
@@ -79,13 +81,25 @@ const SpoilQuiz = () => {
                 // persist directly into the advanced-spoil-draft store
                 try {
                   const currentBasics = useCreateSpoilStore.getState().basics ?? {};
-                  const quizPayload = {
+                  const quizPayload: any = {
                     id: String(Date.now()),
                     overview: overview,
                     questions: questions,
                     title: overview.title,
                     description: overview.description,
-                  } as any;
+                  };
+
+                  // include passmark for post quizzes
+                  if (quizType === "post") {
+                    // include both camelCase and snake_case pass mark keys
+                    quizPayload.overview = {
+                      ...quizPayload.overview,
+                      passmark: overview.passmark,
+                      pass_mark: overview.passmark,
+                    };
+                    quizPayload.passmark = overview.passmark;
+                    quizPayload.pass_mark = overview.passmark;
+                  }
 
                   if (quizType === "pre" || quizType === "post") {
                     // save full quiz (overview + questions) inside basics

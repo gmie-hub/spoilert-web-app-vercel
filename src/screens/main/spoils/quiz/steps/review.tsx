@@ -78,6 +78,14 @@ const Review: FC<ReviewProps> = ({
                   {overview.timeLimit ? `${overview.timeLimit} Minutes` : "-"}
                 </p>
               </div>
+              {overview.passmark !== undefined && (
+                <div>
+                  <p className="text-sm text-[#999B9D]">Passmark</p>
+                  <p className="mt-2 text-lg text-black">
+                    {overview.passmark || "-"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

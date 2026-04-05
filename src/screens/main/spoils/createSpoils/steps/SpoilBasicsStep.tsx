@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from "react";
+import { useEffect } from "react";
 
 import { Form, Formik } from "formik";
 
@@ -8,14 +9,21 @@ import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
 import Textarea from "@spt/components/textarea";
+import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
+import { useAuthStore } from "@spt/store/authStore";
 import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
 import ContentUpload from "../components/ContentUpload";
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
 
-import { lessonOptions, moduleOptions, pricingOptions } from "./spoilBasicsHelpers";
+import {
+  lessonOptions,
+  mapSpoilDataToForm,
+  moduleOptions,
+  pricingOptions,
+} from "./spoilBasicsHelpers";
 
 import type { BasicsFormData, SpoilTypeOption } from "../types";
 
@@ -44,7 +52,20 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
     isError,
     categoryErrorMessage,
   } = useGetAllCategoriesQuery();
+
+
+
+  const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
+  const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
   const setBasicsInDraft = useCreateSpoilStore((s) => s.setBasics);
+
+  useEffect(() => {
+    if (!spoilData) return;
+
+    const mapped = mapSpoilDataToForm(spoilData);
+
+    onChange(mapped);
+  }, [spoilData, onChange]);
   
   const scrollToTop = () => {
     if (typeof window !== "undefined") {

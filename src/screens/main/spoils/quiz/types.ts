@@ -26,4 +26,5 @@ export interface QuizOverviewDraft {
   description: string;
   numberOfQuestions: string;
   timeLimit: string;
+  passmark?: string;
 }
