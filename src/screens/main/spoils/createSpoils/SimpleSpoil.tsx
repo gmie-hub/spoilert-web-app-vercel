@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 
 import Stack from "@mui/material/Stack";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
+import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
 
+import { mapSpoilDataToForm } from "./steps/spoilBasicsHelpers";
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilReviewStep from "./steps/SpoilReviewStep";
 
@@ -38,6 +41,9 @@ const STEP_KEY = "simple-spoil-step";
 
 const SimpleSpoil = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const spoilIdParam = searchParams.get("spoilId");
+  const isEditMode = Boolean(spoilIdParam);
   const [activeStep, setActiveStep] = useState<"basics" | "review">(() => {
     if (typeof window === "undefined") return "basics";
     const saved = sessionStorage.getItem(STEP_KEY);
@@ -50,10 +56,21 @@ const SimpleSpoil = () => {
 
   const [basicsData, setBasicsData] =
     useState<BasicsFormData>(initialBasicsState);
-  const [createdSpoilId, setCreatedSpoilId] = useState<number | null>(null);
 
   const { createSpoilHandler } = useCreateSpoilMutation();
+  const { updateSpoilHandler } = useUpdateSpoilMutation();
+  const { data: spoilData, isLoading: isSpoilLoading } =
+    useGetSpoilDetailsQuery(spoilIdParam);
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
+
+  useEffect(() => {
+    if (!spoilData || !isEditMode) {
+      return;
+    }
+
+    setBasicsData(mapSpoilDataToForm(spoilData));
+    setCreatedSpoilIdInStore?.(Number(spoilData.id));
+  }, [isEditMode, setCreatedSpoilIdInStore, spoilData]);
 
   const handleBackToSelection = () => {
     router.push("/create-spoils");
@@ -61,25 +78,37 @@ const SimpleSpoil = () => {
 
   const resetAll = () => {
     setBasicsData(initialBasicsState);
-    setCreatedSpoilId(null);
+    setCreatedSpoilIdInStore?.(null);
     setActiveStep("basics");
     sessionStorage.removeItem(STEP_KEY);
-    router.push("/create-spoils");
+    router.push(isEditMode ? "/profile/my-spoils" : "/create-spoils");
   };
 
   const handleSubmitSpoil = async () => {
-    if (createdSpoilId) {
+    if (isEditMode && spoilIdParam) {
+      try {
+        await updateSpoilHandler(
+          spoilIdParam,
+          { ...basicsData, type: "simple" },
+          { setSubmitting: () => {} },
+        );
+      } catch {
+        return;
+      }
+
       resetAll();
       return;
     }
 
     try {
-      const res = await createSpoilHandler(basicsData, {});
+      const res = await createSpoilHandler(
+        { ...basicsData, type: "simple" },
+        {},
+      );
       const createdId =
         res?.data?.id ?? res?.data?.spoil_id ?? res?.data?.data?.id ?? null;
 
       if (createdId) {
-        setCreatedSpoilId(Number(createdId));
         setCreatedSpoilIdInStore?.(Number(createdId));
       }
     } catch {
@@ -88,6 +117,14 @@ const SimpleSpoil = () => {
       resetAll();
     }
   };
+
+  if (isEditMode && isSpoilLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-2 sm:px-4">
+        <p className="text-sm text-[#5F6B76]">Loading spoil details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-2 sm:px-4">
@@ -103,7 +140,7 @@ const SimpleSpoil = () => {
             <Stack spacing={1}>
               <p className="text-sm font-medium text-gray-500">Simple Spoil</p>
               <h3 className="text-2xl font-semibold text-black">
-                Create a Simple Spoil
+                {isEditMode ? "Edit Simple Spoil" : "Create a Simple Spoil"}
               </h3>
             </Stack>
           </div>
@@ -116,16 +153,14 @@ const SimpleSpoil = () => {
                 onNext={() => setActiveStep("review")}
                 selectedType="simple"
                 onBackToSelection={handleBackToSelection}
-                onCreated={(id: number) => {
-                  setCreatedSpoilId(id);
-                  setCreatedSpoilIdInStore?.(id);
-                }}
               />
             ) : (
               <SpoilReviewStep
                 basics={basicsData}
                 outline={emptyOutline}
                 selectedType="simple"
+                isEditMode={isEditMode}
+                spoilId={spoilIdParam}
                 onPrevious={() => setActiveStep("basics")}
                 onSubmit={handleSubmitSpoil}
                 onEditBasics={() => setActiveStep("basics")}

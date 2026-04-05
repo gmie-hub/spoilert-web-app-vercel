@@ -101,7 +101,12 @@ export const useOutlineManager = (
             title: lesson.title,
             type: lesson.type,
             content: lesson.type === "text" ? lesson.content : "",
-            file: lesson.type === "text" ? null : (lesson.file ?? null),
+            file:
+              lesson.type === "text"
+                ? null
+                : lesson.file instanceof File
+                  ? lesson.file
+                  : null,
             description: lesson.description ?? "",
           }
         : {

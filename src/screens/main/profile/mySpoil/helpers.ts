@@ -7,7 +7,7 @@ export const getMySpoilStatusLabel = (
   spoil: SpoilDatum,
 ) => {
   if (tab === "drafts") {
-    return "Draft";
+    return spoil.premiere_at ? "Scheduled" : "Draft";
   }
 
   if (tab === "unpublished") {
@@ -38,3 +38,45 @@ export const getSpoilMeta = (spoil: SpoilDatum) => ({
   shares: spoil.shares_count ?? 0,
   learners: spoil.enrolled_users ?? 0,
 });
+
+const getOrdinalSuffix = (value: number) => {
+  const remainder = value % 100;
+
+  if (remainder >= 11 && remainder <= 13) {
+    return "th";
+  }
+
+  switch (value % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
+};
+
+export const formatScheduledSpoilDate = (dateValue?: string | null) => {
+  if (!dateValue) {
+    return "Not scheduled yet";
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not scheduled yet";
+  }
+
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const time = date.toLocaleString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${month} ${day}${getOrdinalSuffix(day)}, ${year}, ${time}`;
+};

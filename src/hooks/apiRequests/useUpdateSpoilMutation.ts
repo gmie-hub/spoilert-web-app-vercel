@@ -56,12 +56,37 @@ export const useUpdateSpoilMutation = () => {
       if (values.courseCode) formData.append("course_code", values.courseCode);
       if (values.moduleCount) formData.append("modules_no", String(values.moduleCount));
       if (values.lessonCount) formData.append("lessons_no", String(values.lessonCount));
+      if (values.type) formData.append("type", String(values.type));
+      if (values.scheduledDate) {
+        formData.append(
+          "premiere_at",
+          values.scheduledTime
+            ? `${values.scheduledDate}T${values.scheduledTime}`
+            : values.scheduledDate,
+        );
+      }
+      if (values.is_draft != null) {
+        formData.append(
+          "is_draft",
+          String(values.is_draft === true ? 1 : values.is_draft === false ? 0 : values.is_draft),
+        );
+      }
+
+      if (values.type === "simple") {
+        if (values.lessonType) formData.append("lesson_type", values.lessonType);
+        if (values.lessonContent) formData.append("lesson_content", values.lessonContent);
+      }
 
       const file = values.coverImage ?? values.image ?? null;
       if (file) {
         if (file instanceof File) formData.append("image", file);
         else if (Array.isArray(file) && file[0] instanceof File) formData.append("image", file[0]);
         else if ((file as any).file instanceof File) formData.append("image", (file as any).file);
+      }
+
+      const lessonFile = values.lessonFile ?? null;
+      if (lessonFile instanceof File) {
+        formData.append("lesson_file", lessonFile);
       }
 
       const res = await mutation.mutateAsync({ id, payload: formData });

@@ -10,6 +10,7 @@ interface GetAllSpoilsQueryParams {
   is_draft?: boolean | null;
   upcoming?: boolean | null;
   tutor_id?: number | null;
+  status?: number | null;
 }
 
 export const useGetAllSpoilsQuery = (
@@ -27,6 +28,7 @@ export const useGetAllSpoilsQuery = (
           ...(params?.is_draft != null ? { is_draft: params.is_draft } : {}),
           ...(params?.upcoming != null ? { upcoming: params.upcoming } : {}),
           ...(params?.tutor_id != null ? { tutor_id: params.tutor_id } : {}),
+          ...(params?.status != null ? { status: params.status } : {}),
         },
       })
     )?.data;
@@ -42,6 +44,7 @@ export const useGetAllSpoilsQuery = (
       params?.is_draft ?? null,
       params?.upcoming ?? null,
       params?.tutor_id ?? null,
+      params?.status ?? null,
     ],
     queryFn: fetchAllSpoils,
     enabled,

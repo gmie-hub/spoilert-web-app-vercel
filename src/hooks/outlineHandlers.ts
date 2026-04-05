@@ -103,6 +103,14 @@ export const createLessonHandlers = (
       values.type === "text"
         ? null
         : (values.file ?? existingLesson?.file ?? null);
+    const resolvedFileName =
+      values.type === "text"
+        ? undefined
+        : fileAsset instanceof File
+          ? fileAsset.name
+          : typeof fileAsset === "string"
+            ? fileAsset.split("/").pop()
+            : existingLesson?.fileName;
 
     const newLesson: Lesson = {
       id: modalState.lessonId ?? generateId(),
@@ -110,10 +118,7 @@ export const createLessonHandlers = (
       type: values.type,
       content: values.type === "text" ? values.content.trim() : "",
       file: values.type === "text" ? null : fileAsset,
-      fileName:
-        values.type === "text"
-          ? undefined
-          : (fileAsset?.name ?? existingLesson?.fileName),
+      fileName: resolvedFileName,
       description: values.description?.trim() ?? "",
     };
 
