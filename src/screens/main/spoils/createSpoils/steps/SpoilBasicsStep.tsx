@@ -153,16 +153,13 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 hasAsterisk
               />
 
-              <Input
-                name="amount"
-                label="Amount"
-                placeholder="Enter amount"
-                // type="text"
-                // className="no-spinner"
-                // inputMode="numeric"
-                // pattern="[0-9]*"
-                // hasAsterisk
-              />
+              {values.pricing !== "free" && (
+                <Input
+                  name="amount"
+                  label="Amount"
+                  placeholder="Enter amount"
+                />
+              )}
 
               <div className="space-y-2">
                 <label
