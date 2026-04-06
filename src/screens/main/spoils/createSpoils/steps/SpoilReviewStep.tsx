@@ -39,7 +39,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
         <h2 className="text-2xl font-bold text-gray-900">Spoil Review</h2>
       </div>
 
-      <CertificateSection />
+      <CertificateSection selectedType={selectedType} />
 
       <div className="space-y-4">
         <p>

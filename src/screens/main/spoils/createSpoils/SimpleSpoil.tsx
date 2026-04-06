@@ -9,6 +9,7 @@ import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutatio
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import { mapSpoilDataToForm } from "./steps/spoilBasicsHelpers";
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
@@ -62,6 +63,7 @@ const SimpleSpoil = () => {
   const { data: spoilData, isLoading: isSpoilLoading } =
     useGetSpoilDetailsQuery(spoilIdParam);
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
+  const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
 
   useEffect(() => {
     if (!spoilData || !isEditMode) {
@@ -78,6 +80,7 @@ const SimpleSpoil = () => {
 
   const resetAll = () => {
     setBasicsData(initialBasicsState);
+    resetDraft();
     setCreatedSpoilIdInStore?.(null);
     setActiveStep("basics");
     sessionStorage.removeItem(STEP_KEY);
@@ -139,7 +142,7 @@ const SimpleSpoil = () => {
         ml={{ xs: 0, md: 10 }}
         my={{ xs: 2, md: 6 }}
         spacing={4}
-        sx={{ width: '100%' }}
+        sx={{ width: "100%" }}
       >
         <div className="flex flex-col md:flex-row w-full items-start gap-4 md:gap-6">
           <div className="w-full md:w-64 mb-4 md:mb-0">
