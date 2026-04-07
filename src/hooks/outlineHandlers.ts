@@ -1,4 +1,10 @@
-import type { Lesson, Module, OutlineData, QuizConfig } from "@spt/types";
+import type {
+  Lesson,
+  LessonTypeOption,
+  Module,
+  OutlineData,
+  QuizConfig,
+} from "@spt/types";
 
 import type { FormikHelpers } from "formik";
 
@@ -14,7 +20,7 @@ interface ModuleFormState {
 
 interface LessonFormState {
   title: string;
-  type: "video" | "pdf" | "text";
+  type: LessonTypeOption;
   content: string;
   file: File | null;
   description: string;

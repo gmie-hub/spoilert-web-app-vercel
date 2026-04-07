@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuthStore } from "@spt/store/authStore";
+import type { LessonTypeOption } from "@spt/types";
 import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
@@ -12,7 +13,7 @@ export interface LessonResponse {
   id: number;
   title: string;
   slug: string;
-  type: "video" | "pdf" | "text";
+  type: LessonTypeOption;
   content: string | null;
   content_url: string | null;
   file: string | null;

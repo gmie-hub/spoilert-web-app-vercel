@@ -1,7 +1,9 @@
+export type LessonTypeOption = "video" | "pdf" | "text" | "file";
+
 export interface Lesson {
   id: string;
   title: string;
-  type: "video" | "pdf" | "text";
+  type: LessonTypeOption;
   content: string;
   file?: File | string | null;
   fileName?: string;

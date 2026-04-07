@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { Lesson, Module, OutlineData } from "@spt/types";
+import type { Lesson, LessonTypeOption, Module, OutlineData } from "@spt/types";
 
 import {
   createLessonHandlers,
@@ -10,7 +10,7 @@ import {
 
 interface LessonFormState {
   title: string;
-  type: "video" | "pdf" | "text";
+  type: LessonTypeOption;
   content: string;
   file: File | null;
   description: string;
@@ -37,7 +37,7 @@ export const useOutlineManager = (
     lessonId: null,
     initialValues: {
       title: "",
-      type: "video",
+      type: "file",
       content: "",
       file: null,
       description: "",
@@ -83,7 +83,7 @@ export const useOutlineManager = (
       lessonId: null,
       initialValues: {
         title: "",
-        type: "video",
+        type: "file",
         content: "",
         file: null,
         description: "",
@@ -111,7 +111,7 @@ export const useOutlineManager = (
           }
         : {
             title: "",
-            type: "video",
+            type: "file",
             content: "",
             file: null,
             description: "",
