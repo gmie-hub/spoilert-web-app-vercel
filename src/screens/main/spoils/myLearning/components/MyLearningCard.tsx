@@ -91,7 +91,7 @@ export const MyLearningCard = ({
 
               onAction(item);
             }}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#0B5368] underline underline-offset-4"
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#0B5368] underline underline-offset-4 cursor-pointer"
           >
             {isCompleted ? "View & Download Certificate" : "Continue Learning"}
             {isCompleted ? <FiDownload size={14} /> : <FiArrowRight size={14} />}

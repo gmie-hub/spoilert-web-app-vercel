@@ -30,7 +30,7 @@ export interface BasicsFormData {
   lessonFile?: File | string | null;
 }
 
-export type LessonTypeOption = "video" | "pdf" | "text";
+export type LessonTypeOption = "video" | "pdf" | "text" | "file";
 
 export interface Lesson {
   id: string;

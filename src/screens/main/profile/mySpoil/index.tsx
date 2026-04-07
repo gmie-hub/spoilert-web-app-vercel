@@ -2,6 +2,8 @@
 
 import { useDeferredValue, useMemo, useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import NoData from "@spt/components/noData";
 import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuery";
 import { useAuthStore } from "@spt/store/authStore";
@@ -99,6 +101,7 @@ const MySpoilsSection = ({
 
     setSelectedSpoil(null);
   };
+  const router = useRouter();
 
   return (
     <div>
@@ -175,6 +178,7 @@ const MySpoilsSection = ({
               <div className="flex justify-center">
                 <button
                   type="button"
+                  onClick={() => router.push("/create-spoils")}
                   className="mt-2 inline-flex w-full items-center justify-center rounded-[12px] bg-[#0B5368] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(11,83,104,0.18)] transition hover:bg-[#09485A]"
                 >
                   Create Spoil

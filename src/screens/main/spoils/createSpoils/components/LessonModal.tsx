@@ -48,7 +48,7 @@ const lessonValidationSchema = yup.object({
   title: yup.string().trim().required("Lesson title is required"),
   type: yup
     .mixed<LessonTypeOption>()
-    .oneOf(["video", "pdf", "text"], "Select lesson type")
+    .oneOf(["file",  "text"], "Select lesson type")
     .required("Lesson type is required"),
   content: yup.string().when("type", {
     is: "text",

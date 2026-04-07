@@ -15,9 +15,11 @@ import type { QuizOverviewDraft } from "../types";
 interface OverviewProps {
   initialValues: QuizOverviewDraft;
   onSaveAndNext: (values: QuizOverviewDraft) => void;
+  quizType?: string;
 }
 
-const validationSchema = Yup.object({
+const buildValidationSchema = (quizType?: string) =>
+  Yup.object({
   title: Yup.string()
     .trim()
     .min(3, "Quiz title must be at least 3 characters")
@@ -46,15 +48,31 @@ const validationSchema = Yup.object({
     .min(1, "Time limit must be at least 1 minute")
     .max(600, "Time limit cannot exceed 600 minutes")
     .required("Time limit is required"),
-});
+    passmark:
+      quizType === "post"
+        ? Yup.number()
+            .transform((value, originalValue) =>
+              originalValue === "" ? undefined : value,
+            )
+            .typeError("Passmark must be a number")
+            .integer("Passmark must be a whole number")
+            .min(0, "Passmark must be at least 0")
+            .max(100, "Passmark cannot exceed 100")
+            .required("Passmark is required for post-quiz")
+        : Yup.mixed().notRequired(),
+  });
 
-const Overview: FC<OverviewProps> = ({ initialValues, onSaveAndNext }) => {
+const Overview: FC<OverviewProps> = ({
+  initialValues,
+  onSaveAndNext,
+  quizType,
+}) => {
   return (
     <Card>
       <Formik<QuizOverviewDraft>
         initialValues={initialValues}
         enableReinitialize
-        validationSchema={validationSchema}
+        validationSchema={buildValidationSchema(quizType)}
         validateOnBlur
         validateOnChange
         onSubmit={(values) => {
@@ -91,6 +109,15 @@ const Overview: FC<OverviewProps> = ({ initialValues, onSaveAndNext }) => {
               placeholder="Set time limit for the whole quiz"
               type="number"
             />
+
+            {quizType === "post" && (
+              <Input
+                name="passmark"
+                label="Passmark"
+                placeholder="Enter passmark (e.g. 50)"
+                type="number"
+              />
+            )}
 
             <Button
               type="submit"

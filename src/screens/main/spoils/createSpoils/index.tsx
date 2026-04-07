@@ -40,6 +40,21 @@ const CreateSpoil = () => {
 
   const handleSelect = (value: SpoilTypeOption) => {
     setSelectedType(value);
+
+    // clear any previously stored created spoil id and drafts immediately
+    const setCreatedSpoilId = useAuthStore.getState().setCreatedSpoilId;
+    setCreatedSpoilId?.(null);
+
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("advanced-spoil-step");
+        sessionStorage.removeItem("simple-spoil-step");
+        sessionStorage.removeItem("advanced-spoil-draft");
+        sessionStorage.removeItem("simple-spoil-draft");
+      }
+    } catch {
+      // ignore errors
+    }
   };
 
   const handleSelectionContinue = () => {
@@ -54,6 +69,9 @@ const CreateSpoil = () => {
       if (typeof window !== "undefined") {
         sessionStorage.removeItem("advanced-spoil-step");
         sessionStorage.removeItem("simple-spoil-step");
+        // also clear any draft saved in session for a fresh flow
+        sessionStorage.removeItem("advanced-spoil-draft");
+        sessionStorage.removeItem("simple-spoil-draft");
       }
     } catch {
       // ignore errors
