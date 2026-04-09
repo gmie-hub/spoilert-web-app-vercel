@@ -262,7 +262,7 @@ interface ExtractedCertificateAssets {
   >;
 }
 
-const ensureBodyPositioning = (body: HTMLBodyElement) => {
+const ensureBodyPositioning = (body: HTMLElement) => {
   const currentPosition = body.style.position?.trim().toLowerCase();
   if (!currentPosition || currentPosition === "static") {
     body.style.position = "relative";

@@ -52,23 +52,22 @@ export default function CertificateTemplatePreviewPage() {
 
     setCertificateTemplate({
       id: spoilTemplate.id,
-      code: spoilTemplate.code,
+      code: spoilTemplate.template?.name || "",
       name: getTemplateName(
-        spoilTemplate.template?.certificate_template_name,
+        spoilTemplate.template?.name,
         certificateTemplate?.name || "Certificate Template",
       ),
-      templateContent: spoilTemplate.template?.template_content || "",
-      templateFileName:
-        spoilTemplate.template?.certificate_template_name || null,
+      templateContent: spoilTemplate.template?.description || "",
+      templateFileName: spoilTemplate.template?.fields[0]?.name || null,
     });
   }, [certificateTemplate?.name, setCertificateTemplate, spoilTemplate]);
 
   const resolvedMarkup =
-    spoilTemplate?.template?.template_content ||
+    spoilTemplate?.template?.description ||
     certificateTemplate?.templateContent ||
     "";
   const resolvedName = getTemplateName(
-    spoilTemplate?.template?.certificate_template_name,
+    spoilTemplate?.template?.name,
     certificateTemplate?.name || "Certificate Template",
   );
 
