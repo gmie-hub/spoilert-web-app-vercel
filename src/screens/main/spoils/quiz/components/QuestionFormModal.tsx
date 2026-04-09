@@ -34,6 +34,7 @@ interface QuestionFormModalProps {
   onClose: () => void;
   onSave: (question: QuizQuestion) => void;
   open: boolean;
+  quizType?: string;
 }
 
 const QuestionFormModal: FC<QuestionFormModalProps> = ({
@@ -41,6 +42,7 @@ const QuestionFormModal: FC<QuestionFormModalProps> = ({
   onClose,
   onSave,
   open,
+  quizType,
 }) => {
   const isEditing = useMemo(() => Boolean(editingQuestion), [editingQuestion]);
   const initialValues = useMemo(
@@ -61,6 +63,54 @@ const QuestionFormModal: FC<QuestionFormModalProps> = ({
         validationSchema={questionFormValidationSchema}
         onSubmit={(values) => {
           const question = buildQuestionFromDraft(values, editingQuestion?.id);
+
+          try {
+            if (typeof window !== "undefined") {
+              const storageKey = quizType === "post" ? "postspoil-quiz-init" : "prespoil-quiz-init";
+              const presRaw = sessionStorage.getItem(storageKey);
+              if (presRaw) {
+                try {
+                  const pres = JSON.parse(presRaw);
+                  pres.questions = pres.questions ?? [];
+                  const idx = pres.questions.findIndex((q: QuizQuestion) => q.id === question.id);
+                  if (idx === -1) pres.questions.push(question);
+                  else pres.questions[idx] = question;
+                  sessionStorage.setItem(storageKey, JSON.stringify(pres));
+                } catch  {
+                  // overwrite if parse fails
+                  sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
+                }
+              } else {
+                const raw = sessionStorage.getItem("advanced-spoil-draft");
+                if (raw) {
+                  try {
+                    const parsed = JSON.parse(raw);
+                    const key = quizType === "post" ? "postQuiz" : "preQuiz";
+                    const pre = parsed?.state?.basics?.[key] ?? parsed?.basics?.[key] ?? parsed?.[key] ?? null;
+                    if (pre) {
+                      pre.questions = pre.questions ?? [];
+                      const idx = pre.questions.findIndex((q: QuizQuestion) => q.id === question.id);
+                      if (idx === -1) pre.questions.push(question);
+                      else pre.questions[idx] = question;
+                      // write back
+                      sessionStorage.setItem("advanced-spoil-draft", JSON.stringify(parsed));
+                    } else {
+                      // fallback: create storageKey
+                      sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
+                    }
+                  } catch  {
+                    sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
+                  }
+                } else {
+                  sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
+                }
+              }
+            }
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.log("Failed to persist question to sessionStorage", err);
+          }
+
           onSave(question);
         }}
       >

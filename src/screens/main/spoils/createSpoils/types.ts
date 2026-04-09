@@ -1,12 +1,11 @@
 export type SpoilTypeOption = "simple" | "advanced";
 
-export type {
-  Lesson,
-  LessonTypeOption,
-  Module,
-  OutlineData,
-  QuizConfig,
-} from "@spt/types";
+// export type {
+//   Lesson,
+//   LessonTypeOption,
+//   OutlineData,
+//   QuizConfig,
+// } from "@spt/types";
 
 export type CoverImagePersisted = { dataUrl: string; name: string; type: string };
 
@@ -36,6 +35,39 @@ export interface BasicsFormData {
   lessonType?: "file" | "text";
   lessonContent?: string;
   lessonFile?: File | string | null;
+}
+
+export type LessonTypeOption =  "file" | "video" | "pdf" | "text" ;
+
+export interface Lesson {
+  id: string;
+  title: string;
+  type: LessonTypeOption;
+  content: string;
+  file?: File | string | null;
+  fileName?: string;
+  description?: string;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  description: string;
+  lessons: Lesson[];
+}
+
+export interface QuizConfig {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface OutlineData {
+  modules: Module[];
+  preQuiz?: QuizConfig;
+  postQuiz?: QuizConfig;
+  /** optional server spoil id (set after creating spoil on server) */
+  spoil_id?: number | string;
 }
 
 

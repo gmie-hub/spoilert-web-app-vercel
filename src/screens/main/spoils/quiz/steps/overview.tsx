@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -67,15 +67,142 @@ const Overview: FC<OverviewProps> = ({
   onSaveAndNext,
   quizType,
 }) => {
+  const [derivedInitial, setDerivedInitial] = useState<QuizOverviewDraft>(initialValues);
+
+  useEffect(() => {
+    const build = async () => {
+      let init: QuizOverviewDraft = { ...initialValues };
+
+      try {
+        if (typeof window !== "undefined") {
+          const storageKey = quizType === "post" ? "postspoil-quiz-init" : "prespoil-quiz-init";
+          const presRaw = sessionStorage.getItem(storageKey);
+          if (presRaw) {
+              const pres = JSON.parse(presRaw);
+              init.title = pres.title ?? pres.overview?.title ?? init.title;
+              init.description = pres.description ?? pres.overview?.description ?? init.description;
+              init.numberOfQuestions = pres.numberOfQuestions ?? (pres.overview?.numberOfQuestions ? String(pres.overview.numberOfQuestions) : init.numberOfQuestions);
+              init.timeLimit = pres.timeLimit ?? (pres.overview?.timeLimit ? String(pres.overview.timeLimit) : init.timeLimit);
+              init.passmark = pres.passmark ?? (pres.overview?.passmark ? String(pres.overview.passmark) : init.passmark);
+          } else {
+            const raw = sessionStorage.getItem("advanced-spoil-draft");
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              const pre = parsed?.state?.basics?.[quizType === "post" ? "postQuiz" : "preQuiz"] ?? parsed?.basics?.[quizType === "post" ? "postQuiz" : "preQuiz"] ?? parsed?.[quizType === "post" ? "postQuiz" : "preQuiz"] ?? null;
+              if (pre) {
+                init.title = pre.overview?.title ?? init.title;
+                init.description = pre.overview?.description ?? init.description;
+                init.numberOfQuestions = pre.overview?.numberOfQuestions ? String(pre.overview.numberOfQuestions) : init.numberOfQuestions;
+                init.timeLimit = pre.overview?.timeLimit ? String(pre.overview.timeLimit) : init.timeLimit;
+                init.passmark = pre.overview?.passmark ? String(pre.overview.passmark) : init.passmark;
+              }
+            }
+          }
+        }
+      } catch  {
+        // ignore parse errors and keep initialValues
+      }
+
+      setDerivedInitial(init);
+    };
+
+    build();
+  }, [initialValues]);
+
+
   return (
     <Card>
       <Formik<QuizOverviewDraft>
-        initialValues={initialValues}
+        initialValues={derivedInitial}
         enableReinitialize
         validationSchema={buildValidationSchema(quizType)}
         validateOnBlur
         validateOnChange
         onSubmit={(values) => {
+          try {
+            if (typeof window !== "undefined") {
+              const storageKey = quizType === "post" ? "postspoil-quiz-init" : "prespoil-quiz-init";
+              const presRaw = sessionStorage.getItem(storageKey);
+              if (presRaw) {
+                try {
+                  const pres = JSON.parse(presRaw);
+                  pres.title = values.title ?? pres.title;
+                  pres.description = values.description ?? pres.description;
+                  pres.numberOfQuestions = values.numberOfQuestions ?? pres.numberOfQuestions;
+                  pres.timeLimit = values.timeLimit ?? pres.timeLimit;
+                  if (values.passmark !== undefined) pres.passmark = values.passmark;
+                  sessionStorage.setItem(storageKey, JSON.stringify(pres));
+                } catch  {
+                  // fallback: overwrite
+                  sessionStorage.setItem(
+                    storageKey,
+                    JSON.stringify({ overview: values, ...values }),
+                  );
+                }
+              } else {
+                const raw = sessionStorage.getItem("advanced-spoil-draft");
+                if (raw) {
+                  try {
+                    const parsed = JSON.parse(raw);
+                    const quizKey = quizType === "post" ? "postQuiz" : "preQuiz";
+                    const prePath = parsed?.state?.basics ? parsed.state.basics : parsed.basics ? parsed.basics : parsed;
+                    if (prePath) {
+                      // if nested state.basics[quizKey] exists, update it
+                      if (parsed.state && parsed.state.basics && parsed.state.basics[quizKey]) {
+                        parsed.state.basics[quizKey].overview = {
+                          title: values.title,
+                          description: values.description,
+                          numberOfQuestions: values.numberOfQuestions,
+                          timeLimit: values.timeLimit,
+                          passmark: values.passmark,
+                        };
+                      } else if (parsed[quizKey]) {
+                        parsed[quizKey].overview = {
+                          title: values.title,
+                          description: values.description,
+                          numberOfQuestions: values.numberOfQuestions,
+                          timeLimit: values.timeLimit,
+                          passmark: values.passmark,
+                        };
+                      } else {
+                        // fallback: store storageKey separately
+                        sessionStorage.setItem(
+                          storageKey,
+                          JSON.stringify({ overview: values, ...values }),
+                        );
+                        onSaveAndNext(values);
+                        return;
+                      }
+
+                      sessionStorage.setItem("advanced-spoil-draft", JSON.stringify(parsed));
+                    } else {
+                      // no structured place to store, set storageKey
+                      sessionStorage.setItem(
+                        storageKey,
+                        JSON.stringify({ overview: values, ...values }),
+                      );
+                    }
+                  } catch  {
+                    sessionStorage.setItem(
+                      storageKey,
+                      JSON.stringify({ overview: values, ...values }),
+                    );
+                  }
+                } else {
+                  // neither present — create storageKey
+                  sessionStorage.setItem(
+                    storageKey,
+                    JSON.stringify({ overview: values, ...values }),
+                  );
+                }
+              }
+            }
+          } catch (err) {
+            // ignore storage errors
+            // eslint-disable-next-line no-console
+            console.log("failed to persist quiz overview to sessionStorage", err);
+          }
+
           onSaveAndNext(values);
         }}
       >

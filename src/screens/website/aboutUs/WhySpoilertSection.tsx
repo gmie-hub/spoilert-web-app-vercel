@@ -22,12 +22,7 @@ export default function WhySpoilertSection() {
             </div>
 
             <p className="text-sm text-white/80 leading-relaxed">
-              At Spoilert, we believe in the power of knowledge to change lives.
-              Our mission is to connect learners with experts and institutions
-              worldwide, making education and skill acquisition accessible,
-              flexible, and rewarding for all. We are committed to fostering a
-              community where diverse learning needs are met through innovative
-              technology.
+      To create an inclusive, scalable, and engaging learning ecosystem where knowledge can be easily shared and accessed by anyone, anywhere.
             </p>
           </div>
 
@@ -39,11 +34,7 @@ export default function WhySpoilertSection() {
             </div>
 
             <p className="text-sm text-white/80 leading-relaxed">
-              Our vision is to create a world where access to quality education
-              and practical skills is not limited by location, background, or
-              resources. We aim to empower individuals to learn, teach, and
-              grow, transforming knowledge into opportunities and fostering a
-              global community of lifelong learners and educators.
+To become a leading global platform for interactive and flexible digital education.
             </p>
           </div>
         </div>

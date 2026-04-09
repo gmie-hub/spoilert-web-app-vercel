@@ -24,9 +24,15 @@ export default function AboutSection() {
                 Global Access to Learning, Teaching, and Earning
               </h2>
               <p className="text-gray-600 text-lg md:text-xl">
-                Spoilert bridges the gap between learners and tutors across the
-                world. From academic subjects to real-world skills, our platform
-                makes it easy to teach, learn, and grow no matter where you are.
+                SPOILERT is a modern multi-platform learning solution designed
+                to bridge the gap between knowledge providers and learners
+                across the world. We believe that knowledge should be
+                accessible, flexible, and interactive. SPOILERT empowers
+                individuals to share their expertise by creating structured
+                courses—called Spoilts—while enabling learners to access
+                high-quality educational content in formats that suit their
+                needs. Our platform supports both live learning experiences and
+                self-paced education, allowing users to learn anytime, anywhere.
               </p>
             </div>
             <div className="flex-1">
@@ -57,12 +63,11 @@ export default function AboutSection() {
                 Who We Are
               </h3>
               <p className="text-gray-600 text-lg md:text-xl">
-                Spoilert is a global learning platform where education meets
-                opportunity. We bring together passionate tutors, dedicated
-                learners, and institutions creating a vibrant community that
-                fosters skill development and knowledge sharing. Spoilert is the
-                place to connect, grow, and thrive. At Spoilert, we believe that
-                learning should be inclusive, accessible, and rewarding.
+                A seamless learning experience across mobile apps and web
+                platforms A marketplace where tutors can create and monetize
+                courses Interactive features such as group communities, chats,
+                and live sessions A diverse range of subjects and categories
+                tailored to global users
               </p>
             </div>
           </div>

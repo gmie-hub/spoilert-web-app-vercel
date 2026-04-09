@@ -47,20 +47,7 @@ const QuizSection: FC<QuizSectionProps> = ({
           <FiPlus />
         </Button>
       </div>
-      <div className="mt-4 grid gap-4 text-xs text-gray-500 md:grid-cols-2">
-        {preQuiz && (
-          <p>
-            Saved pre-spoil quiz:{" "}
-            <span className="font-medium text-gray-800">{preQuiz.title}</span>
-          </p>
-        )}
-        {postQuiz && (
-          <p>
-            Saved post-spoil quiz:{" "}
-            <span className="font-medium text-gray-800">{postQuiz.title}</span>
-          </p>
-        )}
-      </div>
+
     </div>
   );
 };

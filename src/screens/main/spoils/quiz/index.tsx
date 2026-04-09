@@ -58,6 +58,7 @@ const SpoilQuiz = () => {
           <AddQuestions
             questions={questions}
             onQuestionsChange={setQuestions}
+            quizType={quizType}
             onNext={goToNextStep}
             onPrevious={goToPreviousStep}
           />

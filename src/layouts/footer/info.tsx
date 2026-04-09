@@ -25,7 +25,7 @@ const info = [
 
 const navItems = [
   { label: "Home", href: "/" },
-  { label: "Explore Spoils", href: "/explore-spoils" },
+  { label: "Explore Spoils", href: "/" },
   { label: "About Us", href: "/about-us" },
   { label: "FAQs", href: "/faqs" },
   { label: "Contact Us", href: "/contact-us" },
@@ -126,9 +126,17 @@ const Info = () => {
           </HStack>
 
           <HStack>
-            <p>Terms</p>
+            <Link href="/terms-conditions" className="underline">
+              Terms
+            </Link>
             <p>•</p>
-            <p>Privacy</p>
+            <Link href="/privacy-policy" className="underline">
+              Privacy
+            </Link>
+                 <p>•</p>
+            <Link href="/community-guidelines" className="underline">
+              Community Guidelines
+            </Link>
           </HStack>
         </Flex>
       </Stack>
