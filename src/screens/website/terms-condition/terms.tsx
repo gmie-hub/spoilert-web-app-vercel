@@ -8,7 +8,7 @@ const TermsPage: React.FC = () => {
       <article className="bg-white shadow-sm rounded-lg border border-gray-100">
         <header className="px-8 py-10 border-b border-gray-100">
           <h1 className="text-3xl font-semibold text-gray-900">Terms &amp; Conditions</h1>
-          <p className="mt-2 text-sm text-gray-500">Last Updated: [Insert Date]</p>
+          {/* <p className="mt-2 text-sm text-gray-500">Last Updated: [Insert Date]</p> */}
         </header>
 
         <section className="px-8 py-8 space-y-6 text-gray-700">

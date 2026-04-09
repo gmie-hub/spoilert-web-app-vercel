@@ -109,7 +109,6 @@ const Overview: FC<OverviewProps> = ({
     build();
   }, [initialValues]);
 
-  console.log(derivedInitial,'derivedInitial')
 
   return (
     <Card>
