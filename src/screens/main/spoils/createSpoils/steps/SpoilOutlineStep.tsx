@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import { type FC, useEffect, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -34,6 +34,40 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
 }) => {
   const router = useRouter();
 
+  const [draftData, setDraftData] = useState<any | null>(null);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const raw = sessionStorage.getItem("advanced-spoil-draft");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setDraftData(parsed);
+          // eslint-disable-next-line no-console
+          console.log("advanced-spoil-draft:", parsed);
+          // also log basics if available
+          // eslint-disable-next-line no-console
+          console.log("advanced-spoil-draft basics:", parsed.state?.basics ?? parsed.basics ?? null);
+        } else {
+          setDraftData(null);
+          // eslint-disable-next-line no-console
+          console.log("advanced-spoil-draft: not found");
+        }
+      }
+    } catch (e) {
+      setDraftData(null);
+      // eslint-disable-next-line no-console
+      console.log("advanced-spoil-draft: parse error", e);
+    }
+  }, []);
+
+  console.log(draftData ?.state?.basics?.preQuiz ,'draftData')
+
+  const draftPreQuiz = draftData?.state?.basics?.preQuiz ?? null;
+  const draftPostQuiz = draftData?.state?.basics?.postQuiz ?? null;
+  const preQuizAvailable = Boolean(draftPreQuiz || data.preQuiz);
+  const postQuizAvailable = Boolean(draftPostQuiz || data.postQuiz);
+
   const {
     moduleModalState,
     lessonModalState,
@@ -52,8 +86,11 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     handleQuizSubmit,
   } = useOutlineManager(data, onChange);
 
+
   const modulesToRender = data.modules;
   const hasModules = modulesToRender.length > 0;
+
+   
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6 md:sticky md:top-24 md:self-start md:h-[calc(100vh-6rem)] md:overflow-auto">
@@ -90,49 +127,46 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             type="button"
             variant="outline"
             className="justify-between"
-            onClick={() => router.push("/spoils/create-quiz?type=pre")}
-          >
-            <Image
-              src={data.preQuiz ? EditIcon : AddCircleIcon}
-              alt="add-edit"
-            />
+            onClick={() => {
+              if (draftPreQuiz) {
+                try {
+                  sessionStorage.setItem("prespoil-quiz-init", JSON.stringify(draftPreQuiz));
+                } catch (e) {
+                  // ignore
+                }
+              }
 
-            {data.preQuiz ? "Edit Pre-Spoil Quiz" : "Create Pre-Spoil Quiz"}
+              router.push("/spoils/create-quiz?type=pre");
+            }}
+          >
+            <Image src={preQuizAvailable ? EditIcon : AddCircleIcon} alt="add-edit" />
+
+            {preQuizAvailable ? "Edit Pre-Spoil Quiz" : "Create Pre-Spoil Quiz"}
           </Button>
 
           <Button
             type="button"
             variant="outline"
             className="justify-between"
-            onClick={() => router.push("/spoils/create-quiz?type=post")}
-          >
-            <Image
-              src={data.postQuiz ? EditIcon : AddCircleIcon}
-              alt="add-edit"
-            />
+            onClick={() => {
+              if (draftPostQuiz) {
+                try {
+                  sessionStorage.setItem("postspoil-quiz-init", JSON.stringify(draftPostQuiz));
+                } catch (e) {
+                  // ignore
+                }
+              }
 
-            {data.postQuiz ? "Edit Post-Spoil Quiz" : "Create Post-Spoil Quiz"}
+              router.push("/spoils/create-quiz?type=post");
+            }}
+          >
+            <Image src={postQuizAvailable ? EditIcon : AddCircleIcon} alt="add-edit" />
+
+            {postQuizAvailable ? "Edit Post-Spoil Quiz" : "Create Post-Spoil Quiz"}
           </Button>
         </div>
 
-        <div className="mt-4 grid gap-4 text-xs text-gray-500 md:grid-cols-2">
-          {data.preQuiz && (
-            <p>
-              Saved pre-spoil quiz:{" "}
-              <span className="font-medium text-gray-800">
-                {data.preQuiz.title}
-              </span>
-            </p>
-          )}
-          {data.postQuiz && (
-            <p>
-              Saved post-spoil quiz:{" "}
-              <span className="font-medium text-gray-800">
-                {data.postQuiz.title}
-              </span>
-            </p>
-          )}
-        </div>
+       
       </div>
 
       <p className="text-sm">
