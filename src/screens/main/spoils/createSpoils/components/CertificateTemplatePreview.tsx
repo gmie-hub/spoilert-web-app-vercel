@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -75,6 +76,12 @@ export default function CertificateTemplatePreview({
   );
   const onSelectEditableElementRef = useRef(onSelectEditableElement);
   const onUpdateEditableElementRef = useRef(onUpdateEditableElement);
+  const hasEmbeddedLogo = markup.includes(
+    'data-certificate-embedded-asset="logo"',
+  );
+  const hasEmbeddedSignature = markup.includes(
+    'data-certificate-embedded-asset="signature"',
+  );
 
   useEffect(() => {
     onSelectEditableElementRef.current = onSelectEditableElement;
@@ -204,7 +211,9 @@ export default function CertificateTemplatePreview({
 
       if (!elementId) return onSelectEditableElementRef.current(null);
 
-      const match = editableElementsRef.current.find(({ id }) => id === elementId);
+      const match = editableElementsRef.current.find(
+        ({ id }) => id === elementId,
+      );
       onSelectEditableElementRef.current(
         match ? getSelectionFromElement(match.element) : null,
       );
@@ -220,7 +229,7 @@ export default function CertificateTemplatePreview({
     const iframe = iframeRef.current;
     const doc = iframe?.contentDocument;
 
-      if (!iframe || !doc?.body) return;
+    if (!iframe || !doc?.body) return;
 
     const styleTag = doc.createElement("style");
     styleTag.textContent = `
@@ -355,10 +364,12 @@ export default function CertificateTemplatePreview({
             }`}
           />
 
-          {renderDraggableAsset("logo", logoImage, logoPlacement)}
+          {hasEmbeddedLogo
+            ? null
+            : renderDraggableAsset("logo", logoImage, logoPlacement)}
           {renderDraggableAsset(
             "signature",
-            signatureImage,
+            hasEmbeddedSignature ? null : signatureImage,
             signaturePlacement,
           )}
 
@@ -388,8 +399,14 @@ export default function CertificateTemplatePreview({
           }`}
         />
 
-        {renderDraggableAsset("logo", logoImage, logoPlacement)}
-        {renderDraggableAsset("signature", signatureImage, signaturePlacement)}
+        {hasEmbeddedLogo
+          ? null
+          : renderDraggableAsset("logo", logoImage, logoPlacement)}
+        {renderDraggableAsset(
+          "signature",
+          hasEmbeddedSignature ? null : signatureImage,
+          signaturePlacement,
+        )}
 
         {children}
       </div>

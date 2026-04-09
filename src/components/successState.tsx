@@ -3,7 +3,7 @@
 import React, { ReactNode } from "react";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 
 import Button from "@spt/components/button";
@@ -24,7 +24,7 @@ interface SuccessStateProps {
   secondBtnHref?: string;
   onSecondBtnClick?: () => void;
 
-  icon?: string;
+  icon?: string | StaticImageData;
   className?: string;
 
   /** Back button */

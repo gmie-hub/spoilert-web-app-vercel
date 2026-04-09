@@ -19,6 +19,7 @@ import {
 
 interface CertificateCustomizationControlsProps {
   certificateCustomization: CertificateCustomization;
+  isSaving?: boolean;
   hasSelectedText: boolean;
   selectedTextStyle: CertificateTextField;
   toolbarTextActions: readonly string[];
@@ -38,6 +39,7 @@ interface CertificateCustomizationControlsProps {
 
 export default function CertificateCustomizationControls({
   certificateCustomization,
+  isSaving = false,
   hasSelectedText,
   selectedTextStyle,
   toolbarTextActions,
@@ -229,8 +231,9 @@ export default function CertificateCustomizationControls({
         variant="darkBlue"
         className="mt-2 w-full  rounded-[14px] py-4 text-base"
         onClick={onSave}
+        disabled={isSaving}
       >
-        Save Certificate
+        {isSaving ? "Saving..." : "Save Certificate"}
       </Button>
     </div>
   );

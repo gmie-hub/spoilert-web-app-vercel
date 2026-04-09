@@ -29,6 +29,7 @@ import SignatureUploadModal from "./SignatureUploadModal";
 interface CertificateCustomizationWorkspaceProps {
   certificateTemplate: SelectedCertificateTemplate;
   certificateCustomization: CertificateCustomization;
+  isSaving?: boolean;
   onUpdateCustomization: (
     customization: Partial<CertificateCustomization>,
   ) => void;
@@ -71,6 +72,7 @@ const readFileAsDataUrl = (file: File) =>
 export default function CertificateCustomizationWorkspace({
   certificateTemplate,
   certificateCustomization,
+  isSaving = false,
   onUpdateCustomization,
   onUpdateTextElement,
   onSave,
@@ -162,17 +164,14 @@ export default function CertificateCustomizationWorkspace({
 
   const toggleItalic = () => {
     handleSelectedElementUpdate({
-      fontStyle:
-        selectedTextStyle.fontStyle === "italic" ? "normal" : "italic",
+      fontStyle: selectedTextStyle.fontStyle === "italic" ? "normal" : "italic",
     });
   };
 
   const toggleUnderline = () => {
     handleSelectedElementUpdate({
       textDecoration:
-        selectedTextStyle.textDecoration === "underline"
-          ? "none"
-          : "underline",
+        selectedTextStyle.textDecoration === "underline" ? "none" : "underline",
     });
   };
 
@@ -307,7 +306,9 @@ export default function CertificateCustomizationWorkspace({
               signatureImage={certificateCustomization.signatureImage}
               logoPlacement={certificateCustomization.logoPlacement}
               signaturePlacement={certificateCustomization.signaturePlacement}
-              editableElementOverrides={certificateCustomization.elementOverrides}
+              editableElementOverrides={
+                certificateCustomization.elementOverrides
+              }
               onSelectEditableElement={handleElementSelection}
               onUpdateEditableElement={onUpdateTextElement}
               onUpdateAssetPlacement={handleAssetPlacementUpdate}
@@ -318,6 +319,7 @@ export default function CertificateCustomizationWorkspace({
 
           <CertificateCustomizationControls
             certificateCustomization={certificateCustomization}
+            isSaving={isSaving}
             hasSelectedText={Boolean(selectedElementId)}
             selectedTextStyle={selectedTextStyle}
             toolbarTextActions={TOOLBAR_TEXT_ACTIONS}

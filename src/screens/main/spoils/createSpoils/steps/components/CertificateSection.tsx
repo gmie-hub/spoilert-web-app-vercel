@@ -1,44 +1,83 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import editIcon from "@spt/assets/icons/white-edit.svg";
 import Button from "@spt/components/button";
+import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplateQuery";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import CertificateTemplatePreview from "../../components/CertificateTemplatePreview";
 
 import type { SpoilTypeOption } from "../../types";
 
+
 interface CertificateSectionProps {
   selectedType: SpoilTypeOption;
+  spoilId?: number | string | null;
 }
 
-const CertificateSection: FC<CertificateSectionProps> = ({ selectedType }) => {
+const CertificateSection: FC<CertificateSectionProps> = ({
+  selectedType,
+  spoilId = null,
+}) => {
   const router = useRouter();
   const certificateTemplate = useCreateSpoilStore(
     (state) => state.certificateTemplate,
   );
+  const setCertificateTemplate = useCreateSpoilStore(
+    (state) => state.setCertificateTemplate,
+  );
   const certificateCustomization = useCreateSpoilStore(
     (state) => state.certificateCustomization,
   );
+  const { data: spoilTemplate } = useGetSpoilTemplateQuery();
+
+  useEffect(() => {
+    if (!spoilTemplate) {
+      return;
+    }
+
+    setCertificateTemplate({
+      id: spoilTemplate.id,
+      code: spoilTemplate?.template?.name,
+      name: certificateTemplate?.name || "Certificate Template",
+      templateContent: spoilTemplate.template?.description || "",
+      templateFileName: spoilTemplate.template?.fields[0]?.name || null,
+    });
+  }, [certificateTemplate?.name, setCertificateTemplate, spoilTemplate]);
+
+  const resolvedTemplate = spoilTemplate
+    ? {
+        id: spoilTemplate.id,
+        code: spoilTemplate?.template?.name,
+        name: certificateTemplate?.name || "Certificate Template",
+        templateContent: spoilTemplate.template?.description || "",
+      }
+    : certificateTemplate;
 
   const handleCustomize = () => {
-    router.push(`/create-spoils/certificate-template?flow=${selectedType}`);
+    const spoilIdParam = spoilId ? `&spoilId=${spoilId}` : "";
+
+    router.push(
+      resolvedTemplate
+        ? `/create-spoils/certificate-template/customize?flow=${selectedType}&mode=edit${spoilIdParam}`
+        : `/create-spoils/certificate-template?flow=${selectedType}${spoilIdParam}`,
+    );
   };
 
   return (
     <div className="rounded-2xl border border-[#E6EEF2] bg-[#F7FBFD] p-4">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="flex items-center gap-4">
-          <div className="relative h-16 w-24 overflow-hidden rounded-xl border border-[#D8E4EA] bg-white">
-            {certificateTemplate?.templateContent ? (
+          <div className="relative h-24 w-44 overflow-hidden rounded-xl">
+            {resolvedTemplate?.templateContent ? (
               <CertificateTemplatePreview
-                markup={certificateTemplate.templateContent}
-                title={
-                  certificateTemplate.name || "Certificate template preview"
-                }
+                markup={resolvedTemplate.templateContent}
+                title={resolvedTemplate.name || "Certificate template preview"}
                 logoImage={certificateCustomization.logoImage}
                 signatureImage={certificateCustomization.signatureImage}
                 outerClassName="relative h-full w-full overflow-hidden bg-white"
@@ -51,32 +90,16 @@ const CertificateSection: FC<CertificateSectionProps> = ({ selectedType }) => {
               </div>
             )}
           </div>
-
-          <div className="max-w-md">
-            <p className="leading-relaxed text-[#425466]">
-              Give your learners a beautifully designed certificate when they
-              complete this spoil.
-            </p>
-
-            <p className="mt-2 text-sm font-medium text-[#0B5368]">
-              {certificateTemplate?.name
-                ? `Selected template: ${certificateTemplate.name}`
-                : "No certificate template selected yet."}
-            </p>
-
-            {certificateTemplate?.code ? (
-              <p className="mt-1 text-xs text-[#6B7C88]">
-                Template code: {certificateTemplate.code}
-              </p>
-            ) : null}
-          </div>
         </div>
 
         <Button
           className="rounded-lg bg-[#003344] px-6 text-white hover:bg-[#002233]"
           onClick={handleCustomize}
         >
-          {certificateTemplate ? "Change Certificate" : "Customize Certificate"}
+          {resolvedTemplate && (
+            <Image src={editIcon} alt="Edit" width={24} height={23} />
+          )}
+          {resolvedTemplate ? "Edit Certificate" : "Customize Certificate"}
         </Button>
       </div>
     </div>

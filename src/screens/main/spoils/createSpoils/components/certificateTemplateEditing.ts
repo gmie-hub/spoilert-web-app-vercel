@@ -1,4 +1,7 @@
+/* eslint-disable max-lines */
 import {
+  CertificateAssetPlacement,
+  CertificateCustomization,
   CertificateElementOverride,
   CertificateTextField,
 } from "@spt/store/createSpoilStore";
@@ -220,6 +223,102 @@ export const applyOverrideToElement = (
   }
 };
 
+export const serializeCertificateMarkup = (
+  markup: string,
+  overrides: Record<string, CertificateElementOverride> = {},
+  assets?: Pick<
+    CertificateCustomization,
+    "logoImage" | "signatureImage" | "logoPlacement" | "signaturePlacement"
+  >,
+) => {
+  if (!markup || typeof window === "undefined") {
+    return markup;
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(markup, "text/html");
+  const editableElements = getEditableElements(doc);
+
+  editableElements.forEach(({ id, element }) => {
+    applyOverrideToElement(element, overrides[id]);
+  });
+
+  embedCertificateAsset(doc, "logo", assets?.logoImage, assets?.logoPlacement);
+  embedCertificateAsset(
+    doc,
+    "signature",
+    assets?.signatureImage,
+    assets?.signaturePlacement,
+  );
+
+  return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+};
+
+interface ExtractedCertificateAssets {
+  cleanedMarkup: string;
+  assets: Pick<
+    CertificateCustomization,
+    "logoImage" | "signatureImage" | "logoPlacement" | "signaturePlacement"
+  >;
+}
+
+const ensureBodyPositioning = (body: HTMLBodyElement) => {
+  const currentPosition = body.style.position?.trim().toLowerCase();
+  if (!currentPosition || currentPosition === "static") {
+    body.style.position = "relative";
+  }
+};
+
+const removeExistingEmbeddedAsset = (doc: Document, asset: "logo" | "signature") => {
+  doc
+    .querySelectorAll(`[data-certificate-embedded-asset="${asset}"]`)
+    .forEach((node) => node.remove());
+};
+
+const applyAssetPlacementStyles = (
+  element: HTMLElement,
+  placement: CertificateAssetPlacement,
+) => {
+  element.style.position = "absolute";
+  element.style.left = `${placement.left}%`;
+  element.style.top = `${placement.top}%`;
+  element.style.width = `${placement.width}%`;
+  element.style.height = `${placement.height}%`;
+  element.style.zIndex = "20";
+  element.style.pointerEvents = "none";
+};
+
+const embedCertificateAsset = (
+  doc: Document,
+  asset: "logo" | "signature",
+  image: string | null | undefined,
+  placement?: CertificateAssetPlacement,
+) => {
+  removeExistingEmbeddedAsset(doc, asset);
+
+  if (!image || !placement || !doc.body) {
+    return;
+  }
+
+  ensureBodyPositioning(doc.body);
+
+  const wrapper = doc.createElement("div");
+  wrapper.dataset.certificateEmbeddedAsset = asset;
+  applyAssetPlacementStyles(wrapper, placement);
+
+  const img = doc.createElement("img");
+  img.src = image;
+  img.alt = `Certificate ${asset}`;
+  img.draggable = false;
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.objectFit = "contain";
+  img.style.display = "block";
+
+  wrapper.appendChild(img);
+  doc.body.appendChild(wrapper);
+};
+
 interface SelectionOffsets {
   start: number;
   end: number;
@@ -255,6 +354,87 @@ const getNodeOffset = (element: HTMLElement, node: Node, offset: number) => {
   }
 
   return currentOffset;
+};
+
+const parsePlacementPercentage = (
+  value: string,
+  fallback: number,
+): number => {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+export const extractEmbeddedCertificateAssets = (
+  markup: string,
+  fallbackAssets: Pick<
+    CertificateCustomization,
+    "logoPlacement" | "signaturePlacement"
+  >,
+): ExtractedCertificateAssets => {
+  if (!markup || typeof window === "undefined") {
+    return {
+      cleanedMarkup: markup,
+      assets: {
+        logoImage: null,
+        signatureImage: null,
+        logoPlacement: fallbackAssets.logoPlacement,
+        signaturePlacement: fallbackAssets.signaturePlacement,
+      },
+    };
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(markup, "text/html");
+
+  const readAsset = (asset: "logo" | "signature") => {
+    const fallbackPlacement =
+      asset === "logo"
+        ? fallbackAssets.logoPlacement
+        : fallbackAssets.signaturePlacement;
+    const wrapper = doc.querySelector<HTMLElement>(
+      `[data-certificate-embedded-asset="${asset}"]`,
+    );
+    const image = wrapper?.querySelector("img")?.getAttribute("src") ?? null;
+
+    if (!wrapper) {
+      return {
+        image,
+        placement: fallbackPlacement,
+      };
+    }
+
+    return {
+      image,
+      placement: {
+        left: parsePlacementPercentage(wrapper.style.left, fallbackPlacement.left),
+        top: parsePlacementPercentage(wrapper.style.top, fallbackPlacement.top),
+        width: parsePlacementPercentage(
+          wrapper.style.width,
+          fallbackPlacement.width,
+        ),
+        height: parsePlacementPercentage(
+          wrapper.style.height,
+          fallbackPlacement.height,
+        ),
+      },
+    };
+  };
+
+  const logo = readAsset("logo");
+  const signature = readAsset("signature");
+
+  removeExistingEmbeddedAsset(doc, "logo");
+  removeExistingEmbeddedAsset(doc, "signature");
+
+  return {
+    cleanedMarkup: `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`,
+    assets: {
+      logoImage: logo.image,
+      signatureImage: signature.image,
+      logoPlacement: logo.placement,
+      signaturePlacement: signature.placement,
+    },
+  };
 };
 
 export const getSelectionOffsets = (

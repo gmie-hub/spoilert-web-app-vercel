@@ -55,6 +55,7 @@ export default function CertificateTemplateSelector() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const flow = searchParams.get("flow") === "simple" ? "simple" : "advanced";
+  const spoilId = searchParams.get("spoilId");
 
   const [searchValue, setSearchValue] = useState("");
   const deferredSearchValue = useDeferredValue(
@@ -88,14 +89,20 @@ export default function CertificateTemplateSelector() {
       templateContent: previewMarkup,
       templateFileName: templateFileName || null,
     });
-    router.push(`/create-spoils/certificate-template/customize?flow=${flow}`);
+    router.push(
+      `/create-spoils/certificate-template/customize?flow=${flow}${
+        spoilId ? `&spoilId=${spoilId}` : ""
+      }`,
+    );
   };
 
   const handleBack = () => {
     router.push(
       flow === "simple"
-        ? "/create-spoils/simple-spoil"
-        : "/create-spoils/advance-spoil",
+        ? `/create-spoils/simple-spoil${spoilId ? `?spoilId=${spoilId}` : ""}`
+        : `/create-spoils/advance-spoil${
+            spoilId ? `?spoilId=${spoilId}` : ""
+          }`,
     );
   };
 
