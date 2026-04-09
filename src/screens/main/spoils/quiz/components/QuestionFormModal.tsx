@@ -76,7 +76,7 @@ const QuestionFormModal: FC<QuestionFormModalProps> = ({
                   if (idx === -1) pres.questions.push(question);
                   else pres.questions[idx] = question;
                   sessionStorage.setItem(storageKey, JSON.stringify(pres));
-                } catch (e) {
+                } catch  {
                   // overwrite if parse fails
                   sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
                 }
@@ -98,7 +98,7 @@ const QuestionFormModal: FC<QuestionFormModalProps> = ({
                       // fallback: create storageKey
                       sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
                     }
-                  } catch (e) {
+                  } catch  {
                     sessionStorage.setItem(storageKey, JSON.stringify({ questions: [question] }));
                   }
                 } else {

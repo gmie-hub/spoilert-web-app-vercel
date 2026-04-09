@@ -1,4 +1,4 @@
-import ContactUs from "@spt/screens/website/contactUs";
+import ContactUs from "@spt/screens/website/contactUs/contactUs";
 
 export default function ContactUsPage() {
   return (

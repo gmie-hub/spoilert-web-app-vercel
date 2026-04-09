@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { BasicsFormData } from "@spt/screens/main/spoils/createSpoils/types";
-import type {  OutlineData } from "@spt/types";
+import type { OutlineData } from "@spt/screens/main/spoils/createSpoils/types";
 
 interface CreateSpoilDraftState {
   basics: BasicsFormData;

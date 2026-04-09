@@ -126,9 +126,13 @@ const Info = () => {
           </HStack>
 
           <HStack>
-            <p>Terms</p>
+            <Link href="/terms-conditions" className="underline">
+              Terms
+            </Link>
             <p>•</p>
-            <p>Privacy</p>
+            <Link href="/privacy-policy" className="underline">
+              Privacy
+            </Link>
           </HStack>
         </Flex>
       </Stack>

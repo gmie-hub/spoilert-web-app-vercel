@@ -61,7 +61,6 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
     }
   }, []);
 
-  console.log(draftData ?.state?.basics?.preQuiz ,'draftData')
 
   const draftPreQuiz = draftData?.state?.basics?.preQuiz ?? null;
   const draftPostQuiz = draftData?.state?.basics?.postQuiz ?? null;
@@ -131,7 +130,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
               if (draftPreQuiz) {
                 try {
                   sessionStorage.setItem("prespoil-quiz-init", JSON.stringify(draftPreQuiz));
-                } catch (e) {
+                } catch  {
                   // ignore
                 }
               }
@@ -152,7 +151,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
               if (draftPostQuiz) {
                 try {
                   sessionStorage.setItem("postspoil-quiz-init", JSON.stringify(draftPostQuiz));
-                } catch (e) {
+                } catch {
                   // ignore
                 }
               }

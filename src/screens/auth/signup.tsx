@@ -72,14 +72,14 @@ const SignUp = () => {
                 <label htmlFor="agreeToTerms" className="text-gray-700 text-sm">
                   I agree to the platform&apos;s{" "}
                   <Link
-                    href="/terms"
+                    href="/terms-conditions"
                     className="text-[var(--color-yellow)] hover:underline font-medium"
                   >
                     Terms and Conditions
                   </Link>{" "}
                   and{" "}
                   <Link
-                    href="/privacy"
+                    href="/privacy-policy"
                     className="text-[var(--color-yellow)] hover:underline font-medium"
                   >
                     Privacy Policy

@@ -1,7 +1,7 @@
 export interface Lesson {
   id: string;
   title: string;
-  type: "video" | "pdf" | "text";
+  type: "file" | "video" | "pdf" | "text";
   content: string;
   file?: File | string | null;
   fileName?: string;

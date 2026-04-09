@@ -10,7 +10,7 @@ import {
 
 interface LessonFormState {
   title: string;
-  type: "video" | "pdf" | "text";
+  type: "file" | "video" | "pdf" | "text";
   content: string;
   file: File | null;
   description: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
 

@@ -99,7 +99,7 @@ const Overview: FC<OverviewProps> = ({
             }
           }
         }
-      } catch (e) {
+      } catch  {
         // ignore parse errors and keep initialValues
       }
 
@@ -133,7 +133,7 @@ const Overview: FC<OverviewProps> = ({
                   pres.timeLimit = values.timeLimit ?? pres.timeLimit;
                   if (values.passmark !== undefined) pres.passmark = values.passmark;
                   sessionStorage.setItem(storageKey, JSON.stringify(pres));
-                } catch (e) {
+                } catch  {
                   // fallback: overwrite
                   sessionStorage.setItem(
                     storageKey,
@@ -183,7 +183,7 @@ const Overview: FC<OverviewProps> = ({
                         JSON.stringify({ overview: values, ...values }),
                       );
                     }
-                  } catch (e) {
+                  } catch  {
                     sessionStorage.setItem(
                       storageKey,
                       JSON.stringify({ overview: values, ...values }),

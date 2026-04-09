@@ -12,7 +12,7 @@ export interface LessonResponse {
   id: number;
   title: string;
   slug: string;
-  type: "video" | "pdf" | "text";
+  type: "file" | "video" | "pdf" | "text";
   content: string | null;
   content_url: string | null;
   file: string | null;
