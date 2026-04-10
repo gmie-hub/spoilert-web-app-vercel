@@ -14,7 +14,14 @@ const NoData: FC<NoDataProps> = ({ children, description, heading }) => {
     <div className="my-2 flex w-full items-center justify-center">
       <div className="flex w-full flex-col gap-6 text-center md:gap-10">
         <div className="flex justify-center">
-          <Image src={EmptyImage} alt="empty" />
+          <Image
+            src={EmptyImage}
+            alt="No data illustration"
+            width={EmptyImage.width}
+            height={EmptyImage.height}
+            unoptimized
+            className="h-auto w-[160px] md:w-[200px]"
+          />
         </div>
 
         <div className="flex flex-col gap-0 md:gap-4">
