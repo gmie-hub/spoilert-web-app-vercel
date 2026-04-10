@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
 export type Direction = "row" | "column";
 export type Wrap = "nowrap" | "wrap" | "wrap-reverse";

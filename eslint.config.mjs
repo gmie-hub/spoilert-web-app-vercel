@@ -8,7 +8,6 @@ import eslintPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import immutable from 'eslint-plugin-immutable';
-import pluginImport from 'eslint-plugin-import';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
@@ -53,11 +52,10 @@ export default [
   },
 
   ...fixupConfigRules(
-    compat.extends('eslint:recommended', 'prettier'),
+    compat.extends('eslint:recommended', 'next/core-web-vitals', 'prettier'),
   ),
   {
     plugins: {
-      'import': pluginImport,
       '@typescript-eslint': eslintPlugin,
       immutable,
       'unused-imports': unusedImports,
@@ -65,8 +63,13 @@ export default [
     },
     settings: {
       'import/resolver': {
-        typescript: true,
-        node: true,
+        typescript: {
+          project: './tsconfig.json',
+          alwaysTryTypes: true,
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
       },
     },
     rules: {
