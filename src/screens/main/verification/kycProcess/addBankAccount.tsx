@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Form, Formik, FormikHelpers } from "formik";
 import { object } from "yup";
@@ -116,13 +116,6 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
       onSubmit={handleSubmit}
     >
       {({ values, setFieldValue }) => {
-        // VERIFY AGAIN when bank changes
-        useEffect(() => {
-          if (values.accountNumber.length === 10 && values.bankName) {
-            verifyAccount(values.accountNumber, values.bankName);
-          }
-        }, [values.bankName]);
-
         return (
           <Form>
             <StepLayout
@@ -152,7 +145,12 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
                   options={bankOptions}
                   disabled={isLoading}
                   onSearchChange={(value) => setBankSearch(value)}
-                  onChange={(value) => setFieldValue("bankName", value)}
+                  onChange={(value) => {
+                    setFieldValue("bankName", value);
+                    if (values.accountNumber.length === 10) {
+                      verifyAccount(values.accountNumber, value);
+                    }
+                  }}
                 />
 
                 {/* Account Number */}

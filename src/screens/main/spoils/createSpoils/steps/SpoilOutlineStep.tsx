@@ -118,7 +118,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       <div className="rounded-2xl border border-gray-100 p-6">
         <p className="text-sm text-gray-600">
           Create pre-spoil and post-spoil quizzes so you can track your
-          learner's progress before and after taking the spoil.
+          learner&apos;s progress before and after taking the spoil.
         </p>
 
         <div className="mt-5 grid gap-4 md:grid-rows-2">

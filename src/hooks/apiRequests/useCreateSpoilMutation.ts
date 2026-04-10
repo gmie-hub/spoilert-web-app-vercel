@@ -178,11 +178,11 @@ export const useCreateSpoilMutation = () => {
 
         // Call module creation endpoint for each module in outline
         if (typeof createModuleHandler === "function") {
-          for (const module of outline.modules) {
+          for (const outlineModule of outline.modules) {
               try {
                 const moduleRes = await createModuleHandler({
-                  title: module.title,
-                  description: module.description,
+                  title: outlineModule.title,
+                  description: outlineModule.description,
                   spoil_id: createdId,
                 });
 
@@ -191,18 +191,18 @@ export const useCreateSpoilMutation = () => {
 
                 // notify caller about module creation (include original module object)
                 try {
-                  if (moduleId) callbacks?.onModuleCreated?.(moduleId, moduleRes, module);
+                  if (moduleId) callbacks?.onModuleCreated?.(moduleId, moduleRes, outlineModule);
                 } catch {
                   // ignore callback errors
                 }
 
                 // create lessons under the created module if handler provided
-                if (moduleId && Array.isArray(module.lessons) && module.lessons.length > 0) {
+                if (moduleId && Array.isArray(outlineModule.lessons) && outlineModule.lessons.length > 0) {
                   if (typeof createLessonHandler === "function") {
                     try {
                       const lessonRes = await createLessonHandler(
                         moduleId,
-                        module.lessons.map((lesson) => ({
+                        outlineModule.lessons.map((lesson) => ({
                           title: lesson.title,
                           type: lesson.type,
                           content: lesson.content,

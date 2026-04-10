@@ -63,7 +63,7 @@ export default function FAQSection() {
           </h2>
 
           <p className="text-gray-600 mt-3 text-sm sm:text-base max-w-2xl mx-auto">
-            Got questions? Whether you're a learner eager to explore new
+            Got questions? Whether you&apos;re a learner eager to explore new
             knowledge or a tutor ready to share your expertise, our FAQ section
             covers everything you need to get started on Spoilert.
           </p>

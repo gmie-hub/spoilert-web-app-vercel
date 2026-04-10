@@ -19,6 +19,7 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const UploadSpoilImage = () => {
   const [field, meta, helpers] = useField("coverImage");
+  const { values } = useFormikContext<any>();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const hasError = Boolean(meta.touched && meta.error);
@@ -78,7 +79,6 @@ const UploadSpoilImage = () => {
       const dataUrl = reader.result as string;
       try {
         // merge current Formik values into persisted basics to avoid overwriting user input
-        const { values } = useFormikContext();
         const prev = useCreateSpoilStore.getState().basics;
         useCreateSpoilStore.getState().setBasics?.({
           ...(prev ?? {}),

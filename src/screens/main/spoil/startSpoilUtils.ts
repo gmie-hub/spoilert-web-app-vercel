@@ -68,15 +68,15 @@ export const formatExpiryDate = (value?: string | null) => {
 export const getInitialSelection = (spoil: SpoilDetailsData) => {
   const modules = spoil.modules ?? [];
 
-  for (const module of modules) {
-    const currentLessonMatch = module.lessons?.find(
+  for (const spoilModule of modules) {
+    const currentLessonMatch = spoilModule.lessons?.find(
       (lesson) => lesson.title === spoil.current_lesson,
     );
 
     if (currentLessonMatch) {
       return {
         lessonId: currentLessonMatch.id,
-        moduleId: module.id,
+        moduleId: spoilModule.id,
       };
     }
   }
