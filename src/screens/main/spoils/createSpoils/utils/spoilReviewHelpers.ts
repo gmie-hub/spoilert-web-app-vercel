@@ -210,19 +210,19 @@ export const syncOutlineChanges = async ({
     }
   }
 
-  for (const module of currentOutline.modules) {
-    if (isServerEntityId(module.id)) {
+  for (const currentModule of currentOutline.modules) {
+    if (isServerEntityId(currentModule.id)) {
       await updateModuleHandler({
-        moduleId: module.id,
-        title: module.title,
-        description: module.description,
+        moduleId: currentModule.id,
+        title: currentModule.title,
+        description: currentModule.description,
       });
 
-      for (const lesson of module.lessons) {
+      for (const lesson of currentModule.lessons) {
         if (isServerEntityId(lesson.id)) {
           await updateLessonHandler(getLessonUpdatePayload(lesson));
         } else {
-          await createLessonHandler(module.id, [
+          await createLessonHandler(currentModule.id, [
             {
               title: lesson.title,
               type: lesson.type,
@@ -238,8 +238,8 @@ export const syncOutlineChanges = async ({
     }
 
     const moduleRes = await createModuleHandler({
-      title: module.title,
-      description: module.description,
+      title: currentModule.title,
+      description: currentModule.description,
       spoil_id: spoilId,
     });
     const createdModuleId =
@@ -248,10 +248,10 @@ export const syncOutlineChanges = async ({
       moduleRes?.data?.data?.id ??
       null;
 
-    if (createdModuleId && module.lessons.length > 0) {
+    if (createdModuleId && currentModule.lessons.length > 0) {
       await createLessonHandler(
         createdModuleId,
-        module.lessons.map((lesson) => ({
+        currentModule.lessons.map((lesson) => ({
           title: lesson.title,
           type: lesson.type,
           content: lesson.type === "text" ? lesson.content : undefined,

@@ -126,7 +126,7 @@ const ModuleCard: FC<ModuleCardProps> = ({
 
             {module.lessons.length === 0 ? (
               <p className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-4 text-sm text-gray-500">
-                No lessons yet. Use "Add Lesson" to get started.
+                No lessons yet. Use &quot;Add Lesson&quot; to get started.
               </p>
             ) : (
               <ul className="space-y-3">

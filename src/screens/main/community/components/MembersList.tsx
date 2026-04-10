@@ -210,7 +210,7 @@ const MembersList = ({ communityId, tutorId, onClose }: MembersListProps) => {
             </h3>
             <p className="mt-2 text-sm text-gray">
               This user will no longer be able to post or comment in the
-              community. They'll still be able to view posts.
+              community. They&apos;ll still be able to view posts.
             </p>
 
             <div className="mt-6 w-full">

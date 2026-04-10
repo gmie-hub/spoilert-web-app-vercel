@@ -52,7 +52,7 @@ const LearningPlatform = () => {
             viewport={{ once: true }}
             className="md:text-2xl text-center"
           >
-            Whether you're here to learn or teach, Spoilert empowers you to do
+            Whether you&apos;re here to learn or teach, Spoilert empowers you to do
             more.
           </motion.p>
         </Stack>

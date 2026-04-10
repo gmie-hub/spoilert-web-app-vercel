@@ -49,7 +49,7 @@ export const CompletionView = ({
       <h2 className="mt-2 text-2xl font-semibold text-[#212529]">{`${correctAnswersCount}/${normalizedQuestions.length}`}</h2>
 
       <p className="mx-auto mt-3 max-w-[520px] leading-7 text-black">
-        Great job!👍 This was just to assess your current knowledge. Now, let's
+        Great job!👍 This was just to assess your current knowledge. Now, let&apos;s
         start learning
       </p>
 

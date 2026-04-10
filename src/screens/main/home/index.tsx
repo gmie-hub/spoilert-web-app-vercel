@@ -1,8 +1,8 @@
 import GetStarted from "@spt/components/getStarted";
 import BackToTopButton from "@spt/components/ui/backTotopBtn";
 
+import FeaturedHeroSection from "./featuredHeroSection";
 import InstitutionSpoils from "./institutionSpoils";
-import HeroSlider from "./landingImage";
 import MostSubscribe from "./mostSubscribe";
 import PromotedAdsCarousel from "./PromotedAdsCarousel";
 import PromotedSpoils from "./PromotedSpoils ";
@@ -14,7 +14,7 @@ import TrendingSpoil from "./trendingSpoils";
 const HomePage = () => {
   return (
     <main>
-      <HeroSlider />
+      <FeaturedHeroSection />
       <SkillsSpoils />
       <section id="third-section">
         <PromotedSpoils />

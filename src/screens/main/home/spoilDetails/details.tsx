@@ -64,9 +64,9 @@ const getLessonIcon = (type?: string | null) => {
 };
 
 const buildModuleOutlineItems = (spoil: SpoilDetailsData, moduleId: number) => {
-  const module = spoil.modules?.find((item) => item.id === moduleId);
+  const moduleData = spoil.modules?.find((item) => item.id === moduleId);
   const lessons: OutlineItem[] =
-    module?.lessons?.map((lesson) => ({
+    moduleData?.lessons?.map((lesson) => ({
       id: `lesson-${lesson.id}`,
       title: lesson.title,
       type: "lesson",
