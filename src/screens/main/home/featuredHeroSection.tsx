@@ -77,7 +77,8 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
           <div className="flex items-center gap-1 text-[13px] text-[#20262D]">
             <Image src={RatingIcon} alt="rating" width={16} height={16} />
             <span>
-              {(spoil.average_rating ?? 0).toFixed(1)} ({spoil.ratings_count ?? 0})
+              {(spoil.average_rating ?? 0).toFixed(1)} (
+              {spoil.ratings_count ?? 0})
             </span>
           </div>
 
@@ -113,9 +114,9 @@ const FeaturedHeroSection = () => {
 
   return (
     <section className="px-4 pb-4 pt-5 sm:px-6 lg:px-10 xl:px-[40px]">
-      <div className="mx-auto grid max-w-[1400px] items-start gap-6 xl:grid-cols-[minmax(0,1.85fr)_420px]">
-        <div className="h-fit rounded-[18px] border border-[#BFE4F2] bg-white px-6 py-6 shadow-[0_12px_32px_rgba(8,55,72,0.05)] sm:px-8 lg:px-6 xl:h-[480px] xl:px-7">
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+      <div className="mx-auto grid max-w-[1400px] items-stretch gap-6 xl:grid-cols-[minmax(0,1.85fr)_420px]">
+        <div className="flex flex-col rounded-[18px] border border-[#BFE4F2] bg-white px-6 py-6 shadow-[0_12px_32px_rgba(8,55,72,0.05)] sm:px-8 lg:px-6 xl:px-7">
+          <div className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
             <div>
               <h1 className="max-w-[520px] text-[34px] font-semibold leading-[1.08] tracking-[-0.04em] text-[#0B4156] sm:text-[42px] lg:text-[52px]">
                 Learn,Teach,and
@@ -203,33 +204,37 @@ const FeaturedHeroSection = () => {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#F4F9FB_0%,#E8F1F5_100%)] p-3 shadow-[0_18px_44px_rgba(8,55,72,0.09)]">
-              <div className="relative h-[320px] overflow-hidden rounded-[18px]">
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,#F4F9FB_0%,#E8F1F5_100%)] p-3 shadow-[0_18px_44px_rgba(8,55,72,0.09)]">
+              <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-[18px]">
                 {heroSlides.map((slide, index) => (
-                  <Image
-                    key={slide.src}
-                    src={slide}
-                    alt="Learn, teach, and earn illustration"
-                    fill
-                    priority={index === 0}
-                    className={`object-cover transition-opacity duration-700 ${
+                  <div
+                    key={index}
+                    className={`absolute inset-0 transition-opacity duration-700 ${
                       index === activeSlide ? "opacity-100" : "opacity-0"
                     }`}
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                  />
+                  >
+                    <Image
+                      src={slide}
+                      alt="Learn, teach, and earn illustration"
+                      fill
+                      priority={index === 0}
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
 
-        <aside className="h-fit max-h-[480px] overflow-hidden rounded-[18px] border border-[#BFE4F2] bg-[linear-gradient(180deg,#F7FBFD_0%,#EEF6F9_100%)] px-4 py-4 shadow-[0_12px_32px_rgba(8,55,72,0.05)] sm:px-5 xl:h-[500px]">
-          <h2 className="px-1 text-[18px] font-semibold text-[#20262D]">
+        <aside className="flex max-h-[500px] flex-col overflow-hidden rounded-[18px] border border-[#BFE4F2] bg-[linear-gradient(180deg,#F7FBFD_0%,#EEF6F9_100%)] px-4 py-4 shadow-[0_12px_32px_rgba(8,55,72,0.05)] sm:px-5">
+          <h2 className="shrink-0 px-1 text-[18px] font-semibold text-[#20262D]">
             Featured Spoils
           </h2>
 
-          <div className="mt-4 flex max-h-[400px] flex-col gap-4 overflow-y-auto pr-1">
-            {featuredSpoils.map((spoil) => (
+          <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
+            {featuredSpoils?.map((spoil) => (
               <FeaturedSpoilItem key={spoil.id} spoil={spoil} />
             ))}
 
