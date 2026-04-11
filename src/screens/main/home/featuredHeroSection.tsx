@@ -6,12 +6,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import FilterIcon from "@spt/assets/icons/filter-search.svg";
+import HeroImage from "@spt/assets/icons/heroimage1.svg";
+import HeroTwo from "@spt/assets/icons/heroimage2.svg";
+import HeroThree from "@spt/assets/icons/heroimage3.svg";
 import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
 import UserIcon from "@spt/assets/icons/user.svg";
-import HeroImage from "@spt/assets/images/hero-image.png";
-import HeroThree from "@spt/assets/images/hero-three.png";
-import HeroTwo from "@spt/assets/images/hero-two.png";
 import Button from "@spt/components/button";
 import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuery";
 import { useAuthStore } from "@spt/store/authStore";
