@@ -113,7 +113,8 @@ export default function Details({ spoil }: DetailsProps) {
   const description =
     spoil.description?.trim() || "No description has been added for this spoil yet.";
   const learningItems = splitLearningOutcomes(spoil.what_to_learn);
-  const modules = spoil.modules ?? [];
+
+  const modules = useMemo(() => spoil.modules ?? [], [spoil.modules]);
 
   const moduleOutline = useMemo(
     () =>

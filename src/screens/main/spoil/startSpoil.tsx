@@ -49,7 +49,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     );
   }, [spoil]);
 
-  const modules = spoil?.modules ?? [];
+  const modules = useMemo(() => spoil?.modules ?? [], [spoil?.modules]);
   const learningItems = useMemo(
     () => splitLearningOutcomes(spoil?.what_to_learn),
     [spoil?.what_to_learn],

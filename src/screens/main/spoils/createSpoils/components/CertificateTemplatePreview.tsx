@@ -8,6 +8,8 @@ import {
   useRef,
 } from "react";
 
+import Image from "next/image";
+
 import {
   CertificateAssetPlacement,
   CertificateElementOverride,
@@ -179,7 +181,7 @@ export default function CertificateTemplatePreview({
             height: `${placement.height}%`,
           }}
         >
-          <img
+          <Image
             src={image}
             alt={`Certificate ${asset}`}
             className="pointer-events-none h-full w-full object-contain"
@@ -307,8 +309,6 @@ export default function CertificateTemplatePreview({
     applySelectionState,
     editableElementOverrides,
     isInteractive,
-    onSelectEditableElement,
-    onUpdateEditableElement,
     selectElement,
   ]);
 

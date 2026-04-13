@@ -12,10 +12,9 @@ import HeroImage2 from "@spt/assets/images/Hero(5).png";
 import Button from "@spt/components/button";
 import { useAuthStore } from "@spt/store/authStore";
 
+const slides = [HeroImage1.src, HeroImage2.src, HeroImage3.src];
 
 export default function HeroSlider() {
-
-const slides = [HeroImage1.src, HeroImage2.src, HeroImage3.src];
 
 
   const [index, setIndex] = useState(0);

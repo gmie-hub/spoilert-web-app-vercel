@@ -2,6 +2,7 @@
 
 import React from "react";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FiLock } from "react-icons/fi";
 
@@ -65,7 +66,7 @@ const CommunityCard = ({ community, variant, onClick }: CommunityCardProps) => {
         {isLocked ? (
           <FiLock className="text-base" />
         ) : community.avatarUrl ? (
-          <img
+          <Image
             src={community.avatarUrl}
             alt={`${community.name} cover`}
             className="h-full w-full object-cover"

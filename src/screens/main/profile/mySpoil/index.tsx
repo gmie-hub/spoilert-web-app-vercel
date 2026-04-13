@@ -52,7 +52,7 @@ const MySpoilsSection = ({
 
   const { data, isLoading, isError, errorMessage } =
     useGetAllSpoilsQuery(queryParams, Boolean(hasHydrated) && Boolean(user?.id));
-  const spoils = data?.data?.data ?? [];
+  const spoils = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
   const resultsLayoutClass = "grid-cols-1 md:grid-cols-2";
   const filteredSpoils = useMemo(() => {
     const normalizedSearch = deferredSearchValue.trim().toLowerCase();

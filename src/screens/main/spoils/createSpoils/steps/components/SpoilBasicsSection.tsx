@@ -21,11 +21,12 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
   selectedType,
 }) => {
   const [blobPreview, setBlobPreview] = useState<string | null>(null);
+  const coverImage = basics?.coverImage;
 
   useEffect(() => {
-    // when basics.coverImage is a File, create a blob URL and clean up
-    if (basics && basics.coverImage instanceof File) {
-      const url = URL.createObjectURL(basics.coverImage);
+    // when coverImage is a File, create a blob URL and clean up
+    if (coverImage instanceof File) {
+      const url = URL.createObjectURL(coverImage);
       setBlobPreview(url);
       return () => {
         try {
@@ -40,7 +41,7 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
     // clear blobPreview for other shapes
     setBlobPreview(null);
     return undefined;
-  }, [basics && basics.coverImage]);
+  }, [coverImage]);
 
   const previewUrl = useMemo(() => {
     if (!basics || !basics.coverImage) return null;
@@ -72,7 +73,7 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
               // use native <img> for blob/data URLs, next/image for remote URLs
               previewUrl.startsWith("blob:") ||
               previewUrl.startsWith("data:") ? (
-                <img
+                <Image
                   src={previewUrl}
                   alt="Cover"
                   className="h-16 w-16 object-cover"

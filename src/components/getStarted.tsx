@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-import Phone from "@spt/assets/icons/phone.svg";
-import PhoneSmall from "@spt/assets/icons/phonesmalscreen.svg";
 import AppStore from "@spt/assets/icons/appiconss.svg";
 import GooglePlay from "@spt/assets/icons/googoleicon.svg";
+import Phone from "@spt/assets/icons/phone.svg";
+import PhoneSmall from "@spt/assets/icons/phonesmalscreen.svg";
 
 const GetStarted = () => {
   const containerVariants = {

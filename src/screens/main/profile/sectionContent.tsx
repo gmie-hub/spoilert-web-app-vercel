@@ -1,6 +1,7 @@
 import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
 import MySpoilsSection from "./mySpoil";
 import { profileNavigationGroups } from "./profileData";
+import ProfileDetailsSection from "./profileDetails";
 
 import type { ProfileNavItemId } from "./types";
 
@@ -10,6 +11,10 @@ interface ProfileSectionContentProps {
 
 const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
   const profileItems = profileNavigationGroups.flatMap((group) => group.items);
+
+  if (section === "profile-details") {
+    return <ProfileDetailsSection />;
+  }
 
   if (section === "my-spoils") {
     return <MySpoilsSection />;
