@@ -2,6 +2,9 @@ import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
 import MySpoilsSection from "./mySpoil";
 import { profileNavigationGroups } from "./profileData";
 import ProfileDetailsSection from "./profileDetails";
+import SpoilStatsPage from "./spoil-stats";
+import MyBookmarksPage from "./my-bookmarks";
+import ChangePasswordPage from "./change-password";
 
 import type { ProfileNavItemId } from "./types";
 
@@ -18,6 +21,18 @@ const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
 
   if (section === "my-spoils") {
     return <MySpoilsSection />;
+  }
+
+  if (section === "spoil-stats") {
+    return <SpoilStatsPage />;
+  }
+
+  if (section === "my-bookmarks") {
+    return <MyBookmarksPage />;
+  }
+
+  if (section === "change-password") {
+    return <ChangePasswordPage />;
   }
 
   const selectedItem = profileItems.find((item) => item.id === section);
