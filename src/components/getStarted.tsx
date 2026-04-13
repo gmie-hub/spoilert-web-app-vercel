@@ -5,8 +5,8 @@ import Image from "next/image";
 
 import Phone from "@spt/assets/icons/phone.svg";
 import PhoneSmall from "@spt/assets/icons/phonesmalscreen.svg";
-import AppStore from "@spt/assets/images/app-store.png";
-import GooglePlay from "@spt/assets/images/google-play.png";
+import AppStore from "@spt/assets/icons/appiconss.svg";
+import GooglePlay from "@spt/assets/icons/googoleicon.svg";
 
 const GetStarted = () => {
   const containerVariants = {

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
-import CertificateImage from "@spt/assets/images/certificate.png";
+import CertificateImage from "@spt/assets/icons/heroimage1.svg";
 import Button from "@spt/components/button";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 
