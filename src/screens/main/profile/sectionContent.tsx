@@ -1,10 +1,11 @@
+import ChangePasswordPage from "./change-password";
 import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
+import MyBookmarksPage from "./my-bookmarks";
 import MySpoilsSection from "./mySpoil";
 import { profileNavigationGroups } from "./profileData";
 import ProfileDetailsSection from "./profileDetails";
 import SpoilStatsPage from "./spoil-stats";
-import MyBookmarksPage from "./my-bookmarks";
-import ChangePasswordPage from "./change-password";
+import MyPromotionsPage from "./my-promotions";
 
 import type { ProfileNavItemId } from "./types";
 
@@ -33,6 +34,10 @@ const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
 
   if (section === "change-password") {
     return <ChangePasswordPage />;
+  }
+
+  if (section === "my-promotions") {
+    return <MyPromotionsPage />;
   }
 
   const selectedItem = profileItems.find((item) => item.id === section);

@@ -3,7 +3,6 @@
 import React from "react";
 
 import successIcon from "@spt/assets/images/modal.gif";
-
 import Modal from "@spt/components/modal";
 import SuccessState from "@spt/components/successState";
 

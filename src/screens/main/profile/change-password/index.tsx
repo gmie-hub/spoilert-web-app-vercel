@@ -7,7 +7,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import PasswordSuccessModal from "./PasswordSuccessModal";
 
 function PasswordInput({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder: string }) {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(true);
   return (
     <div className="flex flex-col gap-2 flex-1 min-w-[220px]">
       <label className="font-medium text-[#20262D] text-base mb-1">{label}</label>
