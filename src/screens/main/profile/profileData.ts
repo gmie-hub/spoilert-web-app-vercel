@@ -140,7 +140,6 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
       {
         id: "delete-my-account",
         label: "Delete My Account",
-        href: "/profile/delete-my-account",
         icon: FiTrash2,
       },
       {

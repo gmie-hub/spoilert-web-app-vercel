@@ -1,11 +1,11 @@
 import ChangePasswordPage from "./change-password";
 import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
 import MyBookmarksPage from "./my-bookmarks";
+import MyPromotionsPage from "./my-promotions";
 import MySpoilsSection from "./mySpoil";
 import { profileNavigationGroups } from "./profileData";
 import ProfileDetailsSection from "./profileDetails";
 import SpoilStatsPage from "./spoil-stats";
-import MyPromotionsPage from "./my-promotions";
 
 import type { ProfileNavItemId } from "./types";
 
