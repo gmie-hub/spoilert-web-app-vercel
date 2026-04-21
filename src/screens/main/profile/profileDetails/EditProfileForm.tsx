@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 
 import { Form, Formik, FormikHelpers, useField } from "formik";
-import { FiChevronLeft, FiPlus, FiX } from "react-icons/fi";
+import Image from "next/image";
+import { FiChevronLeft, FiX } from "react-icons/fi";
 import * as Yup from "yup";
 
+import AddCircle from "@spt/assets/icons/add-circle.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Select from "@spt/components/select";
@@ -40,25 +42,45 @@ interface ExpertiseFieldProps {
 
 const ExpertiseField = ({ name }: ExpertiseFieldProps) => {
   const [field, , helpers] = useField<string[]>(name);
-  const [inputValue, setInputValue] = useState("");
+  const [inputs, setInputs] = useState<string[]>(field.value.length > 0 ? field.value : [""]);
 
-  const addExpertise = () => {
-    const trimmed = inputValue.trim();
-    if (trimmed && !field.value.includes(trimmed)) {
-      helpers.setValue([...field.value, trimmed]);
-      setInputValue("");
+  // Sync local inputs with Formik field value if changed externally
+  React.useEffect(() => {
+    if (field.value.length !== inputs.length || field.value.some((v, i) => v !== inputs[i])) {
+      setInputs(field.value.length > 0 ? field.value : [""]);
     }
+  }, [field.value]);
+
+  const handleInputChange = (idx: number, value: string) => {
+    const updated = [...inputs];
+    updated[idx] = value;
+    setInputs(updated);
   };
 
-  const removeExpertise = (index: number) => {
-    const newValue = field.value.filter((_, i) => i !== index);
-    helpers.setValue(newValue);
+  const handleAddInput = () => {
+    setInputs([...inputs, ""]);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleRemoveInput = (idx: number) => {
+    const updated = inputs.filter((_, i) => i !== idx);
+    setInputs(updated.length > 0 ? updated : [""]);
+    // Also update Formik field value
+    const updatedField = field.value.filter((_, i) => i !== idx);
+    helpers.setValue(updatedField);
+  };
+
+  // On blur or Enter, update Formik field value
+  const handleInputBlur = () => {
+    const nonEmpty = inputs.map(i => i.trim()).filter(Boolean);
+    helpers.setValue(nonEmpty);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      addExpertise();
+      handleInputBlur();
+      // Optionally add new input if last
+      if (idx === inputs.length - 1) handleAddInput();
     }
   };
 
@@ -66,41 +88,40 @@ const ExpertiseField = ({ name }: ExpertiseFieldProps) => {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-gray-700">Expertise</label>
-        <button
+        <Button
+          iconLeft={<Image src={AddCircle} alt="Add" className="w-5 h-5" />}
           type="button"
-          onClick={addExpertise}
-          className="flex items-center gap-1 text-sm text-[var(--color-blue)] hover:underline"
+          variant="outline"
+          className="min-w-[92px]"
+          onClick={handleAddInput}
         >
-          <FiPlus size={14} />
           Add
-        </button>
+        </Button>
       </div>
 
-      {/* Input for adding new expertise */}
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Type and press Enter or click Add"
-        className="h-12 w-full px-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[var(--color-blue)]"
-      />
-
-      {/* List of expertise tags */}
+      {/* Multiple input fields for expertise */}
       <div className="space-y-2">
-        {field.value.map((expertise, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 bg-white"
-          >
-            <span className="text-sm text-[#20262D]">{expertise}</span>
-            <button
-              type="button"
-              onClick={() => removeExpertise(index)}
-              className="text-gray-400 hover:text-red-500"
-            >
-              <FiX size={16} />
-            </button>
+        {inputs.map((val, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <input
+              type="text"
+              value={val}
+              onChange={e => handleInputChange(idx, e.target.value)}
+              onBlur={handleInputBlur}
+              onKeyDown={e => handleKeyDown(e, idx)}
+              placeholder="Type expertise..."
+              className="h-12 w-full px-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[var(--color-blue)]"
+            />
+            {inputs.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleRemoveInput(idx)}
+                className="text-gray-400 hover:text-red-500"
+                tabIndex={-1}
+              >
+                <FiX size={16} />
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -114,7 +135,11 @@ interface EditProfileFormProps {
   onSuccess: () => void;
 }
 
-const EditProfileForm = ({ initialData, onCancel, onSuccess }: EditProfileFormProps) => {
+const EditProfileForm = ({
+  initialData,
+  onCancel,
+  onSuccess,
+}: EditProfileFormProps) => {
   const { updateProfileHandler, isLoading } = useUpdateProfileMutation();
 
   const initialValues: ProfileDetailsFormValues = {
@@ -130,7 +155,7 @@ const EditProfileForm = ({ initialData, onCancel, onSuccess }: EditProfileFormPr
 
   const handleSubmit = async (
     values: ProfileDetailsFormValues,
-    actions: FormikHelpers<ProfileDetailsFormValues>
+    actions: FormikHelpers<ProfileDetailsFormValues>,
   ) => {
     try {
       await updateProfileHandler({
@@ -169,34 +194,54 @@ const EditProfileForm = ({ initialData, onCancel, onSuccess }: EditProfileFormPr
           </button>
 
           {/* Title */}
-          <h2 className="text-xl font-semibold text-[#20262D]">Edit Profile</h2>
+          <h2 className="text-[18px] font-semibold text-[#212529]">
+            Edit Profile
+          </h2>
 
           {/* Form Fields */}
           <div className="space-y-4">
             {/* First Name & Last Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input name="firstName" label="First Name" placeholder="Enter first name" />
-              <Input name="lastName" label="Last Name" placeholder="Enter last name" />
+              <Input
+                name="firstName"
+                label="First Name"
+                placeholder="Enter first name"
+              />
+              <Input
+                name="lastName"
+                label="Last Name"
+                placeholder="Enter last name"
+              />
             </div>
 
             {/* Username & Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input name="username" label="Username" placeholder="Enter username" />
-              <Input 
-                name="email" 
-                label="Email Address" 
-                placeholder="Enter email" 
-                type="email" 
-                disabled 
+              <Input
+                name="username"
+                label="Username"
+                placeholder="Enter username"
+              />
+              <Input
+                name="email"
+                label="Email Address"
+                placeholder="Enter email"
+                type="email"
+                disabled
               />
             </div>
 
             {/* Phone Number */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Phone Number</label>
+              <label className="text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
               <div className="flex items-center gap-2">
                 <div className="w-32">
-                  <Select label="" name="countryCode" options={COUNTRY_OPTIONS} />
+                  <Select
+                    label=""
+                    name="countryCode"
+                    options={COUNTRY_OPTIONS}
+                  />
                 </div>
                 <div className="flex-1">
                   <Input name="phoneNumber" label="" placeholder="901234567" />
@@ -217,13 +262,13 @@ const EditProfileForm = ({ initialData, onCancel, onSuccess }: EditProfileFormPr
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-4">
+          <div className="flex sm:flex-row flex-col justify-center gap-4 pt-4">
             <Button
               type="button"
               variant="blueOutline"
               onClick={onCancel}
               disabled={isSubmitting || isLoading}
-              className="min-w-[140px]"
+              className="w-full"
             >
               Cancel
             </Button>
@@ -231,7 +276,7 @@ const EditProfileForm = ({ initialData, onCancel, onSuccess }: EditProfileFormPr
               type="submit"
               variant="darkBlue"
               disabled={isSubmitting || isLoading}
-              className="min-w-[140px]"
+              className="w-full"
             >
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>

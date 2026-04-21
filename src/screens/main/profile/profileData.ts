@@ -146,7 +146,6 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
       {
         id: "log-out",
         label: "Log Out",
-        href: "/profile/log-out",
         icon: FiLogOut,
       },
     ],

@@ -32,7 +32,11 @@ export const useUpdateProfileMutation = () => {
   const token = useAuthStore((state) => state.token);
 
   const updateProfile = async (payload: UpdateProfilePayload): Promise<UpdateProfileResponse> => {
-    return (await api.patch("/users/profile", payload)).data;
+    const user = useAuthStore.getState().user;
+    if (!user?.id) throw new Error("User ID not found");
+    return (
+      await api.post(`/users/${user.id}`, { ...payload, _method: "patch" })
+    ).data;
   };
 
   const mutation = useMutation<UpdateProfileResponse, AxiosError<ApiErrorResponse>, UpdateProfilePayload>({

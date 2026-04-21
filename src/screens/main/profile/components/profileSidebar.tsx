@@ -1,6 +1,13 @@
+import { useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FiCamera } from "react-icons/fi";
+
+import LogoutIcon from "@spt/assets/icons/logouticon.svg";
+import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
+import { useAuthStore } from "@spt/store/authStore";
 
 import type {
   ProfileDisplay,
@@ -20,6 +27,15 @@ const ProfileSidebar = ({
   activeItem,
 }: ProfileSidebarProps) => {
   const navigationItems = navigationGroups.flatMap((group) => group.items);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const logout = useAuthStore((state) => state.logout);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    setLogoutModalOpen(false);
+    router.push("/auth/signin");
+  };
 
   return (
     <div className="min-w-0">
@@ -70,10 +86,29 @@ const ProfileSidebar = ({
             const isDanger =
               item.id === "delete-my-account" || item.id === "log-out";
 
+            if (item.id === "log-out") {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setLogoutModalOpen(true)}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? "border-[#0B5368] bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
+                      : isDanger
+                        ? "border-[#FDE3E1] bg-[#FFF5F5] text-[#F04438]"
+                        : "border-[#E4ECF1] bg-[#F9FBFC] text-[#48606F] hover:border-[#0B5368] hover:text-[#20262D]"
+                  }`}
+                >
+                  <Icon className="text-[15px]" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            }
             return (
               <Link
                 key={item.id}
-                href={item.href}
+                href={item?.href || ''}
                 className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
                   isActive
                     ? "border-[#0B5368] bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
@@ -142,10 +177,30 @@ const ProfileSidebar = ({
                   const isDanger =
                     item.id === "delete-my-account" || item.id === "log-out";
 
+                  if (item.id === "log-out") {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setLogoutModalOpen(true)}
+                        className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm transition ${
+                          isActive
+                            ? "bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
+                            : isDanger
+                              ? "text-[#F04438] hover:bg-[#FFF5F5]"
+                              : "text-[#6E7C87] hover:bg-[#F7FBFD] hover:text-[#20262D]"
+                        }`}
+                      >
+                        <Icon className="shrink-0 text-[15px]" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  }
+
                   return (
                     <Link
                       key={item.id}
-                      href={item.href}
+                      href={item?.href || ''}
                       className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm transition ${
                         isActive
                           ? "bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
@@ -164,6 +219,16 @@ const ProfileSidebar = ({
           ))}
         </div>
       </aside>
+
+      <DeleteConfirmationModal
+        open={logoutModalOpen}
+        title="Are You Sure You Want to Log Out?"
+        description="You will need to sign in again to access your account"
+        confirmLabel="Yes Log Out"
+        onConfirm={handleLogout}
+        onCancel={() => setLogoutModalOpen(false)}
+        icon={<Image src={LogoutIcon} alt="logout" width={75} height={87} />}
+      />
     </div>
   );
 };
