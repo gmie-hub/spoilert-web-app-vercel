@@ -46,9 +46,7 @@ const ExpertiseField = ({ name }: ExpertiseFieldProps) => {
 
   // Sync local inputs with Formik field value if changed externally
   React.useEffect(() => {
-    if (field.value.length !== inputs.length || field.value.some((v, i) => v !== inputs[i])) {
-      setInputs(field.value.length > 0 ? field.value : [""]);
-    }
+    setInputs(field.value.length > 0 ? field.value : [""]);
   }, [field.value]);
 
   const handleInputChange = (idx: number, value: string) => {

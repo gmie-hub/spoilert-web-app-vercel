@@ -50,7 +50,6 @@ const dummyStats = [
 
 export default function SpoilStatsPage() {
   const { data, isLoading, isError } = useGetLearnerOverviewQuery();
-console.log(data,'data')
   // Map backend data to the stats UI, fallback to dummy if no data
   const stats = data && !isError
     ? [

@@ -5,15 +5,13 @@ import { isProfileSection } from "@spt/screens/main/profile/sectionUtils";
 
 
 interface ProfileSectionDetailsPageProps {
-  params?: {
+  params: Promise<{
     section: string;
-  };
+  }>;
 }
 
-
-export default function ProfileSectionDetailsPage({ params }: ProfileSectionDetailsPageProps) {
-  const section = params?.section;
-
+export default async function ProfileSectionDetailsPage({ params }: ProfileSectionDetailsPageProps) {
+  const { section } = await params;
 
   if (!section || !isProfileSection(section)) {
     notFound();

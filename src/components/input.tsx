@@ -7,6 +7,7 @@ import { useField } from "formik";
 import Image from "next/image";
 
 import EyeIcon from "@spt/assets/icons/eye-slash.svg";
+import EyeOpenIcon from "@spt/assets/icons/eye.svg";
 
 interface Props {
   name: string;
@@ -81,7 +82,7 @@ const Input: FC<Props> = ({
               <Image
                 width={16}
                 height={16}
-                src={EyeIcon}
+                src={showPassword ? EyeOpenIcon : EyeIcon}
                 alt={showPassword ? "Hide password" : "Show password"}
                 style={{ filter: showPassword ? "grayscale(100%)" : "none" }}
               />

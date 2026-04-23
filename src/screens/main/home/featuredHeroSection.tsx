@@ -5,11 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import FilterIcon from "@spt/assets/icons/filter-search.svg";
 import HeroImage from "@spt/assets/icons/heroimage1.svg";
 import HeroTwo from "@spt/assets/icons/heroimage2.svg";
 import HeroThree from "@spt/assets/icons/heroimage3.svg";
-import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
 import UserIcon from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
@@ -94,7 +92,6 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
 const FeaturedHeroSection = () => {
   const router = useRouter();
   const authUser = useAuthStore((state) => state.user);
-  const [searchValue, setSearchValue] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
   const { data } = useGetAllSpoilsQuery({ visibility: "published" });
   const heroSlides = [HeroImage, HeroTwo, HeroThree];

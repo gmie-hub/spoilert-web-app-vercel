@@ -158,7 +158,7 @@ const ProfileSidebar = ({
         </nav>
       </div>
 
-      <aside className="hidden rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] xl:block">
+      <aside className="hidden sticky top-[80px] max-h-[calc(100vh-100px)] overflow-y-auto rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] xl:block">
         <div className="flex flex-col items-center border-b border-[#EEF3F6] pb-6 text-center">
           <div className="relative">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[#D6DEF8]">

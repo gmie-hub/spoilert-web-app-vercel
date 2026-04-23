@@ -62,7 +62,7 @@ export default function PromotionMetrics() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {metrics.map((metric, idx) => (
           <div
-            key={metric.label}
+            key={idx}
             className={`flex flex-col justify-between min-h-[110px] rounded-xl p-5 ${metric.bg}`}
           >
             <div className="flex items-center gap-3 mb-2">
