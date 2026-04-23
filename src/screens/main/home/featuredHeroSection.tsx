@@ -124,48 +124,7 @@ const FeaturedHeroSection = () => {
                 <span className="text-[#DB8845]">Earn Money.</span>
               </h1>
 
-              <div className="mt-8 rounded-[18px] border border-[#B7C7D1] bg-[#FCFDFE] p-2 shadow-[0_6px_18px_rgba(8,55,72,0.04)]">
-                <div className="flex items-center gap-2">
-                  <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
-                    <Image
-                      src={SearchIcon}
-                      alt="Search"
-                      width={22}
-                      height={22}
-                      className="shrink-0"
-                    />
-                    <input
-                      value={searchValue}
-                      onChange={(event) => setSearchValue(event.target.value)}
-                      type="text"
-                      placeholder="Search for a spoil, tutor, Institution..."
-                      className="w-full border-none bg-transparent py-3 text-[14px] text-[#20262D] outline-none placeholder:text-[#6D7A86] sm:text-[15px]"
-                    />
-                  </div>
 
-                  <button
-                    type="button"
-                    aria-label="Filter search"
-                    className="flex h-11 w-11 items-center justify-center rounded-[12px] text-[#6D7A86] transition hover:bg-[#F3F8FA]"
-                  >
-                    <Image src={FilterIcon} alt="" width={20} height={20} />
-                  </button>
-
-                  <button
-                    type="button"
-                    aria-label="Search spoils"
-                    className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-[#0B5368] transition hover:bg-[#094A5C]"
-                  >
-                    <Image
-                      src={SearchIcon}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="brightness-0 invert"
-                    />
-                  </button>
-                </div>
-              </div>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Button className="min-w-[172px] rounded-[14px] px-8 py-4 text-[16px]">

@@ -1,4 +1,5 @@
 import ChangePasswordPage from "./change-password";
+import ManageBankAccount from "./components/ManageBankAccount";
 import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
 import MyBookmarksPage from "./my-bookmarks";
 import MyPromotionsPage from "./my-promotions";
@@ -38,6 +39,14 @@ const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
 
   if (section === "my-promotions") {
     return <MyPromotionsPage />;
+  }
+
+  if (section === "delete-my-account") {
+    return null;
+  }
+
+  if (section === "manage-bank-account") {
+    return <ManageBankAccount />;
   }
 
   const selectedItem = profileItems.find((item) => item.id === section);

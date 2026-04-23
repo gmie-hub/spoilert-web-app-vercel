@@ -10,13 +10,18 @@ import Button from "@spt/components/button";
 import ProfileLabelValue from "@spt/components/ProfileLabelValue";
 import useProfileDetailsQuery from "@spt/hooks/apiRequests/useProfileDetailsQuery";
 
+import { ErrorState } from "../../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
+
 import EditProfileForm from "./EditProfileForm";
+
 
 const ProfileDetailsSection = () => {
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
-  const { data, isLoading, isError } = useProfileDetailsQuery();
+  const { data, isLoading, isError, error } = useProfileDetailsQuery();
   const user = data?.data || {};
+  
   const profileData = {
     firstName: user?.first_name || "",
     lastName: user?.last_name || "",
@@ -33,10 +38,17 @@ const ProfileDetailsSection = () => {
   };
 
   if (isLoading) {
-    return <div>Loading profile...</div>;
+    return <LoadingState />;
   }
   if (isError) {
-    return <div>Failed to load profile.</div>;
+    // Try to get error message from backend response, fallback to generic error
+    let errorMessage = "An error occurred. Please try again.";
+    if (error && typeof error === "object") {
+      // Axios error shape
+      // @ts-ignore
+      errorMessage = error?.response?.data?.message || error?.message || errorMessage;
+    }
+    return <ErrorState message={errorMessage} />;
   }
 
   if (isEditing) {

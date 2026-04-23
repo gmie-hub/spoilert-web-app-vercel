@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 
 import Image from "next/image";
@@ -20,26 +22,28 @@ interface ProfileSidebarProps {
   profile: ProfileDisplay;
   navigationGroups: ProfileNavGroup[];
   activeItem: ProfileNavItemId;
+  showDeleteModal?: boolean;
 }
 
 const ProfileSidebar = ({
   profile,
   navigationGroups,
   activeItem,
+  showDeleteModal = false,
 }: ProfileSidebarProps) => {
   const navigationItems = navigationGroups.flatMap((group) => group.items);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUserMutation();
-    const handleDeleteAccount = () => {
-      if (user?.id) {
-        deleteUser(user.id);
-      }
-      setDeleteModalOpen(false);
-    };
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
+
+  const handleDeleteAccount = () => {
+    if (user?.id) {
+      deleteUser(user.id);
+    }
+    router.back();
+  };
 
   const handleLogout = () => {
     logout();
@@ -120,7 +124,7 @@ const ProfileSidebar = ({
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setDeleteModalOpen(true)}
+                  onClick={() => router.push("/profile/delete-my-account")}
                   className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
                     isActive
                       ? "border-[#0B5368] bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
@@ -230,7 +234,7 @@ const ProfileSidebar = ({
                       <button
                         key={item.id}
                         type="button"
-                        onClick={() => setDeleteModalOpen(true)}
+                        onClick={() => router.push("/profile/delete-my-account")}
                         className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm transition ${
                           isActive
                             ? "bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
@@ -277,14 +281,14 @@ const ProfileSidebar = ({
         icon={<Image src={LogoutIcon} alt="logout" width={75} height={87} />}
       />
       <DeleteConfirmationModal
-        open={deleteModalOpen}
+        open={showDeleteModal}
         title="Are You Sure You Want to Delete Your Account?"
         description="Deleting your account will remove all your data, including your progress, purchase history, and any created Spoils. This action cannot be undone."
         confirmLabel="Yes Delete"
         isLoading={isDeleting}
         loadingLabel="Deleting..."
         onConfirm={handleDeleteAccount}
-        onCancel={() => setDeleteModalOpen(false)}
+        onCancel={() => router.back()}
         icon={<Image src={LogoutIcon} alt="delete" width={75} height={87} />}
       />
     </div>

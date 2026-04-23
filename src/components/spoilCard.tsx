@@ -1,4 +1,3 @@
-
 import React from "react";
 
 import { motion } from "motion/react";
@@ -68,13 +67,18 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
           </h3>
 
           {/* Price */}
-    { spoil?.pricing === "free" ?  <p className="text-[18px] font-semibold text-[var(--color-black)]"> Free </p>:    <p className="text-[18px] font-semibold text-[var(--color-black)]">
-            ₦
-            {spoil?.display_amount?.toLocaleString() ||
-              spoil?.amount?.toLocaleString()}
-          </p>
-        
-}
+          {spoil?.pricing === "free" ? (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              {" "}
+              Free{" "}
+            </p>
+          ) : (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              ₦
+              {spoil?.display_amount?.toLocaleString() ||
+                spoil?.amount?.toLocaleString()}
+            </p>
+          )}
           {/* Tutor */}
           <HStack spacing="gap-2" alignItems="center">
             <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">

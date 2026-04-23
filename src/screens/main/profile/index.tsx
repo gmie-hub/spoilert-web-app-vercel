@@ -64,6 +64,7 @@ const ProfileShell = ({ children }: ProfileShellProps) => {
             activeItem={activeItem}
             navigationGroups={profileNavigationGroups}
             profile={profileDisplay}
+            showDeleteModal={activeItem === "delete-my-account"}
           />
 
           <div className="min-w-0 self-start rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] sm:px-7 sm:py-7">

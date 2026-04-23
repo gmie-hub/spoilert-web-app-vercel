@@ -23,9 +23,11 @@ import Button from "../../../../components/button";
 import Card from "../../../../components/card";
 import HStack from "../../../../components/hstack";
 import VStack from "../../../../components/vstack";
+import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 
 import BuySpoilPaymentModal from "./BuySpoilPaymentModal";
 import Details from "./details";
+
 
 interface SpoilDetailsProps {
   spoilId: number | string;
@@ -76,20 +78,9 @@ const getTutorInitials = (spoil: SpoilDetailsData) => {
   return `${firstInitial}${lastInitial}`.toUpperCase() || "NA";
 };
 
-const LoadingState = () => (
-  <section className="w-full bg-white relative">
-    <div className="h-[280px] sm:h-[320px] md:h-[420px] w-full animate-pulse bg-gray-100" />
-    <section className="px-5 lg:px-25 py-8">
-      <div className="space-y-4">
-        <div className="h-4 w-48 rounded bg-gray-100" />
-        <div className="h-10 w-80 rounded bg-gray-100" />
-        <div className="h-24 w-full max-w-3xl rounded bg-gray-100" />
-      </div>
-    </section>
-  </section>
-);
 
-const ErrorState = ({ message }: { message: string }) => (
+
+export const ErrorState = ({ message }: { message: string }) => (
   <section className="px-5 lg:px-25 py-16">
     <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-red-700">
       {message}
