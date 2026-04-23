@@ -1,12 +1,17 @@
 import ChangePasswordPage from "./change-password";
 import ManageBankAccount from "./components/ManageBankAccount";
 import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
+import CustomerSupportPage from "./customer-support";
+import EarningsBreakdownPage from "./earnings-breakdown";
 import MyBookmarksPage from "./my-bookmarks";
+import MySponsorshipsPage from "./my-sponsorships";
 import MyPromotionsPage from "./my-promotions";
 import MySpoilsSection from "./mySpoil";
 import { profileNavigationGroups } from "./profileData";
 import ProfileDetailsSection from "./profileDetails";
+import SpoilPerformanceAnalyticsPage from "./spoil-performance-analytics";
 import SpoilStatsPage from "./spoil-stats";
+import TransactionHistoryPage from "./transaction-history";
 
 import type { ProfileNavItemId } from "./types";
 
@@ -41,12 +46,32 @@ const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
     return <MyPromotionsPage />;
   }
 
+  if (section === "my-sponsorships") {
+    return <MySponsorshipsPage />;
+  }
+
+  if (section === "earnings-breakdown") {
+    return <EarningsBreakdownPage />;
+  }
+
+  if (section === "transaction-history") {
+    return <TransactionHistoryPage />;
+  }
+
+  if (section === "spoil-performance-analytics") {
+    return <SpoilPerformanceAnalyticsPage />;
+  }
+
   if (section === "delete-my-account") {
     return null;
   }
 
   if (section === "manage-bank-account") {
     return <ManageBankAccount />;
+  }
+
+  if (section === "customer-support") {
+    return <CustomerSupportPage />;
   }
 
   const selectedItem = profileItems.find((item) => item.id === section);
