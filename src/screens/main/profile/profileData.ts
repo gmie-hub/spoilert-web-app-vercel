@@ -62,12 +62,14 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "My Spoils",
         href: "/profile/my-spoils",
         icon: FiBookOpen,
+        tutorOnly: true,
       },
       {
         id: "spoil-performance-analytics",
         label: "Spoil Performance Analytics",
         href: "/profile/spoil-performance-analytics",
         icon: FiBarChart2,
+        tutorOnly: true,
       },
       {
         id: "my-sponsorships",
@@ -80,6 +82,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "My Promotions",
         href: "/profile/my-promotions",
         icon: FiPercent,
+        tutorOnly: true,
       },
     ],
   },
@@ -91,6 +94,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "Earnings Breakdown",
         href: "/profile/earnings-breakdown",
         icon: FiLayers,
+        tutorOnly: true,
       },
       {
         id: "transaction-history",
@@ -103,6 +107,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "Manage Bank Account",
         href: "/profile/manage-bank-account",
         icon: FiCreditCard,
+        tutorOnly: true,
       },
     ],
   },

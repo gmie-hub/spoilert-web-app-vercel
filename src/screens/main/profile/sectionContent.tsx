@@ -1,8 +1,10 @@
+
 import ChangePasswordPage from "./change-password";
 import ManageBankAccount from "./components/ManageBankAccount";
 import ProfilePlaceholderPage from "./components/profilePlaceholderPage";
 import CustomerSupportPage from "./customer-support";
 import EarningsBreakdownPage from "./earnings-breakdown";
+import FAQ from "./faqs/index";
 import MyBookmarksPage from "./my-bookmarks";
 import MyPromotionsPage from "./my-promotions";
 import MySponsorshipsPage from "./my-sponsorships";
@@ -72,6 +74,10 @@ const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
 
   if (section === "customer-support") {
     return <CustomerSupportPage />;
+  }
+
+  if (section === "faqs") {
+    return <FAQ />;
   }
 
   const selectedItem = profileItems.find((item) => item.id === section);

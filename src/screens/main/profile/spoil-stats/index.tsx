@@ -112,7 +112,7 @@ export default function SpoilStatsPage() {
               </span>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-2xl font-bold text-[#212529]">
+              <span className="text-[18px] font-semibold text-[#212529]">
                 {stat.value}
               </span>
             </div>

@@ -94,9 +94,9 @@ function Legend({
               className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
               style={{ backgroundColor: colors[i] }}
             />
-            <span className="text-[12px] text-[#374151] leading-snug">{course}</span>
+            <span className="text-[16px] text-[#495057] leading-snug">{course}</span>
           </div>
-          <span className="ml-[18px] text-[13px] font-semibold text-[#111827]">
+          <span className="ml-[18px] text-[18px] font-medium text-[#212529]">
             {fmt(values[i])}
           </span>
         </div>
@@ -119,9 +119,9 @@ function ChartSection({
   const segments: Segment[] = values.map((value, i) => ({ value, color: colors[i] }));
 
   return (
-    <div className="flex flex-col">
-      <h3 className="text-[15px] font-semibold text-[#111827]">{title}</h3>
-      <div className="mt-3">
+    <div className="flex flex-col border border-[#EFEFEF]  rounded-[8px] px-4 py-6">
+      <h3 className="text-[18px] font-semibold text-[#212529]">{title}</h3>
+      <div className="mt-4">
         <DonutChart segments={segments} />
       </div>
       <Legend values={values} colors={colors} formatter={formatter} />
@@ -136,7 +136,7 @@ function formatRevenue(v: number) {
 export default function SpoilPerformanceAnalyticsPage() {
   return (
     <div className="flex flex-col gap-8">
-      <h2 className="text-[20px] font-semibold text-[#20262D]">Spoil Performance Analytics</h2>
+      <h2 className="text-[18px] font-semibold text-[#212529]">Spoil Performance Analytics</h2>
 
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
         <ChartSection

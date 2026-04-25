@@ -9,6 +9,7 @@ import EditIcon from "@spt/assets/icons/edit-2profile.svg";
 import Button from "@spt/components/button";
 import ProfileLabelValue from "@spt/components/ProfileLabelValue";
 import useProfileDetailsQuery from "@spt/hooks/apiRequests/useProfileDetailsQuery";
+import { getErrorMessage } from "@spt/utils/error";
 
 import { ErrorState } from "../../home/spoilDetails/spoilDetails";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
@@ -41,14 +42,7 @@ const ProfileDetailsSection = () => {
     return <LoadingState />;
   }
   if (isError) {
-    // Try to get error message from backend response, fallback to generic error
-    let errorMessage = "An error occurred. Please try again.";
-    if (error && typeof error === "object") {
-      // Axios error shape
-      // @ts-ignore
-      errorMessage = error?.response?.data?.message || error?.message || errorMessage;
-    }
-    return <ErrorState message={errorMessage} />;
+    return <ErrorState message={getErrorMessage(error)} />;
   }
 
   if (isEditing) {

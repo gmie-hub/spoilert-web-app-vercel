@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiCamera } from "react-icons/fi";
 
+import deleteaccIcon from "@spt/assets/icons/deleteacc.svg";
 import LogoutIcon from "@spt/assets/icons/logouticon.svg";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
 import useDeleteUserMutation from "@spt/hooks/apiRequests/useDeleteUserMutation";
@@ -31,18 +32,30 @@ const ProfileSidebar = ({
   activeItem,
   showDeleteModal = false,
 }: ProfileSidebarProps) => {
-  const navigationItems = navigationGroups.flatMap((group) => group.items);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const isTutor = user?.role === "tutor";
+
+  const filteredGroups = navigationGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.tutorOnly || isTutor),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const navigationItems = filteredGroups.flatMap((group) => group.items);
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUserMutation();
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
 
   const handleDeleteAccount = () => {
     if (user?.id) {
-      deleteUser(user.id);
+      deleteUser(user.id, {
+        onSuccess: () => {
+          router.push("/auth/signin");
+        },
+      });
     }
-    router.back();
   };
 
   const handleLogout = () => {
@@ -194,7 +207,7 @@ const ProfileSidebar = ({
         </div>
 
         <div className="mt-6 space-y-6">
-          {navigationGroups.map((group) => (
+          {filteredGroups.map((group) => (
             <div
               key={group.title}
               className="border-b border-[#EEF3F6] pb-6 last:border-b-0 last:pb-0"
@@ -289,7 +302,7 @@ const ProfileSidebar = ({
         loadingLabel="Deleting..."
         onConfirm={handleDeleteAccount}
         onCancel={() => router.back()}
-        icon={<Image src={LogoutIcon} alt="delete" width={75} height={87} />}
+        icon={<Image src={deleteaccIcon} alt="delete" width={75} height={87} />}
       />
     </div>
   );

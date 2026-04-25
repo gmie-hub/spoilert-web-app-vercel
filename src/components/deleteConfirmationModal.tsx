@@ -39,12 +39,14 @@ const DeleteConfirmationModal: FC<DeleteConfirmationModalProps> = ({
     <Modal open={open} onClose={onCancel} size="md">
       <div className="flex flex-col items-center gap-4 py-4">
         <div className="flex h-16 w-16 items-center justify-center">
-          <Image
-            src={icon ?? DeleteIcon}
-            alt="delete"
-            width={100}
-            height={100}
-          />
+          {icon ?? (
+            <Image
+              src={DeleteIcon}
+              alt="delete"
+              width={100}
+              height={100}
+            />
+          )}
         </div>
 
         <p className="text-center text-2xl font-medium text-black">

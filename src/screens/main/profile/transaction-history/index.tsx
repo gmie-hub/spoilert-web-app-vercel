@@ -7,6 +7,11 @@ import { GoArrowUpRight } from "react-icons/go";
 import { IoCopyOutline } from "react-icons/io5";
 import { LuArrowDownLeft, LuTriangleAlert } from "react-icons/lu";
 
+import useGetPaymentsQuery from "@spt/hooks/apiRequests/useGetPaymentsQuery";
+import type { PaymentDatum } from "@spt/hooks/apiRequests/useGetPaymentsQuery";
+
+import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
+
 type TransactionType = "withdrawal" | "purchase" | "failed";
 type TransactionStatus = "successful" | "pending" | "failed";
 
@@ -262,8 +267,48 @@ function TransactionModal({
   );
 }
 
+function mapPaymentToTransaction(p: PaymentDatum): Transaction {
+  const dateObj = new Date(p.created_at);
+  const date = `${String(dateObj.getDate()).padStart(2, "0")}/${String(dateObj.getMonth() + 1).padStart(2, "0")}/${dateObj.getFullYear()}`;
+  const dateTime = dateObj.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  const num = parseFloat(p.amount);
+  const formatted = `₦${num.toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
+  const signed = p.type === "purchase" ? `+${formatted}` : `-${formatted}`;
+
+  return {
+    id: String(p.id),
+    type: p.type,
+    label: p.type === "purchase" ? "Spoil Purchase" : "Withdrawal",
+    description: p.description ?? "Description",
+    amount: signed,
+    date,
+    transactionId: p.reference,
+    dateTime,
+    fullDescription: p.description ?? "",
+    rawAmount: formatted,
+    accountCredited: p.account_credited ?? "",
+    status: p.status,
+    rejectionReason: p.rejection_reason ?? undefined,
+    transactionType: p.transaction_type ?? undefined,
+    learnerName: p.learner_name ?? undefined,
+  };
+}
+
 export default function TransactionHistoryPage() {
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const { payments, isLoading } = useGetPaymentsQuery();
+
+  if (isLoading) return <LoadingState />;
+
+  const mapped = payments.map(mapPaymentToTransaction);
+  const transactions = mapped.length > 0 ? mapped : dummyTransactions;
 
   return (
     <>
@@ -273,7 +318,7 @@ export default function TransactionHistoryPage() {
         </h2>
 
         <div className="mt-2 divide-y divide-[#EEF3F6]">
-          {dummyTransactions.map((tx) => (
+          {transactions.map((tx) => (
             <TransactionRow key={tx.id} tx={tx} onClick={setSelected} />
           ))}
         </div>

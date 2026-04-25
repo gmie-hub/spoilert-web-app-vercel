@@ -121,14 +121,16 @@ const FeaturedHeroSection = () => {
                 <span className="text-[#DB8845]">Earn Money.</span>
               </h1>
 
+              <p className="pt-2 text-[#495057] text-[24px]">Explore spoils, publish your own, learn, and earn on Spoilert.</p>
+
 
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Button className="min-w-[172px] rounded-[14px] px-8 py-4 text-[16px]">
+                <Button className="min-w-[172px] rounded-[14px] px-8 py-4 text-[16px] !bg-[#0C83A9] hover:!bg-[#0a6e8f]">
                   Download App
                 </Button>
                 {!authUser && (
-                  <Button
+                  <Button 
                     variant="blueOutline"
                     className="min-w-[172px] rounded-[14px] border-[#0B5368] px-8 py-4 text-[16px]"
                     onClick={() => router.push("/auth/signin")}

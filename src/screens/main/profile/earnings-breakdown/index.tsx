@@ -2,10 +2,12 @@
 
 import Image, { type StaticImageData } from "next/image";
 import { HiOutlineUsers } from "react-icons/hi";
-import { LuFileText, LuWallet } from "react-icons/lu";
 import { MdOutlineAutoGraph } from "react-icons/md";
-
+import walleticon from "@spt/assets/icons/wallet-3.svg";
 import AboutUsImage from "@spt/assets/images/aboutus3.svg";
+import ProfileIcon from "@spt/assets/icons/profile-2user.svg";
+import TotalIcon from "@spt/assets/icons/totalIcons.svg";
+import CreatedIcon from "@spt/assets/icons/scicon.svg";
 
 interface SpoilEarning {
   id: string;
@@ -76,8 +78,8 @@ const dummySpoils: SpoilEarning[] = [
 
 function SpoilEarningCard({ spoil }: { spoil: SpoilEarning }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-[#EEF3F6] bg-white p-3 shadow-sm">
-      <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg sm:h-[80px] sm:w-[80px]">
+    <div className="flex items-stretch gap-3 rounded-xl border-1 border-[#2222220D] bg-white p-4 shadow-sm">
+      <div className="relative h-[100px] w-[100px] flex-shrink-0 overflow-hidden rounded-[16px]">
         <Image
           src={spoil.thumbnail}
           alt={spoil.title}
@@ -85,16 +87,24 @@ function SpoilEarningCard({ spoil }: { spoil: SpoilEarning }) {
           className="object-cover"
         />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-[#20262D] sm:text-[14px]">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+        <p className="line-clamp-2 md:text-[16px]  leading-snug text-[#212529] sm:text-[14px]">
           {spoil.title}
         </p>
-        <div className="flex items-center gap-1.5 text-[12px] text-[#6B7B8D]">
-          <HiOutlineUsers className="h-[14px] w-[14px] flex-shrink-0 text-[#6B7B8D]" />
+        <div className="flex items-center gap-1 text-[14px] text-[#495057]">
+                <Image
+            src={ProfileIcon}
+            alt="profile icon"
+            className="h-[20px] w-[20px] flex-shrink-0 text-[#6B7B8D]"
+          />
           <span>{spoil.enrolled} Enrolled</span>
         </div>
-        <div className="flex items-center gap-1.5 text-[12px] text-[#6B7B8D]">
-          <LuFileText className="h-[14px] w-[14px] flex-shrink-0 text-[#6B7B8D]" />
+        <div className="flex items-center gap-1 text-[14px] text-[#212529]">
+          <Image
+            src={walleticon}
+            alt="wallet icon"
+            className="h-[20px] w-[20px] flex-shrink-0 text-[#6B7B8D]"
+          />{" "}
           <span>{spoil.earnings}</span>
         </div>
       </div>
@@ -107,10 +117,10 @@ export default function EarningsBreakdownPage() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h2 className="text-[20px] font-semibold text-[#20262D]">
+        <h2 className="text-[18px] font-semibold text-[#212529]">
           Earnings Breakdown
         </h2>
-        <p className="mt-1 text-[13px] text-[#6B7B8D]">
+        <p className="mt-1 text-[16px] text-[#495057]">
           Track your earnings from all your published Spoils
         </p>
       </div>
@@ -118,39 +128,30 @@ export default function EarningsBreakdownPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Total Earnings */}
-        <div className="flex items-center gap-4 rounded-2xl bg-[#0B5368] px-5 py-5">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#ffffff1a]">
-            <LuWallet className="h-5 w-5 text-white" />
+        <div className="flex flex-col gap-3 rounded-xl border border-[#A5D1DE] bg-[#E3F5FA] px-5 py-5">
+          <div className="flex items-center gap-2">
+              <Image src={TotalIcon} alt="wallet icon" className="h-10 w-10" />
+            
+            <p className="text-[14px] font-medium text-[#495057]">Total Earnings</p>
           </div>
-          <div>
-            <p className="text-[13px] font-medium text-[#ffffffb3]">
-              Total Earnings
-            </p>
-            <p className="mt-0.5 text-[22px] font-bold leading-tight text-white sm:text-[26px]">
-              ₦800,00.00
-            </p>
-          </div>
+          <p className="text-[18px] font-semibold text-[#212529]">₦800,00.00</p>
         </div>
 
         {/* Spoils Created */}
-        <div className="flex items-center gap-4 rounded-2xl bg-[#FEF0E7] px-5 py-5">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#F97316]/20">
-            <MdOutlineAutoGraph className="h-5 w-5 text-[#F97316]" />
+        <div className="flex flex-col gap-3 rounded-xl border border-[#F9D0B0] bg-[#FEF0E7] px-5 py-5">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#F97316]">
+              <Image src={CreatedIcon} alt="created icon" className="h-10 w-10 text-white" />
+            </div>
+            <p className="text-[14px] font-medium text-[#495057]">Spoils Created</p>
           </div>
-          <div>
-            <p className="text-[13px] font-medium text-[#8C6A50]">
-              Spoils Created
-            </p>
-            <p className="mt-0.5 text-[26px] font-bold leading-tight text-[#20262D] sm:text-[30px]">
-              25
-            </p>
-          </div>
+          <p className="text-[18px] font-semibold text-[#212529]">25</p>
         </div>
       </div>
 
       {/* Spoils Earnings Breakdown List */}
       <div>
-        <h3 className="mb-4 text-[15px] font-semibold text-[#20262D]">
+        <h3 className="mb-4 text-[16px] font-medium text-[#212529]">
           Spoils Earnings Breakdown
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -22,6 +22,7 @@ export interface ProfileNavItem {
   label: string;
   href?: string;
   icon: IconType;
+  tutorOnly?: boolean;
 }
 
 export interface ProfileNavGroup {
