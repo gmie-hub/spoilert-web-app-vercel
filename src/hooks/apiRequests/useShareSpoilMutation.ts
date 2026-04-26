@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import type { ApiErrorResponse } from "@spt/types/error";
@@ -19,6 +19,8 @@ interface ShareSpoilResponse {
 }
 
 const useShareSpoilMutation = () => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation<
     ShareSpoilResponse,
     AxiosError<ApiErrorResponse>,
@@ -27,6 +29,9 @@ const useShareSpoilMutation = () => {
     mutationKey: ["share-spoil"],
     mutationFn: async (payload) =>
       (await api.post("/spoils/shares", payload)).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
+    },
   });
 
   const shareSpoil = async (spoil_id: number) => {

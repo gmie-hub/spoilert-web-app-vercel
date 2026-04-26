@@ -13,6 +13,7 @@ import { ErrorState } from "../../home/spoilDetails/spoilDetails";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 import { mySpoilsTabOptions } from "../profileData";
 
+import MySpoilDetailView from "./components/MySpoilDetailView";
 import MySpoilsCard from "./components/mySpoilsCard";
 import MySpoilsSearchBar from "./components/mySpoilsSearchBar";
 import RepublishSpoilModal from "./components/RepublishSpoilModal";
@@ -33,6 +34,7 @@ const MySpoilsSection = ({
   const [activeTab, setActiveTab] = useState<MySpoilTabId>(initialTab);
   const [searchValue, setSearchValue] = useState("");
   const [selectedSpoil, setSelectedSpoil] = useState<SpoilDatum | null>(null);
+  const [republishSpoil_, setRepublishSpoil] = useState<SpoilDatum | null>(null);
   const [successSpoil, setSuccessSpoil] = useState<SpoilDatum | null>(null);
   const user = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
@@ -79,18 +81,18 @@ const MySpoilsSection = ({
   }, [deferredSearchValue, spoils]);
 
   const handleRepublishClick = (spoil: SpoilDatum) => {
-    setSelectedSpoil(spoil);
+    setRepublishSpoil(spoil);
   };
 
   const handleRepublishConfirm = async () => {
-    if (!selectedSpoil) {
+    if (!republishSpoil_) {
       return;
     }
 
     try {
-      await republishSpoil(selectedSpoil.id);
-      setSuccessSpoil(selectedSpoil);
-      setSelectedSpoil(null);
+      await republishSpoil(republishSpoil_.id);
+      setSuccessSpoil(republishSpoil_);
+      setRepublishSpoil(null);
     } catch {
       // mutation hook already shows feedback and keeps the modal open
     }
@@ -101,9 +103,20 @@ const MySpoilsSection = ({
       return;
     }
 
-    setSelectedSpoil(null);
+    setRepublishSpoil(null);
   };
+
   const router = useRouter();
+
+  // Show detail view when a spoil is selected
+  if (selectedSpoil) {
+    return (
+      <MySpoilDetailView
+        spoilId={selectedSpoil.id}
+        onBack={() => setSelectedSpoil(null)}
+      />
+    );
+  }
 
   if (isLoading) {
     return <LoadingState />;
@@ -156,6 +169,7 @@ const MySpoilsSection = ({
                 spoil={spoil}
                 activeTab={activeTab}
                 onRepublish={handleRepublishClick}
+                onCardClick={setSelectedSpoil}
               />
             ))}
           </div>
@@ -187,7 +201,7 @@ const MySpoilsSection = ({
       </div>
 
       <RepublishSpoilModal
-        open={Boolean(selectedSpoil)}
+        open={Boolean(republishSpoil_)}
         onClose={handleCloseRepublishModal}
         onConfirm={handleRepublishConfirm}
         isLoading={isRepublishing}

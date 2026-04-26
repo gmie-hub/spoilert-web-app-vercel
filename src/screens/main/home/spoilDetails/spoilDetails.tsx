@@ -22,15 +22,13 @@ import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation"
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { SpoilDetailsData } from "@spt/utils/spoils";
 
-import Button from "../../../../components/button";
-import Card from "../../../../components/card";
 import HStack from "../../../../components/hstack";
-import VStack from "../../../../components/vstack";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 
 import BuySpoilPaymentModal from "./BuySpoilPaymentModal";
 import Details from "./details";
 import ShareLinkModal from "./ShareLinkModal";
+import { SpoilMobileCTA, SpoilPricingCard } from "./SpoilPricingCard";
 import SponsorSpoilModal from "./SponsorSpoilModal";
 
 interface SpoilDetailsProps {
@@ -154,7 +152,6 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   };
 
   const handlePrimaryCtaClick = async () => {
-    // If the user is already enrolled or has progress, go straight to the spoil start
     if (shouldContinue) {
       router.push(`/spoil/${spoil.id}/start`);
       return;
@@ -190,8 +187,6 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
       <section className="px-5 lg:px-25">
         <div className="relative pb-10 grid lg:grid-cols-[1fr_360px] gap-8">
           <div className="pt-8">
-            {/* <p className="text-sm text-gray-500 mb-1">{buildMetaLabel(spoil)}</p> */}
-
             <h1 className="text-lg text-[#212529] md:text-xl">{spoil.title}</h1>
 
             <HStack spacing="gap-2" className="mt-3 flex-wrap">
@@ -200,14 +195,8 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
               </span>
 
               <span className="px-3 py-1 rounded-md border border-gray-lightest text-black text-xs flex items-center gap-1">
-                <Image
-                  src={StarIcon}
-                  alt="Star rating"
-                  width={20}
-                  height={20}
-                />
-                {(spoil.average_rating ?? 0).toFixed(1)} (
-                {spoil.ratings_count ?? 0})
+                <Image src={StarIcon} alt="Star rating" width={20} height={20} />
+                {(spoil.average_rating ?? 0).toFixed(1)} ({spoil.ratings_count ?? 0})
               </span>
             </HStack>
 
@@ -217,12 +206,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                 className="text-xs text-gray-500 whitespace-nowrap flex-wrap"
               >
                 <span className="flex items-center gap-1 px-3 py-2 bg-[#F6F6F6] rounded-md">
-                  <Image
-                    src={Profile}
-                    alt="Enrolled users"
-                    width={20}
-                    height={20}
-                  />
+                  <Image src={Profile} alt="Enrolled users" width={20} height={20} />
                   {spoil.enrolled_users ?? 0} Enrolled
                 </span>
                 <span className="flex items-center gap-1 px-3 py-2 bg-[#F6F6F6] rounded-md">
@@ -252,20 +236,15 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                   setIsShareModalOpen(true);
                 }}
               >
-                <Image
-                  src={BlueShareIcon}
-                  alt="Share spoil"
-                  width={20}
-                  height={20}
-                />
+                <Image src={BlueShareIcon} alt="Share spoil" width={20} height={20} />
                 Share
               </button>
             </HStack>
 
             <HStack spacing="gap-4" className="mt-4 text-sm text-gray-dark">
               <button
-                disabled={isLiking}
-                onClick={() => toggleLike(spoil.id)}
+                // disabled={isLiking}
+                onClick={() => toggleLike(2)}
                 className="flex items-center gap-1 hover:text-black disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
               >
                 <Image src={ThumbUp} alt="Likes" width={20} height={20} />
@@ -301,94 +280,22 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
               {tutorName}
             </div>
 
-            <div className="lg:hidden">
-              <VStack spacing="gap-4" className="pt-4 w-full sm:w-1/2">
-                <Button
-                  variant="lightBlue"
-                  className="w-full py-3 bg-sky-50 text-sky-700 border border-sky-100"
-                  onClick={() => setIsSponsorModalOpen(true)}
-                >
-                  Sponsor Spoil
-                </Button>
-                <Button
-                  variant="darkBlue"
-                  className="w-full py-3 cursor-pointer"
-                  onClick={handlePrimaryCtaClick}
-                >
-                  {shouldContinue
-                    ? "Continue Learning"
-                    : isFreeSpoil
-                      ? "Start Spoil"
-                      : "Buy Spoil"}
-                </Button>
-              </VStack>
-            </div>
+            <SpoilMobileCTA
+              shouldContinue={shouldContinue}
+              isFreeSpoil={isFreeSpoil}
+              onPrimaryClick={handlePrimaryCtaClick}
+              onSponsor={() => setIsSponsorModalOpen(true)}
+            />
           </div>
 
-          <div className="hidden lg:block relative">
-            <div className="absolute -top-36 right-0 w-[340px]">
-              <Card className="rounded-2xl bg-white shadow-2xl ring-1 ring-gray-100 px-6 md:min-w-sm">
-                <VStack spacing="gap-6" className="w-full items-start">
-                  <p className="text-lg font-semibold text-black">{price}</p>
-
-                  <Button
-                    variant="darkBlue"
-                    className="w-full py-3"
-                    onClick={handlePrimaryCtaClick}
-                  >
-                    {shouldContinue
-                      ? "Continue Learning"
-                      : isFreeSpoil
-                        ? "Start Spoil"
-                        : "Buy Spoil"}
-                  </Button>
-
-                  <Button
-                    variant="lightBlue"
-                    className="w-full py-3 bg-white text-sky-700 border border-sky-100"
-                    onClick={() => setIsSponsorModalOpen(true)}
-                  >
-                    Sponsor Spoil
-                  </Button>
-
-                  <div className="w-full border-t pt-4 border-[#E7E7E7]">
-                    <HStack
-                      spacing="gap-2"
-                      className="text-xs text-gray-500 whitespace-nowrap flex-wrap"
-                    >
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
-                        <Image
-                          src={Profile}
-                          alt="Enrolled users"
-                          width={20}
-                          height={20}
-                        />
-                        {spoil.enrolled_users ?? 0} Enrolled
-                      </span>
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
-                        <Image
-                          src={BookIcon}
-                          alt="Modules"
-                          width={20}
-                          height={20}
-                        />
-                        {spoil.modules_no ?? 0} Modules
-                      </span>
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
-                        <Image
-                          src={ClockIcon}
-                          alt="Lessons"
-                          width={20}
-                          height={20}
-                        />
-                        {spoil.lessons_no ?? 0} Lessons
-                      </span>
-                    </HStack>
-                  </div>
-                </VStack>
-              </Card>
-            </div>
-          </div>
+          <SpoilPricingCard
+            price={price}
+            spoil={spoil}
+            shouldContinue={shouldContinue}
+            isFreeSpoil={isFreeSpoil}
+            onPrimaryClick={handlePrimaryCtaClick}
+            onSponsor={() => setIsSponsorModalOpen(true)}
+          />
         </div>
 
         <Details spoil={spoil} />

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   FiEdit2,
@@ -13,8 +12,8 @@ import {
   FiUsers,
 } from "react-icons/fi";
 
-import EditIcon from "@spt/assets/icons/border-edit.svg"
-import MoreIcon from "@spt/assets/icons/more.svg"
+import EditIcon from "@spt/assets/icons/border-edit.svg";
+import MoreIcon from "@spt/assets/icons/more.svg";
 import type { SpoilDatum } from "@spt/utils/spoils";
 
 import {
@@ -33,9 +32,15 @@ interface MySpoilsCardProps {
   spoil: SpoilDatum;
   activeTab: MySpoilTabId;
   onRepublish?: (spoil: SpoilDatum) => void;
+  onCardClick: (spoil: SpoilDatum) => void;
 }
 
-const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
+const MySpoilsCard = ({
+  spoil,
+  activeTab,
+  onRepublish,
+  onCardClick,
+}: MySpoilsCardProps) => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
@@ -43,7 +48,6 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
   const meta = getSpoilMeta(spoil);
   const statusLabel = getMySpoilStatusLabel(activeTab, spoil);
   const priceLabel = formatSpoilPrice(spoil);
-  const spoilHref = `/spoil-details/${spoil.id}`;
   const isDraftCard = activeTab === "drafts";
   const scheduledLabel = formatScheduledSpoilDate(spoil.premiere_at);
   const editSpoilHref =
@@ -77,8 +81,8 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
     return (
       <UnpublishedSpoilCard
         spoil={spoil}
-        spoilHref={spoilHref}
         onRepublish={onRepublish ?? (() => {})}
+        onCardClick={onCardClick}
       />
     );
   }
@@ -87,9 +91,10 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
     return (
       <article className="rounded-[22px] border border-[#F1F4F7] bg-white p-4 shadow-[0_16px_44px_rgba(11,83,104,0.08)] transition hover:shadow-[0_18px_50px_rgba(11,83,104,0.12)] sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Link
-            href={spoilHref}
-            className="relative block h-[160px] w-full shrink-0 overflow-hidden rounded-[22px] bg-[#E8EEF2] sm:h-[178px] sm:w-[176px]"
+          <button
+            type="button"
+            onClick={() => onCardClick(spoil)}
+            className="relative block h-[160px] w-full shrink-0 overflow-hidden rounded-[22px] bg-[#E8EEF2] sm:h-[178px] sm:w-[176px] cursor-pointer"
           >
             <Image
               src={spoil.cover_image_url}
@@ -97,14 +102,18 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
               fill
               className="object-cover"
             />
-          </Link>
+          </button>
 
           <div className="min-w-0 flex-1">
-            <Link href={spoilHref} className="block">
-              <h3 className="font-medium leading-[1.25] tracking-[-0.03em] text-[#20262D]">
+            <button
+              type="button"
+              onClick={() => onCardClick(spoil)}
+              className="block text-left w-full"
+            >
+              <h3 className="font-medium leading-[1.25] tracking-[-0.03em] text-[#20262D] hover:text-[#0B5368] transition-colors">
                 {spoil.title}
               </h3>
-            </Link>
+            </button>
 
             <p className="mt-1.5 text-sm text-[#5F6B76]">
               Scheduled for {scheduledLabel}
@@ -139,9 +148,10 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
   return (
     <article className="rounded-[18px] border border-[#F1F4F7] bg-white p-3 shadow-[0_16px_44px_rgba(11,83,104,0.08)] transition hover:shadow-[0_18px_50px_rgba(11,83,104,0.12)]">
       <div className="flex gap-3">
-        <Link
-          href={spoilHref}
-          className="relative block h-[100px] w-[86px] shrink-0 overflow-hidden rounded-[14px] bg-[#E8EEF2]"
+        <button
+          type="button"
+          onClick={() => onCardClick(spoil)}
+          className="relative block h-[100px] w-[86px] shrink-0 overflow-hidden rounded-[14px] bg-[#E8EEF2] cursor-pointer"
         >
           <Image
             src={spoil.cover_image_url}
@@ -149,7 +159,7 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
             fill
             className="object-cover"
           />
-        </Link>
+        </button>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
@@ -157,14 +167,15 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
               <p className="truncate text-[11px] text-[#8A98A3]">
                 {meta.institution}
               </p>
-              <Link
-                href={spoilHref}
-                className="mt-1 block"
+              <button
+                type="button"
+                onClick={() => onCardClick(spoil)}
+                className="mt-1 block text-left w-full"
               >
-                <h3 className="line-clamp-3 text-sm font-medium leading-6 text-[#20262D]">
+                <h3 className="line-clamp-3 text-sm font-medium leading-6 text-[#20262D] hover:text-[#0B5368] transition-colors">
                   {spoil.title}
                 </h3>
-              </Link>
+              </button>
             </div>
 
             <div ref={menuRef} className="relative shrink-0">
@@ -179,13 +190,17 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
 
               {isMenuOpen ? (
                 <div className="absolute right-0 top-8 z-20 min-w-[203px] rounded-[14px] border border-[#EEF3F6] bg-white p-2 shadow-[0_22px_48px_rgba(17,24,39,0.12)]">
-                  <Link
-                    href={spoilHref}
-                    className="flex items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-[#4A5560] transition hover:bg-[#F7FBFD]"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onCardClick(spoil);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-[#4A5560] transition hover:bg-[#F7FBFD]"
                   >
                     <FiUsers className="text-[14px]" />
                     <span>View Spoil</span>
-                  </Link>
+                  </button>
                   <button
                     type="button"
                     onClick={handleEditSpoil}
