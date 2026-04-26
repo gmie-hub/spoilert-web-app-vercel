@@ -28,7 +28,7 @@ export function MessageBubble({ msg, learnerInitial }: Props) {
         className={`max-w-[65%] flex flex-col ${msg.fromMe ? "items-end" : "items-start"}`}
       >
         <div
-          className={`text-sm text-[#20262D] leading-relaxed ${
+          className={`w-fit text-sm text-[#20262D] leading-relaxed ${
             msg.type === "image" ? "overflow-hidden rounded-2xl" : `px-4 py-3 ${bubbleClass}`
           }`}
         >
@@ -62,7 +62,7 @@ export function MessageBubble({ msg, learnerInitial }: Props) {
           )}
         </div>
 
-        <div className="flex items-center gap-1 mt-1 px-1">
+        <div className="flex items-center gap-1 mt-1.5 px-1">
           <span className="text-[10px] text-[#8A98A3]">{msg.time}</span>
           {msg.fromMe && (
             <span className="text-[10px] text-[#0B5368] font-semibold tracking-tighter">✓✓</span>

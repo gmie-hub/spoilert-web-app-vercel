@@ -14,9 +14,10 @@ import { ChatHeader } from "./chatView/ChatHeader";
 import { ChatInputBar } from "./chatView/ChatInputBar";
 import { EmptyState } from "./chatView/EmptyState";
 import { MessageBubble } from "./chatView/MessageBubble";
-import type { ChatMessage } from "./chatView/types";
 import { getTime } from "./chatView/types";
 import { useRecording } from "./chatView/useRecording";
+
+import type { ChatMessage } from "./chatView/types";
 
 const DUMMY_LEARNERS: EnrolledLearner[] = [
   { id: 1, status: "completed", created_at: "2024-11-10", learner: { id: 1, first_name: "Amara", last_name: "Okafor" } },

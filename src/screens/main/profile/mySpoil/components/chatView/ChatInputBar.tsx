@@ -1,13 +1,13 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
 
 import { AttachmentMenu } from "./AttachmentMenu";
 import { RecordingBar } from "./RecordingBar";
-import type { ChatMessage } from "./types";
 import { getTime } from "./types";
+
+import type { ChatMessage } from "./types";
 
 interface Props {
   inputText: string;
