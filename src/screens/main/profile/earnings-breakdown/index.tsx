@@ -1,13 +1,12 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { HiOutlineUsers } from "react-icons/hi";
-import { MdOutlineAutoGraph } from "react-icons/md";
+
+import ProfileIcon from "@spt/assets/icons/profile-2user.svg";
+import CreatedIcon from "@spt/assets/icons/scicon.svg";
+import TotalIcon from "@spt/assets/icons/totalIcons.svg";
 import walleticon from "@spt/assets/icons/wallet-3.svg";
 import AboutUsImage from "@spt/assets/images/aboutus3.svg";
-import ProfileIcon from "@spt/assets/icons/profile-2user.svg";
-import TotalIcon from "@spt/assets/icons/totalIcons.svg";
-import CreatedIcon from "@spt/assets/icons/scicon.svg";
 
 interface SpoilEarning {
   id: string;
