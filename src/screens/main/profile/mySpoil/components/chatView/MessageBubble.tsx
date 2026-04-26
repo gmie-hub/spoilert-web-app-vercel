@@ -2,6 +2,7 @@ import Image from "next/image";
 import { FiFile } from "react-icons/fi";
 
 import { AudioPlayer } from "./AudioPlayer";
+
 import type { ChatMessage } from "./types";
 
 interface Props {
