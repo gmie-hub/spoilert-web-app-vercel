@@ -65,10 +65,12 @@ const CommunityCard = ({ community, variant, onClick }: CommunityCardProps) => {
       >
         {isLocked ? (
           <FiLock className="text-base" />
-        ) : community.avatarUrl ? (
+        ) : community && community?.avatarUrl ? (
           <Image
-            src={community.avatarUrl}
-            alt={`${community.name} cover`}
+            src={community?.avatarUrl}
+            alt={`${community?.name} cover`}
+            width={48}
+            height={48}
             className="h-full w-full object-cover"
           />
         ) : (

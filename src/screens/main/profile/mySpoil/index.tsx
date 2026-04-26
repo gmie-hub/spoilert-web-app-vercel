@@ -9,6 +9,8 @@ import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuer
 import { useAuthStore } from "@spt/store/authStore";
 import type { SpoilDatum } from "@spt/utils/spoils";
 
+import { ErrorState } from "../../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 import { mySpoilsTabOptions } from "../profileData";
 
 import MySpoilsCard from "./components/mySpoilsCard";
@@ -103,6 +105,14 @@ const MySpoilsSection = ({
   };
   const router = useRouter();
 
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (isError) {
+    return <ErrorState message={errorMessage} />;
+  }
+
   return (
     <div>
       <h2 className="text-lg font-semibold text-black">My Spoils</h2>
@@ -138,20 +148,7 @@ const MySpoilsSection = ({
       <MySpoilsSearchBar value={searchValue} onChange={setSearchValue} />
 
       <div className="mt-5 min-h-[420px]">
-        {isLoading ? (
-          <div className={`grid gap-5 ${resultsLayoutClass}`}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={`spoil-skeleton-${index}`}
-                className="h-[156px] animate-pulse rounded-[18px] border border-[#F1F4F7] bg-[#F7FAFC]"
-              />
-            ))}
-          </div>
-        ) : isError ? (
-          <div className="flex min-h-[420px] items-center justify-center px-4 py-10 text-center">
-            <p className="text-sm text-[#D92D20]">{errorMessage}</p>
-          </div>
-        ) : filteredSpoils.length > 0 ? (
+        {filteredSpoils.length > 0 ? (
           <div className={`grid gap-5 ${resultsLayoutClass}`}>
             {filteredSpoils.map((spoil) => (
               <MySpoilsCard

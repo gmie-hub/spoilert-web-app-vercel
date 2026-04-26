@@ -24,6 +24,7 @@ import {
   getSpoilMeta,
 } from "../helpers";
 
+import PromoteSpoilModal from "./PromoteSpoilModal";
 import UnpublishedSpoilCard from "./UnpublishedSpoilCard";
 
 import type { MySpoilTabId } from "../../types";
@@ -37,6 +38,7 @@ interface MySpoilsCardProps {
 const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const meta = getSpoilMeta(spoil);
   const statusLabel = getMySpoilStatusLabel(activeTab, spoil);
@@ -194,6 +196,10 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
                   </button>
                   <button
                     type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsPromoteModalOpen(true);
+                    }}
                     className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-[#4A5560] transition hover:bg-[#F7FBFD]"
                   >
                     <FiShare2 className="text-[14px]" />
@@ -249,6 +255,12 @@ const MySpoilsCard = ({ spoil, activeTab, onRepublish }: MySpoilsCardProps) => {
           </div>
         </div>
       </div>
+
+      <PromoteSpoilModal
+        open={isPromoteModalOpen}
+        onClose={() => setIsPromoteModalOpen(false)}
+        spoil={spoil}
+      />
     </article>
   );
 };
