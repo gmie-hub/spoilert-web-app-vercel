@@ -22,6 +22,8 @@ import Profile from "@spt/assets/icons/profile-2user.svg";
 import StarIcon from "@spt/assets/icons/star.svg";
 import useCreateCommunityMutation from "@spt/hooks/apiRequests/useCreateCommunityMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
+import ShareLinkModal from "@spt/screens/main/home/spoilDetails/ShareLinkModal";
 
 import Details from "../../../home/spoilDetails/details";
 import SponsorSpoilModal from "../../../home/spoilDetails/SponsorSpoilModal";
@@ -38,8 +40,12 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
 }) => {
   const router = useRouter();
   const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false);
+  const { shareSpoil } = useShareSpoilMutation();
+
   const { data: spoil, isLoading } = useGetSpoilDetailsQuery(spoilId);
-  const { createCommunityHandler, isLoading: isCreatingCommunity } = useCreateCommunityMutation();
+  const { createCommunityHandler, isLoading: isCreatingCommunity } =
+    useCreateCommunityMutation();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   if (isLoading) {
     return <LoadingState />;
@@ -59,7 +65,8 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
   const ratingsCount = spoil.ratings_count ?? 0;
   const heroImage = spoil.cover_image_url || HeroFallback;
   const isFallbackImage = !spoil.cover_image_url;
-  const amountEarned = (spoil.display_amount ?? 0) * (spoil.enrolled_users ?? 0);
+  const amountEarned =
+    (spoil.display_amount ?? 0) * (spoil.enrolled_users ?? 0);
 
   const editHref =
     spoil.type === "simple"
@@ -90,15 +97,17 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             </span>
           </button>
 
-         {spoil?.community === null && (<button
-            type="button"
-            disabled={isCreatingCommunity}
-            onClick={() => createCommunityHandler({ spoil_id: spoil.id })}
-            className="flex items-center gap-1.5 bg-[#0B5368] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#09485A] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isCreatingCommunity ? "Creating..." : "Create Community"}
-            {!isCreatingCommunity && <FiChevronRight size={14} />}
-          </button>)}
+          {spoil?.community === null && (
+            <button
+              type="button"
+              disabled={isCreatingCommunity}
+              onClick={() => createCommunityHandler({ spoil_id: spoil.id })}
+              className="flex items-center gap-1.5 bg-[#0B5368] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#09485A] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isCreatingCommunity ? "Creating..." : "Create Community"}
+              {!isCreatingCommunity && <FiChevronRight size={14} />}
+            </button>
+          )}
         </div>
       </div>
 
@@ -118,7 +127,6 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
 
       {/* Content */}
       <div className="px-4 sm:px-6 py-5 max-w-3xl mx-auto lg:max-w-none">
-
         {/* Edit + Unpublish buttons */}
         <div className="flex items-center gap-3 flex-wrap">
           <button
@@ -154,6 +162,10 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
         {/* Share + View Stats */}
         <div className="mt-4 flex items-center gap-3 flex-wrap">
           <button
+            onClick={() => {
+              shareSpoil(spoil.id);
+              setIsShareModalOpen(true);
+            }}
             type="button"
             className="flex items-center gap-2 border border-[#E0E0E0] px-4 py-2 rounded-xl text-sm text-[#20262D] hover:border-[#B0B0B0] transition-colors"
           >
@@ -162,7 +174,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => router.push(`/profile/spoil-performance-analytics`)}
+            onClick={() => router.push("/profile/spoil-stats")}
             className="flex items-center gap-2 border border-[#E0E0E0] px-4 py-2 rounded-xl text-sm text-[#20262D] hover:border-[#B0B0B0] transition-colors"
           >
             View Stats
@@ -215,13 +227,16 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             Sponsor Spoil
             <FiArrowRight size={14} />
           </button>
-          <button
-            type="button"
-            className="flex items-center gap-2 border border-[#0B5368] text-[#0B5368] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F0F8FB] transition-colors"
-          >
-            Enrolled Learners
-            <FiArrowRight size={14} />
-          </button>
+          {spoil?.enrolled_users === 0 && (
+            <button
+              type="button"
+              onClick={() => router.push(`/my-spoils/${spoilId}/enrolled-learners`)}
+              className="flex items-center gap-2 border border-[#0B5368] text-[#0B5368] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F0F8FB] transition-colors"
+            >
+              Enrolled Learners
+              <FiArrowRight size={14} />
+            </button>
+          )}
         </div>
 
         {/* Stats cards */}
@@ -279,6 +294,12 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
         open={isSponsorModalOpen}
         onClose={() => setIsSponsorModalOpen(false)}
         spoil={spoil}
+      />
+
+      <ShareLinkModal
+        open={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        url={`${typeof window !== "undefined" ? window.location.origin : ""}/spoil-details/${spoil.id}`}
       />
     </div>
   );

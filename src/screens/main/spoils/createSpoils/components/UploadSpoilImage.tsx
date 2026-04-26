@@ -106,6 +106,8 @@ const UploadSpoilImage = () => {
             <Image
               src={previewUrl}
               alt="Cover preview"
+              width={72}
+              height={72}
               className="h-full w-full object-cover"
             />
           ) : (

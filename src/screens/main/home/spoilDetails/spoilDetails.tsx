@@ -243,8 +243,8 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
 
             <HStack spacing="gap-4" className="mt-4 text-sm text-gray-dark">
               <button
-                // disabled={isLiking}
-                onClick={() => toggleLike(2)}
+                disabled={isLiking}
+                onClick={() => toggleLike(spoil.id)}
                 className="flex items-center gap-1 hover:text-black disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
               >
                 <Image src={ThumbUp} alt="Likes" width={20} height={20} />
