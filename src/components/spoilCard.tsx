@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
+import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import HStack from "./hstack";
@@ -26,6 +27,13 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
   className = "",
 }) => {
   const spoilHref = `/spoil-details/${spoil.id}`;
+  const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await addBookmark(spoil.id);
+  };
 
   return (
     <Link
@@ -54,9 +62,14 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
           />
 
           {/* ⭐ Bookmark */}
-          <div className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md">
+          <button
+            type="button"
+            onClick={handleBookmark}
+            disabled={isBookmarking}
+            className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
+          >
             <Image src={BookmarkIcon} alt="bookmark" width={32} height={32} />
-          </div>
+          </button>
         </div>
 
         {/* 📄 Content */}

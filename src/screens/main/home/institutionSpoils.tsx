@@ -8,11 +8,13 @@ import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
 import HStack from "@spt/components/hstack";
 import WebsiteSection from "@spt/components/websiteSection";
+import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
 
 const InstitutionSpoils = () => {
   const router = useRouter();
   const { data } = useGetInstitutionSpoilsQuery();
+  const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
 
   return (
     <WebsiteSection className="py-4 w-full">
@@ -53,14 +55,22 @@ const InstitutionSpoils = () => {
                 />
 
                 {/* Bookmark */}
-                <div className="absolute top-2 right-3 bg-white rounded-full p-2 shadow-md">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addBookmark(spoil.id);
+                  }}
+                  disabled={isBookmarking}
+                  className="absolute top-2 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
+                >
                   <Image
                     src={BookmarkIcon}
                     alt="bookmark"
                     width={15}
                     height={15}
                   />
-                </div>
+                </button>
               </div>
             )}
 
