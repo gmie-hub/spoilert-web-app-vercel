@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
 import ChatIcon from "@spt/assets/icons/chat.svg";
 import CommunityIcon from "@spt/assets/icons/community.svg";
+import HeroImage from "@spt/assets/icons/heroimage3.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
-import HeroImage from "@spt/assets/images/Hero.png";
 import Button from "@spt/components/button";
 import useCompleteLessonMutation from "@spt/hooks/apiRequests/useCompleteLessonMutation";
 import useCompleteSpoilMutation from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
@@ -49,7 +49,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     );
   }, [spoil]);
 
-  const modules = spoil?.modules ?? [];
+  const modules = useMemo(() => spoil?.modules ?? [], [spoil?.modules]);
   const learningItems = useMemo(
     () => splitLearningOutcomes(spoil?.what_to_learn),
     [spoil?.what_to_learn],

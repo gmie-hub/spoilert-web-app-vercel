@@ -107,7 +107,7 @@ const Overview: FC<OverviewProps> = ({
     };
 
     build();
-  }, [initialValues]);
+  }, [initialValues, quizType]);
 
 
   return (

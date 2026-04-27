@@ -89,6 +89,8 @@ export default function CertificateTemplateCustomizePage() {
     setCertificateCustomization(extractedAssets.assets);
     hydratedTemplateIdRef.current = spoilTemplate.id;
   }, [
+    certificateCustomization.logoPlacement,
+    certificateCustomization.signaturePlacement,
     certificateTemplate?.name,
     isEditMode,
     setCertificateCustomization,

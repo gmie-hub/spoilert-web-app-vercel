@@ -44,7 +44,7 @@ export default function SignatureUploadModal({
 
       <div className="rounded-2xl min-h-[140px] border-none bg-[#F7F7F7] p-5 text-center">
         {signatureDraft ? (
-          <img
+          <Image
             src={signatureDraft}
             alt="Signature preview"
             className="mx-auto h-24 w-auto max-w-full object-contain"

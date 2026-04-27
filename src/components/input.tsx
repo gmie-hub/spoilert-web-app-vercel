@@ -1,10 +1,13 @@
-
 "use client";
 
 import { ChangeEvent, FC, KeyboardEvent, useState } from "react";
 
 import { useFormikContext } from "formik";
 import { useField } from "formik";
+import Image from "next/image";
+
+import EyeIcon from "@spt/assets/icons/eye-slash.svg";
+import EyeOpenIcon from "@spt/assets/icons/eye.svg";
 
 interface Props {
   name: string;
@@ -35,7 +38,7 @@ const Input: FC<Props> = ({
     if (disabled) return;
 
     helpers.setValue(e.target.value);
-      onValueChange?.(e.target.value);
+    onValueChange?.(e.target.value);
   };
 
   const { validateField } = useFormikContext() as any;
@@ -50,9 +53,7 @@ const Input: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">
-        {label}
-      </label>
+      <label className="text-sm font-medium text-gray-700">{label}</label>
 
       <div className="relative">
         <input
@@ -75,16 +76,23 @@ const Input: FC<Props> = ({
             type="button"
             onClick={() => setShowPassword((p) => !p)}
             className="absolute right-3 top-1/2 -translate-y-1/2"
+            tabIndex={-1}
           >
-            {showPassword ? "🙈" : "👁️"}
+            <span className="inline-block w-5 h-5">
+              <Image
+                width={16}
+                height={16}
+                src={showPassword ? EyeOpenIcon : EyeIcon}
+                alt={showPassword ? "Hide password" : "Show password"}
+                style={{ filter: showPassword ? "grayscale(100%)" : "none" }}
+              />
+            </span>
           </button>
         )}
       </div>
 
       {/* Formik error lives here only */}
-      {hasError && (
-        <p className="text-xs text-red-500">{meta.error}</p>
-      )}
+      {hasError && <p className="text-xs text-red-500">{meta.error}</p>}
     </div>
   );
 };

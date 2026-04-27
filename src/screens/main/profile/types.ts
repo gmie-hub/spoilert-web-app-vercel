@@ -20,8 +20,9 @@ export type ProfileNavItemId =
 export interface ProfileNavItem {
   id: ProfileNavItemId;
   label: string;
-  href: string;
+  href?: string;
   icon: IconType;
+  tutorOnly?: boolean;
 }
 
 export interface ProfileNavGroup {

@@ -1,5 +1,8 @@
 "use client";
 
+import { ErrorState } from "../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../spoil/preSpoilQuiz/components/LoadingState";
+
 import CommunityCard from "./components/communityCard";
 import CommunityDetailView from "./components/communityDetailView";
 import CommunityFilterModal from "./components/communityFilterModal";
@@ -53,7 +56,18 @@ const CommunityPageView = (props: Props) => {
     joinedLoading,
     createdLoading,
     fetchedExploreCommunities,
-  } = props
+    activeIsLoading,
+    activeIsError,
+    activeErrorMessage,
+  } = props;
+
+  if (activeIsLoading) {
+    return <LoadingState />;
+  }
+
+  if (activeIsError) {
+    return <ErrorState message={activeErrorMessage} />;
+  }
 
   return (
     <>
@@ -104,9 +118,7 @@ const CommunityPageView = (props: Props) => {
                   />
                 </div>
                 {communitiesLoading ? (
-                  <div className="flex min-h-[200px] items-center justify-center">
-                    <span className="text-gray text-lg font-medium">Loading communities...</span>
-                  </div>
+                  <LoadingState />
                 ) : (
                   <div className="grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
                     {filteredExploreCommunities.map((community: CommunityCardItem) => (

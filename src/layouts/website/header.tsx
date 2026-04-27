@@ -46,19 +46,23 @@ const Header = () => {
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
 
+  // Extract complex expressions for useEffect dependencies
+  const verificationStatus = userVerificationDetails?.data?.[0]?.status;
+  const authVerificationStatus = authUser?.verification_status;
+  const authUserId = authUser?.id;
+
   React.useEffect(() => {
-    const newStatus = userVerificationDetails?.data?.[0]?.status;
-    if (authUser && newStatus !== undefined) {
+    if (authUser && verificationStatus !== undefined) {
       // Only update the store if the verification status actually changed
-      if (authUser.verification_status !== newStatus) {
+      if (authVerificationStatus !== verificationStatus) {
         const token = useAuthStore.getState().token ?? "";
         setAuth({
-          user: { ...authUser, verification_status: newStatus },
+          user: { ...authUser, verification_status: verificationStatus },
           token,
         });
       }
     }
-  }, [userVerificationDetails?.data?.[0]?.status, authUser?.verification_status, authUser?.id, setAuth]);
+  }, [verificationStatus, authVerificationStatus, authUserId, authUser, setAuth]);
 
 
   const createSpoilHref =

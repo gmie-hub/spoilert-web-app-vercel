@@ -213,7 +213,7 @@ interface CommunityFeedCardProps {
             <div className="mt-6 grid grid-cols-1 gap-3">
               {files.slice(0, 4).map((f: any, idx: number) => (
                 <div key={idx} className="overflow-hidden rounded-lg">
-                  <img src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover" />
+                  <Image src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -338,7 +338,7 @@ interface CommunityFeedCardProps {
             <div className="mt-4 grid grid-cols-1 gap-3">
               {files.slice(0, 4).map((f: any, idx: number) => (
                 <div key={idx} className="overflow-hidden rounded-lg">
-                  <img src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover" />
+                  <Image src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover " />
                 </div>
               ))}
             </div>

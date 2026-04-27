@@ -91,12 +91,14 @@ const Info = () => {
                   alt="app-store"
                   width={134}
                   height={41}
+                  style={{ height: "auto" }}
                 />
                 <Image
                   src={GooglePlayBadge}
                   alt="google-play"
                   width={134}
                   height={41}
+                  style={{ height: "auto" }}
                 />
               </HStack>
             </Stack>

@@ -1,4 +1,3 @@
-
 import React from "react";
 
 import { motion } from "motion/react";
@@ -7,6 +6,7 @@ import Link from "next/link";
 
 import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
+import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import HStack from "./hstack";
@@ -27,6 +27,13 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
   className = "",
 }) => {
   const spoilHref = `/spoil-details/${spoil.id}`;
+  const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await addBookmark(spoil.id);
+  };
 
   return (
     <Link
@@ -55,9 +62,14 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
           />
 
           {/* ⭐ Bookmark */}
-          <div className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md">
+          <button
+            type="button"
+            onClick={handleBookmark}
+            disabled={isBookmarking}
+            className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
+          >
             <Image src={BookmarkIcon} alt="bookmark" width={32} height={32} />
-          </div>
+          </button>
         </div>
 
         {/* 📄 Content */}
@@ -68,13 +80,18 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
           </h3>
 
           {/* Price */}
-    { spoil?.pricing === "free" ?  <p className="text-[18px] font-semibold text-[var(--color-black)]"> Free </p>:    <p className="text-[18px] font-semibold text-[var(--color-black)]">
-            ₦
-            {spoil?.display_amount?.toLocaleString() ||
-              spoil?.amount?.toLocaleString()}
-          </p>
-        
-}
+          {spoil?.pricing === "free" ? (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              {" "}
+              Free{" "}
+            </p>
+          ) : (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              ₦
+              {spoil?.display_amount?.toLocaleString() ||
+                spoil?.amount?.toLocaleString()}
+            </p>
+          )}
           {/* Tutor */}
           <HStack spacing="gap-2" alignItems="center">
             <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">

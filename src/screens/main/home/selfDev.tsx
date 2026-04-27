@@ -101,9 +101,19 @@ const SpoilCard = ({ spoil, index }: any) => {
         <h2 className="font-semibold text-sm sm:text-base text-[#03363b] line-clamp-2">{spoil.title}</h2>
 
         {/* Price */}
-        <p className="text-sm sm:text-base font-bold text-[#03363b] mt-1">
-          ₦{spoil.display_amount?.toLocaleString()}
-        </p>
+      
+          {spoil?.pricing === "free" ? (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              {" "}
+              Free{" "}
+            </p>
+          ) : (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              ₦
+              {spoil?.display_amount?.toLocaleString() ||
+                spoil?.amount?.toLocaleString()}
+            </p>
+          )}
 
         {/* Tutor */}
         <HStack spacing="gap-2" alignItems="center">

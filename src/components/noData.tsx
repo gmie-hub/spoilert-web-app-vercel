@@ -2,7 +2,7 @@ import type { FC, PropsWithChildren } from "react";
 
 import Image from "next/image";
 
-import EmptyImage from "@spt/assets/images/empty.png";
+import EmptyImage from "@spt/assets/icons/Empty Image.svg";
 
 interface NoDataProps extends PropsWithChildren {
   heading: string;

@@ -9,23 +9,27 @@ import BlueShareIcon from "@spt/assets/icons/blueshare-2 (6) 1.svg";
 import BookIcon from "@spt/assets/icons/bookIcon.svg";
 import Calender from "@spt/assets/icons/calendar.svg";
 import ClockIcon from "@spt/assets/icons/clock.svg";
+import HeroImage3 from "@spt/assets/icons/heroimage1.svg";
 import Profile from "@spt/assets/icons/profile-2user.svg";
 import ShareIcon from "@spt/assets/icons/share-2 (6) 1.svg";
 import SaveIcon from "@spt/assets/icons/share.svg";
 import StarIcon from "@spt/assets/icons/star.svg";
 import ThumbUp from "@spt/assets/icons/vuesax.svg";
-import HeroImage3 from "@spt/assets/images/Hero.png";
+import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 import useBuySpoilMutation from "@spt/hooks/apiRequests/useBuySpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
+import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { SpoilDetailsData } from "@spt/utils/spoils";
 
-import Button from "../../../../components/button";
-import Card from "../../../../components/card";
 import HStack from "../../../../components/hstack";
-import VStack from "../../../../components/vstack";
+import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 
 import BuySpoilPaymentModal from "./BuySpoilPaymentModal";
 import Details from "./details";
+import ShareLinkModal from "./ShareLinkModal";
+import { SpoilMobileCTA, SpoilPricingCard } from "./SpoilPricingCard";
+import SponsorSpoilModal from "./SponsorSpoilModal";
 
 interface SpoilDetailsProps {
   spoilId: number | string;
@@ -76,20 +80,7 @@ const getTutorInitials = (spoil: SpoilDetailsData) => {
   return `${firstInitial}${lastInitial}`.toUpperCase() || "NA";
 };
 
-const LoadingState = () => (
-  <section className="w-full bg-white relative">
-    <div className="h-[280px] sm:h-[320px] md:h-[420px] w-full animate-pulse bg-gray-100" />
-    <section className="px-5 lg:px-25 py-8">
-      <div className="space-y-4">
-        <div className="h-4 w-48 rounded bg-gray-100" />
-        <div className="h-10 w-80 rounded bg-gray-100" />
-        <div className="h-24 w-full max-w-3xl rounded bg-gray-100" />
-      </div>
-    </section>
-  </section>
-);
-
-const ErrorState = ({ message }: { message: string }) => (
+export const ErrorState = ({ message }: { message: string }) => (
   <section className="px-5 lg:px-25 py-16">
     <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-red-700">
       {message}
@@ -108,9 +99,18 @@ const EmptyState = () => (
 const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const router = useRouter();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { buySpoilHandler, isLoading: isBuyingSpoil } = useBuySpoilMutation();
-  const { data: spoil, isLoading, isError, errorMessage } =
-    useGetSpoilDetailsQuery(spoilId);
+  const { addBookmark, isLoading: isSaving } = useAddBookmarkMutation();
+  const { shareSpoil } = useShareSpoilMutation();
+  const { toggleLike, isLoading: isLiking } = useToggleSpoilLikeMutation();
+  const {
+    data: spoil,
+    isLoading,
+    isError,
+    errorMessage,
+  } = useGetSpoilDetailsQuery(spoilId);
 
   if (isLoading) {
     return <LoadingState />;
@@ -152,7 +152,6 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   };
 
   const handlePrimaryCtaClick = async () => {
-    // If the user is already enrolled or has progress, go straight to the spoil start
     if (shouldContinue) {
       router.push(`/spoil/${spoil.id}/start`);
       return;
@@ -188,11 +187,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
       <section className="px-5 lg:px-25">
         <div className="relative pb-10 grid lg:grid-cols-[1fr_360px] gap-8">
           <div className="pt-8">
-            {/* <p className="text-sm text-gray-500 mb-1">{buildMetaLabel(spoil)}</p> */}
-
-            <h1 className="text-lg text-[#212529] md:text-xl">
-              {spoil.title}
-            </h1>
+            <h1 className="text-lg text-[#212529] md:text-xl">{spoil.title}</h1>
 
             <HStack spacing="gap-2" className="mt-3 flex-wrap">
               <span className="px-3 py-1 rounded-md bg-blue-lightest text-blue text-sm">
@@ -226,21 +221,35 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
             </div>
 
             <HStack spacing="gap-2" className="mt-4 text-blue">
-              <button className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg">
+              <button
+                disabled={isSaving}
+                onClick={() => addBookmark(spoil.id)}
+                className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 <Image src={SaveIcon} alt="Save spoil" width={15} height={15} />
-                Save
+                {isSaving ? "Saving..." : "Save"}
               </button>
-              <button className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg">
+              <button
+                className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg"
+                onClick={() => {
+                  shareSpoil(spoil.id);
+                  setIsShareModalOpen(true);
+                }}
+              >
                 <Image src={BlueShareIcon} alt="Share spoil" width={20} height={20} />
                 Share
               </button>
             </HStack>
 
             <HStack spacing="gap-4" className="mt-4 text-sm text-gray-dark">
-              <div className="flex items-center gap-1 hover:text-black">
+              <button
+                disabled={isLiking}
+                onClick={() => toggleLike(spoil.id)}
+                className="flex items-center gap-1 hover:text-black disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              >
                 <Image src={ThumbUp} alt="Likes" width={20} height={20} />
                 <p>{spoil.likes_count ?? 0}</p>
-              </div>
+              </button>
               <div className="flex items-center gap-1 hover:text-black">
                 <Image src={ShareIcon} alt="Shares" width={20} height={20} />
                 <p>{spoil.shares_count ?? 0}</p>
@@ -271,74 +280,22 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
               {tutorName}
             </div>
 
-            <div className="lg:hidden">
-              <VStack spacing="gap-4" className="pt-4 w-full sm:w-1/2">
-                <Button
-                  variant="lightBlue"
-                  className="w-full py-3 bg-sky-50 text-sky-700 border border-sky-100"
-                >
-                  Sponsor Spoil
-                </Button>
-                <Button
-                  variant="darkBlue"
-                  className="w-full py-3 cursor-pointer"
-                  onClick={handlePrimaryCtaClick}
-                >
-                    {shouldContinue ? "Continue Learning" : isFreeSpoil ? "Start Spoil" : "Buy Spoil"}
-                </Button>
-              </VStack>
-            </div>
+            <SpoilMobileCTA
+              shouldContinue={shouldContinue}
+              isFreeSpoil={isFreeSpoil}
+              onPrimaryClick={handlePrimaryCtaClick}
+              onSponsor={() => setIsSponsorModalOpen(true)}
+            />
           </div>
 
-          <div className="hidden lg:block relative">
-            <div className="absolute -top-36 right-0 w-[340px]">
-              <Card className="rounded-2xl bg-white shadow-2xl ring-1 ring-gray-100 px-6 md:min-w-sm">
-                <VStack spacing="gap-6" className="w-full items-start">
-                  <p className="text-lg font-semibold text-black">{price}</p>
-
-                  <Button
-                    variant="darkBlue"
-                    className="w-full py-3"
-                    onClick={handlePrimaryCtaClick}
-                  >
-                    {shouldContinue ? "Continue Learning" : isFreeSpoil ? "Start Spoil" : "Buy Spoil"}
-                  </Button>
-
-                  <Button
-                    variant="lightBlue"
-                    className="w-full py-3 bg-white text-sky-700 border border-sky-100"
-                  >
-                    Sponsor Spoil
-                  </Button>
-
-                  <div className="w-full border-t pt-4 border-[#E7E7E7]">
-                    <HStack
-                      spacing="gap-2"
-                      className="text-xs text-gray-500 whitespace-nowrap flex-wrap"
-                    >
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
-                        <Image
-                          src={Profile}
-                          alt="Enrolled users"
-                          width={20}
-                          height={20}
-                        />
-                        {spoil.enrolled_users ?? 0} Enrolled
-                      </span>
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
-                        <Image src={BookIcon} alt="Modules" width={20} height={20} />
-                        {spoil.modules_no ?? 0} Modules
-                      </span>
-                      <span className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-xs rounded-2xl">
-                        <Image src={ClockIcon} alt="Lessons" width={20} height={20} />
-                        {spoil.lessons_no ?? 0} Lessons
-                      </span>
-                    </HStack>
-                  </div>
-                </VStack>
-              </Card>
-            </div>
-          </div>
+          <SpoilPricingCard
+            price={price}
+            spoil={spoil}
+            shouldContinue={shouldContinue}
+            isFreeSpoil={isFreeSpoil}
+            onPrimaryClick={handlePrimaryCtaClick}
+            onSponsor={() => setIsSponsorModalOpen(true)}
+          />
         </div>
 
         <Details spoil={spoil} />
@@ -351,6 +308,18 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
           certificateFee={certificateFee}
           onMakePayment={handleMakePayment}
           isMakingPayment={isBuyingSpoil}
+        />
+
+        <SponsorSpoilModal
+          open={isSponsorModalOpen}
+          onClose={() => setIsSponsorModalOpen(false)}
+          spoil={spoil}
+        />
+
+        <ShareLinkModal
+          open={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          url={`${typeof window !== "undefined" ? window.location.origin : ""}/spoil-details/${spoil.id}`}
         />
       </section>
     </section>

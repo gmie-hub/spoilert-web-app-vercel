@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import FallbackCoverImage from "@spt/assets/images/homeimg.png";
+import FallbackCoverImage from "@spt/assets/icons/heroimage1.svg";
 import useGetLearnerSpoilsQuery from "@spt/hooks/apiRequests/useGetLearnerSpoilsQuery";
 import { useAuthStore } from "@spt/store/authStore";
 
