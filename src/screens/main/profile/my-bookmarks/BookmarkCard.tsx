@@ -3,7 +3,7 @@
 import Image from "next/image";
 
 import AuthorIcon from "@spt/assets/icons/author.svg";
-import BanchIcon from "@spt/assets/icons/banchMarks.svg";
+import BanchIcon from "@spt/assets/icons/banchmarks.svg";
 import DeleteIcon from "@spt/assets/icons/deleteIconbanch.svg";
 
 interface BookmarkCardProps {
