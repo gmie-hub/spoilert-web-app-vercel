@@ -5,9 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import HeroImage from "@spt/assets/icons/heroimage1.svg";
-import HeroTwo from "@spt/assets/icons/heroimage2.svg";
-import HeroThree from "@spt/assets/icons/heroimage3.svg";
+import HeroImage from "@spt/assets/icons/imageheor1.svg";
+import HeroTwo from "@spt/assets/icons/imageheor2.svg";
+import HeroThree from "@spt/assets/icons/imagehero3.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
 import UserIcon from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
