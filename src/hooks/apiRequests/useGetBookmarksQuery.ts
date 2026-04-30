@@ -17,10 +17,15 @@ export const useGetBookmarksQuery = () => {
     },
     enabled: !!userId,
   });
+    const errorMessage =
+    query?.error?.message ||
+    "Failed to fetch promotions";
+
 
   return {
     ...query,
     isLoading: query.isLoading,
+    errorMessage
   };
 };
 

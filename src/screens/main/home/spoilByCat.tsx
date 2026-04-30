@@ -159,7 +159,7 @@ const SpoilByCategory = () => {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3 sm:gap-0">
         <h2 className="text-xl font-semibold">Spoils By Categories</h2>
-        <Button type="submit" className="w-full sm:w-auto">
+        <Button type="submit" className="w-full text-[16px] sm:w-auto">
           View All Categories
         </Button>
       </div>
