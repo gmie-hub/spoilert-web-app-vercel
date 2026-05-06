@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "blinkers-bucket.nyc3.digitaloceanspaces.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+        pathname: "/**",
+      },
     ],
   },
   output: "standalone",
