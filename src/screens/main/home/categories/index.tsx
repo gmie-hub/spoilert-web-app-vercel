@@ -18,6 +18,7 @@ export default function Categories() {
   const [spoilSearch, setSpoilSearch] = useState("");
   const router = useRouter();
 
+
     const handleBack = () => {
     router.back();
   };

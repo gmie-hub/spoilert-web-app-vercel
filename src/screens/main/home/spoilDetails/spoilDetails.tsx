@@ -247,7 +247,13 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                 onClick={() => toggleLike(spoil.id)}
                 className="flex items-center gap-1 hover:text-black disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
               >
-                <Image src={ThumbUp} alt="Likes" width={20} height={20} />
+                <Image
+                  src={ThumbUp}
+                  alt="Likes"
+                  width={20}
+                  height={20}
+                  className={spoil.is_liked_by_current_user ? "[filter:invert(27%)_sepia(98%)_saturate(1200%)_hue-rotate(195deg)_brightness(95%)_contrast(101%)]" : ""}
+                />
                 <p>{spoil.likes_count ?? 0}</p>
               </button>
               <div className="flex items-center gap-1 hover:text-black">
