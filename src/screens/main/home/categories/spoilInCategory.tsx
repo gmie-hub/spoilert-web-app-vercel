@@ -34,10 +34,10 @@ export default function SpoilInCategories() {
 
   const selectedCategoryData = categories.find((cat) => cat.id === selectedCategory);
 
-  const handleClear = () => {
-    setSelectedCategory(null);
-    setSearchQuery("");
-  };
+  // const handleClear = () => {
+  //   setSelectedCategory(null);
+  //   setSearchQuery("");
+  // };
 
   // If a category is selected, show the spoils
   if (selectedCategory) {

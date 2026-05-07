@@ -8,10 +8,11 @@ import { FiArrowLeft, FiSearch } from "react-icons/fi";
 import { ChatInputBar } from "@spt/screens/main/profile/mySpoil/components/chatView/ChatInputBar";
 import { MessageBubble } from "@spt/screens/main/profile/mySpoil/components/chatView/MessageBubble";
 import { getTime } from "@spt/screens/main/profile/mySpoil/components/chatView/types";
+import type { ChatMessage } from "@spt/screens/main/profile/mySpoil/components/chatView/types";
 import { useRecording } from "@spt/screens/main/profile/mySpoil/components/chatView/useRecording";
+
 import StartNewChatModal from "./StartNewChatModal";
 
-import type { ChatMessage } from "@spt/screens/main/profile/mySpoil/components/chatView/types";
 
 /* ─── Types & Dummy Data ─────────────────────────────────────── */
 

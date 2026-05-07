@@ -65,7 +65,7 @@ const ALL_CONTACTS: ModalContact[] = [
 ];
 
 const ITEMS_PER_PAGE = 12;
-const TOTAL_PAGES = Math.ceil(ALL_CONTACTS.length / ITEMS_PER_PAGE);
+// const TOTAL_PAGES = Math.ceil(ALL_CONTACTS.length / ITEMS_PER_PAGE);
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 
