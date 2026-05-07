@@ -203,7 +203,6 @@ const Header = () => {
                   return;
                 }
 
-                // example: chat icon could navigate to messages (adjust as needed)
                 if (icon.alt === "chat") {
                   router.push("/messages");
                 }

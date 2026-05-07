@@ -31,6 +31,7 @@ const useToggleSpoilLikeMutation = () => {
       (await api.post("/spoils/likes/toggle", payload)).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
+      queryClient.invalidateQueries({ queryKey: ["institution-spoils"] });
     },
   });
 
