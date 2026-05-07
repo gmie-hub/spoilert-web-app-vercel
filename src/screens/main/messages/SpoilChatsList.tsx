@@ -31,8 +31,6 @@ export default function SpoilChatsList() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-[680px] mx-auto px-6 pt-6 pb-16">
-
         {/* Back button */}
         <button
           type="button"
@@ -42,6 +40,9 @@ export default function SpoilChatsList() {
           <FiArrowLeft size={15} />
           Back
         </button>
+      <div className="max-w-[680px] mx-auto px-6 pt-6 pb-16">
+
+      
 
         {/* Title */}
         <h1 className="text-[22px] font-bold text-[#20262D] mb-5">Spoil Chats</h1>

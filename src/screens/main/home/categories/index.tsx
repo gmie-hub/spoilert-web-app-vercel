@@ -3,32 +3,37 @@
 import React, { useMemo, useState } from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 
 import Icon1 from "@spt/assets/icons/Icon(3).svg";
+import SpoilCard from "@spt/components/spoilCard";
 import WebsiteSection from "@spt/components/websiteSection";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
-
-const fallbackCategories = [
-  { id: 1, title: "UI/UX Design", spoils: "20 Spoils", image: "/categories/uiux.jpg" },
-  { id: 2, title: "Software Development", spoils: "20 Spoils", image: "/categories/software.jpg" },
-  { id: 3, title: "Analytics", spoils: "20 Spoils", image: "/categories/analytics.jpg" },
-  { id: 4, title: "Marketing", spoils: "20 Spoils", image: "/categories/marketing.jpg" },
-  { id: 5, title: "Branding", spoils: "20 Spoils", image: "/categories/branding.jpg" },
-  { id: 6, title: "Business", spoils: "20 Spoils", image: "/categories/business.jpg" },
-  { id: 7, title: "Health & Science", spoils: "20 Spoils", image: "/categories/health.jpg" },
-  { id: 8, title: "Productivity", spoils: "20 Spoils", image: "/categories/productivity.jpg" },
-];
+import { useGetSpoilsByCategoryQuery } from "@spt/hooks/apiRequests/useGetSpoilsByCategoryQuery";
 
 export default function Categories() {
   const [searchTerm, setSearchTerm] = useState("");
- const {
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [spoilSearch, setSpoilSearch] = useState("");
+  const router = useRouter();
+
+    const handleBack = () => {
+    router.back();
+  };
+
+  const {
     data,
     isLoading,
     isError,
     categoryErrorMessage,
-  } = useGetAllCategoriesQuery();
+  } = useGetAllCategoriesQuery(undefined, searchTerm);
 
-  /** Prepare API Categories */
+  const { data: spoilsData, isLoading: spoilsLoading } = useGetSpoilsByCategoryQuery(
+    { category_id: selectedCategoryId, search: spoilSearch },
+    selectedCategoryId !== null,
+  );
+
   const apiCategories = useMemo(() => {
     return (
       data?.data?.map((s: any) => ({
@@ -40,15 +45,108 @@ export default function Categories() {
     );
   }, [data]);
 
-  const categories = apiCategories.length > 0 ? apiCategories : fallbackCategories;
+  const selectedCategory = apiCategories.find((cat) => cat.id === selectedCategoryId);
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Loading State
+  if (isLoading) {
+    return (
+      <WebsiteSection className="my-8">
+        <div className="flex flex-col gap-3 mb-6">
+          <h2 className="text-2xl font-semibold">All Categories</h2>
+          <div className="w-full sm:w-auto">
+            <input
+              placeholder="Search category..."
+              disabled
+              className="px-4 py-2 rounded-lg border border-gray-200 w-full sm:w-64 outline-none bg-gray-100"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="relative rounded-2xl overflow-hidden h-52 bg-gray-300 animate-pulse" />
+          ))}
+        </div>
+      </WebsiteSection>
+    );
+  }
+
+  // Error State
+  if (isError) {
+    return (
+      <WebsiteSection className="my-8">
+        <div className="flex flex-col gap-3 mb-6">
+          <h2 className="text-2xl font-semibold">All Categories</h2>
+        </div>
+        <div className="flex items-center justify-center h-64 text-center">
+          <div>
+            <p className="text-lg font-semibold text-red-600">Error Loading Categories</p>
+            <p className="text-sm text-gray-500 mt-2">
+              {categoryErrorMessage || "Something went wrong. Please try again later."}
+            </p>
+          </div>
+        </div>
+      </WebsiteSection>
+    );
+  }
+
+  // Selected category — show its spoils
+  if (selectedCategoryId !== null) {
+    return (
+      <WebsiteSection className="my-8">
+        <div className=" mb-6">
+        
+           <button
+            onClick={() => { setSelectedCategoryId(null); setSpoilSearch(""); }}
+            className="px-4 py-2 hover:bg-gray-300 text-[#013B4D] text-[16px] font-medium transition-colors whitespace-nowrap"
+          >
+            ← Back
+          </button>
+          <h2 className="text-2xl font-semibold">
+            {selectedCategory?.title} Spoils
+          </h2>
+        
+        </div>
+
+        <div className="mb-6">
+          <input
+            placeholder="Search spoils..."
+            value={spoilSearch}
+            onChange={(e) => setSpoilSearch(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-gray-200 w-full sm:w-80 outline-none focus:ring-2 focus:ring-[#063B4A]"
+          />
+        </div>
+
+        {spoilsLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="rounded-2xl h-52 bg-gray-300 animate-pulse" />
+            ))}
+          </div>
+        ) : spoilsData?.data?.data && spoilsData.data.data.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {spoilsData.data.data.map((spoil) => (
+              <SpoilCard key={spoil.id} spoil={spoil} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-64 text-center">
+            <p className="text-gray-500">No spoils found in this category.</p>
+          </div>
+        )}
+      </WebsiteSection>
+    );
+  }
 
   return (
     <WebsiteSection className="my-8">
+         <button
+            onClick={handleBack}
+            className="px-4 py-2 hover:bg-gray-300 text-[#013B4D] text-[16px] font-medium transition-colors whitespace-nowrap cursor-pointer mb-4"
+          >
+            ← Back
+          </button>
       <div className="flex flex-col gap-3 mb-6">
+        
         <h2 className="text-2xl font-semibold">All Categories</h2>
 
         <div className="w-full sm:w-auto">
@@ -61,7 +159,7 @@ export default function Categories() {
         </div>
       </div>
 
-      {filteredCategories.length === 0 ? (
+      {apiCategories.length === 0 ? (
         <div className="flex items-center justify-center h-64 text-center">
           <div>
             <p className="text-lg font-semibold text-gray-700">No categories found</p>
@@ -70,10 +168,12 @@ export default function Categories() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {filteredCategories.map((cat) => (
-            <div
+          {apiCategories.map((cat) => (
+            <button
               key={cat.id}
-              className="relative rounded-2xl overflow-hidden h-52 cursor-pointer transform transition-transform hover:scale-105"
+              type="button"
+              onClick={() => setSelectedCategoryId(cat.id)}
+              className="relative rounded-2xl overflow-hidden h-52 cursor-pointer transform transition-transform hover:scale-105 text-left"
             >
               <Image
                 src={cat.image}
@@ -98,7 +198,7 @@ export default function Categories() {
 
                 <p className="text-xs text-white/80">{cat.spoils}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

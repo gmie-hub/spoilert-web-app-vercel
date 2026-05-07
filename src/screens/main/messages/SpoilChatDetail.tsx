@@ -95,6 +95,7 @@ export default function SpoilChatDetail({ spoilId: _spoilId }: Props) {
   const [inputText, setInputText] = useState("");
 
   const endRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const selectedIdRef = useRef(selectedContactId);
 
   useEffect(() => {
@@ -103,7 +104,11 @@ export default function SpoilChatDetail({ spoilId: _spoilId }: Props) {
 
   /* callbacks */
   const scrollToEnd = useCallback(() => {
-    setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    setTimeout(() => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }
+    }, 0);
   }, []);
 
   const addMessage = useCallback((msg: ChatMessage) => {
@@ -301,7 +306,7 @@ export default function SpoilChatDetail({ spoilId: _spoilId }: Props) {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-5 py-4">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-4">
               <div className="space-y-5">
                 {currentMessages.map((msg) => (
                   <MessageBubble
