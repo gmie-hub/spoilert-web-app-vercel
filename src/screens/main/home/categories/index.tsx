@@ -5,8 +5,8 @@ import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-
-import Icon1 from "@spt/assets/icons/Icon(3).svg";
+import ArrowLeft from "@spt/assets/icons/arrow-left.svg";
+import catsmallIcon from "@spt/assets/icons/catsmallIcon.svg";
 import SpoilCard from "@spt/components/spoilCard";
 import WebsiteSection from "@spt/components/websiteSection";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
@@ -98,9 +98,10 @@ export default function Categories() {
         
            <button
             onClick={() => { setSelectedCategoryId(null); setSpoilSearch(""); }}
-            className="px-4 py-2 hover:bg-gray-300 text-[#013B4D] text-[16px] font-medium transition-colors whitespace-nowrap"
+            className="cursor-pointer px-4 py-2 hover:bg-gray-300 text-[#013B4D] text-[16px] font-medium transition-colors whitespace-nowrap"
           >
-            ← Back
+            <Image src={ArrowLeft} alt="back" width={24} height={24} className="inline-block mr-2" />   
+             Back
           </button>
           <h2 className="text-2xl font-semibold">
             {selectedCategory?.title} Spoils
@@ -142,9 +143,10 @@ export default function Categories() {
     <WebsiteSection className="my-8">
          <button
             onClick={handleBack}
-            className="px-4 py-2 hover:bg-gray-300 text-[#013B4D] text-[16px] font-medium transition-colors whitespace-nowrap cursor-pointer mb-4"
+            className="cursor-pointer px-4 py-2 hover:bg-gray-300 text-[#013B4D] text-[16px] font-medium transition-colors whitespace-nowrap cursor-pointer mb-4"
           >
-            ← Back
+            <Image src={ArrowLeft} alt="back" width={24} height={24} className="inline-block mr-2" />
+            Back
           </button>
       <div className="flex flex-col gap-3 mb-6">
         
@@ -173,8 +175,8 @@ export default function Categories() {
             <button
               key={cat.id}
               type="button"
-              onClick={() => setSelectedCategoryId(cat.id)}
-              className="relative rounded-2xl overflow-hidden h-52 cursor-pointer transform transition-transform hover:scale-105 text-left"
+              onClick={() => {setSelectedCategoryId(cat.id); window.scrollTo({ top: 0, behavior: "smooth" });}}
+              className="relative rounded-[12px] overflow-hidden h-52 cursor-pointer transform transition-transform hover:scale-105 text-left"
             >
               <Image
                 src={cat.image}
@@ -188,16 +190,15 @@ export default function Categories() {
 
               <div className="absolute bottom-3 left-3 text-white">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-black text-xs">
-                    <Image src={Icon1} alt="icon" width={20} height={20} />
-                  </span>
+                    <Image src={catsmallIcon} alt="icon" width={32} height={32} />
+                  
                 </div>
 
-                <h3 className="text-sm font-semibold truncate max-w-[120px]">
+                <h3 className="text-[16px] font-medium truncate max-w-[120px]">
                   {cat.title}
                 </h3>
 
-                <p className="text-xs text-white/80">{cat.spoils}</p>
+                <p className="text-[14px] text-[#EEEEEE]">{cat.spoils}</p>
               </div>
             </button>
           ))}

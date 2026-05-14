@@ -233,7 +233,7 @@ const Header = () => {
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                className="flex items-center gap-2 focus:outline-none"
+                className="cursor-pointer flex items-center gap-2 focus:outline-none"
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
                 aria-label="Open profile menu"
                 type="button"

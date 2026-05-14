@@ -100,6 +100,8 @@ export interface VerificationItem {
   value: string;
   status: number;
   url: string;
+  comment?: string | null;
+  rejection_reason?: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 import Scroll from "@spt/assets/icons/button(1).svg";
+import whiteBackTop from "@spt/assets/icons/whiteBackTop.svg";
 
 function isLightBackground(color: string): boolean {
   if (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") return true;
@@ -85,11 +86,11 @@ export default function BackToTopButton() {
       style={{ background: "transparent" }}
     >
       <Image
-        src={(Scroll as any).src ?? Scroll}
+        src={isWhite ? ((whiteBackTop as any).src ?? whiteBackTop) : ((Scroll as any).src ?? Scroll)}
         alt="Scroll Up"
         width={56}
         height={56}
-        className={`object-contain transition-[filter] duration-300 ${isWhite ? "brightness-0 invert" : ""}`}
+        className="object-contain"
       />
     </button>
   );

@@ -1,110 +1,38 @@
 "use client";
 
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 
 import ProfileIcon from "@spt/assets/icons/profile-2user.svg";
 import CreatedIcon from "@spt/assets/icons/scicon.svg";
 import TotalIcon from "@spt/assets/icons/totalIcons.svg";
 import walleticon from "@spt/assets/icons/wallet-3.svg";
-import AboutUsImage from "@spt/assets/images/aboutus3.svg";
+import { type EarningSpoil, useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import { useAuthStore } from "@spt/store/authStore";
 
-interface SpoilEarning {
-  id: string;
-  title: string;
-  thumbnail: StaticImageData | string;
-  enrolled: number;
-  earnings: string;
-}
-
-const dummySpoils: SpoilEarning[] = [
-  {
-    id: "1",
-    title: "BCH 404- Biological Pharmacology",
-    thumbnail: AboutUsImage,
-    enrolled: 12,
-    earnings: "₦100,000",
-  },
-  {
-    id: "2",
-    title: "Building Design Systems",
-    thumbnail: AboutUsImage,
-    enrolled: 8,
-    earnings: "₦50,000",
-  },
-  {
-    id: "3",
-    title: "Design Principles",
-    thumbnail: AboutUsImage,
-    enrolled: 32,
-    earnings: "₦400,000",
-  },
-  {
-    id: "4",
-    title: "Branding",
-    thumbnail: AboutUsImage,
-    enrolled: 15,
-    earnings: "₦100,000",
-  },
-  {
-    id: "5",
-    title: "CHM501-IUPAC Nomenclature",
-    thumbnail: AboutUsImage,
-    enrolled: 12,
-    earnings: "₦200,000",
-  },
-  {
-    id: "6",
-    title: "Fundamentals of Frontend Development",
-    thumbnail: AboutUsImage,
-    enrolled: 100,
-    earnings: "₦100,000",
-  },
-  {
-    id: "7",
-    title: "BCH 404- Biological Pharmacology",
-    thumbnail: AboutUsImage,
-    enrolled: 12,
-    earnings: "₦100,000",
-  },
-  {
-    id: "8",
-    title: "BCH 404- Biological Pharmacology",
-    thumbnail: AboutUsImage,
-    enrolled: 12,
-    earnings: "₦100,000",
-  },
-];
-
-function SpoilEarningCard({ spoil }: { spoil: SpoilEarning }) {
+function SpoilEarningCard({ spoil }: { spoil: EarningSpoil }) {
   return (
     <div className="flex items-stretch gap-3 rounded-xl border-1 border-[#2222220D] bg-white p-4 shadow-sm">
-      <div className="relative h-[100px] w-[100px] flex-shrink-0 overflow-hidden rounded-[16px]">
-        <Image
-          src={spoil.thumbnail}
-          alt={spoil.title}
-          fill
-          className="object-cover"
-        />
+      <div className="relative h-[100px] w-[100px] flex-shrink-0 overflow-hidden rounded-[16px] bg-gray-100">
+        {spoil.cover_image && (
+          <Image
+            src={spoil.cover_image}
+            alt={spoil.spoil_name}
+            fill
+            className="object-cover"
+          />
+        )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-        <p className="line-clamp-2 md:text-[16px]  leading-snug text-[#212529] sm:text-[14px]">
-          {spoil.title}
+        <p className="line-clamp-2 md:text-[16px] leading-snug text-[#212529] sm:text-[14px]">
+          {spoil.spoil_name}
         </p>
         <div className="flex items-center gap-1 text-[14px] text-[#495057]">
-                <Image
-            src={ProfileIcon}
-            alt="profile icon"
-            className="h-[20px] w-[20px] flex-shrink-0 text-[#6B7B8D]"
-          />
-          <span>{spoil.enrolled} Enrolled</span>
+          <Image src={ProfileIcon} alt="profile icon" className="h-[20px] w-[20px] flex-shrink-0 text-[#6B7B8D]" />
+          <span>{spoil.total_enrolled} Enrolled</span>
         </div>
         <div className="flex items-center gap-1 text-[14px] text-[#212529]">
-          <Image
-            src={walleticon}
-            alt="wallet icon"
-            className="h-[20px] w-[20px] flex-shrink-0 text-[#6B7B8D]"
-          />{" "}
-          <span>{spoil.earnings}</span>
+          <Image src={walleticon} alt="wallet icon" className="h-[20px] w-[20px] flex-shrink-0 text-[#6B7B8D]" />
+          <span>₦{spoil.total_amount?.toLocaleString()}</span>
         </div>
       </div>
     </div>
@@ -112,6 +40,25 @@ function SpoilEarningCard({ spoil }: { spoil: SpoilEarning }) {
 }
 
 export default function EarningsBreakdownPage() {
+  const user = useAuthStore((state) => state.user);
+  const { earnings, isLoading, isError, errorMessage } = useGetEarningsBreakdownQuery(user?.id);
+  console.log(earnings,'earnings')
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="w-8 h-8 rounded-full border-4 border-[#0B5368] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <p className="text-center text-red-500 text-sm py-8">{errorMessage}</p>;
+  }
+
+
+  const spoils = earnings?.data ?? [];
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -129,11 +76,12 @@ export default function EarningsBreakdownPage() {
         {/* Total Earnings */}
         <div className="flex flex-col gap-3 rounded-xl border border-[#A5D1DE] bg-[#E3F5FA] px-5 py-5">
           <div className="flex items-center gap-2">
-              <Image src={TotalIcon} alt="wallet icon" className="h-10 w-10" />
-            
+            <Image src={TotalIcon} alt="wallet icon" className="h-10 w-10" />
             <p className="text-[14px] font-medium text-[#495057]">Total Earnings</p>
           </div>
-          <p className="text-[18px] font-semibold text-[#212529]">₦800,00.00</p>
+          <p className="text-[18px] font-semibold text-[#212529]">
+            ₦{parseFloat(earnings?.overview?.total_earning ?? "0").toLocaleString()}
+          </p>
         </div>
 
         {/* Spoils Created */}
@@ -144,7 +92,9 @@ export default function EarningsBreakdownPage() {
             </div>
             <p className="text-[14px] font-medium text-[#495057]">Spoils Created</p>
           </div>
-          <p className="text-[18px] font-semibold text-[#212529]">25</p>
+          <p className="text-[18px] font-semibold text-[#212529]">
+            {earnings?.overview?.spoils_created ?? 0}
+          </p>
         </div>
       </div>
 
@@ -153,11 +103,15 @@ export default function EarningsBreakdownPage() {
         <h3 className="mb-4 text-[16px] font-medium text-[#212529]">
           Spoils Earnings Breakdown
         </h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {dummySpoils.map((spoil) => (
-            <SpoilEarningCard key={spoil.id} spoil={spoil} />
-          ))}
-        </div>
+        {spoils.length === 0 ? (
+          <p className="text-center text-gray-500 text-sm py-6">No earnings data available.</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {spoils.map((spoil, i) => (
+              <SpoilEarningCard key={spoil.spoil_name + i} spoil={spoil} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,17 +11,29 @@ import type { AxiosError } from "axios";
 export interface PaymentDatum {
   id: number;
   user_id: number;
+  tutor_id: number | null;
+  spoil_id: number | null;
+  promotion_package_id: number | null;
   reference: string;
   amount: string;
-  type: "withdrawal" | "purchase" | "failed";
-  status: "successful" | "pending" | "failed";
-  description: string | null;
-  account_credited: string | null;
-  rejection_reason: string | null;
-  transaction_type: string | null;
-  learner_name: string | null;
+  charge: string;
+  net_amount: string;
+  tax_amount: string;
+  currency: string;
+  gateway: string;
+  type: string;
+  status: string;
+  paid_at: string | null;
+  payment_url: string | null;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
+  // optional legacy fields some backends may still include
+  description?: string | null;
+  account_credited?: string | null;
+  rejection_reason?: string | null;
+  transaction_type?: string | null;
+  learner_name?: string | null;
 }
 
 interface PaymentsResponse {
@@ -46,10 +58,17 @@ const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
 export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
   const user = useAuthStore((state) => state.user);
   const userId = user?.id;
+  const isTutor = user?.role === "tutor";
 
   const fetchPayments = async (): Promise<PaymentsResponse> => {
     const params = new URLSearchParams();
-    if (userId) params.set("user_id", String(userId));
+    if (userId) {
+      if (isTutor) {
+        params.set("tutor_id", String(userId));
+      } else {
+        params.set("user_id", String(userId));
+      }
+    }
     if (filters.from_date) params.set("from_date", filters.from_date);
     if (filters.to_date) params.set("to_date", filters.to_date);
     const query = params.toString();
@@ -60,7 +79,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     PaymentsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["payments", userId, filters.from_date, filters.to_date],
+    queryKey: ["payments", userId, isTutor, filters.from_date, filters.to_date],
     queryFn: fetchPayments,
     enabled: !!userId,
   });

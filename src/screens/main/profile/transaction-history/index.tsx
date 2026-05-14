@@ -267,6 +267,31 @@ function TransactionModal({
   );
 }
 
+const VALID_TYPES = new Set<TransactionType>(["withdrawal", "purchase", "failed"]);
+const VALID_STATUSES = new Set<TransactionStatus>(["successful", "pending", "failed"]);
+
+const TYPE_LABEL: Record<string, string> = {
+  promotion: "Spoil Promotion",
+  sponsored_spoil: "Spoil Sale",
+  purchase: "Spoil Purchase",
+  withdrawal: "Withdrawal",
+  credit: "Spoil Purchase",
+  debit: "Withdrawal",
+  failed: "Failed",
+};
+
+function toTransactionType(raw: string): TransactionType {
+  if (VALID_TYPES.has(raw as TransactionType)) return raw as TransactionType;
+  if (raw === "credit" || raw === "sponsored_spoil") return "purchase";
+  if (raw === "debit" || raw === "promotion") return "withdrawal";
+  return "withdrawal";
+}
+
+function toTransactionStatus(raw: string): TransactionStatus {
+  if (VALID_STATUSES.has(raw as TransactionStatus)) return raw as TransactionStatus;
+  return "pending";
+}
+
 function mapPaymentToTransaction(p: PaymentDatum): Transaction {
   const dateObj = new Date(p.created_at);
   const date = `${String(dateObj.getDate()).padStart(2, "0")}/${String(dateObj.getMonth() + 1).padStart(2, "0")}/${dateObj.getFullYear()}`;
@@ -280,23 +305,25 @@ function mapPaymentToTransaction(p: PaymentDatum): Transaction {
   });
   const num = parseFloat(p.amount);
   const formatted = `₦${num.toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
-  const signed = p.type === "purchase" ? `+${formatted}` : `-${formatted}`;
+  const type = toTransactionType(p.type);
+  const signed = type === "purchase" ? `+${formatted}` : `-${formatted}`;
+  const label = TYPE_LABEL[p.type] ?? (type === "purchase" ? "Spoil Purchase" : "Withdrawal");
 
   return {
     id: String(p.id),
-    type: p.type,
-    label: p.type === "purchase" ? "Spoil Purchase" : "Withdrawal",
-    description: p.description ?? "Description",
+    type,
+    label,
+    description: p.description ?? p.type ?? "Description",
     amount: signed,
     date,
     transactionId: p.reference,
     dateTime,
-    fullDescription: p.description ?? "",
+    fullDescription: p.description ?? label,
     rawAmount: formatted,
     accountCredited: p.account_credited ?? "",
-    status: p.status,
+    status: toTransactionStatus(p.status),
     rejectionReason: p.rejection_reason ?? undefined,
-    transactionType: p.transaction_type ?? undefined,
+    transactionType: p.transaction_type ?? p.type ?? undefined,
     learnerName: p.learner_name ?? undefined,
   };
 }

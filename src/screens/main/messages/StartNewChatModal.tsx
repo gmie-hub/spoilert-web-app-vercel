@@ -67,7 +67,7 @@ const ALL_CONTACTS: ModalContact[] = [
 const ITEMS_PER_PAGE = 12;
 // const TOTAL_PAGES = Math.ceil(ALL_CONTACTS.length / ITEMS_PER_PAGE);
 
-/* ─── Helpers ─────────────────────────────────────────────────── */
+/* ─── Helpers ─────────────────────────────────────────── */
 
 function groupByLetter(contacts: ModalContact[]): [string, ModalContact[]][] {
   const map = new Map<string, ModalContact[]>();
