@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Form, Formik, FormikHelpers } from "formik";
 import { object } from "yup";
@@ -23,20 +23,41 @@ const validationSchema = object().shape({
   bankName: validations.bankName,
 });
 
+const PER_PAGE = 20;
+
 const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerificationDetails?: any }) => {
   const [bankSearch, setBankSearch] = useState("");
   const [accountName, setAccountName] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [allBanks, setAllBanks] = useState<any[]>([]);
+  const pageRef = useRef(page);
+  pageRef.current = page;
 
   /* ================================
      FETCH BANKS
   ================================ */
-  const { data, isLoading } = useGetBanksQuery(bankSearch);
+  const { data, isLoading } = useGetBanksQuery(bankSearch, page, PER_PAGE);
 
-  const bankOptions =
-    data &&  data?.data?.data?.map((bank: any) => ({
-      value: bank?.code,
-      label: bank?.name,
-    })) || [];
+  // Reset accumulated list when search changes
+  useEffect(() => {
+    setPage(1);
+    setAllBanks([]);
+  }, [bankSearch]);
+
+  // Append incoming page results; use pageRef to avoid stale closure
+  useEffect(() => {
+    if (!data?.data?.data) return;
+    setAllBanks((prev) =>
+      pageRef.current === 1 ? data.data.data : [...prev, ...data.data.data],
+    );
+  }, [data]);
+
+  const hasMore = (data?.data?.data?.length ?? 0) === PER_PAGE;
+
+  const bankOptions = allBanks.map((bank: any) => ({
+    value: bank?.code,
+    label: bank?.name,
+  }));
 
   /* ================================
      VERIFY ACCOUNT MUTATION
@@ -53,7 +74,7 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
   const verifyAccount = async (accountNumber: string, bankCode: string) => {
     if (accountNumber?.length !== 10 || !bankCode) return;
 
-    const bankObj = data?.data?.data?.find((b: any) => b.code === bankCode);
+    const bankObj = allBanks.find((b: any) => b.code === bankCode);
     if (!bankObj) return;
 
     const result = await verifyBankHandler(accountNumber, bankObj.id);
@@ -91,7 +112,7 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
   ) => {
     if (!accountName) return;
 
-    const bankObj = data?.data?.data?.find((b: any) => b.code === values.bankName);
+    const bankObj = allBanks.find((b: any) => b.code === values.bankName);
     if (!bankObj) return;
 
     // ✅ Save everything as ONE object
@@ -139,11 +160,10 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
                   name="bankName"
                   label="Bank Name"
                   searchable={true}
-                  placeholder={
-                    isLoading ? "Loading banks..." : "Select bank name"
-                  }
+                  placeholder="Select bank name"
                   options={bankOptions}
-                  disabled={isLoading}
+                  isLoading={isLoading}
+                  onReachEnd={hasMore && !isLoading ? () => setPage((p) => p + 1) : undefined}
                   onSearchChange={(value) => setBankSearch(value)}
                   onChange={(value) => {
                     setFieldValue("bankName", value);

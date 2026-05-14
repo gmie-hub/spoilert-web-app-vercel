@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { ErrorState } from "../home/spoilDetails/spoilDetails";
 import { LoadingState } from "../spoil/preSpoilQuiz/components/LoadingState";
 
@@ -56,14 +58,34 @@ const CommunityPageView = (props: Props) => {
     joinedLoading,
     createdLoading,
     fetchedExploreCommunities,
-    activeIsLoading,
     activeIsError,
     activeErrorMessage,
+    fetchNextJoinedPage,
+    hasNextJoinedPage,
+    isFetchingNextJoinedPage,
   } = props;
 
-  if (activeIsLoading) {
-    return <LoadingState />;
-  }
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isViewingJoined =
+    activePrimaryTab === "myCommunities" && activeTutorTab === "joined";
+
+  useEffect(() => {
+    if (!isViewingJoined || !hasNextJoinedPage) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextJoinedPage && !isFetchingNextJoinedPage) {
+          fetchNextJoinedPage();
+        }
+      },
+      { rootMargin: "120px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isViewingJoined, hasNextJoinedPage, isFetchingNextJoinedPage, fetchNextJoinedPage]);
 
   if (activeIsError) {
     return <ErrorState message={activeErrorMessage} />;
@@ -178,7 +200,21 @@ const CommunityPageView = (props: Props) => {
               />
             )}
           </div>
-          {viewMode === "list" && activePagination ? (
+          {viewMode === "list" && isViewingJoined ? (
+            <>
+              <div ref={sentinelRef} className="h-1" />
+              {isFetchingNextJoinedPage && (
+                <div className="flex justify-center py-4">
+                  <span className="text-sm text-gray animate-pulse">Loading more...</span>
+                </div>
+              )}
+              {!hasNextJoinedPage && !joinedLoading && (
+                <p className="mt-4 text-center text-xs text-gray">
+                  You&apos;ve reached the end
+                </p>
+              )}
+            </>
+          ) : viewMode === "list" && activePagination ? (
             <div className="mt-6 flex items-center justify-center gap-4">
               <button
                 type="button"

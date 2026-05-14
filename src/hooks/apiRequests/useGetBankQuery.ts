@@ -27,25 +27,23 @@ export interface BankResponse {
   status: boolean;
   data: {
     data: BankData[];
-    // Add other properties here if needed, e.g. pagination
-    // total?: number;
-    // page?: number;
-  };}
+    total?: number;
+    per_page?: number;
+    current_page?: number;
+    last_page?: number;
+  };
+}
 
 /* ================================
    Hook
 ================================ */
 
-export const useGetBanksQuery = (search?: string) => {
+export const useGetBanksQuery = (search?: string, page: number = 1, perPage: number = 20) => {
   const fetchBanks = async (): Promise<BankResponse> => {
-    // Base endpoint (hardcoded NG)
-    let endpoint = "banks/NG";
-
-    // Only add search if it exists
+    let endpoint = `banks/NG?page=${page}&per_page=${perPage}`;
     if (search && search.trim() !== "") {
-      endpoint += `?search=${search}`;
+      endpoint += `&search=${search}`;
     }
-
     return (await api.get(endpoint))?.data;
   };
 
@@ -53,7 +51,7 @@ export const useGetBanksQuery = (search?: string) => {
     BankResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["banks", search],
+    queryKey: ["banks", search, page, perPage],
     queryFn: fetchBanks,
   });
 

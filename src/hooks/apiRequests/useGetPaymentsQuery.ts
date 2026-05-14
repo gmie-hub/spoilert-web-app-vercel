@@ -39,12 +39,22 @@ export interface PaymentDatum {
 interface PaymentsResponse {
   status?: boolean;
   message?: string;
-  data?: PaymentDatum[] | { current_page?: number; data?: PaymentDatum[] };
+  data?:
+    | PaymentDatum[]
+    | {
+        current_page?: number;
+        last_page?: number;
+        total?: number;
+        per_page?: number;
+        data?: PaymentDatum[];
+      };
 }
 
 export interface PaymentsFilters {
   from_date?: string;
   to_date?: string;
+  page?: number;
+  per_page?: number;
 }
 
 const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
@@ -53,6 +63,23 @@ const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
   const nested = (response.data as { data?: PaymentDatum[] })?.data;
   if (Array.isArray(nested)) return nested;
   return [];
+};
+
+const extractPagination = (
+  response?: PaymentsResponse
+): { current_page: number; last_page: number; total: number } => {
+  if (!response || Array.isArray(response.data))
+    return { current_page: 1, last_page: 1, total: 0 };
+  const d = response.data as {
+    current_page?: number;
+    last_page?: number;
+    total?: number;
+  };
+  return {
+    current_page: d?.current_page ?? 1,
+    last_page: d?.last_page ?? 1,
+    total: d?.total ?? 0,
+  };
 };
 
 export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
@@ -71,6 +98,8 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     }
     if (filters.from_date) params.set("from_date", filters.from_date);
     if (filters.to_date) params.set("to_date", filters.to_date);
+    if (filters.page) params.set("page", String(filters.page));
+    if (filters.per_page) params.set("per_page", String(filters.per_page));
     const query = params.toString();
     return (await api.get(`/payments${query ? `?${query}` : ""}`)).data;
   };
@@ -79,7 +108,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     PaymentsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["payments", userId, isTutor, filters.from_date, filters.to_date],
+    queryKey: ["payments", userId, isTutor, filters.from_date, filters.to_date, filters.page, filters.per_page],
     queryFn: fetchPayments,
     enabled: !!userId,
   });
@@ -92,6 +121,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
   return {
     data,
     payments: extractPayments(data),
+    pagination: extractPagination(data),
     isLoading,
     isError,
     errorMessage,

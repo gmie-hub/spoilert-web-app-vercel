@@ -1,4 +1,5 @@
 import {
+  FiAward,
   FiBarChart2,
   FiBookOpen,
   FiBookmark,
@@ -50,6 +51,12 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "Spoil Stats",
         href: "/profile/spoil-stats",
         icon: FiTrendingUp,
+      },
+      {
+        id: "verify-certificate",
+        label: "Verify Certificate",
+        href: "/profile/verify-certificate",
+        icon: FiAward,
       },
       {
         id: "my-bookmarks",

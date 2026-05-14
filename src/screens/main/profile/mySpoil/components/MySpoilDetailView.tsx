@@ -91,7 +91,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             type="button"
             className="relative p-1.5 rounded-full hover:bg-[#F3F7F9] transition-colors"
           >
-            <Image src={MessagesIcon} alt="Messages" width={22} height={22} />
+            <Image src={MessagesIcon} alt=  "Messages" width={22} height={22} />
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-semibold">
               1
             </span>

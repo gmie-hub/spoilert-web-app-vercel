@@ -143,7 +143,10 @@ const CommunityPage = () => {
     isLoading: joinedLoading,
     isError: joinedError,
     errorMessage: joinedErrorMessage,
-  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingJoined, true);
+    fetchNextPage: fetchNextJoinedPage,
+    hasNextPage: hasNextJoinedPage,
+    isFetchingNextPage: isFetchingNextJoinedPage,
+  } = useGetUserCommunitiesQuery({ per_page: perPage, search: queryParams.search }, isViewingJoined, true);
 
   const {
     data: createdData,
@@ -345,6 +348,9 @@ const CommunityPage = () => {
       activeIsLoading={activeIsLoading}
       activeIsError={activeIsError}
       activeErrorMessage={activeErrorMessage}
+      fetchNextJoinedPage={fetchNextJoinedPage}
+      hasNextJoinedPage={hasNextJoinedPage}
+      isFetchingNextJoinedPage={isFetchingNextJoinedPage}
     />
   );
 };

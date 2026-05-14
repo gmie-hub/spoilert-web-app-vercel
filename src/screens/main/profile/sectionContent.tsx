@@ -14,6 +14,7 @@ import ProfileDetailsSection from "./profileDetails";
 import SpoilPerformanceAnalyticsPage from "./spoil-performance-analytics";
 import SpoilStatsPage from "./spoil-stats";
 import TransactionHistoryPage from "./transaction-history";
+import VerifyCertificatePage from "./verify-certificate";
 
 import type { ProfileNavItemId } from "./types";
 
@@ -34,6 +35,10 @@ const ProfileSectionContent = ({ section }: ProfileSectionContentProps) => {
 
   if (section === "spoil-stats") {
     return <SpoilStatsPage />;
+  }
+
+  if (section === "verify-certificate") {
+    return <VerifyCertificatePage />;
   }
 
   if (section === "my-bookmarks") {

@@ -1,6 +1,6 @@
 "use client";
 
-import { type ElementType, type ReactNode, useState } from "react";
+import { type ElementType, type ReactNode, useEffect, useRef, useState } from "react";
 
 import { FiChevronRight, FiX } from "react-icons/fi";
 import { GoArrowUpRight } from "react-icons/go";
@@ -9,8 +9,6 @@ import { LuArrowDownLeft, LuTriangleAlert } from "react-icons/lu";
 
 import useGetPaymentsQuery from "@spt/hooks/apiRequests/useGetPaymentsQuery";
 import type { PaymentDatum } from "@spt/hooks/apiRequests/useGetPaymentsQuery";
-
-import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 
 type TransactionType = "withdrawal" | "purchase" | "failed";
 type TransactionStatus = "successful" | "pending" | "failed";
@@ -33,19 +31,10 @@ interface Transaction {
   learnerName?: string;
 }
 
-const ACCOUNT = "2102925627 (Access Bank)- Ogunsola Omorinsola";
-
 const dummyTransactions: Transaction[] = [
-  { id: "1", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677900", dateTime: "Nov 20, 2023 | 8:00pm", fullDescription: "You made a withdrawal", rawAmount: "₦18,375.00", accountCredited: ACCOUNT, status: "successful" },
-  { id: "2", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677901", dateTime: "Nov 21, 2023 | 10:00am", fullDescription: "You made a withdrawal", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "successful" },
-  { id: "3", type: "purchase", label: "Spoil Purchase", description: "Description", amount: "+₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677902", dateTime: "Nov 22, 2023 | 2:00pm", fullDescription: "You purchased a Spoil", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "successful" },
-  { id: "4", type: "purchase", label: "Spoil Purchase", description: "Description", amount: "+₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677903", dateTime: "Nov 23, 2023 | 4:00pm", fullDescription: "You purchased a Spoil", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "successful" },
-  { id: "5", type: "failed", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677904", dateTime: "Nov 24, 2023 | 9:00am", fullDescription: "Basic Design Principles Spoil", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "failed", rejectionReason: "Your withdrawal was rejected due to security reasons. Please contact support to resolve this.", transactionType: "Spoil Purchase", learnerName: "Ogunsola Omorinsola" },
-  { id: "6", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677905", dateTime: "Nov 25, 2023 | 11:00am", fullDescription: "You made a withdrawal", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "successful" },
-  { id: "7", type: "failed", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677906", dateTime: "Nov 26, 2023 | 3:00pm", fullDescription: "Basic Design Principles Spoil", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "failed", rejectionReason: "Your withdrawal was rejected due to security reasons. Please contact support to resolve this.", transactionType: "Spoil Purchase", learnerName: "Ogunsola Omorinsola" },
-  { id: "8", type: "purchase", label: "Spoil Purchase", description: "Description", amount: "+₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677907", dateTime: "Nov 27, 2023 | 1:00pm", fullDescription: "You purchased a Spoil", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "successful" },
-  { id: "9", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677908", dateTime: "Nov 28, 2023 | 6:00pm", fullDescription: "You made a withdrawal", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "pending" },
-  { id: "10", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677909", dateTime: "Nov 29, 2023 | 7:00pm", fullDescription: "You made a withdrawal", rawAmount: "₦15,000.00", accountCredited: ACCOUNT, status: "successful" },
+  { id: "1", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677900", dateTime: "Nov 20, 2023 | 8:00pm", fullDescription: "You made a withdrawal", rawAmount: "₦18,375.00", accountCredited: "2102925627 (Access Bank)- Ogunsola Omorinsola", status: "successful" },
+  { id: "3", type: "purchase", label: "Spoil Purchase", description: "Description", amount: "+₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677902", dateTime: "Nov 22, 2023 | 2:00pm", fullDescription: "You purchased a Spoil", rawAmount: "₦15,000.00", accountCredited: "2102925627 (Access Bank)- Ogunsola Omorinsola", status: "successful" },
+  { id: "5", type: "failed", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677904", dateTime: "Nov 24, 2023 | 9:00am", fullDescription: "Basic Design Principles Spoil", rawAmount: "₦15,000.00", accountCredited: "2102925627 (Access Bank)- Ogunsola Omorinsola", status: "failed", rejectionReason: "Your withdrawal was rejected due to security reasons. Please contact support to resolve this.", transactionType: "Spoil Purchase", learnerName: "Ogunsola Omorinsola" },
 ];
 
 const iconConfig: Record<
@@ -330,12 +319,42 @@ function mapPaymentToTransaction(p: PaymentDatum): Transaction {
 
 export default function TransactionHistoryPage() {
   const [selected, setSelected] = useState<Transaction | null>(null);
-  const { payments, isLoading } = useGetPaymentsQuery();
+  const [page, setPage] = useState(1);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  if (isLoading) return <LoadingState />;
+  const { payments, pagination, isLoading } = useGetPaymentsQuery({ page, per_page: 15 });
 
-  const mapped = payments.map(mapPaymentToTransaction);
-  const transactions = mapped.length > 0 ? mapped : dummyTransactions;
+  // Accumulate pages
+  useEffect(() => {
+    if (payments.length === 0) return;
+    const mapped = payments.map(mapPaymentToTransaction);
+    setAllTransactions((prev) => {
+      const existingIds = new Set(prev.map((t) => t.id));
+      const fresh = mapped.filter((t) => !existingIds.has(t.id));
+      return fresh.length > 0 ? [...prev, ...fresh] : prev;
+    });
+  }, [payments]);
+
+  const hasMore = pagination.current_page < pagination.last_page;
+
+  // Infinite scroll — load next page when sentinel enters viewport
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore || isLoading) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((p) => p + 1);
+        }
+      },
+      { threshold: 1.0 }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading]);
+
+  const transactions =
+    allTransactions.length > 0 ? allTransactions : isLoading ? [] : dummyTransactions;
 
   return (
     <>
@@ -349,6 +368,21 @@ export default function TransactionHistoryPage() {
             <TransactionRow key={tx.id} tx={tx} onClick={setSelected} />
           ))}
         </div>
+
+        {/* Loading spinner for next page */}
+        {isLoading && (
+          <div className="flex justify-center py-6">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#0B5368] border-t-transparent" />
+          </div>
+        )}
+
+        {/* Sentinel — triggers next-page fetch when visible */}
+        {hasMore && !isLoading && <div ref={sentinelRef} className="h-1" />}
+
+        {/* End-of-list message */}
+        {!hasMore && !isLoading && allTransactions.length > 0 && (
+          <p className="py-4 text-center text-[12px] text-[#9CA3AF]">You&apos;ve reached the end of your transactions.</p>
+        )}
       </div>
 
       {selected && (
