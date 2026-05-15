@@ -42,7 +42,6 @@ function SpoilEarningCard({ spoil }: { spoil: EarningSpoil }) {
 export default function EarningsBreakdownPage() {
   const user = useAuthStore((state) => state.user);
   const { earnings, isLoading, isError, errorMessage } = useGetEarningsBreakdownQuery(user?.id);
-  console.log(earnings,'earnings')
 
   if (isLoading) {
     return (

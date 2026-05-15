@@ -67,7 +67,7 @@ export function ChatInputBar({
   };
 
   return (
-    <div className="px-4 py-3 border-t border-[#E9EEF2] shrink-0 relative">
+    <div className="px-3 py-2.5 sm:px-4 sm:py-3 border-t border-[#E9EEF2] shrink-0 relative">
       <input
         ref={fileInputRef}
         type="file"
@@ -98,10 +98,11 @@ export function ChatInputBar({
           onCancel={onCancelRecording}
         />
       ) : (
-        <div className="flex items-center gap-2 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-[#F5F6F8] rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5">
+          {/* Emoji — hidden on small phones to save space */}
           <button
             type="button"
-            className="text-[#8A98A3] hover:text-[#20262D] shrink-0 transition-colors"
+            className="hidden sm:inline-flex text-[#8A98A3] hover:text-[#20262D] shrink-0 transition-colors"
           >
             <FiSmile size={20} />
           </button>
@@ -114,10 +115,10 @@ export function ChatInputBar({
             onKeyDown={(e) => {
               if (e.key === "Enter") onSendText();
             }}
-            className="flex-1 text-sm outline-none bg-transparent placeholder:text-[#8A98A3] text-[#20262D]"
+            className="flex-1 min-w-0 text-sm outline-none bg-transparent placeholder:text-[#8A98A3] text-[#20262D]"
           />
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={(e) => {
@@ -133,9 +134,9 @@ export function ChatInputBar({
               <button
                 type="button"
                 onClick={onSendText}
-                className="w-9 h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors shrink-0"
               >
-                <FiSend size={14} />
+                <FiSend size={13} />
               </button>
             ) : (
               <button
@@ -145,9 +146,9 @@ export function ChatInputBar({
                   onMicStart(e.clientX);
                 }}
                 onTouchStart={(e) => onMicStart(e.touches[0].clientX)}
-                className="w-9 h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors select-none"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors select-none shrink-0"
               >
-                <FiMic size={14} />
+                <FiMic size={13} />
               </button>
             )}
           </div>

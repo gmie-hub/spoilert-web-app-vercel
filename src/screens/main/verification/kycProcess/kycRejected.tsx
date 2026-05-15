@@ -9,12 +9,9 @@ type KYCRejectedProps = {
 
 
  const KYCRejected = ({ onRetry, userVerificationDetails }: KYCRejectedProps) => {
-  const items = userVerificationDetails?.data ?? [];
-  const rejectedItem = [...items].reverse().find((item) => item.status === 2);
   const rejectionComment =userVerificationDetails?.data[0]?.comment
     // rejectedItem?.comment ||""
 
-console.log(rejectionComment,'rejectionComment')
   return (
     <div className="w-full flex justify-center lg:justify-start">
       <div className="w-full sm:w-[80%] lg:w-[70%] space-y-4">

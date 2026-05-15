@@ -11,6 +11,7 @@ import StepLayout from "@spt/components/kycLayout";
 import Select from "@spt/components/select";
 import { useGetBanksQuery } from "@spt/hooks/apiRequests/useGetBankQuery";
 import { useVerifyBankMutation } from "@spt/hooks/apiRequests/useVerifyBankAccountMutation";
+import SureToSaveBankAccount from "@spt/screens/main/verification/kycProcess/SureToSaveBankAccount";
 import { validations } from "@spt/utils/validation";
 
 interface FormValues {
@@ -28,6 +29,7 @@ const PER_PAGE = 20;
 const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerificationDetails?: any }) => {
   const [bankSearch, setBankSearch] = useState("");
   const [accountName, setAccountName] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [page, setPage] = useState(1);
   const [allBanks, setAllBanks] = useState<any[]>([]);
   const pageRef = useRef(page);
@@ -38,10 +40,12 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
   ================================ */
   const { data, isLoading } = useGetBanksQuery(bankSearch, page, PER_PAGE);
 
-  // Reset accumulated list when search changes
+  // Only clear list when starting a new active search, not when clearing back to ""
   useEffect(() => {
     setPage(1);
-    setAllBanks([]);
+    if (bankSearch) {
+      setAllBanks([]);
+    }
   }, [bankSearch]);
 
   // Append incoming page results; use pageRef to avoid stale closure
@@ -52,7 +56,9 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
     );
   }, [data]);
 
-  const hasMore = (data?.data?.data?.length ?? 0) === PER_PAGE;
+  const hasMore = data?.data?.last_page != null
+    ? page < data.data.last_page
+    : (data?.data?.data?.length ?? 0) >= PER_PAGE;
 
   const bankOptions = allBanks.map((bank: any) => ({
     value: bank?.code,
@@ -127,8 +133,17 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
 
     actions.setSubmitting(false);
 
-    onNext();
+    setShowConfirm(true);
   };
+
+  if (showConfirm) {
+    return (
+      <SureToSaveBankAccount
+        onBack={() => setShowConfirm(false)}
+        onShowKYCInProgress={onNext}
+      />
+    );
+  }
 
   return (
     <Formik
@@ -163,7 +178,7 @@ const AddBankAccountStep = ({ onNext,  }: { onNext: () => void; userVerification
                   placeholder="Select bank name"
                   options={bankOptions}
                   isLoading={isLoading}
-                  onReachEnd={hasMore && !isLoading ? () => setPage((p) => p + 1) : undefined}
+                  onReachEnd={hasMore ? () => setPage((p) => p + 1) : undefined}
                   onSearchChange={(value) => setBankSearch(value)}
                   onChange={(value) => {
                     setFieldValue("bankName", value);

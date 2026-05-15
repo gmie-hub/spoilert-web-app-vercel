@@ -54,11 +54,19 @@ const Select: FC<CustomSelectProps> = ({
   const listRef = useRef<HTMLDivElement>(null);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchingMoreRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      fetchingMoreRef.current = false;
+    }
+  }, [isLoading]);
 
   const handleScroll = () => {
     const el = listRef.current;
-    if (!el || isLoading || !onReachEnd) return;
+    if (!el || isLoading || !onReachEnd || fetchingMoreRef.current) return;
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+      fetchingMoreRef.current = true;
       onReachEnd();
     }
   };
@@ -84,7 +92,7 @@ const Select: FC<CustomSelectProps> = ({
     if (open && searchable && searchInputRef.current) {
       searchInputRef.current.focus({ preventScroll: true });
     }
-  }, [open, searchable, options]);
+  }, [open, searchable]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -169,11 +177,7 @@ const Select: FC<CustomSelectProps> = ({
                 />
               </span>
 
-              {isLoading && (
-                <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
-              )}
-
-              {!isLoading && displayedOptions.length > 0
+              {displayedOptions.length > 0
                 ? displayedOptions.map((option) => (
                     <div
                       key={option.value}
@@ -182,7 +186,6 @@ const Select: FC<CustomSelectProps> = ({
                         onChange?.(option.value);
                         setOpen(false);
                         setSearch("");
-                        onSearchChange?.("");
                       }}
                       className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
                     >
@@ -194,6 +197,10 @@ const Select: FC<CustomSelectProps> = ({
                       No result found
                     </p>
                   )}
+
+              {isLoading && (
+                <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
+              )}
             </div>
           </div>
         )}

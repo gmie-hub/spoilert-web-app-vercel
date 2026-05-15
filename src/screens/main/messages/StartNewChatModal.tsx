@@ -125,13 +125,12 @@ export default function StartNewChatModal({ onClose, onSelectContact }: Props) {
   return (
     /* Overlay */
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
       onClick={onClose}
     >
       {/* Modal card */}
       <div
-        className="relative bg-white rounded-2xl w-[420px] max-w-[calc(100vw-32px)] flex flex-col overflow-hidden shadow-xl"
-        style={{ maxHeight: "min(700px, 90vh)" }}
+        className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-[420px] sm:max-w-[calc(100vw-32px)] flex flex-col overflow-hidden shadow-xl h-[90vh] sm:h-auto sm:max-h-[700px]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}

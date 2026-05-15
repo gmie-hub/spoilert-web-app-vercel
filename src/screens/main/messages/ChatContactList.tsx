@@ -2,8 +2,9 @@
 
 import { FiSearch } from "react-icons/fi";
 
-import type { ChatTab, Contact } from "./chatData";
 import { getInitials } from "./chatData";
+
+import type { ChatTab, Contact } from "./chatData";
 
 export function Avatar({
   contact,
