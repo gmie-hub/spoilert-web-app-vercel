@@ -186,7 +186,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
           <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="outline"
-              className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D] hover:bg-white"
+              className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D]"
               iconLeft={<Image src={ChatIcon} alt="" width={20} height={20} />}
               onClick={() => router.push(`/spoil/${spoil.id}/chat-tutor`)}
             >

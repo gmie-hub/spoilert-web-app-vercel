@@ -92,7 +92,7 @@ export function TutorProfile({
           <button
             type="button"
             onClick={onReport}
-            className="flex-1 py-2.5 rounded-xl border border-red-500 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors"
+            className="cursor-pointer flex-1 py-2.5 rounded-xl border border-red-500 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors"
           >
             Report Tutor
           </button>
@@ -100,7 +100,7 @@ export function TutorProfile({
             type="button"
             onClick={handleFollow}
             disabled={isLoading}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+            className={`cursor-pointer flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
               following
                 ? "bg-[#0B5368] text-white hover:bg-[#094558]"
                 : "border border-[#0B5368] text-[#0B5368] hover:bg-[#EEF7FB]"

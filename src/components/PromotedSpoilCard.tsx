@@ -39,9 +39,9 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
           <div className="flex items-center gap-2">
             {/* Avatar */}
             <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
-              {spoil.tutor.avatar ? (
+              {spoil?.tutor?.avatar && spoil?.tutor?.avatar ? (
                 <Image
-                  src={spoil.tutor.avatar}
+                  src={spoil?.tutor?.avatar || ''}
                   alt="tutor"
                   // fill
                   className="object-cover"
@@ -50,14 +50,14 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
                 />
               ) : (
                 <span className="text-xs font-semibold flex items-center justify-center w-full h-full text-gray-600">
-                  {spoil.tutor.first_name[0]}
-                  {spoil.tutor.last_name[0]}
+                  {spoil.tutor?.first_name?.[0]}
+                  {spoil.tutor?.last_name?.[0]}
                 </span>
               )}
             </div>
 
             <p className="text-sm font-medium text-[var(--color-blue)]  ">
-              {spoil.tutor.first_name} {spoil.tutor.last_name}
+              {spoil.tutor?.first_name} {spoil.tutor?.last_name}
             </p>
           </div>
 

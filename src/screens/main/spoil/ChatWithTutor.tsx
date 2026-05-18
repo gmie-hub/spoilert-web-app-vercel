@@ -144,10 +144,10 @@ export default function ChatWithTutor({ spoilId }: Props) {
           />
 
           {/* Right: Chat panel */}
-          <div className="flex-1 border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white min-h-[560px] lg:min-h-[calc(100vh-220px)]">
+          <div className="flex-1 w-full border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white min-h-[calc(100svh-180px)] sm:min-h-[560px] lg:min-h-[calc(100vh-220px)]">
 
             {/* Chat header */}
-            <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[#E9EEF2] shrink-0">
+            <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 border-b border-[#E9EEF2] shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative w-11 h-11 rounded-full overflow-hidden bg-[#E8EEF2] flex items-center justify-center shrink-0">
                   {tutorAvatar ? (
@@ -170,7 +170,7 @@ export default function ChatWithTutor({ spoilId }: Props) {
                 <button
                   type="button"
                   onClick={() => setMenuOpen((o) => !o)}
-                  className="p-2 rounded-full hover:bg-[#F5F6F8] transition-colors text-[#8A98A3] hover:text-[#20262D]"
+                  className=" cursor-pointer p-2 rounded-full hover:bg-[#F5F6F8] transition-colors text-[#8A98A3] hover:text-[#20262D]"
                 >
                   <FiMoreVertical size={18} />
                 </button>
@@ -211,7 +211,7 @@ export default function ChatWithTutor({ spoilId }: Props) {
             </div>
 
             {/* Messages */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-4">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
               {messages.length === 0 ? (
                 <EmptyState name={tutorName} />
               ) : (

@@ -110,7 +110,7 @@ const InstitutionSpoils = () => {
 
               <div className="flex items-center gap-3 my-3">
                 <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
-                  {spoil.tutor.avatar ? (
+                  {spoil.tutor?.avatar ? (
                     <Image
                       src={spoil.tutor.avatar}
                       alt="tutor"
@@ -120,8 +120,8 @@ const InstitutionSpoils = () => {
                     />
                   ) : (
                     <span className="text-xs font-semibold flex items-center justify-center w-full h-full text-gray-600">
-                      {spoil.tutor.first_name[0]?.toUpperCase()}
-                      {spoil.tutor.last_name[0]?.toUpperCase()}
+                      {spoil.tutor?.first_name?.[0]?.toUpperCase()}
+                      {spoil.tutor?.last_name?.[0]?.toUpperCase()}
                     </span>
                   )}
                 </div>
