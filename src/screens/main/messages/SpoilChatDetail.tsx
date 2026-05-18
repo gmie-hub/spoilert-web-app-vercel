@@ -17,11 +17,11 @@ import StartNewChatModal from "./StartNewChatModal";
 
 import type { ChatTab } from "./chatData";
 
-interface Props {
-  spoilId: number;
-}
+// interface Props {
+//   spoilId: number;
+// }
 
-export default function SpoilChatDetail({ spoilId: _spoilId }: Props) {
+export default function SpoilChatDetail() {
   const router = useRouter();
 
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null);

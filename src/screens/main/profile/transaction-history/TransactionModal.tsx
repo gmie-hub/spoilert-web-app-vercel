@@ -6,6 +6,7 @@ import { FiX } from "react-icons/fi";
 import { IoCopyOutline } from "react-icons/io5";
 
 import { statusConfig } from "./types";
+
 import type { Transaction } from "./types";
 
 function DetailRow({ label, value, isLast }: { label: string; value: ReactNode; isLast?: boolean }) {

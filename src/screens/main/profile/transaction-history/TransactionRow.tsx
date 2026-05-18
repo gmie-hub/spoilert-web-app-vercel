@@ -3,6 +3,7 @@
 import { FiChevronRight } from "react-icons/fi";
 
 import { iconConfig } from "./types";
+
 import type { Transaction } from "./types";
 
 export function TransactionRow({ tx, onClick }: { tx: Transaction; onClick: (tx: Transaction) => void }) {
