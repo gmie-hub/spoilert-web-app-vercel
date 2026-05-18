@@ -49,6 +49,7 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
                 : "Buy Spoil"}
           </Button>
 
+         {!isFreeSpoil && (
           <Button
             variant="lightBlue"
             className="w-full py-3 bg-white text-sky-700 border border-sky-100"
@@ -56,6 +57,7 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
           >
             Sponsor Spoil
           </Button>
+         )}
 
           <div className="w-full border-t pt-4 border-[#E7E7E7]">
             <HStack

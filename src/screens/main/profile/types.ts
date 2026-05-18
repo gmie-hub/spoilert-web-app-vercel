@@ -3,6 +3,7 @@ import type { IconType } from "react-icons";
 export type ProfileNavItemId =
   | "profile-details"
   | "spoil-stats"
+  | "verify-certificate"
   | "my-bookmarks"
   | "my-spoils"
   | "spoil-performance-analytics"

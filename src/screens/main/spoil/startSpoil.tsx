@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
 import ChatIcon from "@spt/assets/icons/chat.svg";
-import CommunityIcon from "@spt/assets/icons/community.svg";
 import HeroImage from "@spt/assets/icons/heroimage3.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
 import Button from "@spt/components/button";
@@ -187,13 +186,9 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
           <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="outline"
-              className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D] hover:bg-white"
+              className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D]"
               iconLeft={<Image src={ChatIcon} alt="" width={20} height={20} />}
-              onClick={() => {
-                if (spoil.tutor?.email) {
-                  window.location.href = `mailto:${spoil.tutor.email}`;
-                }
-              }}
+              onClick={() => router.push(`/spoil/${spoil.id}/chat-tutor`)}
             >
               Chat Tutor
             </Button>
@@ -201,7 +196,6 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
             <Button
               variant="darkBlue"
               className="gap-2 rounded-[14px] px-5 py-3"
-              iconLeft={<Image src={CommunityIcon} alt="" width={18} height={18} />}
               iconRight={<Image src={ArrowRightIcon} alt="" width={16} height={16} />}
             >
               Join Community

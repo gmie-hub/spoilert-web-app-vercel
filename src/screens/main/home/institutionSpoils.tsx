@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import BookedmarkIcon from "@spt/assets/icons/booked.svg";
 import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
 import HStack from "@spt/components/hstack";
@@ -13,7 +14,9 @@ import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInsti
 
 const InstitutionSpoils = () => {
   const router = useRouter();
-  const { data } = useGetInstitutionSpoilsQuery();
+  const { data, isLoading, isError, errorMessage } = useGetInstitutionSpoilsQuery({
+    is_institution: true,
+  });
   const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
 
   return (
@@ -27,8 +30,18 @@ const InstitutionSpoils = () => {
         Institution Spoils
       </motion.h1>
 
+      {isLoading && (
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 rounded-full border-4 border-[#0B5368] border-t-transparent animate-spin" />
+        </div>
+      )}
+
+      {isError && !isLoading && (
+        <p className="text-center text-red-500 text-sm py-4">{errorMessage}</p>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 w-full">
-        {data?.data?.data?.slice(0, 6)?.map((spoil, index) => (
+        {!isLoading && data?.data?.data?.slice(0, 6)?.map((spoil, index) => (
           <motion.div
             key={spoil.id}
             initial={{ opacity: 0, y: 20 }}
@@ -52,6 +65,7 @@ const InstitutionSpoils = () => {
                   alt={spoil.title}
                   fill
                   className="object-cover"
+                  
                 />
 
                 {/* Bookmark */}
@@ -64,12 +78,17 @@ const InstitutionSpoils = () => {
                   disabled={isBookmarking}
                   className="absolute top-2 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
                 >
-                  <Image
+                {spoil?.is_bookmarked ?  <Image
+                    src={BookedmarkIcon}
+                    alt="bookmark"
+                    width={15}
+                    height={15}
+                  />: <Image
                     src={BookmarkIcon}
                     alt="bookmark"
                     width={15}
                     height={15}
-                  />
+                  /> }
                 </button>
               </div>
             )}
@@ -91,7 +110,7 @@ const InstitutionSpoils = () => {
 
               <div className="flex items-center gap-3 my-3">
                 <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
-                  {spoil.tutor.avatar ? (
+                  {spoil.tutor?.avatar ? (
                     <Image
                       src={spoil.tutor.avatar}
                       alt="tutor"
@@ -101,8 +120,8 @@ const InstitutionSpoils = () => {
                     />
                   ) : (
                     <span className="text-xs font-semibold flex items-center justify-center w-full h-full text-gray-600">
-                      {spoil.tutor.first_name[0]?.toUpperCase()}
-                      {spoil.tutor.last_name[0]?.toUpperCase()}
+                      {spoil.tutor?.first_name?.[0]?.toUpperCase()}
+                      {spoil.tutor?.last_name?.[0]?.toUpperCase()}
                     </span>
                   )}
                 </div>

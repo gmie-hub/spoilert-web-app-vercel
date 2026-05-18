@@ -33,6 +33,10 @@ const useAddBookmarkMutation = () => {
       (await api.post("/bookmarks", payload)).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookmarks", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["all-spoils"] });
+      queryClient.invalidateQueries({ queryKey: ["institution-spoils"] });
+      queryClient.invalidateQueries({ queryKey: ["spoils-by-category"] });
+      queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
     },
   });
 

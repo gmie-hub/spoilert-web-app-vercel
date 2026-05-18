@@ -63,6 +63,7 @@ export interface SpoilDatum {
   is_liked_by_current_user: boolean;
   category: Category | null;
   tutor: Tutor;
+  is_bookmarked:boolean;
 }
 
 export interface SpoilDetailsData {
@@ -115,6 +116,7 @@ export interface SpoilDetailsData {
   modules: Module[];
   quizzes: Quiz[];
   community: Community | null;
+  is_bookmarked:boolean;
 }
 export interface Community {
   id: number;

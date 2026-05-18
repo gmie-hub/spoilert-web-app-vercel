@@ -5,6 +5,6 @@ interface Props {
 }
 
 export default async function SpoilChatDetailPage({ params }: Props) {
-  const { spoilId } = await params;
-  return <SpoilChatDetail spoilId={Number(spoilId)} />;
+  // const { spoilId } = await params;
+  return <SpoilChatDetail  />;
 }

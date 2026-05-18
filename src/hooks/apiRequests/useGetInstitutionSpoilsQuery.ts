@@ -5,18 +5,26 @@ import { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 import { SpoilResponse } from "@spt/utils/spoils";
 
-export const useGetInstitutionSpoilsQuery = () => {
+export const useGetInstitutionSpoilsQuery = (params?: {
+  trending?: boolean;
+  skill?: boolean;
+  development?: boolean;
+  is_institution?: boolean;
+}) => {
   const fetchInstitutionSpoils = async (): Promise<SpoilResponse> => {
-    // return (await api.get(`spoils?per_page=30&is_institution=1`))?.data;
-        return (await api.get(`spoils?per_page=30`))?.data;
-
+    const query = new URLSearchParams({ per_page: "30" });
+    if (params?.trending) query.set("trending", "true");
+    if (params?.skill) query.set("skill", "true");
+    if (params?.development) query.set("development", "true");
+    if (params?.is_institution) query.set("is_institution", "1");
+    return (await api.get(`spoils?${query.toString()}`))?.data;
   };
 
   const { data, isLoading, error, isError } = useQuery<
     SpoilResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["institution-spoils"],
+    queryKey: ["institution-spoils", params],
     queryFn: fetchInstitutionSpoils,
   });
 

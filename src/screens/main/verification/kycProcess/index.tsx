@@ -24,7 +24,7 @@ const KYCProcess = () => {
   const authUser = useAuthStore((state) => state.user);
   const verificationStatus = authUser?.verification_status;
   const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
-
+ 
   // All hooks must be called before any return
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
@@ -82,7 +82,7 @@ const KYCProcess = () => {
     // and is still on the initial step. If they've started the flow (activeStep>0)
     // or triggered a retry, let the stepper UI render the appropriate step.
     if (verificationStatus === 2 && !forceRetry && activeStep === 0)
-      return <KYCRejected onRetry={() => { setActiveStep(0); setForceRetry(true); }} />;
+      return <KYCRejected userVerificationDetails={userVerificationDetails} onRetry={() => { setActiveStep(0); setForceRetry(true);  }} />;
 
     switch (activeStep + 1) {
       case 1:

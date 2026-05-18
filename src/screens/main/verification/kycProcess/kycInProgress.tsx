@@ -3,7 +3,7 @@ import SuccessState from "@spt/components/successState";
 
 const KYCInProgress = () => {
   return (
-    <div className="w-full flex justify-start">
+    <div className="w-full flex lg:justify-start sm:justify-center">
       <div className="w-[70%] space-y-4">
         {" "}
         <SuccessState

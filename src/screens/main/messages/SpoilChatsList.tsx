@@ -31,21 +31,26 @@ export default function SpoilChatsList() {
 
   return (
     <div className="min-h-screen bg-white">
-        {/* Back button */}
+      <div className="lg:px-[100px]  px-4 pt-6 pb-5 ">
+             {/* Back button */}
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="flex items-center gap-1.5 text-sm text-[#20262D] hover:opacity-70 transition-opacity mb-10"
         >
           <FiArrowLeft size={15} />
-          Back
+          Backs
         </button>
-      <div className="max-w-[680px] mx-auto px-6 pt-6 pb-16">
-
+      </div>
       
-
+      <div className="max-w-[960px] w-full mx-auto px-5 pt-6 pb-5 flex flex-col flex-1">
+   
+      </div>
+      <div className="max-w-[680px] mx-auto px-6 pt-6 pb-16">
         {/* Title */}
-        <h1 className="text-[22px] font-bold text-[#20262D] mb-5">Spoil Chats</h1>
+        <h1 className="text-[22px] font-bold text-[#20262D] mb-5">
+          Spoil Chats
+        </h1>
 
         {/* Tabs */}
         <div className="flex border-b border-[#E9EEF2]">
@@ -91,12 +96,19 @@ export default function SpoilChatsList() {
 
                   {/* Text */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#20262D]">{spoil.title}</p>
-                    <p className="text-xs text-[#8A98A3] mt-1">{spoil.newMessages} new messages</p>
+                    <p className="text-sm font-semibold text-[#20262D]">
+                      {spoil.title}
+                    </p>
+                    <p className="text-xs text-[#8A98A3] mt-1">
+                      {spoil.newMessages} new messages
+                    </p>
                   </div>
 
                   {/* Chevron */}
-                  <FiChevronRight size={18} className="text-[#C4C4C4] shrink-0" />
+                  <FiChevronRight
+                    size={18}
+                    className="text-[#C4C4C4] shrink-0"
+                  />
                 </button>
               ))}
             </div>
@@ -112,7 +124,6 @@ export default function SpoilChatsList() {
 function EnrolledEmptyState({ onExplore }: { onExplore: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center pt-16 pb-10 gap-6 text-center px-4">
-
       {/* Illustration */}
       <div className="relative w-[120px] h-[120px]">
         {/* Outer circle */}

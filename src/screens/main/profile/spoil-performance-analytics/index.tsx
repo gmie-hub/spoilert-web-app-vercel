@@ -1,5 +1,7 @@
 "use client";
 
+import { useGetSpoilPerformanceQuery } from "@spt/hooks/apiRequests/useGetSpoilPerformanceQuery";
+
 type Segment = { value: number; color: string };
 
 const COURSE_COLORS = [
@@ -21,22 +23,6 @@ const NOT_STARTED_COLORS = [
   "#22D3EE",
   "#D1D5DB",
 ];
-
-const COURSES = [
-  "Introduction to Design Principles",
-  "CHM 204- Pharmacological Biochemistry",
-  "Introduction to Finance",
-  "Business Analytics",
-  "Enterpreneurship",
-  "Medical Laboratory Science",
-  "Software Development",
-];
-
-const ENROLLED_VALUES = [20, 10, 50, 30, 70, 15, 48];
-const REVENUE_VALUES = [20000, 10000, 50000, 200000, 500000, 120000, 85000];
-const COMPLETED_VALUES = [10, 5, 30, 20, 50, 10, 18];
-const ONGOING_VALUES = [5, 2, 14, 10, 16, 4, 20];
-const NOT_STARTED_VALUES = [4, 5, 16, 8, 10, 7, 20];
 
 function DonutChart({ segments }: { segments: Segment[] }) {
   const R = 38;
@@ -76,10 +62,12 @@ function DonutChart({ segments }: { segments: Segment[] }) {
 }
 
 function Legend({
+  courses,
   values,
   colors,
   formatter,
 }: {
+  courses: string[];
   values: number[];
   colors: string[];
   formatter?: (v: number) => string;
@@ -87,7 +75,7 @@ function Legend({
   const fmt = formatter ?? ((v) => String(v));
   return (
     <div className="flex flex-col gap-2 mt-3">
-      {COURSES.map((course, i) => (
+      {courses.map((course, i) => (
         <div key={course} className="flex flex-col">
           <div className="flex items-center gap-2">
             <span
@@ -107,11 +95,13 @@ function Legend({
 
 function ChartSection({
   title,
+  courses,
   values,
   colors,
   formatter,
 }: {
   title: string;
+  courses: string[];
   values: number[];
   colors: string[];
   formatter?: (v: number) => string;
@@ -124,7 +114,7 @@ function ChartSection({
       <div className="mt-4">
         <DonutChart segments={segments} />
       </div>
-      <Legend values={values} colors={colors} formatter={formatter} />
+      <Legend courses={courses} values={values} colors={colors} formatter={formatter} />
     </div>
   );
 }
@@ -134,6 +124,34 @@ function formatRevenue(v: number) {
 }
 
 export default function SpoilPerformanceAnalyticsPage() {
+  const { performance, isLoading, isError, errorMessage } = useGetSpoilPerformanceQuery();
+
+  const enrolled = performance.learners_enrolled;
+  const revenue = performance.revenue_generated;
+  const completed = performance.completed_learners;
+  const ongoing = performance.ongoing_learners;
+  const notStarted = performance.not_started_learners;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="w-8 h-8 rounded-full border-4 border-[#0B5368] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <p className="text-center text-red-500 text-sm py-8">{errorMessage}</p>
+    );
+  }
+
+  if (enrolled.length === 0) {
+    return (
+      <p className="text-center text-gray-500 text-sm py-8">No performance data available.</p>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <h2 className="text-[18px] font-semibold text-[#212529]">Spoil Performance Analytics</h2>
@@ -141,23 +159,27 @@ export default function SpoilPerformanceAnalyticsPage() {
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
         <ChartSection
           title="Learners Enrolled"
-          values={ENROLLED_VALUES}
+          courses={enrolled.map((s) => s.title)}
+          values={enrolled.map((s) => s.total)}
           colors={COURSE_COLORS}
         />
         <ChartSection
           title="Revenue Generated"
-          values={REVENUE_VALUES}
+          courses={revenue.map((s) => s.title)}
+          values={revenue.map((s) => s.total)}
           colors={COURSE_COLORS}
           formatter={formatRevenue}
         />
         <ChartSection
           title="Completed Learners"
-          values={COMPLETED_VALUES}
+          courses={completed.map((s) => s.title)}
+          values={completed.map((s) => s.total)}
           colors={COURSE_COLORS}
         />
         <ChartSection
           title="Ongoing Learners"
-          values={ONGOING_VALUES}
+          courses={ongoing.map((s) => s.title)}
+          values={ongoing.map((s) => s.total)}
           colors={COURSE_COLORS}
         />
       </div>
@@ -165,10 +187,12 @@ export default function SpoilPerformanceAnalyticsPage() {
       <div className="sm:w-1/2 sm:pr-4">
         <ChartSection
           title="Not Started"
-          values={NOT_STARTED_VALUES}
+          courses={notStarted.map((s) => s.title)}
+          values={notStarted.map((s) => s.total)}
           colors={NOT_STARTED_COLORS}
         />
       </div>
     </div>
   );
 }
+

@@ -52,6 +52,16 @@ const ProfileShell = ({ children }: ProfileShellProps) => {
     };
   }, [user]);
 
+  const hideSidebar = activeItem === "verify-certificate";
+
+  if (hideSidebar) {
+    return (
+      <section className="min-h-screen bg-[#FCFEFF]">
+        {children}
+      </section>
+    );
+  }
+
   return (
     <section className="min-h-screen bg-[#FCFEFF] px-4 py-8 sm:px-6 lg:px-[60px] xl:px-[76px]">
       <div className="mx-auto max-w-[1400px]">

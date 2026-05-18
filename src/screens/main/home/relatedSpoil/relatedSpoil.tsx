@@ -9,7 +9,7 @@ import WebsiteSection from "@spt/components/websiteSection";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
 
 const RelatedSpoil = () => {
-  const { data } = useGetInstitutionSpoilsQuery();
+  const { data, isLoading, isError, errorMessage } = useGetInstitutionSpoilsQuery();
   const spoils = data?.data?.data?.slice(0, 6) || [];
 
   return (
@@ -19,9 +19,19 @@ const RelatedSpoil = () => {
         <a className="text-sm text-[var(--color-blue)]">See All &gt;</a>
       </div>
 
+      {isLoading && (
+        <div className="flex justify-center py-8">
+          <div className="w-8 h-8 rounded-full border-4 border-[#0B5368] border-t-transparent animate-spin" />
+        </div>
+      )}
+
+      {isError && !isLoading && (
+        <p className="text-center text-red-500 text-sm py-4">{errorMessage}</p>
+      )}
+
       <div className="overflow-x-auto scrollbar-hide">
         <div className="flex gap-4 w-max">
-          {spoils.map((spoil: any, idx: number) => (
+          {!isLoading && spoils.map((spoil: any, idx: number) => (
             <motion.div
               key={spoil.id}
               initial={{ opacity: 0, y: 10 }}

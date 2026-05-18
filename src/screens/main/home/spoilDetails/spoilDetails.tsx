@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import BlueShareIcon from "@spt/assets/icons/blueshare-2 (6) 1.svg";
 import BookIcon from "@spt/assets/icons/bookIcon.svg";
+import SavedIcon from "@spt/assets/icons/booksave.svg";
 import Calender from "@spt/assets/icons/calendar.svg";
 import ClockIcon from "@spt/assets/icons/clock.svg";
 import HeroImage3 from "@spt/assets/icons/heroimage1.svg";
@@ -195,8 +196,14 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
               </span>
 
               <span className="px-3 py-1 rounded-md border border-gray-lightest text-black text-xs flex items-center gap-1">
-                <Image src={StarIcon} alt="Star rating" width={20} height={20} />
-                {(spoil.average_rating ?? 0).toFixed(1)} ({spoil.ratings_count ?? 0})
+                <Image
+                  src={StarIcon}
+                  alt="Star rating"
+                  width={20}
+                  height={20}
+                />
+                {(spoil.average_rating ?? 0).toFixed(1)} (
+                {spoil.ratings_count ?? 0})
               </span>
             </HStack>
 
@@ -206,7 +213,12 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                 className="text-xs text-gray-500 whitespace-nowrap flex-wrap"
               >
                 <span className="flex items-center gap-1 px-3 py-2 bg-[#F6F6F6] rounded-md">
-                  <Image src={Profile} alt="Enrolled users" width={20} height={20} />
+                  <Image
+                    src={Profile}
+                    alt="Enrolled users"
+                    width={20}
+                    height={20}
+                  />
                   {spoil.enrolled_users ?? 0} Enrolled
                 </span>
                 <span className="flex items-center gap-1 px-3 py-2 bg-[#F6F6F6] rounded-md">
@@ -226,7 +238,11 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                 onClick={() => addBookmark(spoil.id)}
                 className="flex items-center gap-2 hover:text-black border border-[#E0E0E0] px-3 py-1 rounded-lg disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Image src={SaveIcon} alt="Save spoil" width={15} height={15} />
+                {spoil?.is_bookmarked ? (
+                  <Image src={SavedIcon} alt="booked" width={15} height={15} />
+                ) : (
+                  <Image src={SaveIcon} alt="bookmark" width={15} height={15} />
+                )}{" "}
                 {isSaving ? "Saving..." : "Save"}
               </button>
               <button
@@ -236,7 +252,12 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                   setIsShareModalOpen(true);
                 }}
               >
-                <Image src={BlueShareIcon} alt="Share spoil" width={20} height={20} />
+                <Image
+                  src={BlueShareIcon}
+                  alt="Share spoil"
+                  width={20}
+                  height={20}
+                />
                 Share
               </button>
             </HStack>
@@ -252,7 +273,11 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
                   alt="Likes"
                   width={20}
                   height={20}
-                  className={spoil.is_liked_by_current_user ? "[filter:invert(27%)_sepia(98%)_saturate(1200%)_hue-rotate(195deg)_brightness(95%)_contrast(101%)]" : ""}
+                  className={
+                    spoil.is_liked_by_current_user
+                      ? "[filter:invert(27%)_sepia(98%)_saturate(1200%)_hue-rotate(195deg)_brightness(95%)_contrast(101%)]"
+                      : ""
+                  }
                 />
                 <p>{spoil.likes_count ?? 0}</p>
               </button>

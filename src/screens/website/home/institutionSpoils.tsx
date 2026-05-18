@@ -9,7 +9,7 @@ import WebsiteSection from "@spt/components/websiteSection";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
 
 const InstitutionSpoils = () => {
-  const { data } = useGetInstitutionSpoilsQuery();
+  const { data, isLoading, isError, errorMessage } = useGetInstitutionSpoilsQuery();
 
   return (
     <WebsiteSection className="my-4 w-full">
@@ -29,9 +29,17 @@ const InstitutionSpoils = () => {
           direction={{ base: "column", md: "row" }}
           className="gap-4 md:gap-6 w-full"
         >
-          {data?.data?.data?.slice(0, 4).map((spoil, index) => (
-            <SpoilCard key={index} spoil={spoil} index={index} isInstitution />
-          ))}
+          {isLoading ? (
+            <div className="flex justify-center py-12 w-full">
+              <div className="w-8 h-8 rounded-full border-4 border-[#0B5368] border-t-transparent animate-spin" />
+            </div>
+          ) : isError ? (
+            <p className="text-center text-red-500 text-sm py-4 w-full">{errorMessage}</p>
+          ) : (
+            data?.data?.data?.slice(0, 4).map((spoil, index) => (
+              <SpoilCard key={index} spoil={spoil} index={index} isInstitution />
+            ))
+          )}
         </Flex>
       </Stack>
     </WebsiteSection>

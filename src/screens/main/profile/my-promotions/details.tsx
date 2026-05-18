@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -34,6 +34,22 @@ function formatDate(dateStr: string): string {
 function formatAmount(amount: string): string {
   const num = parseFloat(amount);
   return `₦${num.toLocaleString("en-NG")}`;
+}
+
+function CountdownTimer({ endDate }: { endDate: string }) {
+  const [timeLeft, setTimeLeft] = useState(() => formatTimeLeft(endDate));
+
+  useEffect(() => {
+    if (timeLeft === "Expired") return;
+    const interval = setInterval(() => {
+      const next = formatTimeLeft(endDate);
+      setTimeLeft(next);
+      if (next === "Expired") clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [endDate, timeLeft]);
+
+  return <span>{timeLeft}</span>;
 }
 
 function InfoField({ label, children }: { label: string; children: React.ReactNode }) {
@@ -113,7 +129,7 @@ export default function PromotionDetailsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-5 border-b border-[#E9EEF2]">
               <InfoField label="Promotion Package">Package #{promotion.promotion_package_id}</InfoField>
               <InfoField label="Promotion Amount">{formatAmount(promotion.amount)}</InfoField>
-              <InfoField label="Time Left">{formatTimeLeft(promotion.end_date)}</InfoField>
+              <InfoField label="Time Left"><CountdownTimer endDate={promotion.end_date} /></InfoField>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-5">
