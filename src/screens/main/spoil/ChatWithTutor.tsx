@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiMoreVertical } from "react-icons/fi";
 
 import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
-import CommunityIcon from "@spt/assets/icons/community.svg";
+// import CommunityIcon from "@spt/assets/icons/community.svg";
 import Button from "@spt/components/button";
 import SuccessState from "@spt/components/successState";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";

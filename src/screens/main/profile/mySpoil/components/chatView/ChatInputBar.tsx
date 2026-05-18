@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 
+import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
 
 import { AttachmentMenu } from "./AttachmentMenu";
@@ -37,8 +38,12 @@ export function ChatInputBar({
   onScrollToEnd,
 }: Props) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!showAttachMenu) return;
@@ -46,6 +51,37 @@ export function ChatInputBar({
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, [showAttachMenu]);
+
+  useEffect(() => {
+    if (!showEmojiPicker) return;
+    const close = (e: MouseEvent) => {
+      if (
+        emojiPickerRef.current?.contains(e.target as Node) ||
+        emojiButtonRef.current?.contains(e.target as Node)
+      ) return;
+      setShowEmojiPicker(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [showEmojiPicker]);
+
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    const input = inputRef.current;
+    if (!input) {
+      onInputChange(inputText + emojiData.emoji);
+      return;
+    }
+    const start = input.selectionStart ?? inputText.length;
+    const end = input.selectionEnd ?? inputText.length;
+    const next = inputText.slice(0, start) + emojiData.emoji + inputText.slice(end);
+    onInputChange(next);
+    // restore cursor after the inserted emoji
+    requestAnimationFrame(() => {
+      const pos = start + emojiData.emoji.length;
+      input.setSelectionRange(pos, pos);
+      input.focus();
+    });
+  };
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -90,6 +126,22 @@ export function ChatInputBar({
         />
       )}
 
+      {/* Emoji picker */}
+      {showEmojiPicker && (
+        <div
+          ref={emojiPickerRef}
+          className="absolute bottom-full mb-2 left-0 z-30"
+        >
+          <EmojiPicker
+            onEmojiClick={handleEmojiClick}
+            theme={Theme.LIGHT}
+            lazyLoadEmojis
+            height={380}
+            width={300}
+          />
+        </div>
+      )}
+
       {isRecording ? (
         <RecordingBar
           duration={recordingDuration}
@@ -99,15 +151,17 @@ export function ChatInputBar({
         />
       ) : (
         <div className="flex items-center gap-1.5 sm:gap-2 bg-[#F5F6F8] rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5">
-          {/* Emoji — hidden on small phones to save space */}
           <button
+            ref={emojiButtonRef}
             type="button"
-            className="hidden sm:inline-flex text-[#8A98A3] hover:text-[#20262D] shrink-0 transition-colors"
+            onClick={() => setShowEmojiPicker((prev) => !prev)}
+            className={`inline-flex shrink-0 transition-colors ${showEmojiPicker ? "text-[#0B5368]" : "text-[#8A98A3] hover:text-[#20262D]"}`}
           >
             <FiSmile size={20} />
           </button>
 
           <input
+            ref={inputRef}
             type="text"
             placeholder="Send a message..."
             value={inputText}
