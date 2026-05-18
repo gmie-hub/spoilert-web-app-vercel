@@ -55,6 +55,7 @@ export interface PaymentsFilters {
   to_date?: string;
   page?: number;
   per_page?: number;
+  roleOverride?: "tutor" | "learner";
 }
 
 const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
@@ -90,7 +91,13 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
   const fetchPayments = async (): Promise<PaymentsResponse> => {
     const params = new URLSearchParams();
     if (userId) {
-      if (isTutor) {
+      const useTutorParam =
+        filters.roleOverride === "tutor"
+          ? true
+          : filters.roleOverride === "learner"
+            ? false
+            : isTutor;
+      if (useTutorParam) {
         params.set("tutor_id", String(userId));
       } else {
         params.set("user_id", String(userId));
@@ -108,7 +115,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     PaymentsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["payments", userId, isTutor, filters.from_date, filters.to_date, filters.page, filters.per_page],
+    queryKey: ["payments", userId, filters.roleOverride ?? (isTutor ? "tutor" : "learner"), filters.from_date, filters.to_date, filters.page, filters.per_page],
     queryFn: fetchPayments,
     enabled: !!userId,
   });
