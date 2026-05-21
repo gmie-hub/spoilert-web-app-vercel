@@ -10,6 +10,7 @@ const PaymentVerificationPage = () => {
       <PaymentVerificationScreen />
     </Suspense>
   );
+  
 };
 
 export default PaymentVerificationPage;
