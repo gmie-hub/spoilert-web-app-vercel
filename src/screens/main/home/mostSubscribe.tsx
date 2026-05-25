@@ -8,7 +8,7 @@ import WebsiteSection from "@spt/components/websiteSection";
 import { useGetMostSubscribedSpoilsQuery } from "@spt/hooks/apiRequests/useGetMostSubscribedSpoilsQuery";
 
 const MostSubscribe = () => {
-  const { data } = useGetMostSubscribedSpoilsQuery();
+  const { data, isLoading, isError, errorMessage } = useGetMostSubscribedSpoilsQuery();
 
   return (
     <WebsiteSection className="py-4 w-full bg-[var(--color-blue)] text-white">
@@ -23,12 +23,19 @@ const MostSubscribe = () => {
           Most Subscribed Spoils{" "}
         </motion.h1>
 
-        {/* ✅ Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
-          {data?.data?.data?.slice(0, 8).map((spoil, index) => (
-            <SpoilCard key={index} spoil={spoil} index={index} isInstitution />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 rounded-full border-4 border-white border-t-transparent animate-spin" />
+          </div>
+        ) : isError ? (
+          <p className="text-center text-white text-sm py-4">{errorMessage}</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
+            {data?.data?.data?.slice(0, 8).map((spoil, index) => (
+              <SpoilCard key={index} spoil={spoil} index={index} isInstitution />
+            ))}
+          </div>
+        )}
       </Stack>
     </WebsiteSection>
   );

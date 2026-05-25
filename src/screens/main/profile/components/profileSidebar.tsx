@@ -1,6 +1,17 @@
+"use client";
+
+import { useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FiCamera } from "react-icons/fi";
+
+import deleteaccIcon from "@spt/assets/icons/deleteacc.svg";
+import LogoutIcon from "@spt/assets/icons/logouticon.svg";
+import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
+import useDeleteUserMutation from "@spt/hooks/apiRequests/useDeleteUserMutation";
+import { useAuthStore } from "@spt/store/authStore";
 
 import type {
   ProfileDisplay,
@@ -12,14 +23,46 @@ interface ProfileSidebarProps {
   profile: ProfileDisplay;
   navigationGroups: ProfileNavGroup[];
   activeItem: ProfileNavItemId;
+  showDeleteModal?: boolean;
 }
 
 const ProfileSidebar = ({
   profile,
   navigationGroups,
   activeItem,
+  showDeleteModal = false,
 }: ProfileSidebarProps) => {
-  const navigationItems = navigationGroups.flatMap((group) => group.items);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const isTutor = user?.role === "tutor";
+
+  const filteredGroups = navigationGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.tutorOnly || isTutor),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const navigationItems = filteredGroups.flatMap((group) => group.items);
+  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUserMutation();
+  const logout = useAuthStore((state) => state.logout);
+  const router = useRouter();
+
+  const handleDeleteAccount = () => {
+    if (user?.id) {
+      deleteUser(user.id, {
+        onSuccess: () => {
+          router.push("/auth/signin");
+        },
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setLogoutModalOpen(false);
+    router.push("/auth/signin");
+  };
 
   return (
     <div className="min-w-0">
@@ -70,10 +113,48 @@ const ProfileSidebar = ({
             const isDanger =
               item.id === "delete-my-account" || item.id === "log-out";
 
+            if (item.id === "log-out") {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setLogoutModalOpen(true)}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? "border-[#0B5368] bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
+                      : isDanger
+                        ? "border-[#FDE3E1] bg-[#FFF5F5] text-[#F04438]"
+                        : "border-[#E4ECF1] bg-[#F9FBFC] text-[#48606F] hover:border-[#0B5368] hover:text-[#20262D]"
+                  }`}
+                >
+                  <Icon className="text-[15px]" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            }
+            if (item.id === "delete-my-account") {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => router.push("/profile/delete-my-account")}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? "border-[#0B5368] bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
+                      : isDanger
+                        ? "border-[#FDE3E1] bg-[#FFF5F5] text-[#F04438]"
+                        : "border-[#E4ECF1] bg-[#F9FBFC] text-[#48606F] hover:border-[#0B5368] hover:text-[#20262D]"
+                  }`}
+                >
+                  <Icon className="text-[15px]" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            }
             return (
               <Link
                 key={item.id}
-                href={item.href}
+                href={item?.href || ''}
                 className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
                   isActive
                     ? "border-[#0B5368] bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
@@ -90,7 +171,7 @@ const ProfileSidebar = ({
         </nav>
       </div>
 
-      <aside className="hidden rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] xl:block">
+      <aside className="hidden sticky top-[80px] max-h-[calc(100vh-100px)] overflow-y-auto rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] xl:block">
         <div className="flex flex-col items-center border-b border-[#EEF3F6] pb-6 text-center">
           <div className="relative">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[#D6DEF8]">
@@ -126,7 +207,7 @@ const ProfileSidebar = ({
         </div>
 
         <div className="mt-6 space-y-6">
-          {navigationGroups.map((group) => (
+          {filteredGroups.map((group) => (
             <div
               key={group.title}
               className="border-b border-[#EEF3F6] pb-6 last:border-b-0 last:pb-0"
@@ -142,10 +223,48 @@ const ProfileSidebar = ({
                   const isDanger =
                     item.id === "delete-my-account" || item.id === "log-out";
 
+                  if (item.id === "log-out") {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setLogoutModalOpen(true)}
+                        className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm transition ${
+                          isActive
+                            ? "bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
+                            : isDanger
+                              ? "text-[#F04438] hover:bg-[#FFF5F5]"
+                              : "text-[#6E7C87] hover:bg-[#F7FBFD] hover:text-[#20262D]"
+                        }`}
+                      >
+                        <Icon className="shrink-0 text-[15px]" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  }
+                  if (item.id === "delete-my-account") {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => router.push("/profile/delete-my-account")}
+                        className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm transition ${
+                          isActive
+                            ? "bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
+                            : isDanger
+                              ? "text-[#F04438] hover:bg-[#FFF5F5]"
+                              : "text-[#6E7C87] hover:bg-[#F7FBFD] hover:text-[#20262D]"
+                        }`}
+                      >
+                        <Icon className="shrink-0 text-[15px]" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  }
                   return (
                     <Link
                       key={item.id}
-                      href={item.href}
+                      href={item?.href || ''}
                       className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm transition ${
                         isActive
                           ? "bg-[#0B5368] text-white shadow-[0_10px_24px_rgba(11,83,104,0.18)]"
@@ -164,6 +283,27 @@ const ProfileSidebar = ({
           ))}
         </div>
       </aside>
+
+      <DeleteConfirmationModal
+        open={logoutModalOpen}
+        title="Are You Sure You Want to Log Out?"
+        description="You will need to sign in again to access your account"
+        confirmLabel="Yes Log Out"
+        onConfirm={handleLogout}
+        onCancel={() => setLogoutModalOpen(false)}
+        icon={<Image src={LogoutIcon} alt="logout" width={75} height={87} />}
+      />
+      <DeleteConfirmationModal
+        open={showDeleteModal}
+        title="Are You Sure You Want to Delete Your Account?"
+        description="Deleting your account will remove all your data, including your progress, purchase history, and any created Spoils. This action cannot be undone."
+        confirmLabel="Yes Delete"
+        isLoading={isDeleting}
+        loadingLabel="Deleting..."
+        onConfirm={handleDeleteAccount}
+        onCancel={() => router.back()}
+        icon={<Image src={deleteaccIcon} alt="delete" width={75} height={87} />}
+      />
     </div>
   );
 };

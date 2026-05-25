@@ -9,8 +9,11 @@ import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuer
 import { useAuthStore } from "@spt/store/authStore";
 import type { SpoilDatum } from "@spt/utils/spoils";
 
+import { ErrorState } from "../../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 import { mySpoilsTabOptions } from "../profileData";
 
+import MySpoilDetailView from "./components/MySpoilDetailView";
 import MySpoilsCard from "./components/mySpoilsCard";
 import MySpoilsSearchBar from "./components/mySpoilsSearchBar";
 import RepublishSpoilModal from "./components/RepublishSpoilModal";
@@ -31,6 +34,7 @@ const MySpoilsSection = ({
   const [activeTab, setActiveTab] = useState<MySpoilTabId>(initialTab);
   const [searchValue, setSearchValue] = useState("");
   const [selectedSpoil, setSelectedSpoil] = useState<SpoilDatum | null>(null);
+  const [republishSpoil_, setRepublishSpoil] = useState<SpoilDatum | null>(null);
   const [successSpoil, setSuccessSpoil] = useState<SpoilDatum | null>(null);
   const user = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
@@ -52,7 +56,7 @@ const MySpoilsSection = ({
 
   const { data, isLoading, isError, errorMessage } =
     useGetAllSpoilsQuery(queryParams, Boolean(hasHydrated) && Boolean(user?.id));
-  const spoils = data?.data?.data ?? [];
+  const spoils = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
   const resultsLayoutClass = "grid-cols-1 md:grid-cols-2";
   const filteredSpoils = useMemo(() => {
     const normalizedSearch = deferredSearchValue.trim().toLowerCase();
@@ -77,18 +81,18 @@ const MySpoilsSection = ({
   }, [deferredSearchValue, spoils]);
 
   const handleRepublishClick = (spoil: SpoilDatum) => {
-    setSelectedSpoil(spoil);
+    setRepublishSpoil(spoil);
   };
 
   const handleRepublishConfirm = async () => {
-    if (!selectedSpoil) {
+    if (!republishSpoil_) {
       return;
     }
 
     try {
-      await republishSpoil(selectedSpoil.id);
-      setSuccessSpoil(selectedSpoil);
-      setSelectedSpoil(null);
+      await republishSpoil(republishSpoil_.id);
+      setSuccessSpoil(republishSpoil_);
+      setRepublishSpoil(null);
     } catch {
       // mutation hook already shows feedback and keeps the modal open
     }
@@ -99,9 +103,28 @@ const MySpoilsSection = ({
       return;
     }
 
-    setSelectedSpoil(null);
+    setRepublishSpoil(null);
   };
+
   const router = useRouter();
+
+  // Show detail view when a spoil is selected
+  if (selectedSpoil) {
+    return (
+      <MySpoilDetailView
+        spoilId={selectedSpoil.id}
+        onBack={() => setSelectedSpoil(null)}
+      />
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (isError) {
+    return <ErrorState message={errorMessage} />;
+  }
 
   return (
     <div>
@@ -138,20 +161,7 @@ const MySpoilsSection = ({
       <MySpoilsSearchBar value={searchValue} onChange={setSearchValue} />
 
       <div className="mt-5 min-h-[420px]">
-        {isLoading ? (
-          <div className={`grid gap-5 ${resultsLayoutClass}`}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={`spoil-skeleton-${index}`}
-                className="h-[156px] animate-pulse rounded-[18px] border border-[#F1F4F7] bg-[#F7FAFC]"
-              />
-            ))}
-          </div>
-        ) : isError ? (
-          <div className="flex min-h-[420px] items-center justify-center px-4 py-10 text-center">
-            <p className="text-sm text-[#D92D20]">{errorMessage}</p>
-          </div>
-        ) : filteredSpoils.length > 0 ? (
+        {filteredSpoils.length > 0 ? (
           <div className={`grid gap-5 ${resultsLayoutClass}`}>
             {filteredSpoils.map((spoil) => (
               <MySpoilsCard
@@ -159,6 +169,7 @@ const MySpoilsSection = ({
                 spoil={spoil}
                 activeTab={activeTab}
                 onRepublish={handleRepublishClick}
+                onCardClick={setSelectedSpoil}
               />
             ))}
           </div>
@@ -190,7 +201,7 @@ const MySpoilsSection = ({
       </div>
 
       <RepublishSpoilModal
-        open={Boolean(selectedSpoil)}
+        open={Boolean(republishSpoil_)}
         onClose={handleCloseRepublishModal}
         onConfirm={handleRepublishConfirm}
         isLoading={isRepublishing}

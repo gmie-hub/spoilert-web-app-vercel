@@ -103,9 +103,11 @@ const UploadSpoilImage = () => {
       >
         <div className="flex items-center justify-center h-18 w-18 rounded-lg border border-dashed border-blue bg-blue-lightest overflow-hidden">
           {previewUrl ? (
-            <img
+            <Image
               src={previewUrl}
               alt="Cover preview"
+              width={72}
+              height={72}
               className="h-full w-full object-cover"
             />
           ) : (

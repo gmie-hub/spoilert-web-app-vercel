@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import SuccessIcon from "@spt/assets/icons/question-chat-svgrepo-com 1.svg";
 import SuccessState from "@spt/components/successState";
 import { useAddBankAccountMutation } from "@spt/hooks/apiRequests/useAddBankAccMutation";
+import BankAccAddedSucessful from "@spt/screens/main/verification/kycProcess/bankAccAddedSucessful";
 
 interface BankDetails {
   accountNumber: string;
@@ -15,11 +16,18 @@ interface BankDetails {
   accountName: string;
 }
 
-const SureToSaveBankAccount = () => {
+const SureToSaveBankAccount = ({
+  onBack,
+  onShowKYCInProgress,
+}: {
+  onBack?: () => void;
+  onShowKYCInProgress: () => void;
+}) => {
   const { addBankAccountHandler, isLoading: isAdding } =
     useAddBankAccountMutation();
 
   const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
+  const [saved, setSaved] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("bankDetails");
@@ -28,7 +36,6 @@ const SureToSaveBankAccount = () => {
     }
   }, []);
 
-  // ✅ Final save
   const handleSaveBank = async () => {
     if (!bankDetails) return;
 
@@ -38,10 +45,8 @@ const SureToSaveBankAccount = () => {
         bankDetails.bankId,
       );
 
-
-      // ✅ Clear localStorage after success
       localStorage.removeItem("bankDetails");
-
+      setSaved(true);
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
@@ -51,11 +56,16 @@ const SureToSaveBankAccount = () => {
     }
   };
 
+  if (saved) {
+    return <BankAccAddedSucessful onShowKYCInProgress={onShowKYCInProgress} />;
+  }
+
   return (
     <div className="w-full flex justify-start">
       <div className="w-[70%] space-y-4">
         <SuccessState
           showBack
+          onBackClick={onBack}
           icon={SuccessIcon}
           iconWidth={100}
           iconHeight={100}

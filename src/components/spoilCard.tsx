@@ -1,12 +1,13 @@
-
 import React from "react";
 
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 
+import BookedmarkIcon from "@spt/assets/icons/booked.svg";
 import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
+import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import HStack from "./hstack";
@@ -27,6 +28,13 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
   className = "",
 }) => {
   const spoilHref = `/spoil-details/${spoil.id}`;
+  const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await addBookmark(spoil.id);
+  };
 
   return (
     <Link
@@ -55,26 +63,37 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
           />
 
           {/* ⭐ Bookmark */}
-          <div className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md">
-            <Image src={BookmarkIcon} alt="bookmark" width={32} height={32} />
-          </div>
+          <button
+            type="button"
+            onClick={handleBookmark}
+            disabled={isBookmarking}
+            className="cursor-pointer absolute top-3 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
+          >
+            {spoil?.is_bookmarked ? (
+              <Image src={BookedmarkIcon} alt="booked" width={32} height={32} />
+            ) : (
+              <Image src={BookmarkIcon} alt="bookmark" width={32} height={32} />
+            )}
+          </button>
         </div>
 
         {/* 📄 Content */}
         <div className="p-4 space-y-3">
           {/* Title */}
-          <h3 className="text-[18px] font-medium text-[var(--color-black)] line-clamp-2">
+          <h3 className="text-[18px]  text-[#212529] line-clamp-2">
             {spoil?.title}
           </h3>
 
           {/* Price */}
-    { spoil?.pricing === "free" ?  <p className="text-[18px] font-semibold text-[var(--color-black)]"> Free </p>:    <p className="text-[18px] font-semibold text-[var(--color-black)]">
-            ₦
-            {spoil?.display_amount?.toLocaleString() ||
-              spoil?.amount?.toLocaleString()}
-          </p>
-        
-}
+          {spoil?.pricing === "free" ? (
+            <p className="text-[18px] font-semibold text-[#212529]"> Free </p>
+          ) : (
+            <p className="text-[18px] font-semibold text-[#212529]">
+              ₦
+              {spoil?.display_amount?.toLocaleString() ||
+                spoil?.amount?.toLocaleString()}
+            </p>
+          )}
           {/* Tutor */}
           <HStack spacing="gap-2" alignItems="center">
             <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">
@@ -93,20 +112,20 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
               )}
             </div>
 
-            <p className="text-xs  text-[var(--color-gray-dark)] truncate">
+            <p className="text-[14px]  text-[#666869] truncate">
               {spoil?.tutor?.first_name} {spoil?.tutor?.last_name}
             </p>
           </HStack>
 
           {/* Category + Rating */}
           <Stack spacing="gap-2">
-            <span className="text-[10px] px-2 py-1 rounded-full text-[var(--color-blue)] bg-[var(--color-blue-lightest)] w-fit">
+            <span className="text-[12px] px-2 py-1 rounded-full text-[var(--color-blue)] bg-[var(--color-blue-lightest)] w-fit">
               {spoil?.category?.name || "Uncategorized"}
             </span>
 
             <HStack spacing="gap-1" alignItems="center">
               <Image src={RatingIcon} alt="rating" width={20} height={20} />
-              <p className="text-[1wpx] text-[var(--color-black-dark)] ">
+              <p className="text-[12px] text-[var(--color-black-dark)] ">
                 {spoil?.average_rating?.toFixed(1) || "0.0"} (
                 {spoil?.ratings_count || 0})
               </p>

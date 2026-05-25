@@ -2,6 +2,7 @@
 
 import { useDeferredValue, useState } from "react";
 
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FiSearch } from "react-icons/fi";
 
@@ -114,7 +115,7 @@ export default function CertificateTemplateSelector() {
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm font-medium text-[#0C4A5C]"
         >
-          <img
+          <Image
             src={ArrowLeftIcon.src}
             alt="Back"
             className="h-[18px] w-[18px]"

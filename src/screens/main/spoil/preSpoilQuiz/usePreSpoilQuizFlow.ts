@@ -60,7 +60,7 @@ export const usePreSpoilQuizFlow = ({
     setResponses({});
     setVisitedQuestions([0]);
     setRemainingSeconds(null);
-  }, [spoilId]);
+  }, [spoilId, setQuizStage]);
 
   useEffect(() => {
     if (quizStage !== "quiz" || !quizDetailsData) {
@@ -111,7 +111,7 @@ export const usePreSpoilQuizFlow = ({
     ) {
       setQuizStage("completed");
     }
-  }, [quizDetailsData?.time_limit, quizStage, remainingSeconds]);
+  }, [quizDetailsData?.time_limit, quizStage, remainingSeconds, setQuizStage]);
 
   const handleStartQuiz = () => setQuizStage("quiz");
 

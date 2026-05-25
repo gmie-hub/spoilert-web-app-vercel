@@ -11,7 +11,7 @@ import HStack from "@spt/components/hstack";
 
 const SelfDev = () => {
   const router = useRouter();
-  const { data } = useGetInstitutionSpoilsQuery();
+  const { data, isLoading, isError, errorMessage } = useGetInstitutionSpoilsQuery({ development: true });
 
   // Get first 6 spoils
   const spoils = data?.data?.data?.slice(0, 6) || [];
@@ -32,7 +32,18 @@ const SelfDev = () => {
         Spoils For Self Development
       </motion.h1>
 
+      {isLoading && (
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 rounded-full border-4 border-white border-t-transparent animate-spin" />
+        </div>
+      )}
+
+      {isError && !isLoading && (
+        <p className="text-center text-white text-sm py-4">{errorMessage}</p>
+      )}
+
       {/* Main Layout */}
+      {!isLoading && !isError && (
       <div className="w-full px-4 sm:px-6 md:px-8">
         {/* ✅ Two White Column Boxes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
@@ -77,6 +88,7 @@ const SelfDev = () => {
           </div>
         </div>
       </div>
+      )}
     </WebsiteSection>
   );
 };
@@ -101,9 +113,19 @@ const SpoilCard = ({ spoil, index }: any) => {
         <h2 className="font-semibold text-sm sm:text-base text-[#03363b] line-clamp-2">{spoil.title}</h2>
 
         {/* Price */}
-        <p className="text-sm sm:text-base font-bold text-[#03363b] mt-1">
-          ₦{spoil.display_amount?.toLocaleString()}
-        </p>
+      
+          {spoil?.pricing === "free" ? (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              {" "}
+              Free{" "}
+            </p>
+          ) : (
+            <p className="text-[18px] font-semibold text-[var(--color-black)]">
+              ₦
+              {spoil?.display_amount?.toLocaleString() ||
+                spoil?.amount?.toLocaleString()}
+            </p>
+          )}
 
         {/* Tutor */}
         <HStack spacing="gap-2" alignItems="center">

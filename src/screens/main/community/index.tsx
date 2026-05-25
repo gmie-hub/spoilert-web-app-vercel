@@ -4,10 +4,13 @@
 import { useEffect, useState } from "react";
 
 import { useGetAllCommunitiesQuery } from "@spt/hooks/apiRequests/useGetAllCommunitiesQuery";
-  import useGetCommunitiesCreatedByUserQuery from "@spt/hooks/apiRequests/useGetCommunitiesCreatedByUserQuery";
+import useGetCommunitiesCreatedByUserQuery from "@spt/hooks/apiRequests/useGetCommunitiesCreatedByUserQuery";
 import useGetCommunityDetailQuery from "@spt/hooks/apiRequests/useGetCommunityDetailQuery";
 import useGetUserCommunitiesQuery from "@spt/hooks/apiRequests/useGetUserCommunitiesQuery";
 import { useAuthStore } from "@spt/store/authStore";
+
+import { ErrorState } from "../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../spoil/preSpoilQuiz/components/LoadingState";
 
 import { type CommunityFilterValue } from "./communityData";
 // detailCommunity fixture removed — use live API data only
@@ -115,6 +118,8 @@ const CommunityPage = () => {
     data: communitiesData,
     pagination: communitiesPagination,
     isLoading: communitiesLoading,
+    isError: communitiesError,
+    errorMessage: communitiesErrorMessage,
   } = useGetAllCommunitiesQuery({ ...queryParams, per_page: perPage, explore: activePrimaryTab === "explore" }, activePrimaryTab === "explore");
 
   const rawCommunities: any[] = Array.isArray(communitiesData)
@@ -136,12 +141,19 @@ const CommunityPage = () => {
     data: joinedData,
     pagination: joinedPagination,
     isLoading: joinedLoading,
-  } = useGetUserCommunitiesQuery({ page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingJoined, true);
+    isError: joinedError,
+    errorMessage: joinedErrorMessage,
+    fetchNextPage: fetchNextJoinedPage,
+    hasNextPage: hasNextJoinedPage,
+    isFetchingNextPage: isFetchingNextJoinedPage,
+  } = useGetUserCommunitiesQuery({ per_page: perPage, search: queryParams.search }, isViewingJoined, true);
 
   const {
     data: createdData,
     pagination: createdPagination,
     isLoading: createdLoading,
+    isError: createdError,
+    errorMessage: createdErrorMessage,
   } = useGetCommunitiesCreatedByUserQuery({ owner_id: user?.id, page: queryParams.page, per_page: perPage, search: queryParams.search }, isViewingCreated);
 
   const rawJoined: any[] = Array.isArray(joinedData) ? joinedData : (joinedData ?? []);
@@ -262,6 +274,35 @@ const CommunityPage = () => {
         : createdPagination
       : communitiesPagination;
 
+  const activeIsLoading =
+    activePrimaryTab === "myCommunities"
+      ? activeTutorTab === "joined"
+        ? joinedLoading
+        : createdLoading
+      : communitiesLoading;
+
+  const activeIsError =
+    activePrimaryTab === "myCommunities"
+      ? activeTutorTab === "joined"
+        ? joinedError
+        : createdError
+      : communitiesError;
+
+  const activeErrorMessage =
+    activePrimaryTab === "myCommunities"
+      ? activeTutorTab === "joined"
+        ? joinedErrorMessage
+        : createdErrorMessage
+      : communitiesErrorMessage;
+
+  if (activeIsLoading) {
+    return <LoadingState />;
+  }
+
+  if (activeIsError) {
+    return <ErrorState message={activeErrorMessage} />;
+  }
+
   return (
     <CommunityPageView
       primaryTabs={primaryTabs}
@@ -304,6 +345,12 @@ const CommunityPage = () => {
       joinedLoading={joinedLoading}
       createdLoading={createdLoading}
       fetchedExploreCommunities={fetchedExploreCommunities}
+      activeIsLoading={activeIsLoading}
+      activeIsError={activeIsError}
+      activeErrorMessage={activeErrorMessage}
+      fetchNextJoinedPage={fetchNextJoinedPage}
+      hasNextJoinedPage={hasNextJoinedPage}
+      isFetchingNextJoinedPage={isFetchingNextJoinedPage}
     />
   );
 };

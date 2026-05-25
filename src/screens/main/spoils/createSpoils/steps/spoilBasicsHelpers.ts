@@ -3,7 +3,7 @@ import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import type { BasicsFormData } from "../types";
 
-export const pricingModels = ["free", "paid", "subscription"];
+export const pricingModels = ["free", "paid"];
 
 export const buildNumberOptions = (limit: number) =>
   Array.from({ length: limit }, (_, index) => {

@@ -6,10 +6,10 @@ import FacebookIcon from "@spt/assets/icons/facebook.svg";
 import InstagramIcon from "@spt/assets/icons/instagram.svg";
 import LinkedInIcon from "@spt/assets/icons/linkedIn.svg";
 import LocationIcon from "@spt/assets/icons/location.svg";
+import GooglePlayBadge from "@spt/assets/icons/Mobile app store badge(1).svg";
+import AppStoreBadge from "@spt/assets/icons/Mobile app store badge(2).svg";
 import SMSIcon from "@spt/assets/icons/sms.svg";
 import XIcon from "@spt/assets/icons/x-icon.svg";
-import AppStoreBadge from "@spt/assets/images/app-store.png";
-import GooglePlayBadge from "@spt/assets/images/google-play.png";
 import Flex from "@spt/components/flex";
 import HStack from "@spt/components/hstack";
 import Stack from "@spt/components/stack";
@@ -91,12 +91,14 @@ const Info = () => {
                   alt="app-store"
                   width={134}
                   height={41}
+                  style={{ height: "auto" }}
                 />
                 <Image
                   src={GooglePlayBadge}
                   alt="google-play"
                   width={134}
                   height={41}
+                  style={{ height: "auto" }}
                 />
               </HStack>
             </Stack>

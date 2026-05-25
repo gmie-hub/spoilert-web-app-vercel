@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 
 import ArrowIcon from "@spt/assets/icons/arrow-right-icon.svg";
 import ThumbUp from "@spt/assets/icons/vuesax.svg";
+import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import Button from "./button";
@@ -19,6 +20,7 @@ interface Props {
 
 const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
   const router = useRouter();
+  const { toggleLike, isLoading: likeLoading } = useToggleSpoilLikeMutation();
   const handleNavigate = () => router.push(`/spoil-details/${spoil.id}`);
 
   return (
@@ -37,9 +39,9 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
           <div className="flex items-center gap-2">
             {/* Avatar */}
             <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
-              {spoil.tutor.avatar ? (
+              {spoil?.tutor?.avatar && spoil?.tutor?.avatar ? (
                 <Image
-                  src={spoil.tutor.avatar}
+                  src={spoil?.tutor?.avatar || ''}
                   alt="tutor"
                   // fill
                   className="object-cover"
@@ -48,14 +50,14 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
                 />
               ) : (
                 <span className="text-xs font-semibold flex items-center justify-center w-full h-full text-gray-600">
-                  {spoil.tutor.first_name[0]}
-                  {spoil.tutor.last_name[0]}
+                  {spoil.tutor?.first_name?.[0]}
+                  {spoil.tutor?.last_name?.[0]}
                 </span>
               )}
             </div>
 
             <p className="text-sm font-medium text-[var(--color-blue)]  ">
-              {spoil.tutor.first_name} {spoil.tutor.last_name}
+              {spoil.tutor?.first_name} {spoil.tutor?.last_name}
             </p>
           </div>
 
@@ -112,10 +114,21 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
       {/* Bottom Bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-[var(--color-blue-lightest)]">
         {/* Likes */}
-        <div className="flex items-center gap-1 text-[var(--color-black)] text-xm">
-          <Image src={ThumbUp} alt="ThumbUp" width={16} height={16} />
+        <button
+          type="button"
+          disabled={likeLoading}
+          onClick={(e) => { e.stopPropagation(); toggleLike(spoil.id); }}
+          className="flex items-center gap-1 text-[var(--color-black)] text-xm disabled:opacity-50"
+        >
+          <Image
+            src={ThumbUp}
+            alt="ThumbUp"
+            width={16}
+            height={16}
+            className={spoil.is_liked_by_current_user ? "[filter:invert(27%)_sepia(98%)_saturate(1200%)_hue-rotate(195deg)_brightness(95%)_contrast(101%)]" : ""}
+          />
           <span>{spoil.ratings_count || 20}</span>
-        </div>
+        </button>
 
         <Button
           iconRight={

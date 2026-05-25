@@ -205,7 +205,7 @@ function InfoItem({ icon, text }: { icon?: any; text: string }) {
       );
     } catch {
       if (typeof icon === "string") {
-        return <img src={icon} alt="icon" className="w-5 h-5" />;
+        return <Image src={icon} alt="icon" className="w-5 h-5" />;
       }
 
       if (React.isValidElement(icon)) return icon;

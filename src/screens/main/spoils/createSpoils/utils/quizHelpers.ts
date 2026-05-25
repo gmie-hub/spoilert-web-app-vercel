@@ -96,7 +96,9 @@ export const createQuizAndQuestions = async (
   }
 };
 
-export default {
+const quizHelpers = {
   postQuestionsForQuiz,
   createQuizAndQuestions,
 };
+
+export default quizHelpers;

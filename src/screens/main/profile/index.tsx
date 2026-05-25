@@ -52,6 +52,16 @@ const ProfileShell = ({ children }: ProfileShellProps) => {
     };
   }, [user]);
 
+  const hideSidebar = activeItem === "verify-certificate";
+
+  if (hideSidebar) {
+    return (
+      <section className="min-h-screen bg-[#FCFEFF]">
+        {children}
+      </section>
+    );
+  }
+
   return (
     <section className="min-h-screen bg-[#FCFEFF] px-4 py-8 sm:px-6 lg:px-[60px] xl:px-[76px]">
       <div className="mx-auto max-w-[1400px]">
@@ -64,9 +74,10 @@ const ProfileShell = ({ children }: ProfileShellProps) => {
             activeItem={activeItem}
             navigationGroups={profileNavigationGroups}
             profile={profileDisplay}
+            showDeleteModal={activeItem === "delete-my-account"}
           />
 
-          <div className="min-w-0 self-start rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] sm:px-7 sm:py-7">
+          <div className="min-w-0 min-h-[calc(100vh-200px)] rounded-[24px] border border-[#EEF3F6] bg-white px-5 py-6 shadow-[0_18px_54px_rgba(11,83,104,0.08)] sm:px-7 sm:py-7">
             {children}
           </div>
         </div>

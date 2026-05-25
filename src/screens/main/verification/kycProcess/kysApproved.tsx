@@ -3,8 +3,8 @@ import SuccessState from "@spt/components/successState";
 
 const KYCApproved = () => {
   return (
-    <div className="w-full flex justify-start">
-      <div className="w-[70%] space-y-4">
+    <div className="w-full flex justify-center lg:justify-start">
+      <div className="w-full sm:w-[80%] lg:w-[70%] space-y-4">
         {" "}
         <SuccessState
           icon={SuccessIcon}

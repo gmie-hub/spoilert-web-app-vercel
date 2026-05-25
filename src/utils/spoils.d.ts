@@ -63,6 +63,7 @@ export interface SpoilDatum {
   is_liked_by_current_user: boolean;
   category: Category | null;
   tutor: Tutor;
+  is_bookmarked:boolean;
 }
 
 export interface SpoilDetailsData {
@@ -114,8 +115,23 @@ export interface SpoilDetailsData {
   tutor: Tutor;
   modules: Module[];
   quizzes: Quiz[];
+  community: Community | null;
+  is_bookmarked:boolean;
 }
+export interface Community {
+  id: number;
+  name: string;
+  description: string | null;
+  owner_id: number;
 
+  is_free: boolean;
+  locked: boolean;
+  only_owner: boolean;
+  has_joined: boolean;
+
+  created_at: string; // ISO date string
+  deleted_at: string | null;
+}
 interface Quiz {
   id: number;
   title: string;

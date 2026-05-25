@@ -30,6 +30,7 @@ interface SuccessStateProps {
   /** Back button */
   showBack?: boolean;
   backHref?: string;
+  onBackClick?: () => void;
 
   /** Icon size */
   iconWidth?: number;
@@ -55,6 +56,7 @@ const SuccessState = ({
   className,
   showBack = false,
   backHref = "/",
+  onBackClick,
   iconWidth = 200,
   iconHeight = 200,
 }: SuccessStateProps) => {
@@ -66,12 +68,22 @@ const SuccessState = ({
     >
       {/* ⬅️ Back button */}
       {showBack && (
-        <Link
-          href={backHref}
-          className="absolute left-4 top-4 text-sm font-medium text-[var(--color-blue)]"
-        >
-          {`< Back`}
-        </Link>
+        onBackClick ? (
+          <button
+            type="button"
+            onClick={onBackClick}
+            className="absolute left-4 top-4 text-sm font-medium text-[var(--color-blue)]"
+          >
+            {`< Back`}
+          </button>
+        ) : (
+          <Link
+            href={backHref}
+            className="absolute left-4 top-4 text-sm font-medium text-[var(--color-blue)]"
+          >
+            {`< Back`}
+          </Link>
+        )
       )}
 
       <Stack className="w-full max-w-none space-y-3">

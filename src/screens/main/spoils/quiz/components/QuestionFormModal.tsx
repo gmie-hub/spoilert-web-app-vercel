@@ -47,7 +47,7 @@ const QuestionFormModal: FC<QuestionFormModalProps> = ({
   const isEditing = useMemo(() => Boolean(editingQuestion), [editingQuestion]);
   const initialValues = useMemo(
     () => mapQuestionToDraft(editingQuestion),
-    [editingQuestion, open],
+    [editingQuestion],
   );
 
   return (
