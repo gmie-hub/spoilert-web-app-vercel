@@ -20,7 +20,13 @@ export interface VerifyPaymentData {
 interface VerifyPaymentResponse {
   status?: boolean;
   message?: string;
-  data?: VerifyPaymentData;
+  error?: string;
+  data?: VerifyPaymentData | null;
+}
+
+interface VerifyPaymentParams {
+  tx_ref?: string | null;
+  transaction_id?: string | null;
 }
 
 const SUCCESS_VALUES = new Set([
@@ -30,18 +36,26 @@ const SUCCESS_VALUES = new Set([
   "completed",
 ]);
 
-export const useVerifyPaymentQuery = (reference?: string | null) => {
+export const useVerifyPaymentQuery = ({
+  tx_ref,
+  transaction_id,
+}: VerifyPaymentParams) => {
   const fetchVerification = async (): Promise<VerifyPaymentResponse> => {
-    return (await api.get(`/payments/verify/${reference}`)).data;
+    return (
+      await api.post("/payments/verify", {
+        reference: tx_ref,
+        transaction_id,
+      })
+    ).data;
   };
 
   const { data, isLoading, isError, error, isFetching, refetch } = useQuery<
     VerifyPaymentResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["verify-payment", reference],
+    queryKey: ["verify-payment", tx_ref, transaction_id],
     queryFn: fetchVerification,
-    enabled: !!reference && reference.trim() !== "",
+    enabled: !!tx_ref && !!transaction_id,
     retry: false,
   });
 
@@ -52,9 +66,11 @@ export const useVerifyPaymentQuery = (reference?: string | null) => {
     (data.status === true || (!!paymentStatus && SUCCESS_VALUES.has(paymentStatus)));
 
   const errorMessage =
+    error?.response?.data?.error ||
     error?.response?.data?.message ||
-    error?.message ||
+    data?.error ||
     data?.message ||
+    error?.message ||
     "We couldn't verify your payment.";
 
   return {

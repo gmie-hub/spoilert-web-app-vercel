@@ -13,12 +13,15 @@ import useVerifyPaymentQuery from "@spt/hooks/apiRequests/useVerifyPaymentQuery"
 const PaymentVerificationScreen = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const reference = searchParams.get("ref");
+  const tx_ref = searchParams.get("tx_ref");
+  const transaction_id = searchParams.get("transaction_id");
 
-  const { isSuccess, isLoading, isError, errorMessage } =
-    useVerifyPaymentQuery(reference);
+  const { isSuccess, isLoading, errorMessage } = useVerifyPaymentQuery({
+    tx_ref,
+    transaction_id,
+  });
 
-  if (!reference) {
+  if (!tx_ref || !transaction_id) {
     return (
       <PaymentResultShell>
         <SuccessState
@@ -78,9 +81,8 @@ const PaymentVerificationScreen = () => {
         iconHeight={120}
         title="Payment Failed"
         description={
-          isError
-            ? errorMessage
-            : "We couldn't process your payment at the moment. Please try again or use a different payment method."
+          errorMessage ||
+          "We couldn't process your payment at the moment. Please try again or use a different payment method."
         }
         buttonLabel="Try Again"
         onButtonClick={() => router.back()}
