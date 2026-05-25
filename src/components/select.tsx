@@ -21,10 +21,11 @@ interface CustomSelectProps {
   disabled?: boolean;
   searchable?: boolean;
   onSearchChange?: (value: string) => void;
-  onChange?: (value: string) => void; // ✅ add this
+  onChange?: (value: string) => void;
   filterOnFrontend?: boolean;
   debounceTime?: number;
   isLoading?: boolean;
+  onReachEnd?: () => void;
 }
 
 const Select: FC<CustomSelectProps> = ({
@@ -36,10 +37,11 @@ const Select: FC<CustomSelectProps> = ({
   disabled = false,
   searchable = false,
   onSearchChange,
-  onChange, // ✅ add this
+  onChange,
   filterOnFrontend = true,
   debounceTime = 400,
   isLoading = false,
+  onReachEnd,
 }) => {
   const [field, meta, helpers] = useField(name);
   const hasError = Boolean(meta.touched && meta.error);
@@ -49,8 +51,25 @@ const Select: FC<CustomSelectProps> = ({
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchingMoreRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      fetchingMoreRef.current = false;
+    }
+  }, [isLoading]);
+
+  const handleScroll = () => {
+    const el = listRef.current;
+    if (!el || isLoading || !onReachEnd || fetchingMoreRef.current) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+      fetchingMoreRef.current = true;
+      onReachEnd();
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,23 +78,33 @@ const Select: FC<CustomSelectProps> = ({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setOpen(false);
+        if (search) {
+          setSearch("");
+          onSearchChange?.("");
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [search, onSearchChange]);
 
   useEffect(() => {
     if (open && searchable && searchInputRef.current) {
       searchInputRef.current.focus({ preventScroll: true });
     }
-  }, [open, searchable, options]);
+  }, [open, searchable]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
 
     if (!filterOnFrontend && onSearchChange) {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+      // Fire immediately when clearing so the endpoint is recalled without delay
+      if (!value) {
+        onSearchChange("");
+        return;
+      }
 
       debounceTimer.current = setTimeout(() => {
         onSearchChange(value);
@@ -100,7 +129,15 @@ const Select: FC<CustomSelectProps> = ({
 
       <div className="relative">
         <div
-          onClick={() => !disabled && setOpen(!open)}
+          onClick={() => {
+            if (!disabled) {
+              if (open && search) {
+                setSearch("");
+                onSearchChange?.("");
+              }
+              setOpen(!open);
+            }
+          }}
           className={`
             h-12 w-full flex items-center justify-between
             rounded-lg border bg-[#FBFBFB] px-3 pr-12 text-sm
@@ -117,7 +154,7 @@ const Select: FC<CustomSelectProps> = ({
         </div>
 
         {open && !disabled && (
-          <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-md max-h-60 overflow-auto">
+          <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-md">
             {searchable && (
               <input
                 ref={searchInputRef}
@@ -129,40 +166,42 @@ const Select: FC<CustomSelectProps> = ({
               />
             )}
 
-            {/* Dropdown Icon */}
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
-              <Image
-                src={ArrowDownIcon}
-                alt="Dropdown arrow"
-                width={16}
-                height={16}
-              />
-            </span>
+            <div ref={listRef} onScroll={handleScroll} className="max-h-52 overflow-auto">
+              {/* Dropdown Icon */}
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                <Image
+                  src={ArrowDownIcon}
+                  alt="Dropdown arrow"
+                  width={16}
+                  height={16}
+                />
+              </span>
 
-            {isLoading && (
-              <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
-            )}
+              {displayedOptions.length > 0
+                ? displayedOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      onClick={() => {
+                        helpers.setValue(option.value);
+                        onChange?.(option.value);
+                        setOpen(false);
+                        setSearch("");
+                      }}
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                    >
+                      {option.label}
+                    </div>
+                  ))
+                : !isLoading && (
+                    <p className="px-3 py-2 text-sm text-gray-400">
+                      No result found
+                    </p>
+                  )}
 
-            {!isLoading && displayedOptions.length > 0
-              ? displayedOptions.map((option) => (
-                  <div
-                    key={option.value}
-                    onClick={() => {
-                      helpers.setValue(option.value);
-                      onChange?.(option.value); 
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                    className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
-                  >
-                    {option.label}
-                  </div>
-                ))
-              : !isLoading && (
-                  <p className="px-3 py-2 text-sm text-gray-400">
-                    No result found
-                  </p>
-                )}
+              {isLoading && (
+                <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
+              )}
+            </div>
           </div>
         )}
       </div>

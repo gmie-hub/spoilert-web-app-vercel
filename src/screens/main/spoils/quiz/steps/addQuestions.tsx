@@ -69,7 +69,7 @@ const AddQuestions = ({
       // eslint-disable-next-line no-console
       console.log("failed to restore questions from sessionStorage", e);
     }
-  }, [questions, onQuestionsChange]);
+  }, [questions, onQuestionsChange, quizType]);
 
   const openCreateQuestionModal = () => {
     setEditingQuestionId(null);

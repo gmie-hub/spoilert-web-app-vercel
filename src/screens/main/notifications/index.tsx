@@ -8,55 +8,190 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import BackIcon from "@spt/assets/icons/arrow-left.svg";
+import TrashIcon from "@spt/assets/icons/trash.svg";
+import Button from "@spt/components/button";
 import Card from "@spt/components/card";
+import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
+import Modal from "@spt/components/modal";
+import NoData from "@spt/components/noData";
+import useClearNotificationsMutation from "@spt/hooks/apiRequests/useClearNotificationsMutation";
+import useGetNotificationsQuery, {
+  type UserNotification,
+} from "@spt/hooks/apiRequests/useGetNotificationsQuery";
+import useReadNotificationsMutation from "@spt/hooks/apiRequests/useReadNotificationsMutation";
+import { getErrorMessage } from "@spt/utils/error";
 
-const sampleNotifications = [
-  {
-    id: 1,
-    title: "Your identity has been verified successfully🎉",
-    time: "Today | 11:30pm",
-    unread: true,
-    content:
-      "Your identity verification was successful. You can now access all platform features.",
-  },
-  {
-    id: 2,
-    title: "Your withdrawal of N10,000 was rejected ❌",
-    time: "25-03-2025 | 11:30pm",
-    unread: true,
-    content:
-      "Your withdrawal request was rejected. Please check your account details or contact support.",
-  },
-  {
-    id: 3,
-    title: 'Your Spoil "Basics of Design Principles" was rejected ❌',
-    time: "23-03-2025 | 11:30pm",
-    content:
-      "Your spoil did not meet the platform guidelines. Kindly review and resubmit.",
-  },
-  {
-    id: 4,
-    title: "Ogunsola Omorinsola just posted a new spoil🚀",
-    time: "15-03-2025 | 11:30pm",
-    content:
-      "Check out the new spoil posted by Ogunsola Omorinsola on the platform.",
-  },
-  {
-    id: 5,
-    title: 'Your Spoil "Introduction to Branding" Has Been Approved🎉',
-    time: "28-02-2025 | 11:30pm",
-    content:
-      "Congratulations! Your spoil has been approved and is now visible to other users.",
-  },
-];
+import { ErrorState } from "../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../spoil/preSpoilQuiz/components/LoadingState";
+
+const formatDate = (iso: string) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }) + " | " + date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+const isRejectionNotification = (n: UserNotification) =>
+  n.title.toLowerCase().includes("reject") ||
+  n.title.toLowerCase().includes("failed");
+
+const isSuccessNotification = (n: UserNotification) =>
+  n.title.toLowerCase().includes("approv") ||
+  n.title.toLowerCase().includes("verified") ||
+  n.title.toLowerCase().includes("success");
+
+const RejectionIcon = () => (
+  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M18 6L6 18M6 6l12 12"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  </div>
+);
+
+const SuccessIcon = () => (
+  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M5 13l4 4L19 7"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+);
+
+const InfoIcon = () => (
+  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#013B4D]">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 16v-4m0-4h.01"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  </div>
+);
+
+interface NotificationDetailModalProps {
+  notification: UserNotification | null;
+  onClose: () => void;
+}
+
+const NotificationDetailModal: FC<NotificationDetailModalProps> = ({
+  notification,
+  onClose,
+}) => {
+  const router = useRouter();
+
+  if (!notification) return null;
+
+  const isRejection = isRejectionNotification(notification);
+  const isSuccess = isSuccessNotification(notification);
+
+  const icon = isRejection ? (
+    <RejectionIcon />
+  ) : isSuccess ? (
+    <SuccessIcon />
+  ) : (
+    <InfoIcon />
+  );
+
+  return (
+    <Modal open={!!notification} onClose={onClose} size="sm">
+      <div className="flex flex-col items-center gap-4 py-2 text-center">
+        {icon}
+
+        <p className="text-xl font-semibold text-black">{notification.title}</p>
+
+        <p className="text-sm text-gray-500">{notification.body}</p>
+
+        <div className="w-full space-y-3 pt-2">
+          {isRejection && notification.type === "spoil_status" && (
+            <Button
+              type="button"
+              onClick={onClose}
+              className="w-full bg-[#013B4D] text-white hover:bg-[#013B4D]/90"
+            >
+              Edit and Resubmit
+            </Button>
+          )}
+
+          {notification.route && (
+            <Button
+              type="button"
+              onClick={() => {
+                router.push(notification.route);
+                onClose();
+              }}
+              className="w-full bg-[#013B4D] text-white hover:bg-[#013B4D]/90"
+            >
+              View Details
+            </Button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="w-full text-sm font-medium text-[#013B4D]"
+          >
+            Back to Homepage
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
 
 const NotificationsPage: FC = () => {
   const router = useRouter();
 
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [selectedNotification, setSelectedNotification] =
+    useState<UserNotification | null>(null);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [page, setPage] = useState(1);
 
-  const toggleNotification = (id: number) => {
-    setOpenId(openId === id ? null : id);
+  const { data: notifications, pagination, isLoading, isError, error } = useGetNotificationsQuery({ page, per_page: 10 });
+  const { readNotificationsHandler, markAllAsRead } = useReadNotificationsMutation();
+  const { clearNotificationsHandler, isLoading: isClearing } =
+    useClearNotificationsMutation();
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (isError) {
+    return <ErrorState message={getErrorMessage(error)} />;
+  }
+
+  const handleNotificationClick = (n: UserNotification) => {
+    setSelectedNotification(n);
+    if (!n.is_read) {
+      readNotificationsHandler([n.id]);
+    }
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead();
+  };
+
+  const handleClearConfirm = async () => {
+    await clearNotificationsHandler();
+    setShowClearModal(false);
   };
 
   return (
@@ -80,26 +215,36 @@ const NotificationsPage: FC = () => {
                 Notifications
               </h1>
 
-              <div className="flex w-full items-center justify-between">
-                <button className="text-sm text-red-500">
-                  Clear All Notifications
-                </button>
-                <button className="text-sm text-[#E08A4B]">
-                  Mark All As Read
-                </button>
-              </div>
+              {notifications.length > 0 && (
+                <div className="flex w-full items-center justify-between">
+                  <button
+                    className="text-sm text-red-500"
+                    onClick={() => setShowClearModal(true)}
+                  >
+                    Clear All Notifications
+                  </button>
+                  <button
+                    className="text-sm text-[#E08A4B]"
+                    onClick={handleMarkAllAsRead}
+                  >
+                    Mark All As Read
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="mt-6 space-y-4">
-              {sampleNotifications.map((n) => {
-                const isOpen = openId === n.id;
-
-                return (
+            {notifications.length === 0 ? (
+              <div className="mt-6">
+                <NoData heading="No Notifications Yet!" description="" />
+              </div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {notifications.map((n) => (
                   <div
                     key={n.id}
-                    onClick={() => toggleNotification(n.id)}
+                    onClick={() => handleNotificationClick(n)}
                     className={`cursor-pointer rounded-2xl border ${
-                      n.unread
+                      !n.is_read
                         ? "bg-[#EAF6F9] border-transparent"
                         : "bg-white border-[#EFEFEF]"
                     } p-4`}
@@ -128,31 +273,64 @@ const NotificationsPage: FC = () => {
                           <p className="text-sm font-medium text-black">
                             {n.title}
                           </p>
-                          <p className="mt-1 text-xs text-gray-500">{n.time}</p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            {formatDate(n.created_at)}
+                          </p>
                         </div>
                       </div>
 
-                      <button
-                        className={`text-sm text-[#9AA6AA] transition-transform duration-300 ${
-                          isOpen ? "rotate-90" : ""
-                        }`}
-                      >
-                        ›
-                      </button>
+                      <span className="text-sm text-[#9AA6AA]">›</span>
                     </div>
-
-                    {isOpen && (
-                      <div className="mt-3 pl-13 text-sm text-gray-600">
-                        {n.content}
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {pagination && pagination.last_page > 1 && (
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={!pagination.prev_page_url}
+                  className="rounded border px-3 py-1 text-sm disabled:opacity-40"
+                >
+                  Prev
+                </button>
+
+                <span className="text-sm text-gray-500">
+                  Page {pagination.current_page} of {pagination.last_page}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={!pagination.next_page_url}
+                  className="rounded border px-3 py-1 text-sm disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </Card>
         </div>
       </div>
+
+      <NotificationDetailModal
+        notification={selectedNotification}
+        onClose={() => setSelectedNotification(null)}
+      />
+
+      <DeleteConfirmationModal
+        open={showClearModal}
+        title="Are You Sure You Want To Clear All Notifications?"
+        description="You won't be able to recover it once it is deleted"
+        confirmLabel="Yes, Clear Notifications"
+        isLoading={isClearing}
+        loadingLabel="Clearing..."
+        onConfirm={handleClearConfirm}
+        onCancel={() => setShowClearModal(false)}
+        icon={<Image src={TrashIcon} alt="trash" width={75} height={87} />}
+      />
     </div>
   );
 };

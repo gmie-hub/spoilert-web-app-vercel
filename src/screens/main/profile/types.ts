@@ -3,6 +3,7 @@ import type { IconType } from "react-icons";
 export type ProfileNavItemId =
   | "profile-details"
   | "spoil-stats"
+  | "verify-certificate"
   | "my-bookmarks"
   | "my-spoils"
   | "spoil-performance-analytics"
@@ -20,8 +21,9 @@ export type ProfileNavItemId =
 export interface ProfileNavItem {
   id: ProfileNavItemId;
   label: string;
-  href: string;
+  href?: string;
   icon: IconType;
+  tutorOnly?: boolean;
 }
 
 export interface ProfileNavGroup {

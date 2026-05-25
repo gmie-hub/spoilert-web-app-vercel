@@ -209,13 +209,13 @@ interface CommunityFeedCardProps {
 
           <p className="text-[17px] leading-8 text-[#6A7380]">{content}</p>
 
-          {files.length > 0 ? (
+          { files && files.length > 0 ? (
             <div className="mt-6 grid grid-cols-1 gap-3">
-              {files.slice(0, 4).map((f: any, idx: number) => (
+              {files?.slice(0, 4)?.map((f: any, idx: number) => (
                 <div key={idx} className="overflow-hidden rounded-lg">
-                  <img src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover" />
+                  <Image src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover" />
                 </div>
-              ))}
+              ) )}
             </div>
           ) : null}
 
@@ -338,7 +338,7 @@ interface CommunityFeedCardProps {
             <div className="mt-4 grid grid-cols-1 gap-3">
               {files.slice(0, 4).map((f: any, idx: number) => (
                 <div key={idx} className="overflow-hidden rounded-lg">
-                  <img src={String(f)} alt={`post-file-${idx}`} className="w-full object-cover" />
+                  <Image src={String(f)} alt={`post-file-${idx}`} width={800} height={600} className="w-full object-cover" />
                 </div>
               ))}
             </div>

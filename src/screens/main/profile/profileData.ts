@@ -1,4 +1,5 @@
 import {
+  FiAward,
   FiBarChart2,
   FiBookOpen,
   FiBookmark,
@@ -52,6 +53,12 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         icon: FiTrendingUp,
       },
       {
+        id: "verify-certificate",
+        label: "Verify Certificate",
+        href: "/profile/verify-certificate",
+        icon: FiAward,
+      },
+      {
         id: "my-bookmarks",
         label: "My Bookmarks",
         href: "/profile/my-bookmarks",
@@ -62,12 +69,14 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "My Spoils",
         href: "/profile/my-spoils",
         icon: FiBookOpen,
+        tutorOnly: true,
       },
       {
         id: "spoil-performance-analytics",
         label: "Spoil Performance Analytics",
         href: "/profile/spoil-performance-analytics",
         icon: FiBarChart2,
+        tutorOnly: true,
       },
       {
         id: "my-sponsorships",
@@ -80,6 +89,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "My Promotions",
         href: "/profile/my-promotions",
         icon: FiPercent,
+        tutorOnly: true,
       },
     ],
   },
@@ -91,6 +101,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "Earnings Breakdown",
         href: "/profile/earnings-breakdown",
         icon: FiLayers,
+        tutorOnly: true,
       },
       {
         id: "transaction-history",
@@ -103,6 +114,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
         label: "Manage Bank Account",
         href: "/profile/manage-bank-account",
         icon: FiCreditCard,
+        tutorOnly: true,
       },
     ],
   },
@@ -140,13 +152,11 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
       {
         id: "delete-my-account",
         label: "Delete My Account",
-        href: "/profile/delete-my-account",
         icon: FiTrash2,
       },
       {
         id: "log-out",
         label: "Log Out",
-        href: "/profile/log-out",
         icon: FiLogOut,
       },
     ],

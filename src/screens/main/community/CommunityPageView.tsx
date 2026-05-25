@@ -1,5 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
+import { ErrorState } from "../home/spoilDetails/spoilDetails";
+import { LoadingState } from "../spoil/preSpoilQuiz/components/LoadingState";
+
 import CommunityCard from "./components/communityCard";
 import CommunityDetailView from "./components/communityDetailView";
 import CommunityFilterModal from "./components/communityFilterModal";
@@ -53,7 +58,38 @@ const CommunityPageView = (props: Props) => {
     joinedLoading,
     createdLoading,
     fetchedExploreCommunities,
-  } = props
+    activeIsError,
+    activeErrorMessage,
+    fetchNextJoinedPage,
+    hasNextJoinedPage,
+    isFetchingNextJoinedPage,
+  } = props;
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isViewingJoined =
+    activePrimaryTab === "myCommunities" && activeTutorTab === "joined";
+
+  useEffect(() => {
+    if (!isViewingJoined || !hasNextJoinedPage) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextJoinedPage && !isFetchingNextJoinedPage) {
+          fetchNextJoinedPage();
+        }
+      },
+      { rootMargin: "120px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isViewingJoined, hasNextJoinedPage, isFetchingNextJoinedPage, fetchNextJoinedPage]);
+
+  if (activeIsError) {
+    return <ErrorState message={activeErrorMessage} />;
+  }
 
   return (
     <>
@@ -104,9 +140,7 @@ const CommunityPageView = (props: Props) => {
                   />
                 </div>
                 {communitiesLoading ? (
-                  <div className="flex min-h-[200px] items-center justify-center">
-                    <span className="text-gray text-lg font-medium">Loading communities...</span>
-                  </div>
+                  <LoadingState />
                 ) : (
                   <div className="grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
                     {filteredExploreCommunities.map((community: CommunityCardItem) => (
@@ -166,7 +200,21 @@ const CommunityPageView = (props: Props) => {
               />
             )}
           </div>
-          {viewMode === "list" && activePagination ? (
+          {viewMode === "list" && isViewingJoined ? (
+            <>
+              <div ref={sentinelRef} className="h-1" />
+              {isFetchingNextJoinedPage && (
+                <div className="flex justify-center py-4">
+                  <span className="text-sm text-gray animate-pulse">Loading more...</span>
+                </div>
+              )}
+              {!hasNextJoinedPage && !joinedLoading && (
+                <p className="mt-4 text-center text-xs text-gray">
+                  You&apos;ve reached the end
+                </p>
+              )}
+            </>
+          ) : viewMode === "list" && activePagination ? (
             <div className="mt-6 flex items-center justify-center gap-4">
               <button
                 type="button"
