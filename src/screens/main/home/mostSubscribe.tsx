@@ -5,10 +5,10 @@ import { motion } from "motion/react";
 import SpoilCard from "@spt/components/spoilCard";
 import Stack from "@spt/components/stack";
 import WebsiteSection from "@spt/components/websiteSection";
-import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
+import { useGetMostSubscribedSpoilsQuery } from "@spt/hooks/apiRequests/useGetMostSubscribedSpoilsQuery";
 
 const MostSubscribe = () => {
-  const { data } = useGetInstitutionSpoilsQuery();
+  const { data } = useGetMostSubscribedSpoilsQuery();
 
   return (
     <WebsiteSection className="py-4 w-full bg-[var(--color-blue)] text-white">
