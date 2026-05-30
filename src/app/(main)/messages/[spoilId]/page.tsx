@@ -1,10 +1,10 @@
 import SpoilChatDetail from "@spt/screens/main/messages/SpoilChatDetail";
 
-interface Props {
-  params: Promise<{ spoilId: string }>;
-}
+// interface Props {
+//   params: Promise<{ spoilId: string }>;
+// }
 
-export default async function SpoilChatDetailPage({ params }: Props) {
+export default async function SpoilChatDetailPage() {
   // const { spoilId } = await params;
   return <SpoilChatDetail  />;
 }
