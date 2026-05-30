@@ -104,6 +104,7 @@ export default function CertificateTemplatePreviewPage() {
           </p>
         </div>
 
+
         {isLoading ? (
           <div className="mt-8 h-[420px] animate-pulse rounded-3xl border border-[#EEF2F6] bg-white" />
         ) : null}
