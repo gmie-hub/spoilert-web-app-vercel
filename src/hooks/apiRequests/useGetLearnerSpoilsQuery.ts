@@ -87,7 +87,7 @@ export const useGetLearnerSpoilsQuery = (
   const errorMessage =
     error?.response?.data?.message ||
     error?.message ||
-    "Failed to fetch learner spoils";
+    "Failed to fetch learner spoylz ";
 
   return {
     data,

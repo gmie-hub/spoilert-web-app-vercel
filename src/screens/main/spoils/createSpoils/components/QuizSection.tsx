@@ -24,8 +24,8 @@ const QuizSection: FC<QuizSectionProps> = ({
   return (
     <div className="rounded-2xl border border-gray-100 bg-[#FDFDFE] p-6">
       <p className="text-sm text-gray-600">
-        Create pre-spoil and post-spoil quizzes so you can track your learner&apos;s
-        progress before and after taking the spoil.
+        Create pre-Spoylz and post-Spoylz quizzes so you can track your learner&apos;s
+        progress before and after taking the Spoylz.
       </p>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <Button
@@ -34,7 +34,7 @@ const QuizSection: FC<QuizSectionProps> = ({
           className="justify-between"
           onClick={onEditPreQuiz}
         >
-          {preQuiz ? "Edit Pre-Spoil Quiz" : "Create Pre-Spoil Quiz"}
+          {preQuiz ? "Edit Pre-Spoylz Quiz" : "Create Pre-Spoylz Quiz"}
           <FiPlus />
         </Button>
         <Button
@@ -43,7 +43,7 @@ const QuizSection: FC<QuizSectionProps> = ({
           className="justify-between"
           onClick={onEditPostQuiz}
         >
-          {postQuiz ? "Edit Post-Spoil Quiz" : "Create Post-Spoil Quiz"}
+          {postQuiz ? "Edit Post-Spoylz Quiz" : "Create Post-Spoylz Quiz"}
           <FiPlus />
         </Button>
       </div>

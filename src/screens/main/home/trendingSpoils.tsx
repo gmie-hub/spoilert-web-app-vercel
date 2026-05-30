@@ -25,7 +25,7 @@ const TrendingSpoil = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Trending Spoils
+          Trending Spoylz
         </motion.h1>
 
         {isLoading && (
@@ -61,7 +61,7 @@ const TrendingSpoil = () => {
 
       <div className="flex justify-center mt-10">
         <Button variant="default" className="rounded-full px-6">
-          Explore Spoils
+          Explore Spoylz
         </Button>
       </div>
     </WebsiteSection>

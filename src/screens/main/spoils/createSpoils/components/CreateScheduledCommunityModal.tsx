@@ -49,7 +49,7 @@ const CreateScheduledCommunityModal: FC<CreateScheduledCommunityModalProps> = ({
       <div className="space-y-6">
         <p>
           You can create a community for your learners to ask questions and
-          share ideas. This community will remain inactive until the spoil is
+          share ideas. This community will remain inactive until the Spoylz is
           published on{" "}
           <span className="font-medium">{formatScheduledDate()}.</span>
         </p>

@@ -143,7 +143,7 @@ export const StartSpoilContentPanel = ({
             </div>
           ) : (
             <p className="mt-4 text-[15px] leading-7 text-[#6B7280]">
-              Learning outcomes have not been added for this spoil yet.
+              Learning outcomes have not been added for this Spoylz yet.
             </p>
           )}
         </div>

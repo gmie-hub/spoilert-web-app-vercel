@@ -10,34 +10,34 @@ import GetStarted from "@spt/components/getStarted";
 
 const faqs = [
   {
-    question: "What is a Spoil on Spoilert?",
+    question: "What is a Spoylz on Spoilert?",
     answer:
-      "A Spoil is a learning experience or course shared by tutors to help learners grow.",
+      "A Spoylz is a learning experience or course shared by tutors to help learners grow.",
   },
   {
     question: "Who can become a tutor on Spoilert?",
     answer:
-      "Anyone with expertise in a subject can become a tutor! Whether you're an academic, a professional, or a passionate hobbyist, you can create Spoils and share your knowledge.",
+      "Anyone with expertise in a subject can become a tutor! Whether you're an academic, a professional, or a passionate hobbyist, you can create Spoylz and share your knowledge.",
   },
   {
-    question: "How do learners access Spoils?",
+    question: "How do learners access Spoylz?",
     answer:
-      "Learners can browse Spoils, enroll, and begin learning instantly through the platform.",
+      "Learners can browse Spoylz, enroll, and begin learning instantly through the platform.",
   },
   {
-    question: "Can I sponsor a Spoil for others?",
+    question: "Can I sponsor a Spoylz for others?",
     answer:
-      "Yes! You can sponsor Spoils for friends, students, or anyone who needs support.",
+      "Yes! You can sponsor Spoylz for friends, students, or anyone who needs support.",
   },
   {
-    question: "Do Spoils expire?",
+    question: "Do Spoylz expire?",
     answer:
-      "No, Spoils remain available unless removed by the tutor or institution.",
+      "No, Spoylz remain available unless removed by the tutor or institution.",
   },
   {
     question: "How do tutors earn on Spoilert?",
     answer:
-      "Tutors earn through paid Spoils, sponsorships, and institutional partnerships.",
+      "Tutors earn through paid Spoylz, sponsorships, and institutional partnerships.",
   },
   {
     question: "Is Spoilert available worldwide?",

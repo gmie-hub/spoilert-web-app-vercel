@@ -98,7 +98,7 @@ export default function ChatView({ spoilId, enrollmentId }: Props) {
           <span className="text-[#C4C4C4]">|</span>
           <nav className="flex items-center gap-1 text-sm flex-wrap">
             <button type="button" onClick={() => router.push("/profile/my-spoils")} className="text-[#0B5368] hover:underline">
-              My Spoils
+              My Spoylz
             </button>
             <span className="text-[#C4C4C4]">/</span>
             <button type="button" onClick={() => router.push(enrolledLearnersHref)} className="text-[#0B5368] hover:underline">

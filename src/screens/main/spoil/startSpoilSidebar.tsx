@@ -88,7 +88,7 @@ export const StartSpoilSidebar = ({
     <aside className="rounded-[24px] border border-[#E6E6E6] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)]">
       <div className="flex items-center justify-between">
         <h2 className="text-[18px] font-semibold text-[#212529]">
-          Spoil Content
+          Spoylz Content
         </h2>
 
         <button
@@ -214,7 +214,7 @@ export const StartSpoilSidebar = ({
           })
         ) : (
           <div className="rounded-[16px] border border-dashed border-[#D9E1E5] px-4 py-5 text-sm text-[#7C8792]">
-            No modules are available for this spoil yet.
+            No modules are available for this Spoylz yet.
           </div>
         )}
       </div>
@@ -223,10 +223,10 @@ export const StartSpoilSidebar = ({
         <p className="flex items-start gap-3 text-sm leading-6 text-[#5A6A73]">
           <FiLock className="mt-1 shrink-0 text-[#7C93A0]" size={16} />
           <span>
-            <span className="font-medium text-[#4B5C65]">Post Spoil Quiz</span>{" "}
+            <span className="font-medium text-[#4B5C65]">Post Spoylz Quiz</span>{" "}
             -{" "}
             {canTakePostQuiz
-              ? "You have unlocked the post-spoil quiz."
+              ? "You have unlocked the post-Spoylz quiz."
               : "You have to complete all modules to unlock your certificate"}
           </span>
         </p>
@@ -240,7 +240,7 @@ export const StartSpoilSidebar = ({
               !canTakePostQuiz ? "cursor-not-allowed bg-[#8FB0BA]" : ""
             }`}
           >
-            Take Post-Spoil Quiz
+            Take Post-Spoylz Quiz
           </Button>
 
           {!canTakePostQuiz && (
@@ -255,7 +255,7 @@ export const StartSpoilSidebar = ({
           onClick={() => router.push("/my-learnings?tab=completed")}
           className="mt-6 w-full rounded-[14px] py-3 text-center bg-[#ECFDF5] text-[#065F46] font-semibold cursor-pointer"
         >
-          Spoil Completed
+          Spoylz Completed
         </button>
       ) : (
         <Button
@@ -272,7 +272,7 @@ export const StartSpoilSidebar = ({
           }}
           aria-disabled={!canCompleteSpoil || isCompletingSpoil}
         >
-          {isCompletingSpoil ? "Completing..." : "Complete Spoil"}
+          {isCompletingSpoil ? "Completing..." : "Complete Spoylz"}
         </Button>
       )}
     </aside>

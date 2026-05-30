@@ -156,7 +156,7 @@ export default function CertificateTemplateCustomizePage() {
     }
 
     if (!resolvedSpoilId) {
-      toast.error("Create or load a spoil before saving its certificate.");
+      toast.error("Create or load a Spoylz before saving its certificate.");
       return;
     }
 

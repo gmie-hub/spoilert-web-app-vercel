@@ -49,7 +49,7 @@ const useAddBookmarkMutation = () => {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to bookmark spoil",
+          "Failed to bookmark spoylz ",
       );
       return null;
     }

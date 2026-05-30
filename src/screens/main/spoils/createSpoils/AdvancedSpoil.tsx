@@ -18,7 +18,7 @@ import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilOutlineStep from "./steps/SpoilOutlineStep";
 import SpoilReviewStep from "./steps/SpoilReviewStep";
 
-const steps = ["Spoil Basics", "Spoil Outline", "Spoil Review"];
+const steps = ["Spoylz Basics", "Spoylz Outline", "Spoylz Review"];
 
 const STEP_KEY = "advanced-spoil-step";
 
@@ -164,7 +164,7 @@ const AdvancedSpoil = () => {
   if (isEditMode && isSpoilLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center px-2 sm:px-4">
-        <p className="text-sm text-[#5F6B76]">Loading spoil details...</p>
+        <p className="text-sm text-[#5F6B76]">Loading Spoylz details...</p>
       </div>
     );
   }
@@ -177,9 +177,9 @@ const AdvancedSpoil = () => {
       spacing={4}
     >
       <Stack spacing={1}>
-        <p className="text-sm font-medium text-gray-500">Advanced Spoil</p>
+        <p className="text-sm font-medium text-gray-500">Advanced Spoylz</p>
         <h3 className="text-2xl font-semibold text-black">
-          {isEditMode ? "Edit Advanced Spoil" : "Create an Advanced Spoil"}
+          {isEditMode ? "Edit Advanced Spoylz" : "Create an Advanced Spoylz"}
         </h3>
       </Stack>
 
@@ -189,7 +189,7 @@ const AdvancedSpoil = () => {
       >
         <div className="w-full rounded-3xl bg-white p-6 shadow-sm lg:max-w-xs">
           <h4 className="text-xl font-semibold text-gray-900">
-            Spoil Progress
+            Spoylz Progress
           </h4>
           <p className="mt-1 text-sm text-gray-500">
             Track your progress across the three steps.

@@ -9,7 +9,7 @@ const KYCInProgress = () => {
         <SuccessState
           icon={SuccessIcon}
           title="Your Verification Is Still In Progress "
-          description="Once your verification is complete, you will be notified, and you will be able to create Spoils."
+          description="Once your verification is complete, you will be notified, and you will be able to create Spoylz."
           buttonLabel="Okay"
           href="/"
         />

@@ -30,7 +30,7 @@ export const useGetSpoilByIdQuery = (spoilId?: number | string | null) => {
 	const errorMessage =
 		(error as AxiosError<ApiErrorResponse>)?.response?.data?.message ||
 		(error as AxiosError)?.message ||
-		"Failed to fetch spoil";
+		"Failed to fetch Spoylz";
 
 	return {
 		data: data?.data ?? null,

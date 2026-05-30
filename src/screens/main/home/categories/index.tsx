@@ -40,7 +40,7 @@ export default function Categories() {
       data?.data?.map((s: any) => ({
         id: s.id,
         title: s.name || "Untitled",
-        spoils: `${s.total_spoils || 0} Spoils`,
+        spoils: `${s.total_spoils || 0} Spoylz`,
         image: s.url || "/categories/uiux.jpg",
       })) || []
     );
@@ -104,14 +104,14 @@ export default function Categories() {
              Back
           </button>
           <h2 className="text-2xl font-semibold">
-            {selectedCategory?.title} Spoils
+            {selectedCategory?.title} Spoylz
           </h2>
         
         </div>
 
         <div className="mb-6">
           <input
-            placeholder="Search spoils..."
+            placeholder="Search Spoylz..."
             value={spoilSearch}
             onChange={(e) => setSpoilSearch(e.target.value)}
             className="px-4 py-2 rounded-lg border border-gray-200 w-full sm:w-80 outline-none focus:ring-2 focus:ring-[#063B4A]"
@@ -132,7 +132,7 @@ export default function Categories() {
           </div>
         ) : (
           <div className="flex items-center justify-center h-64 text-center">
-            <p className="text-gray-500">No spoils found in this category.</p>
+            <p className="text-gray-500">No Spoylz found in this category.</p>
           </div>
         )}
       </WebsiteSection>

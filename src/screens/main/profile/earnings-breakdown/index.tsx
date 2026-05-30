@@ -66,7 +66,7 @@ export default function EarningsBreakdownPage() {
           Earnings Breakdown
         </h2>
         <p className="mt-1 text-[16px] text-[#495057]">
-          Track your earnings from all your published Spoils
+          Track your earnings from all your published Spoylz
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function EarningsBreakdownPage() {
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#F97316]">
               <Image src={CreatedIcon} alt="created icon" className="h-10 w-10 text-white" />
             </div>
-            <p className="text-[14px] font-medium text-[#495057]">Spoils Created</p>
+            <p className="text-[14px] font-medium text-[#495057]">Spoylz Created</p>
           </div>
           <p className="text-[18px] font-semibold text-[#212529]">
             {earnings?.overview?.spoils_created ?? 0}

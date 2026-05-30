@@ -21,7 +21,7 @@ const LearningPlatform = () => {
       icon: LearnersIcon,
       title: "Learners",
       description:
-        "Access expertly designed spoils in video and text formats, browse through categories, whether it’s acing your exams, upskilling, or discovering something new, Spoilert is here for you.",
+        "Access expertly designed Spoylz in video and text formats, browse through categories, whether it’s acing your exams, upskilling, or discovering something new, Spoilert is here for you.",
     },
     {
       icon: TutorsIcon,

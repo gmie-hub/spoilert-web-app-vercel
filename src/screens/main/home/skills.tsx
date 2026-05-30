@@ -20,7 +20,7 @@ const SkillPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Skill Acquisition Spoils
+          Skill Acquisition Spoylz
         </motion.h1>
 
         {isLoading ? (

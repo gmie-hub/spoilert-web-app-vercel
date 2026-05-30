@@ -58,7 +58,7 @@ export const CompletionView = ({
         className="mt-8 w-full py-3"
         onClick={onStartSpoil}
       >
-        Start Spoil
+        Start Spoylz
       </Button>
     </div>
   </div>

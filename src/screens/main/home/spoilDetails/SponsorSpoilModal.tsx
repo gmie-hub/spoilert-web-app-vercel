@@ -74,7 +74,7 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
         <div className="flex flex-col gap-4">
           <div>
             <label className="mb-1.5 block text-sm text-[#374151]">
-              Spoil Title
+              Spoylz Title
             </label>
             <input
               readOnly

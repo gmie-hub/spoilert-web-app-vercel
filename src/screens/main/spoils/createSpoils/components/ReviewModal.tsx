@@ -38,7 +38,7 @@ const ReviewModal: FC<ReviewModalProps> = ({
           </h2>
 
           <h5 className="text-lg font-medium text-black text-center">
-            Do you want to create a community for this spoil?
+            Do you want to create a community for this Spoylz?
           </h5>
 
           <p className="text-center">

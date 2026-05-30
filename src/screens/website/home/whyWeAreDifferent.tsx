@@ -60,17 +60,17 @@ export default WhyWeAreDifferent;
 const data = [
   {
     icon: SpoilFormatIcon,
-    title: "Multiple Spoil Formats",
+    title: "Multiple Spoylz Formats",
     className: "border-blue-lighter bg-blue-lightest",
     description:
-      'Our learning materials referred to as "Spoils" are available in video and text formats, giving you the flexibility to learn anywhere at anytime, in the way that works best for you.',
+      'Our learning materials referred to as "Spoylz" are available in video and text formats, giving you the flexibility to learn anywhere at anytime, in the way that works best for you.',
   },
   {
     icon: LearningIcon,
     title: "Self Paced Learning",
     className: "border-yellow-light bg-yellow-lighter",
     description:
-      "No pressure. With Spoilert, you decide when, where, and how you learn. Dive into spoils at your own pace, pause when you need to, and resume when you're ready. ",
+      "No pressure. With Spoylzert, you decide when, where, and how you learn. Dive into Spoylz at your own pace, pause when you need to, and resume when you're ready. ",
   },
   {
     icon: TopTutorsIcon,
@@ -84,6 +84,6 @@ const data = [
     title: "Support Learning with Sponsorships",
     className: "border-blue-lighter bg-blue-lightest",
     description:
-      "Support learners by sponsoring a spoil and providing access to valuable knowledge. You can also get your own spoils sponsored, so more learners can benefit. It’s learning made possible by you.",
+      "Support learners by sponsoring a Spoylz and providing access to valuable knowledge. You can also get your own Spoylz sponsored, so more learners can benefit. It’s learning made possible by you.",
   },
 ];

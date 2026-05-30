@@ -28,11 +28,11 @@ const RepublishSuccessModal: FC<RepublishSuccessModalProps> = ({
         </div>
 
         <h2 className="mt-6 text-[22px] font-medium text-[#20262D]">
-          Spoil Republished Successfully
+          Spoylz Republished Successfully
         </h2>
 
         <p className="mt-4 max-w-[420px] text-base leading-7 text-[#667085]">
-          Your spoil has been sent for review and learners will regain access
+          Your Spoylz has been sent for review and learners will regain access
           once it is approved.
         </p>
 

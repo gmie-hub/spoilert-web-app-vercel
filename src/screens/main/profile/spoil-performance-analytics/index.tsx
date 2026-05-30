@@ -154,7 +154,7 @@ export default function SpoilPerformanceAnalyticsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h2 className="text-[18px] font-semibold text-[#212529]">Spoil Performance Analytics</h2>
+      <h2 className="text-[18px] font-semibold text-[#212529]">Spoylz Performance Analytics</h2>
 
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
         <ChartSection

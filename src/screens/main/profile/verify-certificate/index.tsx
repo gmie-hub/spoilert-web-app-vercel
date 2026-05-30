@@ -121,7 +121,7 @@ export default function VerifyCertificatePage() {
                 borderBottom
               />
               <DetailCell
-                label="Spoil Title"
+                label="Spoylz Title"
                 value={data.spoil_title}
                 borderBottom
               />

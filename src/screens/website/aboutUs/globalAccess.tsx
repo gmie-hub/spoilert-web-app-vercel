@@ -29,7 +29,7 @@ export default function AboutSection() {
                 across the world. We believe that knowledge should be
                 accessible, flexible, and interactive. SPOILERT empowers
                 individuals to share their expertise by creating structured
-                courses—called Spoilts—while enabling learners to access
+                courses—called Spoylz—while enabling learners to access
                 high-quality educational content in formats that suit their
                 needs. Our platform supports both live learning experiences and
                 self-paced education, allowing users to learn anytime, anywhere.

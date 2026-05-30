@@ -60,7 +60,7 @@ export const useGetSpoilTemplateQuery = (
   const errorMessage =
     error?.response?.data?.message ||
     error?.message ||
-    "Failed to fetch spoil template";
+    "Failed to fetch spoylz template";
 
   return {
     data: data?.data ?? null,

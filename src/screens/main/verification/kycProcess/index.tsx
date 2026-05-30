@@ -119,7 +119,7 @@ const KYCProcess = () => {
         <h3 className="text-black text-xl font-medium">
           Verification Progress
         </h3>
-        <p>Complete the verification process to start creating spoils</p>
+        <p>Complete the verification process to start creating Spoylz</p>
 
         <Stepper
           steps={steps}

@@ -49,8 +49,8 @@ const GetStarted = () => {
           </h2>
 
           <p className="mt-4 max-w-lg text-white/80 text-base md:text-lg">
-            Get the app, sign up and start your learning journey with Spoilt.
-            With Spoilt, every learner has a seat at the table, and every
+            Get the app, sign up and start your learning journey with Spoylz .
+            With Spoylz, every learner has a seat at the table, and every
             tutor has a voice in shaping the future of education.
           </p>
 

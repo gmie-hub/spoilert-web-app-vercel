@@ -20,7 +20,7 @@ const MostSubscribe = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Most Subscribed Spoils{" "}
+          Most Subscribed Spoylz{" "}
         </motion.h1>
 
         {isLoading ? (

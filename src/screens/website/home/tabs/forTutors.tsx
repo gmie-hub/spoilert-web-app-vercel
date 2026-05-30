@@ -83,7 +83,7 @@ const ForTutorsTab = () => {
             transition={{ delay: 1.2, duration: 0.5 }}
           >
             <Button variant="yellow" className="px-12">
-              Start Creating Spoils
+              Start Creating Spoylz
             </Button>
           </motion.div>
         </Stack>

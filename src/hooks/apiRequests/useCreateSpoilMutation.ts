@@ -231,14 +231,14 @@ export const useCreateSpoilMutation = () => {
         }
       }
 
-      toast.success("Spoil created successfully 🎉");
+      toast.success("spoylz created successfully 🎉");
       return res;
     } catch (error: any) {
       toast.error(
         error?.response?.data?.error ||
           error?.response?.data?.message ||
           error?.message ||
-          "Failed to create spoil",
+          "Failed to create spoylz",
       );
       throw error;
     } finally {

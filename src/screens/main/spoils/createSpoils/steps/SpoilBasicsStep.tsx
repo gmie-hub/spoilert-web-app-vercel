@@ -81,9 +81,9 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
-      <h2 className="mt-2 text-xl font-semibold text-black">Spoil Basics</h2>
+      <h2 className="mt-2 text-xl font-semibold text-black">Spoylz Basics</h2>
       <p className="mt-3">
-        Start by providing basic information about your spoil.
+        Start by providing basic information about your Spoylz.
       </p>
 
       <Formik<BasicsFormData>
@@ -116,7 +116,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
             <div className="grid gap-6">
               <Input
                 name="title"
-                label="Spoil Title"
+                label="Spoylz Title"
                 placeholder="Title"
                 // hasAsterisk
               />

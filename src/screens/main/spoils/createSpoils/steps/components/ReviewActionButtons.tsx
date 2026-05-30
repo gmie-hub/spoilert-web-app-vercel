@@ -22,7 +22,7 @@ const ReviewActionButtons: FC<ReviewActionButtonsProps> = ({
   return (
     <div className="flex flex-col gap-4 pt-4">
       <Button onClick={onPublish} disabled={isPublishing}>
-        {isPublishing ? "Loading..." : "Publish Spoil"}
+        {isPublishing ? "Loading..." : "Publish Spoylz"}
       </Button>
 
       <Button variant="outline" onClick={onSchedulePremiere} disabled={isScheduling}>

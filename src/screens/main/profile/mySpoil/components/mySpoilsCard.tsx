@@ -199,7 +199,7 @@ const MySpoilsCard = ({
                     className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-[#4A5560] transition hover:bg-[#F7FBFD]"
                   >
                     <FiUsers className="text-[14px]" />
-                    <span>View Spoil</span>
+                    <span>View Spoylz</span>
                   </button>
                   <button
                     type="button"
@@ -207,7 +207,7 @@ const MySpoilsCard = ({
                     className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-[#4A5560] transition hover:bg-[#F7FBFD]"
                   >
                     <FiEdit2 className="text-[14px]" />
-                    <span>Edit Spoil</span>
+                    <span>Edit Spoylz</span>
                   </button>
                   <button
                     type="button"

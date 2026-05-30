@@ -130,7 +130,7 @@ const SimpleSpoil = () => {
   if (isEditMode && isSpoilLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center px-2 sm:px-4">
-        <p className="text-sm text-[#5F6B76]">Loading spoil details...</p>
+        <p className="text-sm text-[#5F6B76]">Loading Spoylz details...</p>
       </div>
     );
   }
@@ -147,9 +147,9 @@ const SimpleSpoil = () => {
         <div className="flex flex-col md:flex-row w-full items-start gap-4 md:gap-6">
           <div className="w-full md:w-64 mb-4 md:mb-0">
             <Stack spacing={1}>
-              <p className="text-sm font-medium text-gray-500">Simple Spoil</p>
+              <p className="text-sm font-medium text-gray-500">Simple Spoylz</p>
               <h3 className="text-2xl font-semibold text-black">
-                {isEditMode ? "Edit Simple Spoil" : "Create a Simple Spoil"}
+                {isEditMode ? "Edit Simple Spoylz" : "Create a Simple Spoylz"}
               </h3>
             </Stack>
           </div>

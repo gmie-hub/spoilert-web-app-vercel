@@ -20,7 +20,7 @@ const InstitutionSpoils = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Institution Spoils
+          Institution Spoylz
         </motion.h1>
 
         <Flex

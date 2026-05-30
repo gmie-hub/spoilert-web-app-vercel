@@ -12,7 +12,7 @@ const StartVerification = () => {
           description={
             <>
               <span style={{ color: "var(--color-gray-dark)" }}>
-                To start creating Spoils, we need to verify your identity. This
+                To start creating Spoylz, we need to verify your identity. This
                 includes confirming{" "}
               </span>
               <strong style={{ color: "var(--color-black)" }}>

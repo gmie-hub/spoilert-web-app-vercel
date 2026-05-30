@@ -125,7 +125,7 @@ const CommunityPageView = (props: Props) => {
                     <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#B8E3F8"/><text x="10" y="15" textAnchor="middle" fill="#0B5368" fontSize="12" fontFamily="Arial" dy="-2">i</text></svg>
                   </span>
                   <p>
-                    Locked communities are exclusive to learners enrolled in their associated spoils. Enroll to gain access.
+                    Locked communities are exclusive to learners enrolled in their associated spoylz. Enroll to gain access.
                   </p>
                 </div>
                 <div className="max-w-[520px] relative">

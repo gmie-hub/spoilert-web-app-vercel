@@ -58,7 +58,7 @@ const EmptyState = () => (
   <section className="min-h-screen bg-[#F8F8F8] px-4 py-8 sm:px-6 lg:px-16">
     <div className="mx-auto max-w-[1100px]">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 text-gray-600">
-        Spoil overview is unavailable.
+        Spoylz overview is unavailable.
       </div>
     </div>
   </section>
@@ -89,8 +89,8 @@ export default function SpoilOverview({ spoilId }: SpoilOverviewProps) {
     ? `/spoil/${spoil.id}/pre-spoil-quiz`
     : `/spoil/${spoil.id}/start`;
   const guidanceText = preSpoilQuiz
-    ? "You have to take a Pre-Spoil Quiz before starting this spoil. At the end of the spoil, you'll take a Post-Spoil Quiz to test your knowledge and earn a certificate. Some modules may also have quizzes to reinforce learning."
-    : "You can start this spoil immediately and work through the modules at your own pace. If this spoil includes a post-spoil quiz, you'll take it after completing the lessons.";
+    ? "You have to take a Pre-Spoylz Quiz before starting this Spoylz. At the end of the Spoylz, you'll take a Post-Spoylz Quiz to test your knowledge and earn a certificate. Some modules may also have quizzes to reinforce learning."
+    : "You can start this Spoylz immediately and work through the modules at your own pace. If this Spoylz includes a post-Spoylz quiz, you'll take it after completing the lessons.";
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -115,7 +115,7 @@ export default function SpoilOverview({ spoilId }: SpoilOverviewProps) {
 
         <div className="mx-auto mt-8 max-w-[640px] rounded-[20px] border border-[#E8E8E8] px-6 py-8 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:px-8">
           <h1 className="text-[18px] font-semibold text-[#212529]">
-            Spoil Overview
+            Spoylz Overview
           </h1>
 
           <div className="mt-6 rounded-2xl bg-[#F7F7F7] p-4 sm:p-5">

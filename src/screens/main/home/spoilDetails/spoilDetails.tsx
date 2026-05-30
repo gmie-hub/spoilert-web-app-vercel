@@ -92,7 +92,7 @@ export const ErrorState = ({ message }: { message: string }) => (
 const EmptyState = () => (
   <section className="px-5 lg:px-25 py-16">
     <div className="rounded-2xl border border-gray-200 bg-white p-6 text-gray-600">
-      Spoil details are unavailable.
+      Spoylz details are unavailable.
     </div>
   </section>
 );

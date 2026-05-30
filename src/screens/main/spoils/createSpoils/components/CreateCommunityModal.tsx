@@ -44,7 +44,7 @@ const CreateCommunityModal: FC<CreateCommunityModalProps> = ({
 
       <div className="space-y-2">
         <h2 className="text-xl font-medium text-black text-center mt-4">
-          Do you want to create a community for this spoil?
+          Do you want to create a community for this Spoylz?
         </h2>
 
         <p className="text-center">

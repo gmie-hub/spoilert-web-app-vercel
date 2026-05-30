@@ -20,7 +20,7 @@ const RecommendedSpoils = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Recommended Spoils
+          Recommended Spoylz
         </motion.h1>
 
         <Flex

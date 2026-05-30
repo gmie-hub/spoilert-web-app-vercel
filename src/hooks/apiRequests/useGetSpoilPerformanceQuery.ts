@@ -45,7 +45,7 @@ export const useGetSpoilPerformanceQuery = () => {
   const errorMessage =
     error?.response?.data?.message ||
     error?.message ||
-    "Failed to fetch spoil performance analytics";
+    "Failed to fetch spoylz  performance analytics";
 
   return {
     performance: data?.data ?? empty,

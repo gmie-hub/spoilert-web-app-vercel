@@ -100,7 +100,7 @@ export default function CertificateTemplatePreviewPage() {
             Certificate Preview
           </h1>
           <p className="text-sm text-[#667085]">
-            Review the saved certificate template linked to this spoil.
+            Review the saved certificate template linked to this Spoylz.
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export default function CertificateTemplatePreviewPage() {
 
         {!isLoading && !isError && !resolvedMarkup ? (
           <div className="mt-8 rounded-2xl border border-dashed border-[#D5DDE5] bg-white px-6 py-12 text-center text-[#667085]">
-            No saved certificate template was found for this spoil yet.
+            No saved certificate template was found for this Spoylz yet.
           </div>
         ) : null}
 

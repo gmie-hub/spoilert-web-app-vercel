@@ -49,7 +49,7 @@ export default function SpoilChatsList() {
       <div className="max-w-[680px] mx-auto px-6 pt-6 pb-16">
         {/* Title */}
         <h1 className="text-[22px] font-bold text-[#20262D] mb-5">
-          Spoil Chats
+          Spoylz Chats
         </h1>
 
         {/* Tabs */}
@@ -146,10 +146,10 @@ function EnrolledEmptyState({ onExplore }: { onExplore: () => void }) {
       {/* Text */}
       <div className="flex flex-col gap-2">
         <p className="font-bold text-[#20262D] text-base">
-          You Are Not Enrolled to Any Spoil! 👀
+          You Are Not Enrolled to Any Spoylz! 👀
         </p>
         <p className="text-sm text-[#8A98A3] leading-relaxed max-w-[300px] mx-auto">
-          Enroll in a spoil, start learning and access your chats here
+          Enroll in a Spoylz, start learning and access your chats here
         </p>
       </div>
 
@@ -159,7 +159,7 @@ function EnrolledEmptyState({ onExplore }: { onExplore: () => void }) {
         onClick={onExplore}
         className="w-full max-w-[340px] bg-[#0B5368] text-white py-4 rounded-2xl font-semibold text-sm hover:bg-[#0a4a5a] transition-colors"
       >
-        Explore Spoils
+        Explore Spoylz
       </button>
     </div>
   );

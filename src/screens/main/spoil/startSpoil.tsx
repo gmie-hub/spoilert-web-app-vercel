@@ -96,7 +96,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   }
 
   if (!spoil) {
-    return <MessageState message="This spoil could not be loaded." />;
+    return <MessageState message="This Spoylz could not be loaded." />;
   }
 
   const heroImage = spoil.cover_image_url || HeroImage;

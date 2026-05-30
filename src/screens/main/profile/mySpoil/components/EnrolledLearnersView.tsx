@@ -104,7 +104,7 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
             onClick={onBack}
             className="text-[#0B5368] hover:underline"
           >
-            My Spoils
+            My Spoylz
           </button>
           <span className="text-[#C4C4C4]">/</span>
           <button
@@ -112,7 +112,7 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
             onClick={onBack}
             className="text-[#0B5368] hover:underline"
           >
-            Spoil Details
+            Spoylz Details
           </button>
           <span className="text-[#C4C4C4]">/</span>
           <span className="text-[#20262D] font-medium">Enrolled Learners</span>

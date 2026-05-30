@@ -48,7 +48,7 @@ const ScheduleSpoilPremiereModal: FC<ScheduleSpoilPremiereModalProps> = ({
   onSubmit,
 }) => {
   return (
-    <Modal open={open} onClose={onClose} title="Schedule Spoil Premiere">
+    <Modal open={open} onClose={onClose} title="Schedule Spoylz Premiere">
       <Formik<SchedulePremiereFormState>
         initialValues={initialValues}
         enableReinitialize

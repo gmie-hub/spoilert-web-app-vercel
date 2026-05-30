@@ -58,7 +58,7 @@ const CommunityListView = ({
           <Image src={InfoIcon} alt="filter" width={20} height={20} />
           <p>
             Locked communities are exclusive to learners enrolled in their
-            associated spoils. Enroll to gain access.
+            associated Spoylz. Enroll to gain access.
           </p>
         </div>
 

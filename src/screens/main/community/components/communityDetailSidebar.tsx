@@ -119,7 +119,7 @@ const CommunityDetailSidebar = ({ community, isCreatorView }: CommunityDetailSid
             </div>
 
             <div className="border-t border-[#EEF1F4] pt-4">
-              <p className="text-sm text-gray">Spoil Title</p>
+              <p className="text-sm text-gray">Spoylz Title</p>
               <p className="mt-1 font-medium text-black">{safeCommunity.spoilTitle}</p>
             </div>
 

@@ -96,7 +96,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       <div className="sticky top-0 z-50 bg-white flex flex-nowrap items-center justify-between gap-4 w-full py-3">
         <div>
           <h2 className="mt-2 text-xl font-semibold text-black">
-            Spoil Outline
+            Spoylz Outline
           </h2>
         </div>
 
@@ -118,7 +118,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       <div className="rounded-2xl border border-gray-100 p-6">
         <p className="text-sm text-gray-600">
           Create pre-spoil and post-spoil quizzes so you can track your
-          learner&apos;s progress before and after taking the spoil.
+          learner&apos;s progress before and after taking the Spoylz.
         </p>
 
         <div className="mt-5 grid gap-4 md:grid-rows-2">
@@ -140,7 +140,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
           >
             <Image src={preQuizAvailable ? EditIcon : AddCircleIcon} alt="add-edit" />
 
-            {preQuizAvailable ? "Edit Pre-Spoil Quiz" : "Create Pre-Spoil Quiz"}
+            {preQuizAvailable ? "Edit Pre-Spoylz Quiz" : "Create Pre-Spoylz Quiz"}
           </Button>
 
           <Button
@@ -161,7 +161,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
           >
             <Image src={postQuizAvailable ? EditIcon : AddCircleIcon} alt="add-edit" />
 
-            {postQuizAvailable ? "Edit Post-Spoil Quiz" : "Create Post-Spoil Quiz"}
+            {postQuizAvailable ? "Edit Post-Spoylz Quiz" : "Create Post-Spoylz Quiz"}
           </Button>
         </div>
 
@@ -169,14 +169,14 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
       </div>
 
       <p className="text-sm">
-        Break down your spoil outline into modules and lessons
+        Break down your Spoylz outline into modules and lessons
       </p>
 
       <div className="space-y-6">
         {modulesToRender.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <NoData
-              heading="No Spoil Module Has Been Added Yet"
+              heading="No Spoylz Module Has Been Added Yet"
               description="Add modules and lessons to each module to create a proper outline."
             />
           </div>

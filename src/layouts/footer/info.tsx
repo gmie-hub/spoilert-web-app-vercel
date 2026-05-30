@@ -25,7 +25,7 @@ const info = [
 
 const navItems = [
   { label: "Home", href: "/" },
-  { label: "Explore Spoils", href: "/" },
+  { label: "Explore spoylz", href: "/" },
   { label: "About Us", href: "/about-us" },
   { label: "FAQs", href: "/faqs" },
   { label: "Contact Us", href: "/contact-us" },

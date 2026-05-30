@@ -37,7 +37,7 @@ export const useGetSpoilDetailsQuery = (
   const errorMessage =
     error?.response?.data?.message ||
     error?.message ||
-    "Failed to fetch spoil details";
+    "Failed to fetch spoylz  details";
 
   return {
     data: data?.data ?? null,

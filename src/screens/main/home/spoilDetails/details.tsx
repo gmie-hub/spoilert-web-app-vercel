@@ -177,7 +177,7 @@ export default function Details({ spoil }: DetailsProps) {
         </div>
       ) : (
         <p className="text-sm text-gray-500">
-          No learning outcomes have been added for this spoil yet.
+          No learning outcomes have been added for this Spoylz yet.
         </p>
       )}
     </div>

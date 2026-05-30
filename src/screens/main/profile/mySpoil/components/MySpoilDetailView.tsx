@@ -136,14 +136,14 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             className="flex items-center gap-2 bg-[#0B5368] text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-[#09485A] transition-colors"
           >
             <Image src={EditIcon} alt="edit" width={16} height={16} />
-            Edit Spoil
+            Edit Spoylz
           </button>
           <button
             type="button"
             className="flex items-center gap-2 border border-red-500 text-red-500 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-red-50 transition-colors"
           >
             <FiTrash2 size={14} />
-            Unpublish Spoil
+            Unpublish Spoylz
           </button>
         </div>
 
@@ -225,7 +225,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             onClick={() => setIsSponsorModalOpen(true)}
             className="flex items-center gap-2 border border-[#0B5368] text-[#0B5368] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#F0F8FB] transition-colors"
           >
-            Sponsor Spoil
+            Sponsor Spoylz
             <FiArrowRight size={14} />
           </button>
           {spoil?.enrolled_users === 0 && (

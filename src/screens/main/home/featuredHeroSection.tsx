@@ -122,7 +122,7 @@ const FeaturedHeroSection = () => {
               </h1>
 
               <p className="pt-2 text-[#495057] text-[24px]">
-                Explore spoils, publish your own, learn, and earn on Spoilert.
+                Explore Spoylz, publish your own, learn, and earn on Spoilert.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -188,7 +188,7 @@ const FeaturedHeroSection = () => {
 
         <aside className="flex max-h-[500px] flex-col overflow-hidden rounded-[18px] border border-[#BFE4F2] bg-[linear-gradient(180deg,#F7FBFD_0%,#EEF6F9_100%)] px-4 py-4 shadow-[0_12px_32px_rgba(8,55,72,0.05)] sm:px-5">
           <h2 className="shrink-0 px-1 text-[18px] font-semibold text-[#20262D]">
-            Featured Spoils
+            Featured Spoylz
           </h2>
 
           <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
@@ -198,7 +198,7 @@ const FeaturedHeroSection = () => {
 
             {featuredSpoils.length === 0 && (
               <div className="rounded-[24px] bg-white px-5 py-8 text-center text-[14px] text-[#6D7A86] shadow-[0_18px_40px_rgba(8,55,72,0.08)] ring-1 ring-[#E8F1F5]">
-                Featured spoils will appear here once they are available.
+                Featured Spoylz will appear here once they are available.
               </div>
             )}
           </div>

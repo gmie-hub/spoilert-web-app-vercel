@@ -69,7 +69,7 @@ To become a leading global platform for interactive and flexible digital educati
                 <Image src={AboutUs2} alt="AboutUs2" width={20} height={20} />
               }
               title="Diverse Content"
-              desc="Learn through videos, text, and interactive spoils."
+              desc="Learn through videos, text, and interactive Spoylz."
             />
 
             {/* Card 4 */}

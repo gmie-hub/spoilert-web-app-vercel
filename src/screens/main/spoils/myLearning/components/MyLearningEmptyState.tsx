@@ -17,14 +17,14 @@ const emptyCopy: Record<
   { title: string; description: string }
 > = {
   ongoing: {
-    title: "You Have No Ongoing Spoil Yet!",
+    title: "You Have No Ongoing Spoylz Yet!",
     description:
       "Track your learning progress here. Start learning to see your progress.",
   },
   completed: {
-    title: "You Have Not Completed Any Spoil Yet!",
+    title: "You Have Not Completed Any Spoylz Yet!",
     description:
-      "Once you complete a Spoil, it shows up here and you can download your certificate.",
+      "Once you complete a Spoylz, it shows up here and you can download your certificate.",
   },
 };
 
@@ -57,7 +57,7 @@ export const MyLearningEmptyState = ({
         className="mt-8 w-full max-w-[420px] rounded-[12px] py-4"
         onClick={onExplore}
       >
-        Explore Spoils
+        Explore Spoylz
       </Button>
     </div>
   );

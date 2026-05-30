@@ -27,11 +27,11 @@ const RepublishSpoilModal: FC<RepublishSpoilModalProps> = ({
         </div>
 
         <h2 className="mt-6 text-[22px] font-medium text-[#20262D]">
-          Republish Spoil?
+          Republish Spoylz?
         </h2>
 
         <p className="mt-4 max-w-[440px] text-base leading-7 text-[#667085]">
-          Learners will regain access to this Spoil. Are you sure you want to
+          Learners will regain access to this Spoylz. Are you sure you want to
           republish
         </p>
 

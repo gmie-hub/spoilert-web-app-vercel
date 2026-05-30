@@ -33,7 +33,7 @@ const SignUp = () => {
             Sign Up
           </h1>
           <p className="text-sm sm:text-md text-gray-500">
-            Begin your journey with Spoilt by signing up.
+            Begin your journey with spoylz by signing up.
           </p>
         </div>
         <Formik

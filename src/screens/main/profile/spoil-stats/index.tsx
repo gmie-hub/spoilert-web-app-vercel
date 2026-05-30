@@ -11,7 +11,7 @@ import { useGetLearnerOverviewQuery } from "@spt/hooks/apiRequests/useGetLearner
 
 const dummyStats = [
   {
-    label: "Enrolled Spoils",
+    label: "Enrolled Spoylz",
     value: 10,
     icon: <Image src={Enrolled} alt="Enrolled Icon" width={40} height={40} />, // SVG icon
     bg: "bg-[#FFF0E4]",
@@ -25,14 +25,14 @@ const dummyStats = [
     icon: <Image src={Joined} alt="Joined Icon" width={40} height={40} />, // SVG icon
   },
   {
-    label: "Ongoing Spoils",
+    label: "Ongoing Spoylz",
     value: 6,
     bg: "bg-[#F9F0FA]",
     border: "text-[#E6B1EB]",
     icon: <Image src={Ongoing} alt="Ongoing Icon" width={40} height={40} />, // SVG icon
   },
   {
-    label: "Completed Spoils",
+    label: "Completed Spoylz",
     value: 4,
     bg: "bg-[#ECFFFD]",
     border: "text-[#96E1DA]",
@@ -40,7 +40,7 @@ const dummyStats = [
     icon: <Image src={Completed} alt="Completed Icon" width={40} height={40} />, // SVG icon
   },
   {
-    label: "Spoils Created",
+    label: "Spoylz Created",
     value: 8,
     bg: "bg-[#E3F5FA]",
     border: "text-[#A5D1DE]",
@@ -54,7 +54,7 @@ export default function SpoilStatsPage() {
   const stats = data && !isError
     ? [
         {
-          label: "Enrolled Spoils",
+          label: "Enrolled Spoylz",
           value: data.total_spoils_enrolled ?? 0,
           icon: <Image src={Enrolled} alt="Enrolled Icon" width={40} height={40} />,
           bg: "bg-[#FFF0E4]",
@@ -68,14 +68,14 @@ export default function SpoilStatsPage() {
           icon: <Image src={Joined} alt="Joined Icon" width={40} height={40} />,
         },
         {
-          label: "Ongoing Spoils",
+          label: "Ongoing Spoylz",
           value: data.total_ongoing_spoils ?? 0,
           bg: "bg-[#F9F0FA]",
           border: "text-[#E6B1EB]",
           icon: <Image src={Ongoing} alt="Ongoing Icon" width={40} height={40} />,
         },
         {
-          label: "Completed Spoils",
+          label: "Completed Spoylz",
           value: data.total_completed_spoils ?? 0,
           bg: "bg-[#ECFFFD]",
           border: "text-[#96E1DA]",
@@ -83,7 +83,7 @@ export default function SpoilStatsPage() {
           icon: <Image src={Completed} alt="Completed Icon" width={40} height={40} />,
         },
         {
-          label: "Spoils Created",
+          label: "Spoylz Created",
           value: data.spoils_created ?? 0,
           bg: "bg-[#E3F5FA]",
           border: "text-[#A5D1DE]",

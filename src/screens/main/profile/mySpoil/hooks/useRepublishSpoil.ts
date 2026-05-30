@@ -48,7 +48,7 @@ export const useRepublishSpoil = () => {
         error?.response?.data?.error ||
           error?.response?.data?.message ||
           error?.message ||
-          "Failed to republish spoil",
+          "Failed to republish Spoylz",
       );
     },
   });

@@ -24,10 +24,10 @@ const TermsPage: React.FC = () => {
             <h2 className="text-xl font-medium text-gray-800">2. Definitions</h2>
             <ul className="mt-2 list-disc list-inside space-y-1">
               <li><strong>Platform:</strong> SPOILERT mobile app and website.</li>
-              <li><strong>Spoilts:</strong> Courses created and shared by tutors.</li>
+              <li><strong>Spoylz:</strong> Courses created and shared by tutors.</li>
               <li><strong>User:</strong> Anyone who accesses the platform.</li>
-              <li><strong>Tutor:</strong> A user who creates and sells spoilts.</li>
-              <li><strong>Student:</strong> A user who purchases or consumes spoilts.</li>
+              <li><strong>Tutor:</strong> A user who creates and sells Spoylz.</li>
+              <li><strong>Student:</strong> A user who purchases or consumes Spoylz</li>
             </ul>
           </section>
 
@@ -66,7 +66,7 @@ const TermsPage: React.FC = () => {
 
           <section>
             <h2 className="text-xl font-medium text-gray-800">7. Payments &amp; Earnings</h2>
-            <p className="mt-2">Students pay to access spoilts. Tutors earn revenue which is stored in their wallet. Withdrawals are subject to platform policies and processing times. SPOILERT may charge service fees.</p>
+            <p className="mt-2">Students pay to access Spoylz. Tutors earn revenue which is stored in their wallet. Withdrawals are subject to platform policies and processing times. SPOILERT may charge service fees.</p>
           </section>
 
           <section>

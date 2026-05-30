@@ -40,7 +40,7 @@ const ForLearnersTab = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            Spoils are available on your schedule. Whether it’s exam prep or
+            Spoylz are available on your schedule. Whether it’s exam prep or
             skill-building, you decide when and how you learn.
           </motion.p>
 

@@ -64,7 +64,7 @@ export const useGetPublicPromotionsQuery = () => {
   const errorMessage =
     error?.response?.data?.message ||
     error?.message ||
-    "Failed to fetch promoted spoils";
+    "Failed to fetch promoted spoylz ";
 
   const promotions = extractPromotions(data);
   const activePromotions = promotions.filter((p) => p.status === "active");

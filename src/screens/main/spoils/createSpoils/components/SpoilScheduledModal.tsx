@@ -52,11 +52,11 @@ const SpoilScheduledModal: FC<SpoilScheduledModalProps> = ({
 
       <div className="space-y-4">
         <h2 className="text-xl font-medium text-black text-center mt-4">
-          Your Spoil Has Been Scheduled Successfully 🎉
+          Your Spoylz Has Been Scheduled Successfully 🎉
         </h2>
 
         <p className="text-center">
-          Your spoil has been successfully scheduled to go live on{" "}
+          Your Spoylz has been successfully scheduled to go live on{" "}
           <span className="font-medium text-black">
             {formatScheduledDate()}.
           </span>{" "}

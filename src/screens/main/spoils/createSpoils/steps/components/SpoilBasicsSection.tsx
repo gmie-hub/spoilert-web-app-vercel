@@ -106,7 +106,7 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
 
         {/* Basic Info Grid */}
         <div className="flex flex-col gap-4">
-          <InfoItem label="Spoil Title" value={basics?.title || "n/a"} />
+          <InfoItem label="Spoylz Title" value={basics?.title || "n/a"} />
 
           <hr className="border-gray-200" />
 
@@ -163,7 +163,7 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
             <>
               <hr className="border-gray-200" />
               <InfoItem
-                label="Spoil Content"
+                label="Spoylz Content"
                 value={
                   basics?.lessonType === "text"
                     ? (basics?.lessonContent ?? "n/a")

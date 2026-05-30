@@ -48,7 +48,7 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
       },
       {
         id: "spoil-stats",
-        label: "Spoil Stats",
+        label: "Spoylz Stats",
         href: "/profile/spoil-stats",
         icon: FiTrendingUp,
       },
@@ -66,14 +66,14 @@ export const profileNavigationGroups: ProfileNavGroup[] = [
       },
       {
         id: "my-spoils",
-        label: "My Spoils",
+        label: "My Spoylz",
         href: "/profile/my-spoils",
         icon: FiBookOpen,
         tutorOnly: true,
       },
       {
         id: "spoil-performance-analytics",
-        label: "Spoil Performance Analytics",
+        label: "Spoylz Performance Analytics",
         href: "/profile/spoil-performance-analytics",
         icon: FiBarChart2,
         tutorOnly: true,

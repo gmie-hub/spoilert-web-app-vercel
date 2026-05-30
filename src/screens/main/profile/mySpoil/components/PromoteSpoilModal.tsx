@@ -81,7 +81,7 @@ const PromoteSpoilModal: FC<PromoteSpoilModalProps> = ({
 
         <p className="text-sm leading-[1.7] text-[#5F6B76]">
           Select a promotion package to promote your spoil. This promotion will
-          give your spoil more visiblity.
+          give your Spoylz more visiblity.
         </p>
 
         <div className="flex flex-col gap-3">

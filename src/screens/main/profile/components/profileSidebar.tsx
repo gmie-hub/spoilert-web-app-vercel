@@ -296,7 +296,7 @@ const ProfileSidebar = ({
       <DeleteConfirmationModal
         open={showDeleteModal}
         title="Are You Sure You Want to Delete Your Account?"
-        description="Deleting your account will remove all your data, including your progress, purchase history, and any created Spoils. This action cannot be undone."
+        description="Deleting your account will remove all your data, including your progress, purchase history, and any created Spoylz. This action cannot be undone."
         confirmLabel="Yes Delete"
         isLoading={isDeleting}
         loadingLabel="Deleting..."

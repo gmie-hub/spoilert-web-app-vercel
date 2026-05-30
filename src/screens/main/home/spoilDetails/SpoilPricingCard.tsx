@@ -104,7 +104,7 @@ export const SpoilMobileCTA: React.FC<SpoilMobileCTAProps> = ({
         className="w-full py-3 bg-sky-50 text-sky-700 border border-sky-100"
         onClick={onSponsor}
       >
-        Sponsor Spoil
+        Sponsor Spoylz
       </Button>
       <Button
         variant="darkBlue"
@@ -114,8 +114,8 @@ export const SpoilMobileCTA: React.FC<SpoilMobileCTAProps> = ({
         {shouldContinue
           ? "Continue Learning"
           : isFreeSpoil
-            ? "Start Spoil"
-            : "Buy Spoil"}
+            ? "Start Spoylz"
+            : "Buy Spoylz"}
       </Button>
     </VStack>
   </div>

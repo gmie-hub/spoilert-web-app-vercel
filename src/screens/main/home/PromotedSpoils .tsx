@@ -21,7 +21,7 @@ const PromotedSpoils = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Promoted Spoils
+          Promoted Spoylz
         </motion.h1>
 
         {isLoading ? (

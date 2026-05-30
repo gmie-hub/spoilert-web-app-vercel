@@ -124,11 +124,11 @@ const LearnerProgressView: React.FC<LearnerProgressViewProps> = ({
         <span className="text-[#C4C4C4]">|</span>
         <nav className="flex items-center gap-1 text-sm flex-wrap">
           <button type="button" onClick={onBackToDetail} className="text-[#0B5368] hover:underline">
-            My Spoils
+            My Spoylz
           </button>
           <span className="text-[#C4C4C4]">/</span>
           <button type="button" onClick={onBackToDetail} className="text-[#0B5368] hover:underline">
-            Spoil Details
+            Spoylz Details
           </button>
           <span className="text-[#C4C4C4]">/</span>
           <button type="button" onClick={onBack} className="text-[#0B5368] hover:underline">

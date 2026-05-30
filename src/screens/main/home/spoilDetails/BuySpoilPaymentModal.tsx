@@ -46,7 +46,7 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
     <Modal open={open} onClose={onClose} title="Payment Summary" size="md">
       <div className="space-y-4 text-sm">
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
-          <p className="text-[#4B5563]">Spoil</p>
+          <p className="text-[#4B5563]">Spoylz</p>
           <p className="font-medium text-[#1F2937] text-right">{spoilTitle}</p>
         </div>
 

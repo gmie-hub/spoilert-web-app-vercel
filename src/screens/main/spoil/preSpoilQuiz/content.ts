@@ -73,8 +73,8 @@ export const getPreSpoilQuizPageContent = ({
       description:
         preSpoilQuiz.description ||
         `Test your knowledge before starting ${spoil.title}.`,
-      pageCrumbLabel: "Take Pre-Spoil Quiz",
-      pageTitle: preSpoilQuiz.title || "Pre-Spoil Quiz",
+      pageCrumbLabel: "Take Pre-Spoylz Quiz",
+      pageTitle: preSpoilQuiz.title || "Pre-Spoylz Quiz",
       primaryButtonLabel: "Start Quiz",
       quizStats: getPreQuizStats({
         attempts: spoil.pre_spoil_quiz?.attempts ?? 0,
@@ -84,10 +84,10 @@ export const getPreSpoilQuizPageContent = ({
   }
 
   return {
-    description: `No pre-spoil quiz is required for ${spoil.title}. You can begin learning immediately.`,
-    pageCrumbLabel: "Start Spoil",
+    description: `No pre-Spoylz quiz is required for ${spoil.title}. You can begin learning immediately.`,
+    pageCrumbLabel: "Start Spoylz",
     pageTitle: spoil.title,
-    primaryButtonLabel: "Start Spoil",
+    primaryButtonLabel: "Start Spoylz",
     quizStats: getSpoilStats(spoil),
   };
 };
@@ -110,8 +110,8 @@ export const getSpoilQuizPageContent = ({
         (t === "post"
           ? `Test your knowledge after completing ${spoil.title}.`
           : `Test your knowledge before starting ${spoil.title}.`),
-      pageCrumbLabel: t === "post" ? "Take Post-Spoil Quiz" : "Take Pre-Spoil Quiz",
-      pageTitle: quizDatum.title || (t === "post" ? "Post-Spoil Quiz" : "Pre-Spoil Quiz"),
+      pageCrumbLabel: t === "post" ? "Take Post-Spoylz Quiz" : "Take Pre-Spoylz Quiz",
+      pageTitle: quizDatum.title || (t === "post" ? "Post-Spoylz Quiz" : "Pre-Spoylz Quiz"),
       primaryButtonLabel: "Start Quiz",
       quizStats:
         t === "post"
@@ -123,11 +123,11 @@ export const getSpoilQuizPageContent = ({
   return {
     description:
       t === "post"
-        ? `No post-spoil quiz is required for ${spoil.title}.`
-        : `No pre-spoil quiz is required for ${spoil.title}. You can begin learning immediately.`,
-    pageCrumbLabel: t === "post" ? "Post-Spoil Quiz" : "Start Spoil",
+        ? `No post-Spoylz quiz is required for ${spoil.title}.`
+        : `No pre-Spoylz quiz is required for ${spoil.title}. You can begin learning immediately.`,
+    pageCrumbLabel: t === "post" ? "Post-Spoil Quiz" : "Start Spoylz",
     pageTitle: spoil.title,
-    primaryButtonLabel: t === "post" ? "View Spoil" : "Start Spoil",
+    primaryButtonLabel: t === "post" ? "View Spoylz" : "Start Spoylz",
     quizStats: getSpoilStats(spoil),
   };
 };

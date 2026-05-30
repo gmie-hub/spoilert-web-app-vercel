@@ -43,7 +43,7 @@ const useShareSpoilMutation = () => {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to share spoil",
+          "Failed to share Spoylz",
       );
       return null;
     }

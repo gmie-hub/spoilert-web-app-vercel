@@ -70,7 +70,7 @@ export function TutorProfile({
 
         {spoilsCreated != null && (
           <p className="text-sm text-[#5F6368] mt-1">
-            No of Spoils created:{" "}
+            No of Spoylz created:{" "}
             <span className="font-medium text-[#20262D]">{spoilsCreated}</span>
           </p>
         )}

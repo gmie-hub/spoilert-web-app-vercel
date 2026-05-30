@@ -176,7 +176,7 @@ const MySpoilsSection = ({
         ) : searchValue.trim() ? (
           <div className="flex min-h-[420px] items-center justify-center px-4 py-10 text-center">
             <NoData
-              heading="No Spoil Found"
+              heading="No Spoylz Found"
               description="Try a different search term to find the spoil you are looking for."
             />
           </div>
@@ -192,7 +192,7 @@ const MySpoilsSection = ({
                   onClick={() => router.push("/create-spoils")}
                   className="mt-2 inline-flex w-full items-center justify-center rounded-[12px] bg-[#0B5368] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(11,83,104,0.18)] transition hover:bg-[#09485A]"
                 >
-                  Create Spoil
+                  Create Spoylz
                 </button>
               </div>
             </NoData>

@@ -19,7 +19,7 @@ const Header = () => {
   const navLinks = [
     { icon: HomeIcon, name: "Home", href: "/home" },
     { icon: BookIcon, name: "Explore", href: "/my-learnings" },
-    { icon: AddCircleIcon, name: "Create Spoil", href: "/create-spoil" },
+    { icon: AddCircleIcon, name: "", href: "/create-spoil" },
     { icon: CommunityIcon, name: "Community", href: "/community" },
     { icon: ProfileIcon, name: "Profile", href: "/profile" },
   ];

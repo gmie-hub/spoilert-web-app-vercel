@@ -42,7 +42,7 @@ const QuizModal: FC<QuizModalProps> = ({
     <Modal
       open={open}
       onClose={onClose}
-      title={`${variant === "pre" ? "Pre" : "Post"}-Spoil Quiz`}
+      title={`${variant === "pre" ? "Pre" : "Post"}-Spoylz Quiz`}
     >
       <Formik<QuizFormState>
         initialValues={initialValues}

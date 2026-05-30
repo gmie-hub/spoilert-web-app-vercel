@@ -36,7 +36,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Spoil Review</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Spoylz Review</h2>
       </div>
 
       <CertificateSection selectedType={selectedType} spoilId={spoilId} />
@@ -44,8 +44,8 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       <div className="space-y-4">
         <p>
           {isEditMode
-            ? "Review your spoil changes and update"
-            : "Review the Spoil you created and publish"}
+            ? "Review your Spoylz changes and update"
+            : "Review the Spoylz you created and publish"}
         </p>
 
         <SpoilBasicsSection

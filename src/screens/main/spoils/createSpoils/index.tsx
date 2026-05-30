@@ -24,14 +24,14 @@ const CreateSpoil = () => {
     () => [
       {
         icon: SimpleSpoilIcon,
-        title: "Simple Spoil",
-        description: "Create a spoil with single lessons",
+        title: "Simple Spoylz",
+        description: "Create a Spoylz with single lessons",
         value: "simple" as const,
       },
       {
         icon: AdvancedSpoilIcon,
-        title: "Advanced Spoil",
-        description: "Create a spoil with multiple lessons",
+        title: "Advanced Spoylz",
+        description: "Create a Spoylz with multiple lessons",
         value: "advanced" as const,
       },
     ],
@@ -91,18 +91,18 @@ const CreateSpoil = () => {
       my={{ xs: 2, md: 6 }}
       spacing={6}
     >
-      <h3 className="text-2xl font-semibold text-black">Create Spoil</h3>
+      <h3 className="text-2xl font-semibold text-black">Create Spoylz</h3>
 
       <Stack alignItems="center">
         <Stack width="fit-content" spacing={4}>
           <Stack alignItems={{ md: "center" }} spacing={{ md: 1 }}>
             <h1 className="text-xl font-semibold text-black md:text-[32px]">
-              Choose Spoil Type
+              Choose Spoylz Type
             </h1>
 
             <p className="text-center text-sm md:text-base">
-              Select the type of spoil you want to create. Choose the option
-              that best fits how detailed you want your spoil to be.
+              Select the type of Spoylz you want to create. Choose the option
+              that best fits how detailed you want your Spoylz to be.
             </p>
           </Stack>
 

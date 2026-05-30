@@ -58,13 +58,13 @@ const useCreatePromotionMutation = () => {
         spoil_id,
         promotion_package_id,
       });
-      toast.success(response?.message || "Spoil promoted successfully");
+      toast.success(response?.message || "spoylz promoted successfully");
       return response;
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to promote spoil",
+          "Failed to promote spoylz ",
       );
       return null;
     }

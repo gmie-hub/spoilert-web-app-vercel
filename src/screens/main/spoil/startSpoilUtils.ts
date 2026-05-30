@@ -45,18 +45,18 @@ const getOrdinalSuffix = (day: number) => {
 };
 
 export const formatExpiryDate = (value?: string | null) => {
-  if (!value) return "This spoil has no expiry date.";
+  if (!value) return "This Spoylz has no expiry date.";
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return `This spoil will expire on ${value}.`;
+    return `This Spoylz will expire on ${value}.`;
   }
 
   const day = date.getDate();
   const suffix = getOrdinalSuffix(day);
 
-  return `This spoil will expire on the ${day}${suffix} ${date.toLocaleDateString(
+  return `This Spoylz will expire on the ${day}${suffix} ${date.toLocaleDateString(
     "en-GB",
     {
       month: "long",
