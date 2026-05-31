@@ -32,8 +32,8 @@ export const formatSpoilPrice = (spoil: SpoilDatum) => {
 };
 
 export const getSpoilMeta = (spoil: SpoilDatum) => ({
-  institution: spoil.institution || "University of Lagos",
-  category: spoil.category?.name || "UI/UX Design",
+  institution: spoil.institution || "",
+  category: spoil.category?.name || "",
   likes: spoil.likes_count ?? 0,
   shares: spoil.shares_count ?? 0,
   learners: spoil.enrolled_users ?? 0,

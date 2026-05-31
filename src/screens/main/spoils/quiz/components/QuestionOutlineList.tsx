@@ -35,7 +35,7 @@ const QuestionOutlineList: FC<QuestionOutlineListProps> = ({
     <Card className="rounded-3xl md:max-w-2xl">
       <div className="space-y-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-black">Spoil Outline</h2>
+          <h2 className="text-xl font-semibold text-black">Spoylz Outline</h2>
 
           <Button
             type="button"

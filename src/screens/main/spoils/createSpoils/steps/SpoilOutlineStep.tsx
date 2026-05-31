@@ -127,12 +127,14 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             variant="outline"
             className="justify-between"
             onClick={() => {
-              if (draftPreQuiz) {
-                try {
+              try {
+                if (draftPreQuiz) {
                   sessionStorage.setItem("prespoil-quiz-init", JSON.stringify(draftPreQuiz));
-                } catch  {
-                  // ignore
+                } else {
+                  sessionStorage.removeItem("prespoil-quiz-init");
                 }
+              } catch {
+                // ignore
               }
 
               router.push("/spoils/create-quiz?type=pre");
@@ -148,12 +150,14 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             variant="outline"
             className="justify-between"
             onClick={() => {
-              if (draftPostQuiz) {
-                try {
+              try {
+                if (draftPostQuiz) {
                   sessionStorage.setItem("postspoil-quiz-init", JSON.stringify(draftPostQuiz));
-                } catch {
-                  // ignore
+                } else {
+                  sessionStorage.removeItem("postspoil-quiz-init");
                 }
+              } catch {
+                // ignore
               }
 
               router.push("/spoils/create-quiz?type=post");
