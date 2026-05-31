@@ -28,7 +28,7 @@ const SpoilOutlineSection: FC<SpoilOutlineSectionProps> = ({
   return (
     <section className="flex flex-col gap-4 overflow-hidden">
       <div className="flex items-center justify-between bg-[#E6F4F7] px-3 py-2 rounded-xl">
-        <h3 className="font-semibold text-blue text-lg">Spoil Outline</h3>
+        <h3 className="font-semibold text-blue text-lg">Spoylz Outline</h3>
         <button
           onClick={onEdit}
           className="flex items-center gap-2 rounded-xl bg-blue px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-opacity-90"

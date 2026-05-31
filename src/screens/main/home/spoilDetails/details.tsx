@@ -285,12 +285,12 @@ export default function Details({ spoil }: DetailsProps) {
   const tabs = isSmallScreen
     ? [
         { label: "Overview", content: overviewContent },
-        { label: "Spoil Outline", content: outlineContent },
+        { label: "Spoylz Outline", content: outlineContent },
         { label: "Reviews", content: reviewsContent },
       ]
     : [
         { label: "Overview", content: overviewContent },
-        { label: "Spoil Outline", content: outlineContent },
+        { label: "Spoylz Outline", content: outlineContent },
       ];
 
   return (

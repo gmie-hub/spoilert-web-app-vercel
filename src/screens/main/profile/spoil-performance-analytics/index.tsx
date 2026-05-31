@@ -75,8 +75,8 @@ function Legend({
   const fmt = formatter ?? ((v) => String(v));
   return (
     <div className="flex flex-col gap-2 mt-3">
-      {courses.map((course, i) => (
-        <div key={course} className="flex flex-col">
+      {courses.map((course, indexedDB) => (
+        <div key={indexedDB} className="flex flex-col">
           <div className="flex items-center gap-2">
             <span
               className="h-2.5 w-2.5 flex-shrink-0 rounded-full"

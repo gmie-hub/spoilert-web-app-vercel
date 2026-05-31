@@ -130,30 +130,30 @@ const SpoilCard = ({ spoil, index }: any) => {
         {/* Tutor */}
         <HStack spacing="gap-2" alignItems="center">
           <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">
-            {spoil.tutor.avatar ? (
+            {spoil?.tutor?.avatar ? (
               <Image
-                src={spoil.tutor.avatar}
+                src={spoil?.tutor?.avatar}
                 alt="tutor"
                 fill
                 className="object-cover"
               />
             ) : (
               <span className="flex items-center justify-center w-full h-full text-[10px] font-semibold text-gray-600">
-                {spoil.tutor.first_name[0]}
-                {spoil.tutor.last_name[0]}
+                {spoil?.tutor?.first_name[0]}
+                {spoil?.tutor?.last_name[0]}
               </span>
             )}
           </div>
 
           <p className="text-xs sm:text-sm text-[var(--color-gray-dark)] truncate">
-            {spoil.tutor.first_name} {spoil.tutor.last_name}
+            {spoil?.tutor?.first_name} {spoil?.tutor?.last_name}
           </p>
         </HStack>
 
         {/* Category */}
-        {spoil.category?.name && (
+        {spoil?.category?.name && (
           <span className="inline-block mt-2 text-xs sm:text-sm px-2 py-1 rounded-full bg-[#dff6f7] text-[#0b595b]">
-            {spoil.category.name}
+            {spoil?.category?.name}
           </span>
         )}
 
