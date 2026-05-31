@@ -60,7 +60,7 @@ export default function ContactSection() {
                 <div className="space-y-6">
                   <InfoItem
                     icon={ContactIcon5}
-                    text="blinkersnigeria@gmail.com"
+                    text="support@spoilert.com"
                   />
                   <InfoItem icon={ContactIcon6} text="+2348155656205" />
                   <InfoItem

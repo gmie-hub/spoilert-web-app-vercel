@@ -20,7 +20,7 @@ const MySpoilsSearchBar = ({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Search for a Spoil.."
+        placeholder="Search for a Spoylz.."
         className="w-full border-none bg-transparent text-sm text-[#20262D] outline-none placeholder:text-[#A0A9B2]"
       />
       {value ? (

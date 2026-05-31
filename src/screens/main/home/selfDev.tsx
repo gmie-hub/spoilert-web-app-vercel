@@ -29,7 +29,7 @@ const SelfDev = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        Spoils For Self Development
+        Spoylz For Self Development
       </motion.h1>
 
       {isLoading && (

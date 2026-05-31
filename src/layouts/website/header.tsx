@@ -305,7 +305,7 @@ const Header = () => {
 
             <input
               type="text"
-              placeholder="Search for a spoil, tutor, Institution..."
+              placeholder="Search for a Spoylz, tutor, Institution..."
               className="
                 w-full rounded-full border border-gray-300 bg-gray-50 
                 pl-10 sm:pl-12 pr-20 sm:pr-28 md:pr-32 py-2.5 sm:py-3 text-xs sm:text-sm 

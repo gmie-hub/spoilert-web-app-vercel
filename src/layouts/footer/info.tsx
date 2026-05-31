@@ -15,7 +15,7 @@ import HStack from "@spt/components/hstack";
 import Stack from "@spt/components/stack";
 
 const info = [
-  { icon: SMSIcon, text: "blinkersnigeria@gmail.com" },
+  { icon: SMSIcon, text: "support@spoilert.com" },
   { icon: PhoneIcon, text: "09012345678" },
   {
     icon: LocationIcon,
