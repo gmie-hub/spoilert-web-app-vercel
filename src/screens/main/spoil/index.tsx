@@ -98,6 +98,8 @@ export default function SpoilOverview({ spoilId }: SpoilOverviewProps) {
       return;
     }
 
+    
+
     router.push(`/spoil-details/${spoil.id}`);
   };
 
