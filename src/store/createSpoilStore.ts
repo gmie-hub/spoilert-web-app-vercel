@@ -63,8 +63,13 @@ interface CreateSpoilDraftState {
   outline: OutlineData;
   certificateTemplate: SelectedCertificateTemplate | null;
   certificateCustomization: CertificateCustomization;
+  // Which spoil the current draft represents. Used so that returning to an
+  // in-progress spoil (e.g. coming back from the certificate flow) does NOT
+  // overwrite the user's local edits with the saved server copy.
+  loadedSpoilId: number | string | null;
   setBasics: (b: BasicsFormData) => void;
   setOutline: (o: OutlineData) => void;
+  setLoadedSpoilId: (id: number | string | null) => void;
   setCertificateTemplate: (
     template: SelectedCertificateTemplate | null,
   ) => void;
@@ -200,8 +205,11 @@ export const useCreateSpoilStore = create<CreateSpoilDraftState>()(
       outline: initialOutline,
       certificateTemplate: initialCertificateTemplate,
       certificateCustomization: initialCertificateCustomization,
+      loadedSpoilId: null,
       setBasics: (b: BasicsFormData) => set({ basics: b }),
       setOutline: (o: OutlineData) => set({ outline: o }),
+      setLoadedSpoilId: (id: number | string | null) =>
+        set({ loadedSpoilId: id }),
       setCertificateTemplate: (template: SelectedCertificateTemplate | null) =>
         set({ certificateTemplate: template }),
       setCertificateCustomization: (
@@ -263,6 +271,7 @@ export const useCreateSpoilStore = create<CreateSpoilDraftState>()(
           outline: initialOutline,
           certificateTemplate: initialCertificateTemplate,
           certificateCustomization: initialCertificateCustomization,
+          loadedSpoilId: null,
         }),
     }),
     {

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
+import Button from "@spt/components/button";
 import useCreateSpoilTemplateMutation from "@spt/hooks/apiRequests/useCreateSpoilTemplateMutation";
 import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplateQuery";
 import useUpdateSpoilTemplateMutation from "@spt/hooks/apiRequests/useUpdateSpoilTemplateMutation";
@@ -140,6 +141,16 @@ export default function CertificateTemplateCustomizePage() {
     );
   };
 
+  // Go back to the template gallery to pick a different certificate. Keep the
+  // flow and spoil id so the selection stays linked to this spoil.
+  const handleChangeCertificate = () => {
+    router.push(
+      `/create-spoils/certificate-template?flow=${flow}${
+        resolvedSpoilId ? `&spoilId=${resolvedSpoilId}` : ""
+      }`,
+    );
+  };
+
   const handleSuccessModalClose = () => {
     setIsSuccessModalOpen(false);
     router.push(getReviewRoute());
@@ -232,9 +243,19 @@ export default function CertificateTemplateCustomizePage() {
           Back
         </button>
 
-        <h1 className="mt-6 text-lg font-semibold tracking-[-0.03em] text-[#212529] sm:text-xl">
-          {isEditMode ? "Edit Certificate" : "Customize"}
-        </h1>
+        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-lg font-semibold tracking-[-0.03em] text-[#212529] sm:text-xl">
+            {isEditMode ? "Edit Certificate" : "Customize"}
+          </h1>
+
+          <Button
+            variant="outline"
+            className="rounded-xl px-6"
+            onClick={handleChangeCertificate}
+          >
+            Change Certificate
+          </Button>
+        </div>
 
         <CertificateCustomizationWorkspace
           certificateTemplate={resolvedCertificateTemplate}

@@ -14,7 +14,7 @@ import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCatego
 import { useAuthStore } from "@spt/store/authStore";
 import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
-import ContentUpload from "../components/ContentUpload";
+import LessonFileUpload from "../components/LessonFileUpload";
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { basicsValidationSchema } from "../validations";
 
@@ -58,14 +58,20 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   const storedSpoilId = useAuthStore((s) => s.createdSpoilId);
   const { data: spoilData } = useGetSpoilByIdQuery(storedSpoilId);
   const setBasicsInDraft = useCreateSpoilStore((s) => s.setBasics);
+  const loadedSpoilId = useCreateSpoilStore((s) => s.loadedSpoilId);
 
   useEffect(() => {
     if (!spoilData) return;
 
+    // Don't overwrite the in-progress draft if it already represents this
+    // spoil (e.g. we just came back from the certificate flow) — that would
+    // wipe the user's local edits with the saved server copy.
+    if (String(loadedSpoilId) === String(spoilData.id)) return;
+
     const mapped = mapSpoilDataToForm(spoilData);
 
     onChange(mapped);
-  }, [spoilData, onChange]);
+  }, [spoilData, onChange, loadedSpoilId]);
   
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
@@ -153,7 +159,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 hasAsterisk
               />
 
-              {values.pricing !== "free" && (
+              {values.pricing && values.pricing !== "free" && (
                 <Input
                   name="amount"
                   label="Amount"
@@ -268,7 +274,7 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                       placeholder="Type in content"
                     />
                   ) : (
-                    <ContentUpload
+                    <LessonFileUpload
                       name="lessonFile"
                       label="Content Upload"
                       accept={undefined}

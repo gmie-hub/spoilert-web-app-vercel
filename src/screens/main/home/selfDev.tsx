@@ -45,8 +45,8 @@ const SelfDev = () => {
       {/* Main Layout */}
       {!isLoading && !isError && (
       <div className="w-full px-4 sm:px-6 md:px-8">
-        {/* ✅ Two White Column Boxes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
+        {/* ✅ Two White Column Boxes — stacked (1 per row) up to xl, side by side on xl+ */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 w-full">
           {/* LEFT COLUMN */}
           <div className="bg-[var(--color-blue-lightest)] rounded-2xl p-4 sm:p-6 space-y-5 shadow-lg">
             {leftSpoils.map((spoil, index) => (
@@ -108,7 +108,7 @@ const SpoilCard = ({ spoil, index }: any) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         {/* Title */}
         <h2 className="font-semibold text-sm sm:text-base text-[#03363b] line-clamp-2">{spoil.title}</h2>
 
@@ -129,7 +129,7 @@ const SpoilCard = ({ spoil, index }: any) => {
 
         {/* Tutor */}
         <HStack spacing="gap-2" alignItems="center">
-          <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">
+          <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
             {spoil?.tutor?.avatar ? (
               <Image
                 src={spoil?.tutor?.avatar}
@@ -145,7 +145,7 @@ const SpoilCard = ({ spoil, index }: any) => {
             )}
           </div>
 
-          <p className="text-xs sm:text-sm text-[var(--color-gray-dark)] truncate">
+          <p className="text-xs sm:text-sm text-[var(--color-gray-dark)] truncate min-w-0">
             {spoil?.tutor?.first_name} {spoil?.tutor?.last_name}
           </p>
         </HStack>

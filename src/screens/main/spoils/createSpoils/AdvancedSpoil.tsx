@@ -43,7 +43,10 @@ const AdvancedSpoil = () => {
   const outlineData = useCreateSpoilStore((s) => s.outline);
   const setOutlineData = useCreateSpoilStore((s) => s.setOutline);
   const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
+  const loadedSpoilId = useCreateSpoilStore((s) => s.loadedSpoilId);
+  const setLoadedSpoilId = useCreateSpoilStore((s) => s.setLoadedSpoilId);
 
+  const createdSpoilId = useAuthStore((s) => s.createdSpoilId);
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
   const { data: spoilData, isLoading: isSpoilLoading } =
     useGetSpoilDetailsQuery(spoilIdParam);
@@ -53,16 +56,41 @@ const AdvancedSpoil = () => {
       return;
     }
 
+    // Only pull the spoil from the server the first time we open it. If the
+    // local draft already represents this spoil (e.g. we just came back from
+    // the certificate flow), keep the user's in-progress edits instead of
+    // overwriting them with the saved copy.
+    if (String(loadedSpoilId) === String(spoilData.id)) {
+      return;
+    }
+
     setBasicsData(mapSpoilDataToForm(spoilData));
     setOutlineData(mapSpoilDetailsToOutline(spoilData));
     setCreatedSpoilIdInStore?.(Number(spoilData.id));
+    setLoadedSpoilId(spoilData.id);
   }, [
     isEditMode,
+    loadedSpoilId,
     setBasicsData,
     setCreatedSpoilIdInStore,
+    setLoadedSpoilId,
     setOutlineData,
     spoilData,
   ]);
+
+  // While creating a brand-new spoil there is no `spoilId` in the URL, but once
+  // the draft is saved server-side it gets an id. Remember it so that returning
+  // here in edit mode (the certificate flow comes back with `?spoilId=`) treats
+  // this draft as already-loaded and preserves the local edits.
+  useEffect(() => {
+    if (isEditMode || !createdSpoilId) {
+      return;
+    }
+
+    if (String(loadedSpoilId) !== String(createdSpoilId)) {
+      setLoadedSpoilId(createdSpoilId);
+    }
+  }, [isEditMode, createdSpoilId, loadedSpoilId, setLoadedSpoilId]);
 
   const goToNextStep = () =>
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));

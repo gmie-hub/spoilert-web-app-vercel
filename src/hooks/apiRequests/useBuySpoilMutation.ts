@@ -36,18 +36,19 @@ const useBuySpoilMutation = () => {
   const buySpoilHandler = async (
     spoil_id: number | string,
     gateway: "FLUTTERWAVE" | string = "FLUTTERWAVE",
+    options?: { successMessage?: string },
   ) => {
     try {
       const response = await mutation.mutateAsync({ spoil_id, gateway });
-      const paymentLink = response?.data?.payment?.payment_link;
 
-      toast.success(response?.message || "Payment initialized successfully");
-
-      if (paymentLink && typeof window !== "undefined") {
-        toast.success("Opening payment link in a new tab...");
-        // open in a new tab/window without affecting the current page
-        window.open(paymentLink, "_blank", "noopener,noreferrer");
-      }
+      // When a caller supplies `successMessage` we show exactly that and ignore
+      // the backend message (e.g. free spoils show "Spoil enrolled successfully"
+      // instead of the payment-oriented copy the API returns).
+      toast.success(
+        options?.successMessage ||
+          response?.message ||
+          "Payment initialized successfully",
+      );
 
       return response;
     } catch (error: any) {

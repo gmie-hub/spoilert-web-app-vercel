@@ -25,6 +25,7 @@ export const MyLearningCard = ({
   onCertificate,
 }: MyLearningCardProps) => {
   const isCompleted = tab === "completed";
+  const showCertificate = isCompleted && item.hasCertificate;
 
   const handleCardKeyDown = (e: React.KeyboardEvent) => {
     if (!isCompleted) return;
@@ -80,22 +81,24 @@ export const MyLearningCard = ({
             ) : null}
           </div>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isCompleted) {
-                if (onCertificate) onCertificate(item);
-                return;
-              }
+          {isCompleted && !showCertificate ? null : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (showCertificate) {
+                  if (onCertificate) onCertificate(item);
+                  return;
+                }
 
-              onAction(item);
-            }}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#0B5368] underline underline-offset-4 cursor-pointer"
-          >
-            {isCompleted ? "View & Download Certificate" : "Continue Learning"}
-            {isCompleted ? <FiDownload size={14} /> : <FiArrowRight size={14} />}
-          </button>
+                onAction(item);
+              }}
+              className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#0B5368] underline underline-offset-4 cursor-pointer"
+            >
+              {showCertificate ? "View & Download Certificate" : "Continue Learning"}
+              {showCertificate ? <FiDownload size={14} /> : <FiArrowRight size={14} />}
+            </button>
+          )}
         </div>
       </div>
     </article>

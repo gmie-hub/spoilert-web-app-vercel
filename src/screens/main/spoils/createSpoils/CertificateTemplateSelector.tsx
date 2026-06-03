@@ -110,18 +110,30 @@ export default function CertificateTemplateSelector() {
   return (
     <section className="min-h-screen px-4 py-8 sm:px-6 lg:px-20">
       <div className="mx-auto">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#0C4A5C]"
-        >
-          <Image
-            src={ArrowLeftIcon.src}
-            alt="Back"
-            className="h-[18px] w-[18px]"
-          />
-          Back
-        </button>
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#0C4A5C]"
+          >
+            <Image
+              src={ArrowLeftIcon.src}
+              alt="Back"
+              width={18}
+              height={18}
+              className="h-[18px] w-[18px]"
+            />
+            Back
+          </button>
+
+          <Button
+            variant="darkBlue"
+            className="rounded-xl px-8"
+            onClick={handleBack}
+          >
+            Back To Review
+          </Button>
+        </div>
 
         <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>

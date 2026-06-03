@@ -100,6 +100,7 @@ const EmptyState = () => (
 const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const router = useRouter();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState<any>(null);
   const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { buySpoilHandler, isLoading: isBuyingSpoil } = useBuySpoilMutation();
@@ -142,14 +143,28 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
         : 0;
   const certificateFee = Number(spoil.certificate_fee) || 0;
 
-  const handleMakePayment = async () => {
-    const response = await buySpoilHandler(spoil.id, "FLUTTERWAVE");
+  // initialize payment: hits /spoils/learner/buy and returns the gateway data
+  const initiateBuySpoil = async (successMessage?: string) => {
+    const response = await buySpoilHandler(
+      spoil.id,
+      "FLUTTERWAVE",
+      successMessage ? { successMessage } : undefined,
+    );
 
     if (response) {
-      setIsPaymentModalOpen(false);
+      setPaymentData(response?.data ?? response);
     }
 
     return response;
+  };
+
+  // navigate to the payment gateway link returned by the endpoint
+  const handleGoToGateway = () => {
+    const paymentLink = paymentData?.payment?.payment_link;
+
+    if (paymentLink && typeof window !== "undefined") {
+      window.open(paymentLink, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handlePrimaryCtaClick = async () => {
@@ -158,7 +173,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
       return;
     }
     if (isFreeSpoil) {
-      const response = await handleMakePayment();
+      const response = await initiateBuySpoil("Spoil enrolled successfully");
 
       if (response) {
         router.push(spoilOverviewHref);
@@ -167,7 +182,11 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
       return;
     }
 
+    // paid spoil: open the modal and call the endpoint so its
+    // response can be displayed inside the modal
+    setPaymentData(null);
     setIsPaymentModalOpen(true);
+    await initiateBuySpoil();
   };
 
   return (
@@ -314,6 +333,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
             <SpoilMobileCTA
               shouldContinue={shouldContinue}
               isFreeSpoil={isFreeSpoil}
+              isLoading={isBuyingSpoil}
               onPrimaryClick={handlePrimaryCtaClick}
               onSponsor={() => setIsSponsorModalOpen(true)}
             />
@@ -324,6 +344,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
             spoil={spoil}
             shouldContinue={shouldContinue}
             isFreeSpoil={isFreeSpoil}
+            isLoading={isBuyingSpoil}
             onPrimaryClick={handlePrimaryCtaClick}
             onSponsor={() => setIsSponsorModalOpen(true)}
           />
@@ -337,8 +358,9 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
           spoilTitle={spoil.title}
           costFee={spoilAmount}
           certificateFee={certificateFee}
-          onMakePayment={handleMakePayment}
+          onMakePayment={handleGoToGateway}
           isMakingPayment={isBuyingSpoil}
+          paymentData={paymentData}
         />
 
         <SponsorSpoilModal

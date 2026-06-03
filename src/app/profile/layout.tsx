@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import ProtectedRoute from "@spt/components/ProtectedRoute";
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
 import ProfileShell from "@spt/screens/main/profile";
@@ -12,7 +13,9 @@ export default function ProfileLayout({
   return (
     <>
       <Header />
-      <ProfileShell>{children}</ProfileShell>
+      <ProtectedRoute>
+        <ProfileShell>{children}</ProfileShell>
+      </ProtectedRoute>
       <Footer />
     </>
   );

@@ -22,7 +22,7 @@ interface LessonFormState {
   title: string;
   type: LessonTypeOption;
   content: string;
-  file: File | null;
+  file: File | string | null;
   description: string;
 }
 

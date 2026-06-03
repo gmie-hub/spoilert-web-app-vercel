@@ -24,9 +24,18 @@ import UserImage from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
 import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUserVerificationDetailsQuery";
 import useClickOutside from "@spt/hooks/useClickOutside";
+import LoginPromptModal from "@spt/layouts/website/LoginPromptModal";
 import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
 import MobileMenu from "@spt/layouts/website/MobileMenu";
 import { useAuthStore } from "@spt/store/authStore";
+
+type NavLink = {
+  icon: string | any;
+  name: string;
+  href: string;
+  /** When true, logged-out users get a login prompt instead of navigating. */
+  requiresAuth?: boolean;
+};
 
 
 
@@ -34,6 +43,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
@@ -72,13 +82,29 @@ const Header = () => {
       : "/create-spoils/kyc-process"
       // : "/create-spoils";
 
-  const navLinks = [
+  const navLinks: NavLink[] = [
     { icon: Home, name: "Home", href: "/" },
-    { icon: Learnings, name: "My Learnings", href: "/my-learnings" },
-    { icon: CreateSpoilIcon, name: "Create spoylz", href: createSpoilHref },
-    { icon: CommunityIcon, name: "Community", href: "/community" },
-    { icon: ProfileNavIcon, name: "Profile", href: "/profile" },
+    { icon: Learnings, name: "My Learnings", href: "/my-learnings", requiresAuth: true },
+    { icon: CreateSpoilIcon, name: "Create spoylz", href: createSpoilHref, requiresAuth: true },
+    { icon: CommunityIcon, name: "Community", href: "/community", requiresAuth: true },
+    ...(authUser
+      ? [{ icon: ProfileNavIcon, name: "Profile", href: "/profile" }]
+      : []),
   ];
+
+  // Intercept clicks on protected links while logged out: block navigation
+  // and surface a login prompt instead. We only block once we're sure the
+  // auth store has hydrated, so logged-in users are never wrongly stopped.
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    link: NavLink
+  ) => {
+    if (link.requiresAuth && hasHydrated && !authUser) {
+      e.preventDefault();
+      setIsMenuOpen(false);
+      setIsLoginPromptOpen(true);
+    }
+  };
 
 
   const icons = [
@@ -103,7 +129,7 @@ const Header = () => {
             />
           </Link>
 
-          {/* NAV LINKS - Hidden on mobile & tablet, shown on lg+ */}
+          {/* NAV LINKS - Full labels shown on xl+ only */}
           <nav className="hidden xl:flex items-center gap-2 2xl:gap-3">
             {navLinks?.map((link) => {
               const isActive =
@@ -114,6 +140,7 @@ const Header = () => {
                 <Link
                   key={link.name}
                   href={link.href}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap
                   ${
                     isActive
@@ -134,8 +161,8 @@ const Header = () => {
             })}
           </nav>
 
-          {/* NAV LINKS - Condensed icons only for lg screens (between tablet and xl) */}
-          <nav className="hidden lg:flex xl:hidden items-center gap-1">
+          {/* NAV LINKS - Condensed icons for md & lg screens (mobile uses the toggle, xl shows full labels) */}
+          <nav className="hidden md:flex xl:hidden items-center gap-1">
             {navLinks?.map((link) => {
               const isActive =
                 pathname === link.href ||
@@ -145,6 +172,7 @@ const Header = () => {
                 <Link
                   key={link.name}
                   href={link.href}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={`group relative flex items-center justify-center rounded-full p-2.5 transition-all duration-200
                   ${
                     isActive
@@ -278,9 +306,9 @@ const Header = () => {
           </Stack>
         )}
 
-        {/* MOBILE/TABLET MENU ICON - shown below lg */}
+        {/* MOBILE MENU ICON - shown on mobile only (below md) */}
         <button
-          className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+          className="md:hidden p-2 rounded-md hover:bg-gray-100"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -343,12 +371,19 @@ const Header = () => {
         authUser={authUser}
         setIsLogoutConfirmOpen={setIsLogoutConfirmOpen}
         router={router}
+        onNavLinkClick={handleNavClick}
       />
 
       {/* ================= LOGOUT CONFIRMATION MODAL ================= */}
       <LogoutConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setIsLogoutConfirmOpen(false)}
+      />
+
+      {/* ================= LOGIN PROMPT (for logged-out users) ================= */}
+      <LoginPromptModal
+        open={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
       />
     </header>
   );

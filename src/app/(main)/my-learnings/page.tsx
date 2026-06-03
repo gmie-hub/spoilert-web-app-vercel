@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import ProtectedRoute from "@spt/components/ProtectedRoute";
 import MyLearningPage from "@spt/screens/main/spoils/myLearning";
 import MyLearningLoadingState from "@spt/screens/main/spoils/myLearning/components/MyLearningLoadingState";
 
@@ -28,8 +29,10 @@ const MyLearningPageFallback = () => (
 
 export default function MyLearningRoutePage() {
   return (
-    <Suspense fallback={<MyLearningPageFallback />}>
-      <MyLearningPage />
-    </Suspense>
+    <ProtectedRoute>
+      <Suspense fallback={<MyLearningPageFallback />}>
+        <MyLearningPage />
+      </Suspense>
+    </ProtectedRoute>
   );
 }

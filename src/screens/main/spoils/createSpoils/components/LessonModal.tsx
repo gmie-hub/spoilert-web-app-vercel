@@ -3,6 +3,7 @@
 import type { FC } from "react";
 
 import { Form, Formik, type FormikHelpers } from "formik";
+import { FiFile, FiX } from "react-icons/fi";
 import * as yup from "yup";
 
 import Button from "@spt/components/button";
@@ -21,7 +22,7 @@ interface LessonFormState {
   title: string;
   type: LessonTypeOption;
   content: string;
-  file: File | null;
+  file: File | string | null;
   description: string;
 }
 
@@ -43,6 +44,17 @@ const lessonTypeOptions = [
   { label: "File", value: "file" },
   { label: "Text", value: "text" },
 ];
+
+// Existing uploads arrive as a stored URL; show its (decoded) file name.
+const getFileNameFromUrl = (url: string) => {
+  const segment = url.split("/").pop() ?? url;
+
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+};
 
 const lessonValidationSchema = yup.object({
   title: yup.string().trim().required("Lesson title is required"),
@@ -66,7 +78,9 @@ const lessonValidationSchema = yup.object({
           .test(
             "filePresent",
             "Upload lesson content",
-            (value) => value instanceof File,
+            (value) =>
+              value instanceof File ||
+              (typeof value === "string" && value.trim().length > 0),
           ),
       otherwise: (schema) => schema.nullable(),
     }),
@@ -105,7 +119,7 @@ const LessonModal: FC<LessonModalProps> = ({
         validationSchema={lessonValidationSchema}
         onSubmit={handleFormSubmit}
       >
-        {({ values, isValid }) => {
+        {({ values, isValid, setFieldValue }) => {
           const acceptType =
             values.type === "video"
               ? "video/*"
@@ -137,6 +151,28 @@ const LessonModal: FC<LessonModalProps> = ({
                   rows={5}
                   placeholder="Type in content"
                 />
+              ) : typeof values.file === "string" && values.file.trim() ? (
+                <div className="flex w-full flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700">
+                    Content Upload<span className="ml-1 text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-blue bg-white px-4 py-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <FiFile className="shrink-0 text-blue" size={18} />
+                      <span className="truncate text-sm font-medium text-gray-700">
+                        {getFileNameFromUrl(values.file)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFieldValue("file", null)}
+                      aria-label="Remove file"
+                      className="shrink-0 rounded-full p-1 text-gray-500 transition hover:bg-red-50 hover:text-red-500"
+                    >
+                      <FiX size={18} />
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-1">
                   <ContentUpload
@@ -145,11 +181,11 @@ const LessonModal: FC<LessonModalProps> = ({
                     accept={acceptType}
                     hasAsterisk
                   />
-                  <p className="text-sm text-gray">
+                  {/* <p className="text-sm text-gray">
                     {values.type === "video"
                       ? "Video should not be more than 5mins long"
                       : "Upload lesson as a PDF file"}
-                  </p>
+                  </p> */}
                 </div>
               )}
               <Textarea

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +14,9 @@ import Button from "@spt/components/button";
 import useCompleteLessonMutation from "@spt/hooks/apiRequests/useCompleteLessonMutation";
 import useCompleteSpoilMutation from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useJoinCommunityMutation from "@spt/hooks/apiRequests/useJoinCommunityMutation";
 
+import CongratulationsModal from "./CongratulationsModal";
 import { Breadcrumbs } from "./preSpoilQuiz/components/Breadcrumbs";
 import { StartSpoilContentPanel } from "./startSpoilContentPanel";
 import { StartSpoilSidebar } from "./startSpoilSidebar";
@@ -28,14 +31,18 @@ interface StartSpoilPageProps {
 
 export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { completeLessonHandler, isCompletingLesson } = useCompleteLessonMutation();
   const { completeSpoilHandler, isCompletingSpoil } = useCompleteSpoilMutation();
+  const { joinCommunityHandler, isLoading: isJoiningCommunity } =
+    useJoinCommunityMutation();
   const { data: spoil, isLoading, isError, errorMessage } =
     useGetSpoilDetailsQuery(spoilId);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null);
   const [openModuleIds, setOpenModuleIds] = useState<Set<number>>(new Set());
+  const [isCongratsOpen, setIsCongratsOpen] = useState(false);
 
   useEffect(() => {
     if (!spoil) return;
@@ -100,6 +107,10 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   }
 
   const heroImage = spoil.cover_image_url || HeroImage;
+  // A spoil may not have a community at all. When it does, `has_joined` tells
+  // us whether the current user is already a member.
+  const community = spoil.community;
+  const hasJoinedCommunity = community?.has_joined ?? false;
   const activeLessonIsCompleted = activeLesson
     ? activeLesson.status === "completed"
     : false;
@@ -112,6 +123,25 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     }
 
     router.push(`/spoil/${spoil.id}`);
+  };
+
+  const handleCommunityAction = async () => {
+    if (!community) return;
+
+    // Already a member -> take them to the community area.
+    if (hasJoinedCommunity) {
+      router.push("/community");
+      return;
+    }
+
+    // Not a member yet -> join, then refresh spoil details so the button
+    // flips to "View Community".
+    if (isJoiningCommunity) return;
+
+    const response = await joinCommunityHandler(community.id);
+    if (response) {
+      await queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
+    }
   };
 
   const handleToggleModule = (moduleId: number) => {
@@ -161,6 +191,10 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     if (!response) {
       return;
     }
+
+    // Celebrate the completed lesson; the card offers the certificate when one
+    // is available (has_certificate === 1).
+    setIsCongratsOpen(true);
   };
 
   const handleCompleteSpoil = async () => {
@@ -193,13 +227,21 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
               Chat Tutor
             </Button>
 
-            <Button
-              variant="darkBlue"
-              className="gap-2 rounded-[14px] px-5 py-3"
-              iconRight={<Image src={ArrowRightIcon} alt="" width={16} height={16} />}
-            >
-              Join Community
-            </Button>
+            {community && (
+              <Button
+                variant="darkBlue"
+                className="gap-2 rounded-[14px] px-5 py-3"
+                iconRight={<Image src={ArrowRightIcon} alt="" width={16} height={16} />}
+                onClick={handleCommunityAction}
+                disabled={isJoiningCommunity}
+              >
+                {hasJoinedCommunity
+                  ? "View Community"
+                  : isJoiningCommunity
+                    ? "Joining..."
+                    : "Join Community"}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -252,6 +294,13 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
           </div>
         </div>
       </div>
+
+      <CongratulationsModal
+        open={isCongratsOpen}
+        onClose={() => setIsCongratsOpen(false)}
+        hasCertificate={Number(spoil?.has_certificate) === 1}
+        spoilId={spoil.id}
+      />
     </section>
   );
 }

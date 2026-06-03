@@ -48,6 +48,11 @@ export const StartSpoilSidebar = ({
 }: StartSpoilSidebarProps) => {
   const router = useRouter();
 
+  // A post-Spoylz quiz only exists when the spoil has a quiz of type "post".
+  const hasPostQuiz = Boolean(
+    spoil?.quizzes?.some((quiz) => quiz.type === "post"),
+  );
+
   const canTakePostQuiz = (() => {
     // backend may provide overall percentage as numeric or string fields
     const pctNum = Number(
@@ -219,35 +224,37 @@ export const StartSpoilSidebar = ({
         )}
       </div>
 
-      <div className="mt-5 rounded-[16px] border border-[#B7DCE8] bg-[#EAF7FB] px-4 py-4">
-        <p className="flex items-start gap-3 text-sm leading-6 text-[#5A6A73]">
-          <FiLock className="mt-1 shrink-0 text-[#7C93A0]" size={16} />
-          <span>
-            <span className="font-medium text-[#4B5C65]">Post Spoylz Quiz</span>{" "}
-            -{" "}
-            {canTakePostQuiz
-              ? "You have unlocked the post-Spoylz quiz."
-              : "You have to complete all modules to unlock your certificate"}
-          </span>
-        </p>
+      {hasPostQuiz && (
+        <div className="mt-5 rounded-[16px] border border-[#B7DCE8] bg-[#EAF7FB] px-4 py-4">
+          <p className="flex items-start gap-3 text-sm leading-6 text-[#5A6A73]">
+            <FiLock className="mt-1 shrink-0 text-[#7C93A0]" size={16} />
+            <span>
+              <span className="font-medium text-[#4B5C65]">Post Spoylz Quiz</span>{" "}
+              -{" "}
+              {canTakePostQuiz
+                ? "You have unlocked the post-Spoylz quiz."
+                : "You have to complete all modules to unlock your certificate"}
+            </span>
+          </p>
 
-        <div className="group relative w-full">
-          <Button
-            variant="darkBlue"
-            disabled={!canTakePostQuiz}
-            onClick={handleTakePostQuiz}
-            className={`mt-4 w-full rounded-[12px] py-3 text-white ${
-              !canTakePostQuiz ? "cursor-not-allowed bg-[#8FB0BA]" : ""
-            }`}
-          >
-            Take Post-Spoylz Quiz
-          </Button>
+          <div className="group relative w-full">
+            <Button
+              variant="darkBlue"
+              disabled={!canTakePostQuiz}
+              onClick={handleTakePostQuiz}
+              className={`mt-4 w-full rounded-[12px] py-3 text-white ${
+                !canTakePostQuiz ? "cursor-not-allowed bg-[#8FB0BA]" : ""
+              }`}
+            >
+              Take Post-Spoylz Quiz
+            </Button>
 
-          {!canTakePostQuiz && (
-            <FaBan className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 text-red-500 text-lg group-hover:block" />
-          )}
+            {!canTakePostQuiz && (
+              <FaBan className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 text-red-500 text-lg group-hover:block" />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {isSpoilCompleted ? (
         <button

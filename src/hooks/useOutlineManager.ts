@@ -12,7 +12,7 @@ interface LessonFormState {
   title: string;
   type: LessonTypeOption;
   content: string;
-  file: File | null;
+  file: File | string | null;
   description: string;
 }
 
@@ -101,12 +101,9 @@ export const useOutlineManager = (
             title: lesson.title,
             type: lesson.type,
             content: lesson.type === "text" ? lesson.content : "",
-            file:
-              lesson.type === "text"
-                ? null
-                : lesson.file instanceof File
-                  ? lesson.file
-                  : null,
+            // Keep the existing upload (a stored URL string) so the edit modal
+            // can show its name + remove control instead of an empty field.
+            file: lesson.type === "text" ? null : (lesson.file ?? null),
             description: lesson.description ?? "",
           }
         : {

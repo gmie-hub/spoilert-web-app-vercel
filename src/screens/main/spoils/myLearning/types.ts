@@ -8,6 +8,7 @@ export interface LearningItem {
   category: string;
   coverImage: string | StaticImageData;
   progress: number;
+  hasCertificate: boolean;
   raw?: Record<string, unknown>;
 }
 

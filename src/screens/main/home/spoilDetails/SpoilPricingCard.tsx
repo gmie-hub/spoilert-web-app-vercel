@@ -14,11 +14,19 @@ import Card from "../../../../components/card";
 import HStack from "../../../../components/hstack";
 import VStack from "../../../../components/vstack";
 
+const ButtonSpinner = () => (
+  <span
+    aria-hidden
+    className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+  />
+);
+
 interface SpoilPricingCardProps {
   price: string;
   spoil: SpoilDetailsData;
   shouldContinue: boolean;
   isFreeSpoil: boolean;
+  isLoading: boolean;
   onPrimaryClick: () => void;
   onSponsor: () => void;
 }
@@ -28,6 +36,7 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
   spoil,
   shouldContinue,
   isFreeSpoil,
+  isLoading,
   onPrimaryClick,
   onSponsor,
 }) => (
@@ -39,14 +48,22 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
 
           <Button
             variant="darkBlue"
-            className="w-full py-3"
+            className="w-full py-3 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onPrimaryClick}
+            disabled={isLoading}
           >
-            {shouldContinue
-              ? "Continue Learning"
-              : isFreeSpoil
-                ? "Start Spoil"
-                : "Buy Spoil"}
+            {isLoading ? (
+              <>
+                <ButtonSpinner />
+                {isFreeSpoil ? "Starting..." : "Processing..."}
+              </>
+            ) : shouldContinue ? (
+              "Continue Learning"
+            ) : isFreeSpoil ? (
+              "Start Spoil"
+            ) : (
+              "Buy Spoil"
+            )}
           </Button>
 
          {!isFreeSpoil && (
@@ -87,6 +104,7 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
 interface SpoilMobileCTAProps {
   shouldContinue: boolean;
   isFreeSpoil: boolean;
+  isLoading: boolean;
   onPrimaryClick: () => void;
   onSponsor: () => void;
 }
@@ -94,6 +112,7 @@ interface SpoilMobileCTAProps {
 export const SpoilMobileCTA: React.FC<SpoilMobileCTAProps> = ({
   shouldContinue,
   isFreeSpoil,
+  isLoading,
   onPrimaryClick,
   onSponsor,
 }) => (
@@ -108,14 +127,22 @@ export const SpoilMobileCTA: React.FC<SpoilMobileCTAProps> = ({
       </Button>
       <Button
         variant="darkBlue"
-        className="w-full py-3 cursor-pointer"
+        className="w-full py-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
         onClick={onPrimaryClick}
+        disabled={isLoading}
       >
-        {shouldContinue
-          ? "Continue Learning"
-          : isFreeSpoil
-            ? "Start Spoylz"
-            : "Buy Spoylz"}
+        {isLoading ? (
+          <>
+            <ButtonSpinner />
+            {isFreeSpoil ? "Starting..." : "Processing..."}
+          </>
+        ) : shouldContinue ? (
+          "Continue Learning"
+        ) : isFreeSpoil ? (
+          "Start Spoylz"
+        ) : (
+          "Buy Spoylz"
+        )}
       </Button>
     </VStack>
   </div>

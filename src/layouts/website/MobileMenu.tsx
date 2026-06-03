@@ -9,6 +9,7 @@ interface NavLink {
   icon: string | any;
   name: string;
   href: string;
+  requiresAuth?: boolean;
 }
 
 interface MobileMenuProps {
@@ -19,6 +20,8 @@ interface MobileMenuProps {
   authUser: any;
   setIsLogoutConfirmOpen: (open: boolean) => void;
   router: any;
+  /** Called when a nav link is clicked; may preventDefault to block navigation. */
+  onNavLinkClick?: (e: React.MouseEvent<HTMLAnchorElement>, link: NavLink) => void;
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -29,6 +32,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   authUser,
   setIsLogoutConfirmOpen,
   router,
+  onNavLinkClick,
 }) => {
   if (!isMenuOpen) return null;
 
@@ -47,7 +51,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                   ? "bg-[#0B2C3D] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
-              onClick={() => setIsMenuOpen(false)}
+              onClick={(e) => {
+                onNavLinkClick?.(e, link);
+                setIsMenuOpen(false);
+              }}
             >
               <Image
                 src={link?.icon}
