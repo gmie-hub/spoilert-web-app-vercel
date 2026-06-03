@@ -11,6 +11,7 @@ import AdvancedSpoilIcon from "@spt/assets/icons/advanced-spoil.svg";
 import SimpleSpoilIcon from "@spt/assets/icons/simple-spoil.svg";
 import Button from "@spt/components/button";
 import { useAuthStore } from "@spt/store/authStore";
+import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import type { SpoilTypeOption } from "./types";
 
@@ -44,6 +45,8 @@ const CreateSpoil = () => {
     // clear any previously stored created spoil id and drafts immediately
     const setCreatedSpoilId = useAuthStore.getState().setCreatedSpoilId;
     setCreatedSpoilId?.(null);
+    // Reset the in-memory draft too (removeItem only clears the persisted copy).
+    useCreateSpoilStore.getState().resetDraft();
 
     try {
       if (typeof window !== "undefined") {
@@ -63,6 +66,8 @@ const CreateSpoil = () => {
     // clear any previously stored created spoil id when starting a new flow
     const setCreatedSpoilId = useAuthStore.getState().setCreatedSpoilId;
     setCreatedSpoilId?.(null);
+    // Reset the in-memory draft too (removeItem only clears the persisted copy).
+    useCreateSpoilStore.getState().resetDraft();
 
     // Remove spoil step keys from sessionStorage
     try {

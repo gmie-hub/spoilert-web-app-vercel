@@ -15,22 +15,7 @@ import { mapSpoilDataToForm } from "./steps/spoilBasicsHelpers";
 import SpoilBasicsStep from "./steps/SpoilBasicsStep";
 import SpoilReviewStep from "./steps/SpoilReviewStep";
 
-import type { BasicsFormData, OutlineData } from "./types";
-
-const initialBasicsState: BasicsFormData = {
-  coverImage: null,
-  title: "",
-  category: "",
-  institution: "",
-  courseCode: "",
-  pricing: "",
-  amount: "",
-  expiryDate: "",
-  moduleCount: "",
-  lessonCount: "",
-  description: "",
-  learningOutcome: "",
-};
+import type { OutlineData } from "./types";
 
 const emptyOutline: OutlineData = {
   modules: [],
@@ -55,13 +40,18 @@ const SimpleSpoil = () => {
     sessionStorage.setItem(STEP_KEY, activeStep);
   }, [activeStep]);
 
-  const [basicsData, setBasicsData] =
-    useState<BasicsFormData>(initialBasicsState);
+  // Basics live in the persisted draft store (not local state) so they survive
+  // navigating away to the certificate flow and back.
+  const basicsData = useCreateSpoilStore((s) => s.basics);
+  const setBasicsData = useCreateSpoilStore((s) => s.setBasics);
+  const loadedSpoilId = useCreateSpoilStore((s) => s.loadedSpoilId);
+  const setLoadedSpoilId = useCreateSpoilStore((s) => s.setLoadedSpoilId);
 
   const { createSpoilHandler } = useCreateSpoilMutation();
   const { updateSpoilHandler } = useUpdateSpoilMutation();
   const { data: spoilData, isLoading: isSpoilLoading } =
     useGetSpoilDetailsQuery(spoilIdParam);
+  const createdSpoilId = useAuthStore((s) => s.createdSpoilId);
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
   const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
 
@@ -70,17 +60,42 @@ const SimpleSpoil = () => {
       return;
     }
 
+    // Load from the server only the first time we open this spoil. On a later
+    // return (e.g. from the certificate flow) keep the user's local edits.
+    if (String(loadedSpoilId) === String(spoilData.id)) {
+      return;
+    }
+
     setBasicsData(mapSpoilDataToForm(spoilData));
     setCreatedSpoilIdInStore?.(Number(spoilData.id));
-  }, [isEditMode, setCreatedSpoilIdInStore, spoilData]);
+    setLoadedSpoilId(spoilData.id);
+  }, [
+    isEditMode,
+    loadedSpoilId,
+    setBasicsData,
+    setCreatedSpoilIdInStore,
+    setLoadedSpoilId,
+    spoilData,
+  ]);
+
+  // Once a created draft gets an id, remember it so returning here in edit mode
+  // recognises this draft as already-loaded and preserves the local edits.
+  useEffect(() => {
+    if (isEditMode || !createdSpoilId) {
+      return;
+    }
+
+    if (String(loadedSpoilId) !== String(createdSpoilId)) {
+      setLoadedSpoilId(createdSpoilId);
+    }
+  }, [isEditMode, createdSpoilId, loadedSpoilId, setLoadedSpoilId]);
 
   const handleBackToSelection = () => {
     router.push("/create-spoils");
   };
 
   const resetAll = () => {
-    setBasicsData(initialBasicsState);
-    resetDraft();
+    resetDraft(); // clears basics, outline, certificate and loadedSpoilId
     setCreatedSpoilIdInStore?.(null);
     setActiveStep("basics");
     sessionStorage.removeItem(STEP_KEY);

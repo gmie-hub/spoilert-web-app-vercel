@@ -22,7 +22,8 @@ import type { QuizStatItem } from "./types";
 
 interface UsePreSpoilQuizScreenParams {
   spoilId: number | string;
-  quizType?: "pre" | "post" | string;
+  quizType?: "pre" | "post" | "module" | string;
+  moduleId?: number | string | null;
 }
 
 interface PreSpoilQuizBaseState {
@@ -70,6 +71,7 @@ type PreSpoilQuizScreenState =
 export const usePreSpoilQuizScreen = ({
   spoilId,
   quizType = "pre",
+  moduleId,
 }: UsePreSpoilQuizScreenParams): PreSpoilQuizScreenState => {
   const router = useRouter();
   const [quizStage, setQuizStage] = useState<QuizStage>("intro");
@@ -88,8 +90,9 @@ export const usePreSpoilQuizScreen = ({
       quizData,
       spoilQuizzes: spoil?.quizzes,
       type: quizType,
+      moduleId,
     });
-  }, [quizData, spoil?.quizzes, quizType]);
+  }, [quizData, spoil?.quizzes, quizType, moduleId]);
 
   const {
     quizDetailsData,

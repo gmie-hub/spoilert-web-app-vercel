@@ -57,7 +57,13 @@ const MySpoilsSection = ({
   const { data, isLoading, isError, errorMessage } =
     useGetAllSpoilsQuery(queryParams, Boolean(hasHydrated) && Boolean(user?.id));
   const spoils = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
-  const resultsLayoutClass = "grid-cols-1 md:grid-cols-2";
+  // Published renders compact cards (2-up, 3-up on very wide screens); drafts &
+  // unpublished render large hero cards whose fixed-size action buttons overflow
+  // when squeezed into a half-column, so they keep the full width on every size.
+  const resultsLayoutClass =
+    activeTab === "published"
+      ? "grid-cols-1 md:grid-cols-2 2xl:grid-cols-3"
+      : "grid-cols-1";
   const filteredSpoils = useMemo(() => {
     const normalizedSearch = deferredSearchValue.trim().toLowerCase();
 
@@ -128,7 +134,7 @@ const MySpoilsSection = ({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-black">My Spoils</h2>
+      <h2 className="text-lg font-semibold text-black">My Spoylz</h2>
 
       <div className="mt-5 border-b border-[#E9EEF2]">
         <div className="flex gap-3 overflow-x-auto scrollbar-hide">
@@ -140,7 +146,7 @@ const MySpoilsSection = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative min-w-[140px] pb-3 text-sm font-medium transition ${
+                className={`cursor-pointer relative min-w-[140px] pb-3 text-sm font-medium transition ${
                   isActive
                     ? "text-[#0B5368]"
                     : "text-[#8A98A3] hover:text-[#20262D]"

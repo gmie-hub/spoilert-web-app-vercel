@@ -104,19 +104,43 @@ export const getSpoilQuizPageContent = ({
   const t = String(type ?? "pre").toLowerCase();
 
   if (quizDatum) {
+    const crumbLabel =
+      t === "post"
+        ? "Take Post-Spoylz Quiz"
+        : t === "module"
+          ? "Take Module Quiz"
+          : "Take Pre-Spoylz Quiz";
+
+    const fallbackTitle =
+      t === "post"
+        ? "Post-Spoylz Quiz"
+        : t === "module"
+          ? "Module Quiz"
+          : "Pre-Spoylz Quiz";
+
+    const fallbackDescription =
+      t === "post"
+        ? `Test your knowledge after completing ${spoil.title}.`
+        : t === "module"
+          ? `Complete this quiz to unlock the next module of ${spoil.title}.`
+          : `Test your knowledge before starting ${spoil.title}.`;
+
     return {
-      description:
-        quizDatum.description ||
-        (t === "post"
-          ? `Test your knowledge after completing ${spoil.title}.`
-          : `Test your knowledge before starting ${spoil.title}.`),
-      pageCrumbLabel: t === "post" ? "Take Post-Spoylz Quiz" : "Take Pre-Spoylz Quiz",
-      pageTitle: quizDatum.title || (t === "post" ? "Post-Spoylz Quiz" : "Pre-Spoylz Quiz"),
+      description: quizDatum.description || fallbackDescription,
+      pageCrumbLabel: crumbLabel,
+      pageTitle: quizDatum.title || fallbackTitle,
       primaryButtonLabel: "Start Quiz",
       quizStats:
         t === "post"
           ? getSpoilStats(spoil)
-          : getPreQuizStats({ attempts: spoil.pre_spoil_quiz?.attempts ?? 0, preSpoilQuiz: quizDatum }),
+          : getPreQuizStats({
+              attempts:
+                t === "module"
+                  ? ((quizDatum as { attempts?: unknown[] }).attempts?.length ??
+                    0)
+                  : (spoil.pre_spoil_quiz?.attempts ?? 0),
+              preSpoilQuiz: quizDatum,
+            }),
     };
   }
 
@@ -124,8 +148,15 @@ export const getSpoilQuizPageContent = ({
     description:
       t === "post"
         ? `No post-Spoylz quiz is required for ${spoil.title}.`
-        : `No pre-Spoylz quiz is required for ${spoil.title}. You can begin learning immediately.`,
-    pageCrumbLabel: t === "post" ? "Post-Spoil Quiz" : "Start Spoylz",
+        : t === "module"
+          ? `No quiz is required for this module of ${spoil.title}.`
+          : `No pre-Spoylz quiz is required for ${spoil.title}. You can begin learning immediately.`,
+    pageCrumbLabel:
+      t === "post"
+        ? "Post-Spoil Quiz"
+        : t === "module"
+          ? "Module Quiz"
+          : "Start Spoylz",
     pageTitle: spoil.title,
     primaryButtonLabel: t === "post" ? "View Spoylz" : "Start Spoylz",
     quizStats: getSpoilStats(spoil),

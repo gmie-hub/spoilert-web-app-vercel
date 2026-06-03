@@ -96,7 +96,7 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
           )}
           {/* Tutor */}
           <HStack spacing="gap-2" alignItems="center">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200">
+            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
               {spoil?.tutor?.avatar ? (
                 <Image
                   src={spoil?.tutor?.avatar}
@@ -112,7 +112,7 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
               )}
             </div>
 
-            <p className="text-[14px]  text-[#666869] truncate">
+            <p className="text-[14px]  text-[#666869] truncate min-w-0">
               {spoil?.tutor?.first_name} {spoil?.tutor?.last_name}
             </p>
           </HStack>

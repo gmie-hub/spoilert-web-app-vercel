@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -13,12 +14,18 @@ import Button from "@spt/components/button";
 import useCompleteLessonMutation from "@spt/hooks/apiRequests/useCompleteLessonMutation";
 import useCompleteSpoilMutation from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useJoinCommunityMutation from "@spt/hooks/apiRequests/useJoinCommunityMutation";
 
+import CongratulationsModal from "./CongratulationsModal";
 import { Breadcrumbs } from "./preSpoilQuiz/components/Breadcrumbs";
 import { StartSpoilContentPanel } from "./startSpoilContentPanel";
 import { StartSpoilSidebar } from "./startSpoilSidebar";
 import { LoadingState, MessageState } from "./startSpoilStates";
-import { getInitialSelection, splitLearningOutcomes } from "./startSpoilUtils";
+import {
+  getInitialSelection,
+  getSpoilQuizGate,
+  splitLearningOutcomes,
+} from "./startSpoilUtils";
 
 import type { SpoilLesson, SpoilModule } from "./startSpoilUtils";
 
@@ -28,14 +35,20 @@ interface StartSpoilPageProps {
 
 export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { completeLessonHandler, isCompletingLesson } = useCompleteLessonMutation();
   const { completeSpoilHandler, isCompletingSpoil } = useCompleteSpoilMutation();
+  const { joinCommunityHandler, isLoading: isJoiningCommunity } =
+    useJoinCommunityMutation();
   const { data: spoil, isLoading, isError, errorMessage } =
     useGetSpoilDetailsQuery(spoilId);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null);
   const [openModuleIds, setOpenModuleIds] = useState<Set<number>>(new Set());
+  const [isCongratsOpen, setIsCongratsOpen] = useState(false);
+  // Id of the lesson whose content is currently shown inline in the panel.
+  const [openedLessonId, setOpenedLessonId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!spoil) return;
@@ -47,6 +60,17 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
       initialSelection.moduleId ? new Set([initialSelection.moduleId]) : new Set(),
     );
   }, [spoil]);
+
+  // Pre-quiz gate: a learner must pass the pre-Spoylz quiz before they can take
+  // any lesson. Send them to the quiz until it is passed.
+  useEffect(() => {
+    if (!spoil) return;
+
+    const gate = getSpoilQuizGate(spoil);
+    if (gate.preQuiz && !gate.isPreSatisfied) {
+      router.replace(`/spoil/${spoil.id}/pre-spoil-quiz`);
+    }
+  }, [spoil, router]);
 
   const modules = useMemo(() => spoil?.modules ?? [], [spoil?.modules]);
   const learningItems = useMemo(
@@ -99,7 +123,19 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     return <MessageState message="This Spoylz could not be loaded." />;
   }
 
+  const quizGate = getSpoilQuizGate(spoil);
+
+  // While the pre-quiz gate is active the effect above redirects to the quiz;
+  // render a placeholder so lesson content never flashes on screen.
+  if (quizGate.preQuiz && !quizGate.isPreSatisfied) {
+    return <MessageState message="Taking you to the pre-Spoylz quiz..." />;
+  }
+
   const heroImage = spoil.cover_image_url || HeroImage;
+  // A spoil may not have a community at all. When it does, `has_joined` tells
+  // us whether the current user is already a member.
+  const community = spoil.community;
+  const hasJoinedCommunity = community?.has_joined ?? false;
   const activeLessonIsCompleted = activeLesson
     ? activeLesson.status === "completed"
     : false;
@@ -112,6 +148,25 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     }
 
     router.push(`/spoil/${spoil.id}`);
+  };
+
+  const handleCommunityAction = async () => {
+    if (!community) return;
+
+    // Already a member -> take them to the community area.
+    if (hasJoinedCommunity) {
+      router.push("/community");
+      return;
+    }
+
+    // Not a member yet -> join, then refresh spoil details so the button
+    // flips to "View Community".
+    if (isJoiningCommunity) return;
+
+    const response = await joinCommunityHandler(community.id);
+    if (response) {
+      await queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
+    }
   };
 
   const handleToggleModule = (moduleId: number) => {
@@ -139,12 +194,24 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     setActiveLessonId(lesson.id);
   };
 
+  // Make the lesson active, then open its content in a new tab — the same
+  // behaviour as the hero play button, triggered from the sidebar "Open".
+  const handleOpenLesson = (module: SpoilModule, lesson: SpoilLesson) => {
+    handleSelectLesson(module, lesson);
+
+    if (lesson.content_url) {
+      // Open the file inline in the panel (same as the hero "open" action).
+      setOpenedLessonId(lesson.id);
+    }
+  };
+
   const handleOpenLessonContent = () => {
     if (!activeLesson?.content_url) {
       return;
     }
 
-    window.open(activeLesson.content_url, "_blank", "noopener,noreferrer");
+    // Show the file inline in the panel instead of opening a new tab.
+    setOpenedLessonId(activeLesson.id);
   };
 
   const handleCompleteLesson = async () => {
@@ -161,10 +228,21 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     if (!response) {
       return;
     }
+
+    // Celebrate the completed lesson; the card offers the certificate when one
+    // is available (has_certificate === 1).
+    setIsCongratsOpen(true);
   };
 
   const handleCompleteSpoil = async () => {
     if (isCompletingSpoil) {
+      return;
+    }
+
+    // Post-quiz gate: the learner must take the post-Spoylz quiz before the
+    // spoil can be marked complete.
+    if (quizGate.postQuiz && !quizGate.isPostSatisfied) {
+      router.push(`/spoil/${spoil.id}/post-spoil-quiz`);
       return;
     }
 
@@ -193,13 +271,21 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
               Chat Tutor
             </Button>
 
-            <Button
-              variant="darkBlue"
-              className="gap-2 rounded-[14px] px-5 py-3"
-              iconRight={<Image src={ArrowRightIcon} alt="" width={16} height={16} />}
-            >
-              Join Community
-            </Button>
+            {community && (
+              <Button
+                variant="darkBlue"
+                className="gap-2 rounded-[14px] px-5 py-3"
+                iconRight={<Image src={ArrowRightIcon} alt="" width={16} height={16} />}
+                onClick={handleCommunityAction}
+                disabled={isJoiningCommunity}
+              >
+                {hasJoinedCommunity
+                  ? "View Community"
+                  : isJoiningCommunity
+                    ? "Joining..."
+                    : "Join Community"}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -219,6 +305,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
               spoil={spoil}
               onCompleteSpoil={handleCompleteSpoil}
               onHide={() => setIsSidebarVisible(false)}
+              onOpenLesson={handleOpenLesson}
               onSelectLesson={handleSelectLesson}
               onSelectModule={handleSelectModule}
               onToggleModule={handleToggleModule}
@@ -243,15 +330,26 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
               isCompletingLesson={isCompletingLesson}
               completedLessonsCount={completedLessonsCount}
               heroImage={heroImage}
+              isContentOpen={
+                !!activeLesson && openedLessonId === activeLesson.id
+              }
               learningItems={learningItems}
               spoil={spoil}
               totalLessons={totalLessons}
+              onCloseContent={() => setOpenedLessonId(null)}
               onCompleteLesson={handleCompleteLesson}
               onOpenLessonContent={handleOpenLessonContent}
             />
           </div>
         </div>
       </div>
+
+      <CongratulationsModal
+        open={isCongratsOpen}
+        onClose={() => setIsCongratsOpen(false)}
+        hasCertificate={Number(spoil?.has_certificate) === 1}
+        spoilId={spoil.id}
+      />
     </section>
   );
 }

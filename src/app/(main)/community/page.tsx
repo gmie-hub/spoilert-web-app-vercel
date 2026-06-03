@@ -1,5 +1,10 @@
+import ProtectedRoute from "@spt/components/ProtectedRoute";
 import CommunityPage from "@spt/screens/main/community";
 
 export default function CommunityRoutePage() {
-  return <CommunityPage />;
+  return (
+    <ProtectedRoute>
+      <CommunityPage />
+    </ProtectedRoute>
+  );
 }

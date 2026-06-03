@@ -40,7 +40,8 @@ const InstitutionSpoils = () => {
         <p className="text-center text-red-500 text-sm py-4">{errorMessage}</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 w-full">
+      {/* 1 card per row on sm/md, 2 per row from lg upward */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 w-full">
         {!isLoading && data?.data?.data?.slice(0, 6)?.map((spoil, index) => (
           <motion.div
             key={spoil.id}

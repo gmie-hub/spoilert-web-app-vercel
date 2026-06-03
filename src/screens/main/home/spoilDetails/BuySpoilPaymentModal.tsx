@@ -13,10 +13,11 @@ interface BuySpoilPaymentModalProps {
   certificateFee?: number;
   adminCharges?: number;
   vatRate?: number;
-  // allow payment handler to return a response (e.g. payment link) if needed
-  // callers may return Promise<any> from the handler
+  // navigates to the payment gateway link returned by the endpoint
   onMakePayment?: () => void | Promise<any>;
   isMakingPayment?: boolean;
+  // response data returned by the buy-spoil endpoint
+  paymentData?: any;
 }
 
 const formatNaira = (value: number) => {
@@ -36,11 +37,29 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
   vatRate = 0.075,
   onMakePayment,
   isMakingPayment = false,
+  paymentData,
 }) => {
   const [discountCode, setDiscountCode] = useState("");
-  const vatAmount = costFee * vatRate;
   const discount = 0;
-  const total = costFee + adminCharges + certificateFee + vatAmount - discount;
+
+  const payment = paymentData?.payment;
+  const paymentLink = payment?.payment_link;
+  const paymentReference = payment?.reference ?? payment?.tx_ref;
+  const isGatewayReady = Boolean(paymentLink);
+
+  // prefer the fees returned by the endpoint; fall back to prop-based calc
+  const charges = payment?.charges;
+  const costFeeValue = Number(charges?.net_amount ?? costFee);
+  const adminChargesValue = Number(charges?.admin_charge ?? adminCharges);
+  const certificateFeeValue = Number(charges?.certificate_fee ?? certificateFee);
+  const vatAmount = Number(charges?.tax_amount ?? costFee * vatRate);
+  const total = Number(
+    payment?.amount ??
+      costFeeValue + adminChargesValue + certificateFeeValue + vatAmount - discount,
+  );
+  const vatPercentLabel = costFeeValue
+    ? Math.round((vatAmount / costFeeValue) * 1000) / 10
+    : Math.round(vatRate * 1000) / 10;
 
   return (
     <Modal open={open} onClose={onClose} title="Payment Summary" size="md">
@@ -52,21 +71,21 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
           <p className="text-[#4B5563]">Cost Fee</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(costFee)}</p>
+          <p className="font-semibold text-[#1F2937]">{formatNaira(costFeeValue)}</p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
           <p className="text-[#4B5563]">Admin charges</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(adminCharges)}</p>
+          <p className="font-semibold text-[#1F2937]">{formatNaira(adminChargesValue)}</p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
           <p className="text-[#4B5563]">Certificate Fee</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(certificateFee)}</p>
+          <p className="font-semibold text-[#1F2937]">{formatNaira(certificateFeeValue)}</p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
-          <p className="text-[#4B5563]">V.A.T ({Math.round(vatRate * 1000) / 10}%)</p>
+          <p className="text-[#4B5563]">V.A.T ({vatPercentLabel}%)</p>
           <p className="font-semibold text-[#1F2937]">{formatNaira(vatAmount)}</p>
         </div>
 
@@ -96,13 +115,24 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
           <p className="text-2xl font-bold text-[#111827]">{formatNaira(total)}</p>
         </div>
 
+        {paymentReference && (
+          <div className="flex items-center justify-between rounded-xl bg-[#F9FAFB] px-4 py-3">
+            <p className="text-[#4B5563]">Payment Reference</p>
+            <p className="font-medium text-[#1F2937]">{paymentReference}</p>
+          </div>
+        )}
+
         <Button
           variant="darkBlue"
           className="w-full !py-4"
-          disabled={isMakingPayment}
+          disabled={isMakingPayment || !isGatewayReady}
           onClick={onMakePayment}
         >
-          {isMakingPayment ? "Processing..." : "Make Payment"}
+          {isMakingPayment
+            ? "Initializing payment..."
+            : isGatewayReady
+              ? "Make Payment"
+              : "Preparing payment..."}
         </Button>
       </div>
     </Modal>

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import editIcon from "@spt/assets/icons/white-edit.svg";
 import Button from "@spt/components/button";
 import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplateQuery";
+import { useAuthStore } from "@spt/store/authStore";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import CertificateTemplatePreview from "../../components/CertificateTemplatePreview";
@@ -34,6 +35,10 @@ const CertificateSection: FC<CertificateSectionProps> = ({
   const certificateCustomization = useCreateSpoilStore(
     (state) => state.certificateCustomization,
   );
+  // While creating a new spoil there is no `spoilId` in the URL yet; the draft's
+  // id lives here. Fall back to it so the certificate flow stays linked to the
+  // spoil being created and we can return to its details.
+  const createdSpoilId = useAuthStore((state) => state.createdSpoilId);
   const { data: spoilTemplate } = useGetSpoilTemplateQuery();
 
   useEffect(() => {
@@ -60,7 +65,8 @@ const CertificateSection: FC<CertificateSectionProps> = ({
     : certificateTemplate;
 
   const handleCustomize = () => {
-    const spoilIdParam = spoilId ? `&spoilId=${spoilId}` : "";
+    const resolvedSpoilId = spoilId ?? createdSpoilId;
+    const spoilIdParam = resolvedSpoilId ? `&spoilId=${resolvedSpoilId}` : "";
 
     router.push(
       resolvedTemplate
@@ -99,7 +105,7 @@ const CertificateSection: FC<CertificateSectionProps> = ({
           {resolvedTemplate && (
             <Image src={editIcon} alt="Edit" width={24} height={23} />
           )}
-          {resolvedTemplate ? "Edit Certificate" : "Customize Certificate"}
+          {resolvedTemplate ? "Edit Certificate" : "Select Certificate"}
         </Button>
       </div>
     </div>

@@ -37,10 +37,12 @@ const mapToLearningItem = (
       id?: number;
       title?: string;
       cover_image_url?: string;
+      has_certificate?: number | boolean;
       category?: {
         name?: string;
       } | null;
     } | null;
+    has_certificate?: number | boolean;
     title?: string;
     spoil_title?: string;
     cover_image_url?: string;
@@ -55,8 +57,8 @@ const mapToLearningItem = (
   },
 ): LearningItem => ({
   id: spoil.spoil?.id || spoil.spoil_id || spoil.id,
-  title: spoil.spoil?.title || spoil.title || spoil.spoil_title || "Untitled Spoil",
-  category: spoil.spoil?.category?.name || spoil.category?.name || spoil.category_name || "General",
+  title: spoil.spoil?.title || spoil.title || spoil.spoil_title || "",
+  category: spoil.spoil?.category?.name || spoil.category?.name || spoil.category_name || "",
   coverImage:
     spoil.spoil?.cover_image_url ||
     spoil.cover_image_url ||
@@ -66,6 +68,9 @@ const mapToLearningItem = (
     toNumber(spoil.percentage_completed) ??
       toNumber(spoil.progress_percentage) ??
       toNumber(spoil.progress),
+  ),
+  hasCertificate: Boolean(
+    Number(spoil.spoil?.has_certificate ?? spoil.has_certificate ?? 0),
   ),
   raw: spoil,
 });

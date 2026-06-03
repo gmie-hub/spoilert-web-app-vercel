@@ -80,7 +80,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-sm font-medium text-[#20262D] hover:opacity-70 transition-opacity"
+          className="cursor-pointer flex items-center gap-1.5 text-sm font-medium text-[#20262D] hover:opacity-70 transition-opacity"
         >
           <FiArrowLeft size={16} />
           Back
@@ -103,7 +103,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
               type="button"
               disabled={isCreatingCommunity}
               onClick={() => createCommunityHandler({ spoil_id: spoil.id })}
-              className="flex items-center gap-1.5 bg-[#0B5368] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#09485A] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="cursor-pointer flex items-center gap-1.5 bg-[#0B5368] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#09485A] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isCreatingCommunity ? "Creating..." : "Create Community"}
               {!isCreatingCommunity && <FiChevronRight size={14} />}

@@ -7,8 +7,10 @@ import PolygonIcon from "@spt/assets/icons/Polygon 1.svg";
 import Button from "@spt/components/button";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
+import LessonContentViewer from "./LessonContentViewer";
 import {
   type SpoilLesson,
+  getLessonTypeLabel,
   getTutorInitials,
   getTutorName,
 } from "./startSpoilUtils";
@@ -19,9 +21,11 @@ interface StartSpoilContentPanelProps {
   isCompletingLesson: boolean;
   completedLessonsCount: number;
   heroImage: string | StaticImageData;
+  isContentOpen: boolean;
   learningItems: string[];
   spoil: SpoilDetailsData;
   totalLessons: number;
+  onCloseContent: () => void;
   onCompleteLesson: () => void;
   onOpenLessonContent: () => void;
 }
@@ -32,47 +36,71 @@ export const StartSpoilContentPanel = ({
   isCompletingLesson,
   completedLessonsCount,
   heroImage,
+  isContentOpen,
   learningItems,
   spoil,
   totalLessons,
+  onCloseContent,
   onCompleteLesson,
   onOpenLessonContent,
 }: StartSpoilContentPanelProps) => {
   const tutorName = getTutorName(spoil);
   const spoilDescription = spoil?.description?.trim() || "";
+  const canOpenContent = Boolean(activeLesson?.content_url);
+  // The play overlay only makes sense for video lessons; other file types
+  // (pdf, image, etc.) still open by clicking the hero.
+  const isVideoLesson = activeLesson?.type === "video";
 
   return (
     <div className="min-w-0">
-      <div className="relative overflow-hidden rounded-[24px] bg-[#EDEDED]">
-        <div className="relative aspect-[16/9] min-h-[240px] w-full">
-          <Image
-            src={heroImage}
-            alt={activeLesson?.title || spoil?.title}
-            fill
-            sizes="(max-width: 1024px) 100vw, 70vw"
-            className="object-cover"
-            priority
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-black/10" />
-
-          <div className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#013B4D]">
-            {activeLesson?.type ?? "lesson"}
+      {isContentOpen && activeLesson?.content_url ? (
+        <div className="relative overflow-hidden rounded-[24px] bg-black">
+          <div className="relative aspect-[16/9] min-h-[240px] w-full">
+            <LessonContentViewer lesson={activeLesson} />
           </div>
 
           <button
             type="button"
-            onClick={onOpenLessonContent}
-            disabled={!activeLesson?.content_url}
-            className={`absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white text-[#013B4D] shadow-[0_12px_40px_rgba(0,0,0,0.18)] transition-transform ${
-              activeLesson?.content_url ? "cursor-pointer hover:scale-105" : "cursor-default"
-            }`}
-            aria-label="Open lesson content"
+            onClick={onCloseContent}
+            className="absolute right-3 top-3 z-10 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#013B4D] shadow hover:bg-white"
           >
-            <FiPlay size={30} className="translate-x-[2px]" />
+            Close
           </button>
         </div>
-      </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpenLessonContent}
+          disabled={!canOpenContent}
+          aria-label="Open lesson content"
+          className={`group relative block w-full overflow-hidden rounded-[24px] bg-[#EDEDED] ${
+            canOpenContent ? "cursor-pointer" : "cursor-default"
+          }`}
+        >
+          <div className="relative aspect-[16/9] min-h-[240px] w-full">
+            <Image
+              src={heroImage}
+              alt={activeLesson?.title || spoil?.title}
+              fill
+              sizes="(max-width: 1024px) 100vw, 70vw"
+              className="object-cover"
+              priority
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-black/10" />
+
+            <div className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#013B4D]">
+              {getLessonTypeLabel(activeLesson)}
+            </div>
+
+            {isVideoLesson && (
+              <span className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white text-[#013B4D] shadow-[0_12px_40px_rgba(0,0,0,0.18)] transition-transform group-hover:scale-105">
+                <FiPlay size={30} className="translate-x-[2px]" />
+              </span>
+            )}
+          </div>
+        </button>
+      )}
 
       <div className="mt-7">
         <div>
