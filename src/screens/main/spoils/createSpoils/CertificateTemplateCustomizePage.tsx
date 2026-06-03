@@ -167,7 +167,11 @@ export default function CertificateTemplateCustomizePage() {
     }
 
     if (!resolvedSpoilId) {
-      toast.error("Create or load a Spoylz before saving its certificate.");
+      // The certificate can only be saved once the Spoylz exists on the server
+      // (the save endpoint needs a spoil id). Instead of dead-ending here, keep
+      // the design in the draft and send the user back to finish creating it.
+      toast.error("Please create your Spoylz first, then save its certificate.");
+      router.push(getReviewRoute());
       return;
     }
 

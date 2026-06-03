@@ -29,18 +29,30 @@ export const getSpoilQuizByType = ({
   quizData,
   spoilQuizzes,
   type = "pre",
+  moduleId,
 }: {
   quizData?: QuizDatum[];
   spoilQuizzes?: QuizDatum[];
   type?: string;
+  moduleId?: number | string | null;
 }) => {
   const wanted = String(type ?? "pre").toLowerCase();
 
-  return (
-    quizData?.find((quiz) => quiz.type?.toLowerCase() === wanted) ??
-    spoilQuizzes?.find((quiz) => quiz.type?.toLowerCase() === wanted) ??
-    null
-  );
+  const matches = (quiz: QuizDatum) => {
+    if (quiz.type?.toLowerCase() !== wanted) return false;
+
+    // Module quizzes are keyed by module — match the requested module only.
+    if (moduleId != null) {
+      return (
+        Number((quiz as { module_id?: number | null }).module_id) ===
+        Number(moduleId)
+      );
+    }
+
+    return true;
+  };
+
+  return quizData?.find(matches) ?? spoilQuizzes?.find(matches) ?? null;
 };
 
 export const normalizeQuestions = (
