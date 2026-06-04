@@ -16,6 +16,7 @@ export default async function ProfileSectionPage({ params }: ProfileSectionPageP
 
   if (!isProfileSection(section)) {
     notFound();
+    
   }
 
   return <ProfileSectionContent section={section} />;
