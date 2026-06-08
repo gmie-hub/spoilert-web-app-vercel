@@ -42,10 +42,16 @@ function DetailCell({
   );
 }
 
-export default function VerifyCertificatePage() {
+export default function VerifyCertificatePage({
+  initialCertificateId,
+}: {
+  initialCertificateId?: string;
+}) {
   const router = useRouter();
-  const [inputValue, setInputValue] = useState("");
-  const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState(initialCertificateId ?? "");
+  const [submittedId, setSubmittedId] = useState<string | null>(
+    initialCertificateId ?? null,
+  );
 
   const { data, isLoading, isError } = useVerifyCertificateQuery(submittedId);
 
