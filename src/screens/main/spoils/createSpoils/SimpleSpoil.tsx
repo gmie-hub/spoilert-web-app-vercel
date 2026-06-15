@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import useCreateSpoilMutation from "@spt/hooks/apiRequests/useCreateSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useUpdateLessonMutation from "@spt/hooks/apiRequests/useUpdateLessonMutation";
 import useUpdateSpoilMutation from "@spt/hooks/apiRequests/useUpdateSpoilMutation";
 import { useAuthStore } from "@spt/store/authStore";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
@@ -49,6 +50,7 @@ const SimpleSpoil = () => {
 
   const { createSpoilHandler } = useCreateSpoilMutation();
   const { updateSpoilHandler } = useUpdateSpoilMutation();
+  const { updateLessonHandler } = useUpdateLessonMutation();
   const { data: spoilData, isLoading: isSpoilLoading } =
     useGetSpoilDetailsQuery(spoilIdParam);
   const createdSpoilId = useAuthStore((s) => s.createdSpoilId);
@@ -116,6 +118,27 @@ const SimpleSpoil = () => {
           },
           { setSubmitting: () => {} },
         );
+
+        // Updating the spoil alone doesn't persist its lesson, so push the
+        // simple-spoil lesson (text content or replacement file) through the
+        // dedicated lesson endpoint. A simple spoil has exactly one lesson.
+        const lesson = spoilData?.modules?.[0]?.lessons?.[0];
+        if (lesson?.id) {
+          const isText = basicsData.lessonType === "text";
+          await updateLessonHandler({
+            lessonId: lesson.id,
+            title: lesson.title,
+            // Keep the original concrete type (pdf/video/...) for file lessons;
+            // the update endpoint uses it to decide between content and file.
+            type: isText ? "text" : (lesson.type ?? "file"),
+            content: isText ? basicsData.lessonContent : undefined,
+            file:
+              !isText && basicsData.lessonFile instanceof File
+                ? basicsData.lessonFile
+                : null,
+            description: lesson.description ?? "",
+          });
+        }
       } catch {
         return;
       }

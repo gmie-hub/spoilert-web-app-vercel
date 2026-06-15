@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.app.spoilert",
+      "sha256_cert_fingerprints": [
+        "CC:62:5B:5B:50:26:31:A3:01:67:E5:02:64:2B:F2:8D:66:D9:4B:DA:CA:B8:6B:F9:B7:2A:42:8F:12:E8:FD:39",
+        "0A:44:5A:D6:BD:56:14:C4:58:57:D1:44:91:66:F5:0C:1A:AF:16:08:59:8C:E6:B2:2F:6E:E3:FB:EE:A2:1E:A7"
+      ]
+    }
+  }
+]

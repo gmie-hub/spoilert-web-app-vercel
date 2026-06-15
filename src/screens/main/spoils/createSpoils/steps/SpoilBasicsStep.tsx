@@ -7,8 +7,8 @@ import { Form, Formik } from "formik";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
+import RichTextEditor from "@spt/components/richTextEditor";
 import Select from "@spt/components/select";
-import Textarea from "@spt/components/textarea";
 import useGetSpoilByIdQuery from "@spt/hooks/apiRequests/getSpoilByIdQuery";
 import { useGetAllCategoriesQuery } from "@spt/hooks/apiRequests/useGetAllCategoriesQuery";
 import { useAuthStore } from "@spt/store/authStore";
@@ -267,10 +267,9 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                   />
 
                   {values.lessonType === "text" ? (
-                    <Textarea
+                    <RichTextEditor
                       name="lessonContent"
                       label="Lesson Content"
-                      rows={5}
                       placeholder="Type in content"
                     />
                   ) : (

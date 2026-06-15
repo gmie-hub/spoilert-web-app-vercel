@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["632C37QKZN.com.app.spoliert"],
+        "components": [
+          {
+            "/": "/spoil/*",
+            "comment": "Spoil deep links open the Spoilert app"
+          }
+        ]
+      }
+    ]
+  }
+}
