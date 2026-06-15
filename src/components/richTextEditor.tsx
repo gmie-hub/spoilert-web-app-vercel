@@ -7,9 +7,9 @@ import { useField } from "formik";
 import {
   FiBold,
   FiItalic,
-  FiUnderline,
-  FiList,
   FiLink,
+  FiList,
+  FiUnderline,
 } from "react-icons/fi";
 import { LuListOrdered } from "react-icons/lu";
 
@@ -53,7 +53,7 @@ const RichTextEditor: FC<RichTextEditorProps> = ({
     if (el && el.innerHTML !== (field.value ?? "")) {
       el.innerHTML = field.value ?? "";
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [field.value]);
 
   const syncToFormik = () => {
