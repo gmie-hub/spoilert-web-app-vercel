@@ -45,14 +45,14 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
         <p className="mt-1 text-[16px] font-semibold text-[#20262D] md:text-[18px]">
           {spoil.pricing === "free"
             ? "Free"
-            : `₦${(spoil.display_amount ?? spoil.amount ?? 0).toLocaleString()}`}
+            : `₦${(spoil?.display_amount ?? spoil.amount ?? 0).toLocaleString()}`}
         </p>
 
         <div className="mt-2 flex items-center gap-2 text-[13px] text-[#6D7A86]">
           <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#EDF3F6]">
-            {spoil.tutor?.avatar ? (
+            {spoil?.tutor?.avatar ? (
               <Image
-                src={spoil.tutor.avatar}
+                src={spoil?.tutor?.avatar}
                 alt={tutorName || "Tutor"}
                 fill
                 className="object-cover"

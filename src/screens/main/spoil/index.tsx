@@ -122,14 +122,14 @@ export default function SpoilOverview({ spoilId }: SpoilOverviewProps) {
 
           <div className="mt-6 rounded-2xl bg-[#F7F7F7] p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-black">
-              {spoil.title}
+              {spoil?.title}
             </h2>
 
             <div className="mt-4 flex items-center gap-2 text-sm text-[#6B7280]">
-              {spoil.tutor?.avatar ? (
+              {spoil?.tutor?.avatar ? (
                 <div className="relative h-6 w-6 overflow-hidden rounded-full bg-gray-200">
                   <Image
-                    src={spoil.tutor.avatar}
+                    src={spoil?.tutor?.avatar}
                     alt={tutorName}
                     fill
                     sizes="24px"

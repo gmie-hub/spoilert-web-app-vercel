@@ -88,11 +88,11 @@ export default function ChatWithTutor({ spoilId }: Props) {
   if (isLoading) return <LoadingState />;
   if (!spoil) return null;
 
-  const tutor = spoil.tutor;
-  const tutorName = `${tutor.first_name} ${tutor.last_name}`.trim();
-  const tutorAvatar = tutor.avatar ?? null;
+  const tutor = spoil?.tutor;
+  const tutorName = `${tutor?.first_name} ${tutor?.last_name}`.trim();
+  const tutorAvatar = tutor?.avatar ?? null;
   const tutorInitial = tutorName[0] ?? "T";
-  const expertise = spoil.category?.name ?? null;
+  const expertise = spoil?.category?.name ?? null;
   const relatedSpoils: RelatedSpoilItem[] = spoil.related_spoils ?? [];
 
   return (

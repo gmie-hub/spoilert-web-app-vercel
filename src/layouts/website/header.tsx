@@ -228,7 +228,7 @@ const Header = () => {
                 type="button"
               >
                 <Image
-                  src={authUser.avatar || UserImage}
+                  src={authUser?.avatar || UserImage}
                   alt="user"
                   width={24}
                   height={24}
