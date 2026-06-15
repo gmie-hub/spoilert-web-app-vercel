@@ -3,10 +3,21 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.app.spoilert",
+      "package_name": "com.example.spoilert.staging",
       "sha256_cert_fingerprints": [
-        "CC:62:5B:5B:50:26:31:A3:01:67:E5:02:64:2B:F2:8D:66:D9:4B:DA:CA:B8:6B:F9:B7:2A:42:8F:12:E8:FD:39",
-        "0A:44:5A:D6:BD:56:14:C4:58:57:D1:44:91:66:F5:0C:1A:AF:16:08:59:8C:E6:B2:2F:6E:E3:FB:EE:A2:1E:A7"
+        "0A:44:5A:D6:BD:56:14:C4:58:57:D1:44:91:66:F5:0C:1A:AF:16:08:59:8C:E6:B2:2F:6E:E3:FB:EE:A2:1E:A7",
+        "EB:CE:31:C0:93:FD:4D:3C:57:42:F4:DB:76:9D:E0:37:55:D1:BB:6F:0C:4C:94:3A:54:C3:91:79:CF:80:80:45"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.spoilert.dev",
+      "sha256_cert_fingerprints": [
+        "0A:44:5A:D6:BD:56:14:C4:58:57:D1:44:91:66:F5:0C:1A:AF:16:08:59:8C:E6:B2:2F:6E:E3:FB:EE:A2:1E:A7",
+        "EB:CE:31:C0:93:FD:4D:3C:57:42:F4:DB:76:9D:E0:37:55:D1:BB:6F:0C:4C:94:3A:54:C3:91:79:CF:80:80:45"
       ]
     }
   }
