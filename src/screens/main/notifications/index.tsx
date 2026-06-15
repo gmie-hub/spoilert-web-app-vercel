@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { type FC, useState } from "react";
@@ -9,10 +7,8 @@ import { useRouter } from "next/navigation";
 
 import BackIcon from "@spt/assets/icons/arrow-left.svg";
 import TrashIcon from "@spt/assets/icons/trash.svg";
-import Button from "@spt/components/button";
 import Card from "@spt/components/card";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
-import Modal from "@spt/components/modal";
 import NoData from "@spt/components/noData";
 import useClearNotificationsMutation from "@spt/hooks/apiRequests/useClearNotificationsMutation";
 import useGetNotificationsQuery, {
@@ -38,130 +34,12 @@ const formatDate = (iso: string) => {
   });
 };
 
-const isRejectionNotification = (n: UserNotification) =>
-  n.title.toLowerCase().includes("reject") ||
-  n.title.toLowerCase().includes("failed");
-
-const isSuccessNotification = (n: UserNotification) =>
-  n.title.toLowerCase().includes("approv") ||
-  n.title.toLowerCase().includes("verified") ||
-  n.title.toLowerCase().includes("success");
-
-const RejectionIcon = () => (
-  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M18 6L6 18M6 6l12 12"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  </div>
-);
-
-const SuccessIcon = () => (
-  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M5 13l4 4L19 7"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  </div>
-);
-
-const InfoIcon = () => (
-  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#013B4D]">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 16v-4m0-4h.01"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  </div>
-);
-
-interface NotificationDetailModalProps {
-  notification: UserNotification | null;
-  onClose: () => void;
-}
-
-const NotificationDetailModal: FC<NotificationDetailModalProps> = ({
-  notification,
-  onClose,
-}) => {
-  const router = useRouter();
-
-  if (!notification) return null;
-
-  const isRejection = isRejectionNotification(notification);
-  const isSuccess = isSuccessNotification(notification);
-
-  const icon = isRejection ? (
-    <RejectionIcon />
-  ) : isSuccess ? (
-    <SuccessIcon />
-  ) : (
-    <InfoIcon />
-  );
-
-  return (
-    <Modal open={!!notification} onClose={onClose} size="sm">
-      <div className="flex flex-col items-center gap-4 py-2 text-center">
-        {icon}
-
-        <p className="text-xl font-semibold text-black">{notification.title}</p>
-
-        <p className="text-sm text-gray-500">{notification.body}</p>
-
-        <div className="w-full space-y-3 pt-2">
-          {isRejection && notification.type === "spoil_status" && (
-            <Button
-              type="button"
-              onClick={onClose}
-              className="w-full bg-[#013B4D] text-white hover:bg-[#013B4D]/90"
-            >
-              Edit and Resubmit
-            </Button>
-          )}
-
-          {notification.route && (
-            <Button
-              type="button"
-              onClick={() => {
-                router.push(notification.route);
-                onClose();
-              }}
-              className="w-full bg-[#013B4D] text-white hover:bg-[#013B4D]/90"
-            >
-              View Details
-            </Button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="w-full text-sm font-medium text-[#013B4D]"
-          >
-            Back to Homepage
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
 const NotificationsPage: FC = () => {
   const router = useRouter();
 
-  const [selectedNotification, setSelectedNotification] =
-    useState<UserNotification | null>(null);
+  // Which row is currently expanded; null when all are collapsed. FAQ-style:
+  // only one notification is open at a time.
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [showClearModal, setShowClearModal] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -178,8 +56,9 @@ const NotificationsPage: FC = () => {
     return <ErrorState message={getErrorMessage(error)} />;
   }
 
+  // Toggle the clicked row open/closed, and mark it read the first time it opens.
   const handleNotificationClick = (n: UserNotification) => {
-    setSelectedNotification(n);
+    setExpandedId((prev) => (prev === n.id ? null : n.id));
     if (!n.is_read) {
       readNotificationsHandler([n.id]);
     }
@@ -239,50 +118,94 @@ const NotificationsPage: FC = () => {
               </div>
             ) : (
               <div className="mt-6 space-y-4">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    onClick={() => handleNotificationClick(n)}
-                    className={`cursor-pointer rounded-2xl border ${
-                      !n.is_read
-                        ? "bg-[#EAF6F9] border-transparent"
-                        : "bg-white border-[#EFEFEF]"
-                    } p-4`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#F0FAFB]">
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M12 22c1.1046 0 2-.8954 2-2h-4c0 1.1046.8954 2 2 2z"
-                              fill="#9BBFD0"
-                            />
-                            <path
-                              d="M18 16v-5c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 10-3 0v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-                              fill="#9BBFD0"
-                            />
-                          </svg>
+                {notifications.map((n) => {
+                  const isExpanded = expandedId === n.id;
+                  return (
+                    <div
+                      key={n.id}
+                      className={`overflow-hidden rounded-2xl border ${
+                        !n.is_read
+                          ? "bg-[#EAF6F9] border-transparent"
+                          : "bg-white border-[#EFEFEF]"
+                      }`}
+                    >
+                      {/* Header row — the accordion trigger */}
+                      <button
+                        type="button"
+                        onClick={() => handleNotificationClick(n)}
+                        aria-expanded={isExpanded}
+                        className="flex w-full items-start justify-between gap-4 p-4 text-left"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#F0FAFB]">
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M12 22c1.1046 0 2-.8954 2-2h-4c0 1.1046.8954 2 2 2z"
+                                fill="#9BBFD0"
+                              />
+                              <path
+                                d="M18 16v-5c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 10-3 0v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                                fill="#9BBFD0"
+                              />
+                            </svg>
+                          </div>
+
+                          <div>
+                            <p className="text-sm font-medium text-black">
+                              {n.title}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-500">
+                              {formatDate(n.created_at)}
+                            </p>
+                          </div>
                         </div>
 
-                        <div>
-                          <p className="text-sm font-medium text-black">
-                            {n.title}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            {formatDate(n.created_at)}
-                          </p>
+                        <span
+                          className={`mt-1 shrink-0 text-lg leading-none text-[#9AA6AA] transition-transform duration-300 ${
+                            isExpanded ? "rotate-90" : ""
+                          }`}
+                        >
+                          ›
+                        </span>
+                      </button>
+
+                      {/* Expandable body — animates open like an FAQ */}
+                      <div
+                        className={`grid transition-all duration-300 ease-in-out ${
+                          isExpanded
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0"
+                        }`}
+                      >
+                        <div className="overflow-hidden">
+                          <div className="px-4 pb-4 pl-[68px]">
+                            <p className="text-sm leading-relaxed text-gray-600">
+                              {n.body}
+                            </p>
+
+                            {n.route && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(n.route);
+                                }}
+                                className="mt-3 text-sm font-medium text-[#013B4D] hover:underline"
+                              >
+                                View Details
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
-
-                      <span className="text-sm text-[#9AA6AA]">›</span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -314,11 +237,6 @@ const NotificationsPage: FC = () => {
           </Card>
         </div>
       </div>
-
-      <NotificationDetailModal
-        notification={selectedNotification}
-        onClose={() => setSelectedNotification(null)}
-      />
 
       <DeleteConfirmationModal
         open={showClearModal}

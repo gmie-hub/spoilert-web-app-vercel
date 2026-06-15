@@ -10,14 +10,12 @@ import { usePathname, useRouter } from "next/navigation";
 import CreateSpoilIcon from "@spt/assets/icons/add-circle.svg";
 import ArrowDownIcon from "@spt/assets/icons/arrow-down.svg";
 import Learnings from "@spt/assets/icons/book.svg";
-import ChatIcon from "@spt/assets/icons/chat.svg";
 import FilterIcon from "@spt/assets/icons/filter-search.svg";
 import FrameIcon from "@spt/assets/icons/Frame 1618872992.svg";
 import Logo from "@spt/assets/icons/Group(2).svg";
 import Home from "@spt/assets/icons/home.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
 import CommunityIcon from "@spt/assets/icons/messages-2.svg";
-import NotificationIcon from "@spt/assets/icons/notification.svg";
 import ProfileNavIcon from "@spt/assets/icons/profileNav.svg";
 import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import UserImage from "@spt/assets/icons/user.svg";
@@ -27,6 +25,7 @@ import useClickOutside from "@spt/hooks/useClickOutside";
 import LoginPromptModal from "@spt/layouts/website/LoginPromptModal";
 import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
 import MobileMenu from "@spt/layouts/website/MobileMenu";
+import NotificationBell from "@spt/layouts/website/NotificationBell";
 import { useAuthStore } from "@spt/store/authStore";
 
 type NavLink = {
@@ -106,11 +105,6 @@ const Header = () => {
     }
   };
 
-
-  const icons = [
-    { alt: "notification", src: NotificationIcon },
-    { alt: "chat", src: ChatIcon },
-  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-[100px]">
@@ -223,40 +217,7 @@ const Header = () => {
 
         {hasHydrated && authUser && (
           <Stack direction="row" spacing={{ xs: 2, md: 2 }} alignItems="center" className="md:flex">
-            {icons.map((icon, index) => {
-              const handleIconClick = () => {
-                // navigate to notifications page when notification icon is clicked
-                if (icon.alt === "notification") {
-                  router.push("/notifications");
-                  return;
-                }
-
-                if (icon.alt === "chat") {
-                  router.push("/messages");
-                }
-              };
-
-              return (
-                <div
-                  key={index}
-                  role="button"
-                  onClick={handleIconClick}
-                  tabIndex={0}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") handleIconClick();
-                  }}
-                  className="bg-gray-faint h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center cursor-pointer"
-                >
-                  <Image
-                    src={icon.src}
-                    alt={icon.alt}
-                    width={14.5}
-                    height={14.5}
-                    className="md:h-[24px] md:w-[24px]"
-                  />
-                </div>
-              );
-            })}
+            <NotificationBell />
 
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>
