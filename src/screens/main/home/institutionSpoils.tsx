@@ -113,7 +113,7 @@ const InstitutionSpoils = () => {
                 <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
                   {spoil.tutor?.avatar ? (
                     <Image
-                      src={spoil.tutor.avatar}
+                      src={spoil?.tutor?.avatar}
                       alt="tutor"
                       className="object-cover"
                       width={40}

@@ -315,7 +315,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
               {spoil.tutor?.avatar ? (
                 <div className="relative h-6 w-6 overflow-hidden rounded-full bg-gray-200">
                   <Image
-                    src={spoil.tutor.avatar}
+                    src={spoil?.tutor?.avatar}
                     alt={tutorName}
                     fill
                     sizes="24px"
