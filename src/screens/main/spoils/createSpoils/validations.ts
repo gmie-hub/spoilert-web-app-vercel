@@ -8,7 +8,8 @@ const SUPPORTED_IMAGE_FORMATS = [
 ];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-export const basicsValidationSchema = yup.object({
+export const makeBasicsValidationSchema = (selectedType?: string) =>
+  yup.object({
   coverImage: yup
     .mixed()
     .required("Cover image is required")
@@ -60,4 +61,11 @@ amount: yup
   lessonCount: yup.string().trim().nullable(),
   description: yup.string().trim().required('required '),
   learningOutcome: yup.string().trim(),
-});
+  lessonType:
+    selectedType === "simple"
+      ? yup.string().trim().required("Select a lesson type")
+      : yup.string().trim().nullable(),
+  });
+
+// Backwards-compatible default (non-simple) schema.
+export const basicsValidationSchema = makeBasicsValidationSchema();

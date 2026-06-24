@@ -75,7 +75,14 @@ const Overview: FC<OverviewProps> = ({
 
       try {
         if (typeof window !== "undefined") {
-          const storageKey = quizType === "post" ? "postspoil-quiz-init" : "prespoil-quiz-init";
+          // pre → prespoil-quiz-init, post → postspoil-quiz-init,
+          // module → modulespoil-quiz-init (set when editing that module's quiz)
+          const storageKey =
+            quizType === "post"
+              ? "postspoil-quiz-init"
+              : quizType === "module"
+                ? "modulespoil-quiz-init"
+                : "prespoil-quiz-init";
           const presRaw = sessionStorage.getItem(storageKey);
           if (presRaw) {
               const pres = JSON.parse(presRaw);
@@ -84,7 +91,7 @@ const Overview: FC<OverviewProps> = ({
               init.numberOfQuestions = pres.numberOfQuestions ?? (pres.overview?.numberOfQuestions ? String(pres.overview.numberOfQuestions) : init.numberOfQuestions);
               init.timeLimit = pres.timeLimit ?? (pres.overview?.timeLimit ? String(pres.overview.timeLimit) : init.timeLimit);
               init.passmark = pres.passmark ?? (pres.overview?.passmark ? String(pres.overview.passmark) : init.passmark);
-          } else {
+          } else if (quizType === "pre" || quizType === "post") {
             const raw = sessionStorage.getItem("advanced-spoil-draft");
             if (raw) {
               const parsed = JSON.parse(raw);
@@ -121,7 +128,12 @@ const Overview: FC<OverviewProps> = ({
         onSubmit={(values) => {
           try {
             if (typeof window !== "undefined") {
-              const storageKey = quizType === "post" ? "postspoil-quiz-init" : "prespoil-quiz-init";
+              const storageKey =
+                quizType === "post"
+                  ? "postspoil-quiz-init"
+                  : quizType === "module"
+                    ? "modulespoil-quiz-init"
+                    : "prespoil-quiz-init";
               const presRaw = sessionStorage.getItem(storageKey);
               if (presRaw) {
                 try {
@@ -139,7 +151,7 @@ const Overview: FC<OverviewProps> = ({
                     JSON.stringify({ overview: values, ...values }),
                   );
                 }
-              } else {
+              } else if (quizType === "pre" || quizType === "post") {
                 const raw = sessionStorage.getItem("advanced-spoil-draft");
                 if (raw) {
                   try {
@@ -195,6 +207,13 @@ const Overview: FC<OverviewProps> = ({
                     JSON.stringify({ overview: values, ...values }),
                   );
                 }
+              } else {
+                // Module quiz: persist the overview into its own init key so the
+                // questions step and review keep it while editing.
+                sessionStorage.setItem(
+                  storageKey,
+                  JSON.stringify({ overview: values, ...values }),
+                );
               }
             }
           } catch (err) {

@@ -15,12 +15,24 @@ export interface Module {
   title: string;
   description: string;
   lessons: Lesson[];
+  /** Saved module quiz (overview + questions) once the tutor creates one. */
+  quiz?: ModuleQuiz | null;
 }
 
 export interface QuizConfig {
   id: string;
   title: string;
   description: string;
+}
+
+export interface ModuleQuiz {
+  id?: string;
+  title?: string;
+  description?: string;
+  overview?: unknown;
+  questions?: unknown[];
+  passmark?: string | number;
+  pass_mark?: string | number;
 }
 
 export interface OutlineData {

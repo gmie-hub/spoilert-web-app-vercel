@@ -15,8 +15,8 @@ import HStack from "@spt/components/hstack";
 import Stack from "@spt/components/stack";
 
 const info = [
-  { icon: SMSIcon, text: "support@spoilert.com" },
-  { icon: PhoneIcon, text: "09012345678" },
+  { icon: SMSIcon, text: "thespoilert@gmail.com" },
+  { icon: PhoneIcon, text: "+234 91 59894123" },
   {
     icon: LocationIcon,
     text: "18B, Onikepo Akande street, off Admiralty way, Lekki phase 1, Lagos, Nigeria",

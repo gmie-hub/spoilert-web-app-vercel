@@ -17,6 +17,8 @@ export const validations = {
 
   agreeToTerms: Yup.boolean().oneOf([true], "You must agree to terms"),
 
+  recaptcha: Yup.string().required("Please verify that you are not a robot"),
+
   password: Yup.string()
     .min(8, "Password must be at least 8 characters")
     .matches(/[A-Z]/, "Must contain an uppercase letter")

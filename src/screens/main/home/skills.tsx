@@ -11,7 +11,10 @@ const SkillPage = () => {
   const { data, isLoading, isError, errorMessage } = useGetInstitutionSpoilsQuery({ skill: true });
 
   return (
-    <WebsiteSection className="py-4 w-full bg-[#F4FCFF]">
+    <>
+    { data?.data?.data && data?.data?.data?.length > 0 && 
+      
+      <WebsiteSection className="py-4 w-full bg-[#F4FCFF]">
       <Stack>
         {/* Title */}
         <motion.h1
@@ -37,7 +40,9 @@ const SkillPage = () => {
           </div>
         )}
       </Stack>
-    </WebsiteSection>
+    </WebsiteSection>}
+    </>
+  
   );
 };
 

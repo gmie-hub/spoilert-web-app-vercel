@@ -10,8 +10,9 @@ import { useGetPublicPromotionsQuery } from "@spt/hooks/apiRequests/useGetPublic
 const PromotedSpoils = () => {
   const { activePromotions, isLoading, isError, errorMessage } = useGetPublicPromotionsQuery();
 
-  return (
-    <WebsiteSection className="py-4 w-full">
+  return (<>
+  {activePromotions && activePromotions?.length > 0 && (
+      <WebsiteSection className="py-4 w-full">
       <Stack>
         {/* Title */}
 
@@ -46,7 +47,9 @@ const PromotedSpoils = () => {
           </div>
         )}
       </Stack>
-    </WebsiteSection>
+    </WebsiteSection>)}
+    </>
+  
   );
 };
 

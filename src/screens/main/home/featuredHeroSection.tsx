@@ -125,19 +125,25 @@ const FeaturedHeroSection = () => {
                 Explore Spoylz, publish your own, learn, and earn on Spoilert.
               </p>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Button className="min-w-[172px] rounded-[14px] px-8 py-4 text-[16px] !bg-[#0C83A9] hover:!bg-[#0a6e8f]">
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button className="w-full sm:w-auto sm:grow sm:basis-[190px] rounded-[14px] px-4 py-4 text-[16px] !bg-[#0C83A9] hover:!bg-[#0a6e8f]">
                   Download App
                 </Button>
                 {!authUser && (
                   <Button
                     variant="blueOutline"
-                    className="min-w-[172px] rounded-[14px] border-[#0B5368] px-8 py-4 text-[16px]"
+                    className="w-full sm:w-auto sm:grow sm:basis-[190px] rounded-[14px] border-[#0B5368] px-4 py-4 text-[16px]"
                     onClick={() => router.push("/auth/signin")}
                   >
                     Get Started
                   </Button>
-                )}
+                 )} 
+                <Button
+                  className="w-full sm:w-auto sm:grow sm:basis-[190px] rounded-[14px] px-4 py-4 text-[16px] !bg-[#0C83A9] hover:!bg-[#0a6e8f]"
+                  onClick={() => router.push("/verify-certificate")}
+                >
+                  Verify Certificate
+                </Button>
               </div>
 
               <div className="mt-6 flex items-center gap-3">

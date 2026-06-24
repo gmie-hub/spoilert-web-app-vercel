@@ -17,6 +17,7 @@ const TrendingSpoil = () => {
     useGetInstitutionSpoilsQuery({ trending: true });
 
   return (
+    <>{data?.data?.data && data?.data?.data?.length > 0 && (
     <WebsiteSection className="my-10 w-full">
       <Stack className="gap-8 md:gap-12">
         <motion.h1
@@ -64,7 +65,7 @@ const TrendingSpoil = () => {
           Explore Spoylz
         </Button>
       </div>
-    </WebsiteSection>
+    </WebsiteSection>)}</>
   );
 };
 

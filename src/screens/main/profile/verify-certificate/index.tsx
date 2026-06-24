@@ -234,7 +234,7 @@ export default function VerifyCertificatePage({
           className="w-full mt-7"
           variant="darkBlue"
           onClick={handleVerify}
-          disabled={isLoading || !inputValue.trim()}
+          // disabled={isLoading}
         >
           {isLoading ? "Verifying..." : "Verify Certificate"}
         </Button>

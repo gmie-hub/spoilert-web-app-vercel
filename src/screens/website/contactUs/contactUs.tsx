@@ -60,9 +60,9 @@ export default function ContactSection() {
                 <div className="space-y-6">
                   <InfoItem
                     icon={ContactIcon5}
-                    text="support@spoilert.com"
+                    text="thespoilert@gmail.com"
                   />
-                  <InfoItem icon={ContactIcon6} text="+2348155656205" />
+                  <InfoItem icon={ContactIcon6} text="+234 91 59894123" />
                   <InfoItem
                     icon={ContactIcon7}
                     //   icon={<MapPin size={18} />}

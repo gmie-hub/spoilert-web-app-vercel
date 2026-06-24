@@ -9,6 +9,23 @@ import InfoItem from "./InfoItem";
 
 import type { BasicsFormData, SpoilTypeOption } from "../../types";
 
+// Lesson content comes from the rich-text editor as an HTML string. This review
+// row shows plain text, so convert the markup to readable text: turn block
+// boundaries into spaces, drop the tags, decode entities, and collapse spacing.
+const htmlToPlainText = (value?: string | null): string => {
+  if (!value) return "";
+
+  const spaced = value.replace(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi, " ");
+
+  const text =
+    typeof window !== "undefined" && typeof DOMParser !== "undefined"
+      ? (new DOMParser().parseFromString(spaced, "text/html").body
+          .textContent ?? "")
+      : spaced.replace(/<[^>]*>/g, "");
+
+  return text.replace(/\s+/g, " ").trim();
+};
+
 interface SpoilBasicsSectionProps {
   basics?: BasicsFormData;
   onEdit?: () => void;
@@ -166,11 +183,25 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
               <InfoItem
                 label="Spoylz Content"
                 value={
-                  basics?.lessonType === "text"
-                    ? (basics?.lessonContent ?? "n/a")
-                    : basics?.lessonFile && (basics.lessonFile as any).name
-                      ? (basics.lessonFile as any).name
-                      : "Uploaded File"
+                  basics?.lessonType === "text" ? (
+                    // Render the rich-text HTML so formatting (bold, lists, links)
+                    // shows instead of raw tags. Fall back to "n/a" when the
+                    // markup has no visible text.
+                    htmlToPlainText(basics?.lessonContent) ? (
+                      <span
+                        className="[&_a]:text-[var(--color-blue)] [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                        dangerouslySetInnerHTML={{
+                          __html: basics?.lessonContent ?? "",
+                        }}
+                      />
+                    ) : (
+                      "n/a"
+                    )
+                  ) : basics?.lessonFile && (basics.lessonFile as any).name ? (
+                    (basics.lessonFile as any).name
+                  ) : (
+                    "Uploaded File"
+                  )
                 }
               />
             </>
