@@ -55,6 +55,8 @@ const getPlainText = (value?: string) =>
     .trim()
     .slice(0, 200);
 
+// Next.js requires metadata generators to be exported from route files.
+// eslint-disable-next-line react-refresh/only-export-components
 export async function generateMetadata({
   params,
 }: SpoilDetailsByIdPageProps): Promise<Metadata> {

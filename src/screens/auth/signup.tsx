@@ -1,9 +1,10 @@
 "use client";
 
+import { useRef } from "react";
+
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { object } from "yup";
 
@@ -20,6 +21,11 @@ const SignUp = () => {
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const googleTestRecaptchaSiteKey =
+    "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+  const isUsingTestRecaptchaKey =
+    recaptchaSiteKey === googleTestRecaptchaSiteKey;
+  const isRecaptchaReady = Boolean(recaptchaSiteKey) && !isUsingTestRecaptchaKey;
 
   const validationSchema = object().shape({
     firstName: validations.firstName,
@@ -105,11 +111,11 @@ const SignUp = () => {
                 className="text-red-500 text-sm"
               />
 
-              {recaptchaSiteKey && (
+              {isRecaptchaReady ? (
                 <div>
                   <ReCAPTCHA
                     ref={recaptchaRef}
-                    sitekey={recaptchaSiteKey}
+                    sitekey={recaptchaSiteKey as string}
                     onChange={(token) =>
                       setFieldValue("recaptcha", token ?? "")
                     }
@@ -121,9 +127,19 @@ const SignUp = () => {
                     className="text-red-500 text-sm mt-1"
                   />
                 </div>
+              ) : (
+                <p className="text-red-500 text-sm">
+                  reCAPTCHA is not configured for live signup. Please add your
+                  real Google reCAPTCHA site key to
+                  NEXT_PUBLIC_RECAPTCHA_SITE_KEY.
+                </p>
               )}
 
-              <Button type="submit" disabled={isLoading} className="w-full">
+              <Button
+                type="submit"
+                disabled={isLoading || !isRecaptchaReady}
+                className="w-full"
+              >
                 {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </Form>
