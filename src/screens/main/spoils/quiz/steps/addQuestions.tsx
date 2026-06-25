@@ -41,7 +41,12 @@ const AddQuestions = ({
     if (questions.length > 0) return;
 
     try {
-      const storageKey = quizType === "post" ? "postspoil-quiz-init" : "prespoil-quiz-init";
+      const storageKey =
+        quizType === "post"
+          ? "postspoil-quiz-init"
+          : quizType === "module"
+            ? "modulespoil-quiz-init"
+            : "prespoil-quiz-init";
       const presRaw = typeof window !== "undefined" && sessionStorage.getItem(storageKey);
       if (presRaw) {
         const pres = JSON.parse(presRaw);
@@ -52,6 +57,10 @@ const AddQuestions = ({
           return;
         }
       }
+
+      // Only pre/post quizzes fall back to the saved basics draft; module
+      // quizzes are restored solely from their own init key above.
+      if (quizType !== "pre" && quizType !== "post") return;
 
       const raw = typeof window !== "undefined" && sessionStorage.getItem("advanced-spoil-draft");
       if (raw) {

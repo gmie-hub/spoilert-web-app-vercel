@@ -3,7 +3,7 @@
 import type { FC } from "react";
 import { useEffect } from "react";
 
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
@@ -16,7 +16,7 @@ import { useCreateSpoilStore } from "@spt/store/createSpoilStore";
 
 import LessonFileUpload from "../components/LessonFileUpload";
 import UploadSpoilImage from "../components/UploadSpoilImage";
-import { basicsValidationSchema } from "../validations";
+import { makeBasicsValidationSchema } from "../validations";
 
 import {
   lessonOptions,
@@ -38,6 +38,33 @@ interface SpoilBasicsStepProps {
 }
 
 // constants and helpers moved to ./spoilBasicsHelpers.ts
+
+// After a failed "Save and Continue", scroll to the first invalid field so the
+// user can see the validation error. The cover image is prioritised because it
+// sits at the very top of the form and its hidden input can't be focused.
+const ScrollToFirstError = () => {
+  const { submitCount, errors } = useFormikContext<BasicsFormData>();
+
+  useEffect(() => {
+    if (submitCount === 0) return;
+
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length === 0) return;
+
+    const firstErrorKey = errors.coverImage ? "coverImage" : errorKeys[0];
+
+    const target =
+      document.querySelector<HTMLElement>(
+        `[data-error-anchor="${firstErrorKey}"]`,
+      ) ??
+      document.getElementById(firstErrorKey) ??
+      document.querySelector<HTMLElement>(`[name="${firstErrorKey}"]`);
+
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [submitCount, errors]);
+
+  return null;
+};
 
 const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   data,
@@ -93,9 +120,11 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       </p>
 
       <Formik<BasicsFormData>
-        initialValues={data}
+        // Ensure lessonType is always a tracked field so its required error can
+        // surface on submit, even if the persisted draft predates this field.
+        initialValues={{ lessonType: "", ...data }}
         enableReinitialize
-        validationSchema={basicsValidationSchema}
+        validationSchema={makeBasicsValidationSchema(selectedType)}
         validateOnChange={true}
         validateOnBlur={true}
         onSubmit={async (values) => {
@@ -117,7 +146,10 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       >
         {({ values, handleChange, handleBlur,  setTouched, errors, touched }) => (
           <Form className="mt-8 space-y-8">
-            <UploadSpoilImage />
+            <ScrollToFirstError />
+            <div data-error-anchor="coverImage">
+              <UploadSpoilImage />
+            </div>
 
             <div className="grid gap-6">
               <Input
@@ -265,14 +297,19 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                       { label: "Text", value: "text" },
                     ]}
                   />
+                  
 
-                  {values.lessonType === "text" ? (
+                  {values.lessonType === "text" && (
                     <RichTextEditor
                       name="lessonContent"
                       label="Lesson Content"
                       placeholder="Type in content"
                     />
-                  ) : (
+
+                
+                  )}
+
+                  {values.lessonType === "file" && (
                     <LessonFileUpload
                       name="lessonFile"
                       label="Content Upload"

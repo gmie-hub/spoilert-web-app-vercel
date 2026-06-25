@@ -21,6 +21,7 @@ const SelfDev = () => {
   const rightSpoils = spoils.slice(3, 6);
 
   return (
+    <>{spoils && spoils.length > 0 && (
     <WebsiteSection className="w-full bg-[#014751] py-10 md:py-14">
       {/* Title */}
       <motion.h1
@@ -89,7 +90,7 @@ const SelfDev = () => {
         </div>
       </div>
       )}
-    </WebsiteSection>
+    </WebsiteSection>)}</>
   );
 };
 

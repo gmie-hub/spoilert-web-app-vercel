@@ -14,8 +14,7 @@ interface SponsorSpoilModalProps {
   onSuccess?: () => void;
 }
 
-const ADMIN_CHARGE_PER_LEARNER = 1000;
-const LEARNER_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// const ADMIN_CHARGE_PER_LEARNER = 1000;
 
 const formatNaira = (value: number) =>
   `N${value.toLocaleString("en-NG", {
@@ -30,7 +29,10 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
   onSuccess,
 }) => {
   const [quantity, setQuantity] = useState<number | null>(null);
+  const [touched, setTouched] = useState(false);
   const { createSponsorship, isLoading } = useCreateSponsorshipMutation();
+
+  const showQuantityError = touched && !quantity;
 
   const tutorName =
     `${spoil.tutor?.first_name ?? ""} ${spoil.tutor?.last_name ?? ""}`.trim() ||
@@ -46,12 +48,18 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
   const certPerLearner = Number(spoil.certificate_fee) || 0;
 
   const totalCostFee = quantity ? costPerLearner * quantity : 0;
-  const totalAdminCharges = quantity ? ADMIN_CHARGE_PER_LEARNER * quantity : 0;
+  // const totalAdminCharges = quantity ? ADMIN_CHARGE_PER_LEARNER * quantity : 0;
   const totalCertFee = quantity ? certPerLearner * quantity : 0;
-  const subTotal = totalCostFee + totalAdminCharges + totalCertFee;
+  // Hide the certificate fee (and drop it from the total) when the spoil
+  // already includes a certificate.
+  const showCertificateFee = spoil.has_certificate !== 1;
+  const subTotal = totalCostFee + (showCertificateFee ? totalCertFee : 0);
 
   const handleProceedToPay = async () => {
-    if (!quantity) return;
+    if (!quantity) {
+      setTouched(true);
+      return;
+    }
     const result = await createSponsorship(spoil.id, quantity);
     if (result) {
       const paymentLink = result.data?.payment?.payment_link;
@@ -98,27 +106,27 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
             <label className="mb-1.5 block text-sm font-medium text-[#111827]">
               Number of Learners To sponsor
             </label>
-            <div className="relative">
-              <select
-                value={quantity ?? ""}
-                onChange={(e) =>
-                  setQuantity(e.target.value ? Number(e.target.value) : null)
-                }
-                className="h-12 w-full appearance-none rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none focus:border-[#9CA3AF]"
-              >
-                <option value="" disabled>
-                  Select number of learners
-                </option>
-                {LEARNER_OPTIONS.map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280]">
-                ▾
-              </span>
-            </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Enter number of learners"
+              value={quantity ?? ""}
+              onChange={(e) => {
+                const digitsOnly = e.target.value.replace(/\D/g, "");
+                setQuantity(digitsOnly ? Number(digitsOnly) : null);
+              }}
+              onBlur={() => setTouched(true)}
+              aria-invalid={showQuantityError}
+              className={`h-12 w-full rounded-xl border bg-white px-4 text-sm text-[#111827] outline-none focus:border-[#9CA3AF] ${
+                showQuantityError ? "border-red-500" : "border-[#E5E7EB]"
+              }`}
+            />
+            {showQuantityError && (
+              <p className="mt-1.5 text-xs text-red-500">
+                Please enter the number of learners to sponsor
+              </p>
+            )}
           </div>
         </div>
 
@@ -133,23 +141,17 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-[#4B5563]">
-                Admin charges ({ADMIN_CHARGE_PER_LEARNER.toLocaleString("en-NG")} X {quantity})
-              </span>
-              <span className="font-medium text-[#111827]">
-                {formatNaira(totalAdminCharges)}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-[#4B5563]">
-                Certificate Fee ({certPerLearner.toLocaleString("en-NG")} X {quantity})
-              </span>
-              <span className="font-medium text-[#111827]">
-                {formatNaira(totalCertFee)}
-              </span>
-            </div>
+            {showCertificateFee && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#4B5563]">
+                  Certificate Fee ({certPerLearner.toLocaleString("en-NG")} X{" "}
+                  {quantity})
+                </span>
+                <span className="font-medium text-[#111827]">
+                  {formatNaira(totalCertFee)}
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between border-t border-[#E7E7E7] pt-3">
               <span className="font-medium text-[#111827]">Sub Total</span>
@@ -163,7 +165,7 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
         <Button
           variant="darkBlue"
           className="w-full"
-          disabled={!quantity || isLoading}
+          disabled={isLoading}
           onClick={handleProceedToPay}
         >
           {isLoading ? "Processing..." : "Proceed to Pay"}

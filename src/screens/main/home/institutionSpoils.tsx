@@ -20,6 +20,7 @@ const InstitutionSpoils = () => {
   const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
 
   return (
+    <>{data?.data?.data && data?.data?.data?.length > 0 && (
     <WebsiteSection className="py-4 w-full">
       <motion.h1
         className="pb-5 text-[28px] md:text-[40px] font-semibold text-center text-black self-center leading-tight"
@@ -142,7 +143,7 @@ const InstitutionSpoils = () => {
           </motion.div>
         ))}
       </div>
-    </WebsiteSection>
+    </WebsiteSection>)}</>
   );
 };
 

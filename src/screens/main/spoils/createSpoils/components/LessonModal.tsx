@@ -9,6 +9,7 @@ import * as yup from "yup";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Modal from "@spt/components/modal";
+import RichTextEditor from "@spt/components/richTextEditor";
 import Select from "@spt/components/select";
 import Textarea from "@spt/components/textarea";
 // import useCreateLessonMutation from "@spt/hooks/apiRequests/useCreateLessonMutation";
@@ -145,10 +146,9 @@ const LessonModal: FC<LessonModalProps> = ({
               />
 
               {values.type === "text" ? (
-                <Textarea
+                <RichTextEditor
                   name="content"
                   label="Content"
-                  rows={5}
                   placeholder="Type in content"
                 />
               ) : typeof values.file === "string" && values.file.trim() ? (

@@ -1,4 +1,4 @@
-import type { OutlineData } from "@spt/types";
+import type { ModuleQuiz, OutlineData } from "@spt/types";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import type { BasicsFormData } from "../types";
@@ -18,6 +18,18 @@ export const pricingOptions = pricingModels.map((pricing) => ({
 
 export const moduleOptions = buildNumberOptions(20);
 export const lessonOptions = buildNumberOptions(60);
+
+// Server quizzes are mapped with an id like "pre-193" / "post-195" /
+// "module-194". Pull the numeric server quiz id back out so we can fetch its
+// questions. Locally-created drafts use a plain timestamp id and return null —
+// there's nothing on the server to fetch for those yet.
+export const extractServerQuizId = (
+  id?: string | number | null,
+): string | null => {
+  if (id == null) return null;
+  const match = String(id).match(/^(?:pre|post|module)-(\d+)$/);
+  return match ? match[1] : null;
+};
 
 const getDatePart = (value?: string | null) =>
   value ? String(value).split("T")[0].split(" ")[0] : "";
@@ -88,6 +100,42 @@ export const mapSpoilDataToForm = (
   };
 };
 
+// Match a server module quiz (quizzes[].type === "module") to its module and
+// shape it like the locally-created draft quiz so the quiz screens can pre-fill
+// it when editing — mirrors how pre/post quizzes are mapped below.
+const mapServerModuleQuiz = (
+  quizzes: SpoilDetailsData["quizzes"] | undefined,
+  moduleId: number | string,
+): ModuleQuiz | undefined => {
+  const moduleQuiz = quizzes?.find(
+    (quiz) =>
+      quiz.type === "module" &&
+      String(quiz.module_id) === String(moduleId),
+  );
+
+  if (!moduleQuiz) {
+    return undefined;
+  }
+
+  return {
+    id: `module-${moduleQuiz.id}`,
+    title: moduleQuiz.title ?? "",
+    description: moduleQuiz.description ?? "",
+    overview: {
+      title: moduleQuiz.title ?? "",
+      description: moduleQuiz.description ?? "",
+      numberOfQuestions:
+        moduleQuiz.no_of_questions != null
+          ? String(moduleQuiz.no_of_questions)
+          : "",
+      timeLimit:
+        moduleQuiz.time_limit != null ? String(moduleQuiz.time_limit) : "",
+      passmark:
+        moduleQuiz.pass_mark != null ? String(moduleQuiz.pass_mark) : "",
+    },
+  };
+};
+
 export const mapSpoilDetailsToOutline = (
   spoilData?: Partial<SpoilDetailsData> | null,
 ): OutlineData => ({
@@ -97,6 +145,7 @@ export const mapSpoilDetailsToOutline = (
       id: String(module.id),
       title: module.title ?? "",
       description: module.description ?? "",
+      quiz: mapServerModuleQuiz(spoilData?.quizzes, module.id),
       lessons:
         module.lessons?.map((lesson) => ({
           id: String(lesson.id),

@@ -27,8 +27,10 @@ interface SpoilPricingCardProps {
   shouldContinue: boolean;
   isFreeSpoil: boolean;
   isLoading: boolean;
+  isOwner: boolean;
   onPrimaryClick: () => void;
   onSponsor: () => void;
+  onEdit: () => void;
 }
 
 export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
@@ -37,8 +39,10 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
   shouldContinue,
   isFreeSpoil,
   isLoading,
+  isOwner,
   onPrimaryClick,
   onSponsor,
+  onEdit,
 }) => (
   <div className="hidden lg:block relative">
     <div className="absolute -top-36 right-0 w-[340px]">
@@ -46,35 +50,51 @@ export const SpoilPricingCard: React.FC<SpoilPricingCardProps> = ({
         <VStack spacing="gap-6" className="w-full items-start">
           <p className="text-lg font-semibold text-black">{price}</p>
 
-          <Button
-            variant="darkBlue"
-            className="w-full py-3 disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={onPrimaryClick}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <ButtonSpinner />
-                {isFreeSpoil ? "Starting..." : "Processing..."}
-              </>
-            ) : shouldContinue ? (
-              "Continue Learning"
-            ) : isFreeSpoil ? (
-              "Start Spoil"
-            ) : (
-              "Buy Spoil"
-            )}
-          </Button>
+          {isOwner ? (
+            <>
+              <p className="text-sm text-gray-500">You created this spoil</p>
 
-         {!isFreeSpoil && (
-          <Button
-            variant="lightBlue"
-            className="w-full py-3 bg-white text-sky-700 border border-sky-100"
-            onClick={onSponsor}
-          >
-            Sponsor Spoil
-          </Button>
-         )}
+              <Button
+                variant="darkBlue"
+                className="w-full py-3"
+                onClick={onEdit}
+              >
+                Edit Spoylz
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="darkBlue"
+                className="w-full py-3 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={onPrimaryClick}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <ButtonSpinner />
+                    {isFreeSpoil ? "Starting..." : "Processing..."}
+                  </>
+                ) : shouldContinue ? (
+                  "Continue Learning"
+                ) : isFreeSpoil ? (
+                  "Start Spoylz"
+                ) : (
+                  "Buy Spoylz"
+                )}
+              </Button>
+
+              {!isFreeSpoil && (
+                <Button
+                  variant="lightBlue"
+                  className="w-full py-3 bg-white text-sky-700 border border-sky-100"
+                  onClick={onSponsor}
+                >
+                  Sponsor Spoil
+                </Button>
+              )}
+            </>
+          )}
 
           <div className="w-full border-t pt-4 border-[#E7E7E7]">
             <HStack
@@ -105,45 +125,64 @@ interface SpoilMobileCTAProps {
   shouldContinue: boolean;
   isFreeSpoil: boolean;
   isLoading: boolean;
+  isOwner: boolean;
   onPrimaryClick: () => void;
   onSponsor: () => void;
+  onEdit: () => void;
 }
 
 export const SpoilMobileCTA: React.FC<SpoilMobileCTAProps> = ({
   shouldContinue,
   isFreeSpoil,
   isLoading,
+  isOwner,
   onPrimaryClick,
   onSponsor,
+  onEdit,
 }) => (
   <div className="lg:hidden">
     <VStack spacing="gap-4" className="pt-4 w-full sm:w-1/2">
-      <Button
-        variant="lightBlue"
-        className="w-full py-3 bg-sky-50 text-sky-700 border border-sky-100"
-        onClick={onSponsor}
-      >
-        Sponsor Spoylz
-      </Button>
-      <Button
-        variant="darkBlue"
-        className="w-full py-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-        onClick={onPrimaryClick}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <ButtonSpinner />
-            {isFreeSpoil ? "Starting..." : "Processing..."}
-          </>
-        ) : shouldContinue ? (
-          "Continue Learning"
-        ) : isFreeSpoil ? (
-          "Start Spoylz"
-        ) : (
-          "Buy Spoylz"
-        )}
-      </Button>
+      {isOwner ? (
+        <>
+          <p className="text-sm text-gray-500">You created this spoil</p>
+          <Button
+            variant="darkBlue"
+            className="w-full py-3 cursor-pointer"
+            onClick={onEdit}
+          >
+            Edit Spoylz
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            variant="lightBlue"
+            className="w-full py-3 bg-sky-50 text-sky-700 border border-sky-100"
+            onClick={onSponsor}
+          >
+            Sponsor Spoylz
+          </Button>
+          <Button
+            variant="darkBlue"
+            className="w-full py-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={onPrimaryClick}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <ButtonSpinner />
+                {isFreeSpoil ? "Starting..." : "Processing..."}
+              </>
+            ) : shouldContinue ? (
+              "Continue Learning"
+            ) : isFreeSpoil ? (
+              "Start Spoylz"
+            ) : (
+              "Buy Spoylz"
+            )}
+          </Button>
+        </>
+      )}
     </VStack>
   </div>
 );
