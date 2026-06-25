@@ -106,6 +106,9 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
     }
   };
 
+
+console.log("Categories");
+
   const mergedCategoryOptions =
     Categories?.data?.map((c) => ({
       label: c.name,
@@ -308,6 +311,8 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
                 
                   )}
+
+
 
                   {values.lessonType === "file" && (
                     <LessonFileUpload

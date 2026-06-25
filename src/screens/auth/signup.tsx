@@ -15,6 +15,7 @@ import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
 import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
 import { validations } from "@spt/utils/validation";
+console.log("checkking......");
 
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();
