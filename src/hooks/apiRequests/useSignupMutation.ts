@@ -16,7 +16,6 @@ interface Payload {
   username: string;
   email: string;
   password: string;
-  recaptcha_token: string;
 }
 
 interface SignupResponse {
@@ -50,7 +49,6 @@ export const useSignupMutation = () => {
       username: values.username,
       email: values.email,
       password: values.password,
-      recaptcha_token: values.recaptcha,
     };
 
     try {
