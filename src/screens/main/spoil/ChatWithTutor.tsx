@@ -92,7 +92,8 @@ export default function ChatWithTutor({ spoilId }: Props) {
   const tutorName = `${tutor?.first_name} ${tutor?.last_name}`.trim();
   const tutorAvatar = tutor?.avatar ?? null;
   const tutorInitial = tutorName[0] ?? "T";
-  const expertise = spoil?.category?.name ?? null;
+  const expertiseList = tutor?.profile?.expertise ?? [];
+  const expertise = expertiseList.length > 0 ? expertiseList.join(", ") : null;
   const relatedSpoils: RelatedSpoilItem[] = spoil.related_spoils ?? [];
 
   return (
@@ -138,7 +139,7 @@ export default function ChatWithTutor({ spoilId }: Props) {
             spoilsCreated={tutor.total_spoils_created ?? null}
             expertise={expertise}
             followersCount={tutor.followers_count ?? null}
-            description={spoil.description ?? null}
+            description={tutor?.profile?.bio ?? null}
             relatedSpoils={relatedSpoils}
             onReport={openReport}
           />

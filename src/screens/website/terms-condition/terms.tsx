@@ -95,7 +95,7 @@ const TermsPage: React.FC = () => {
           </section>
 
           <footer className="pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500">If you have questions about these Terms, contact us at support@spoilert.com</p>
+            <p className="text-sm text-gray-500">If you have questions about these Terms, contact us at thespoilert@gmail.com</p>
           </footer>
         </section>
       </article>

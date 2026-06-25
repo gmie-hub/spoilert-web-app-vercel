@@ -17,6 +17,8 @@ import ModuleCard from "../components/ModuleCard";
 import ModuleModal from "../components/ModuleModal";
 import QuizModal from "../components/QuizModal";
 
+import { extractServerQuizId } from "./spoilBasicsHelpers";
+
 import type { OutlineData } from "../types";
 
 interface SpoilOutlineStepProps {
@@ -137,7 +139,14 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
                 // ignore
               }
 
-              router.push("/spoils/create-quiz?type=pre");
+              const params = new URLSearchParams({ type: "pre" });
+              if (data.spoil_id) params.set("spoilId", String(data.spoil_id));
+              const preQuizId = extractServerQuizId(
+                data.preQuiz?.id ?? draftPreQuiz?.id,
+              );
+              if (preQuizId) params.set("quiz_id", preQuizId);
+
+              router.push(`/spoils/create-quiz?${params.toString()}`);
             }}
           >
             <Image src={preQuizAvailable ? EditIcon : AddCircleIcon} alt="add-edit" />
@@ -160,7 +169,14 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
                 // ignore
               }
 
-              router.push("/spoils/create-quiz?type=post");
+              const params = new URLSearchParams({ type: "post" });
+              if (data.spoil_id) params.set("spoilId", String(data.spoil_id));
+              const postQuizId = extractServerQuizId(
+                data.postQuiz?.id ?? draftPostQuiz?.id,
+              );
+              if (postQuizId) params.set("quiz_id", postQuizId);
+
+              router.push(`/spoils/create-quiz?${params.toString()}`);
             }}
           >
             <Image src={postQuizAvailable ? EditIcon : AddCircleIcon} alt="add-edit" />
@@ -189,6 +205,7 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             <ModuleCard
               key={module.id}
               module={module}
+              spoilId={data.spoil_id ?? null}
               moduleIndex={index}
               isCollapsed={collapsedModules[module.id] || false}
               onToggleCollapse={() => toggleModuleCollapse(module.id)}

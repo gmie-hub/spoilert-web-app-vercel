@@ -100,6 +100,7 @@ const initialBasics: BasicsFormData = {
   lessonCount: "",
   description: "",
   learningOutcome: "",
+  lessonType: "",
   scheduledDate: "",
   scheduledTime: "",
   is_draft: 0,

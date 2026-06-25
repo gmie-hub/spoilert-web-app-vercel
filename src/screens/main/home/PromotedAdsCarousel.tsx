@@ -60,6 +60,7 @@ const PromotedAdsCarousel = () => {
   ============================== */
   if (isLoading) {
     return (
+      <>{items && items.length > 0 && (
       <WebsiteSection className="my-14 w-full">
         <h2 className="text-[16px] sm:text-[40px] font-semibold text-center mb-6">
           Promoted Ads
@@ -75,7 +76,7 @@ const PromotedAdsCarousel = () => {
             />
           ))}
         </div>
-      </WebsiteSection>
+      </WebsiteSection>)}</>
     );
   }
 

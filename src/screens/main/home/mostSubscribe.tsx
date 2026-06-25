@@ -11,6 +11,7 @@ const MostSubscribe = () => {
   const { data, isLoading, isError, errorMessage } = useGetMostSubscribedSpoilsQuery();
 
   return (
+    <>{data?.data?.data && data?.data?.data?.length > 0 && (
     <WebsiteSection className="py-4 w-full bg-[var(--color-blue)] text-white">
       <Stack>
         {/* Title */}
@@ -37,7 +38,7 @@ const MostSubscribe = () => {
           </div>
         )}
       </Stack>
-    </WebsiteSection>
+    </WebsiteSection>)}</>
   );
 };
 

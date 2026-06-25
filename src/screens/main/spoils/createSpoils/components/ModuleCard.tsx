@@ -15,10 +15,13 @@ import TrashIcon from "@spt/assets/icons/trash.svg";
 import Button from "@spt/components/button";
 import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
 
+import { extractServerQuizId } from "../steps/spoilBasicsHelpers";
+
 import type { Module } from "../types";
 
 interface ModuleCardProps {
   module: Module;
+  spoilId?: number | string | null;
   moduleIndex: number;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -31,6 +34,7 @@ interface ModuleCardProps {
 
 const ModuleCard: FC<ModuleCardProps> = ({
   module,
+  spoilId = null,
   moduleIndex,
   isCollapsed,
   onToggleCollapse,
@@ -115,12 +119,42 @@ const ModuleCard: FC<ModuleCardProps> = ({
               </Button>
 
               <Button
-                onClick={() => router.push(`/spoils/create-quiz?type=module&module_id=${module.id}`)}
+                onClick={() => {
+                  // Mirror the pre/post quiz flow: stash the existing module
+                  // quiz so the quiz screens can pre-fill it when editing.
+                  try {
+                    if (module.quiz) {
+                      sessionStorage.setItem(
+                        "modulespoil-quiz-init",
+                        JSON.stringify(module.quiz),
+                      );
+                    } else {
+                      sessionStorage.removeItem("modulespoil-quiz-init");
+                    }
+                  } catch {
+                    // ignore storage errors
+                  }
+
+                  const params = new URLSearchParams({
+                    type: "module",
+                    module_id: String(module.id),
+                  });
+                  if (spoilId) params.set("spoilId", String(spoilId));
+                  const quizId = extractServerQuizId(module.quiz?.id);
+                  if (quizId) params.set("quiz_id", quizId);
+
+                  router.push(`/spoils/create-quiz?${params.toString()}`);
+                }}
                 type="button"
                 variant="outline"
               >
-                <Image src={AddIcon} alt="add" width={20} height={20} />
-                Create Quiz
+                <Image
+                  src={module.quiz ? EditIcon : AddIcon}
+                  alt={module.quiz ? "edit" : "add"}
+                  width={20}
+                  height={20}
+                />
+                {module.quiz ? "Edit Module Quiz" : "Create Quiz"}
               </Button>
             </div>
 

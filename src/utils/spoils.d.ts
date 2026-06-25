@@ -178,6 +178,20 @@ interface Lesson {
   status: string;
 }
 
+interface TutorProfile {
+  id: number;
+  user_id: number;
+  bio: string | null;
+  payout_type: string | null;
+  sub_account_id: string | null;
+  certifications: string[] | null;
+  expertise: string[] | null;
+  experience: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 interface Tutor {
   id: number;
   first_name: string;
@@ -185,7 +199,7 @@ interface Tutor {
   email: string;
   country: string;
   avatar: string;
-  profile: null;
+  profile: TutorProfile | null;
   total_spoils_created: null;
   followers_count: null;
 }
@@ -232,7 +246,7 @@ interface Tutor {
   email: string;
   country: string;
   avatar: null;
-  profile: null;
+  profile: TutorProfile | null;
   total_spoils_created: null;
   followers_count: null;
 }

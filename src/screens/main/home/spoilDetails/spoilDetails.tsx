@@ -21,6 +21,7 @@ import useBuySpoilMutation from "@spt/hooks/apiRequests/useBuySpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
+import { useAuthStore } from "@spt/store/authStore";
 import { SpoilDetailsData } from "@spt/utils/spoils";
 
 import HStack from "../../../../components/hstack";
@@ -107,6 +108,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const { addBookmark, isLoading: isSaving } = useAddBookmarkMutation();
   const { shareSpoil } = useShareSpoilMutation();
   const { toggleLike, isLoading: isLiking } = useToggleSpoilLikeMutation();
+  const user = useAuthStore((state) => state.user);
   const {
     data: spoil,
     isLoading,
@@ -135,6 +137,12 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const hasProgress = Number(spoil?.percentage_completed ?? 0) > 0;
   const isEnrolled = Boolean(spoil?.is_enrolled);
   const shouldContinue = isEnrolled || hasProgress;
+  const isOwner = Boolean(user?.id && spoil.tutor_id === user.id);
+  const editSpoilHref =
+    spoil.type === "simple"
+      ? `/create-spoils/simple-spoil?spoilId=${spoil.id}`
+      : `/create-spoils/advance-spoil?spoilId=${spoil.id}`;
+  const handleEditSpoil = () => router.push(editSpoilHref);
   const spoilAmount =
     typeof spoil.display_amount === "number"
       ? spoil.display_amount
@@ -334,8 +342,10 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
               shouldContinue={shouldContinue}
               isFreeSpoil={isFreeSpoil}
               isLoading={isBuyingSpoil}
+              isOwner={isOwner}
               onPrimaryClick={handlePrimaryCtaClick}
               onSponsor={() => setIsSponsorModalOpen(true)}
+              onEdit={handleEditSpoil}
             />
           </div>
 
@@ -345,8 +355,10 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
             shouldContinue={shouldContinue}
             isFreeSpoil={isFreeSpoil}
             isLoading={isBuyingSpoil}
+            isOwner={isOwner}
             onPrimaryClick={handlePrimaryCtaClick}
             onSponsor={() => setIsSponsorModalOpen(true)}
+            onEdit={handleEditSpoil}
           />
         </div>
 

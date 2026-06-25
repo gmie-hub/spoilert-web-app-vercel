@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Stack from "@mui/material/Stack";
 import {  useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 import CustomStepper from "@spt/components/stepper";
+import useGetQuizQuestionsQuery from "@spt/hooks/apiRequests/useGetQuizQuestionsQuery";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import AddQuestions from "./steps/addQuestions";
@@ -31,6 +32,27 @@ const SpoilQuiz = () => {
   const searchParams = useSearchParams();
   const quizType = (searchParams?.get("type") ?? "").toLowerCase();
   const moduleId = searchParams?.get("module_id") ?? null;
+  const spoilId = searchParams?.get("spoilId") ?? null;
+  const quizId = searchParams?.get("quiz_id") ?? null;
+
+  // In edit mode (spoilId present) load the quiz's saved questions from the
+  // server so they appear in the Add Questions step.
+  const { questions: serverQuestions } = useGetQuizQuestionsQuery(
+    spoilId && quizId ? quizId : null,
+  );
+
+  const hasLoadedServerQuestions = useRef(false);
+
+  useEffect(() => {
+    if (
+      !hasLoadedServerQuestions.current &&
+      serverQuestions.length > 0 &&
+      questions.length === 0
+    ) {
+      setQuestions(serverQuestions);
+      hasLoadedServerQuestions.current = true;
+    }
+  }, [serverQuestions, questions.length]);
 
   const setOutline = useCreateSpoilStore((s) => s.setOutline);
   const setBasics = useCreateSpoilStore((s) => s.setBasics);
