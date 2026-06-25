@@ -1,11 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
-import ReCAPTCHA from "react-google-recaptcha";
 import { object } from "yup";
 
 import FacebookIcon from "@spt/assets/icons/search 1.svg";
@@ -19,14 +16,6 @@ console.log("checkking......");
 
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
-
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-  const googleTestRecaptchaSiteKey =
-    "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
-  const isUsingTestRecaptchaKey =
-    recaptchaSiteKey === googleTestRecaptchaSiteKey;
-  const isRecaptchaReady = Boolean(recaptchaSiteKey) && !isUsingTestRecaptchaKey;
 
   const validationSchema = object().shape({
     firstName: validations.firstName,
@@ -35,7 +24,6 @@ const SignUp = () => {
     email: validations.email,
     agreeToTerms: validations.agreeToTerms,
     password: validations.password,
-    recaptcha: validations.recaptcha,
   });
 
   return (
@@ -57,17 +45,13 @@ const SignUp = () => {
             email: "",
             password: "",
             agreeToTerms: false, // ✅ REQUIRED
-            recaptcha: "",
           }}
           validationSchema={validationSchema}
           onSubmit={async (values, helpers) => {
             await signupHandler(values, helpers);
-            // Reset the widget so a fresh token is required on retry.
-            recaptchaRef.current?.reset();
-            helpers.setFieldValue("recaptcha", "");
           }}
         >
-          {({ setFieldValue }) => (
+          {() => (
             <Form className="space-y-6 w-full max-w-none">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Input name="firstName" label="First Name" />
@@ -112,33 +96,9 @@ const SignUp = () => {
                 className="text-red-500 text-sm"
               />
 
-              {isRecaptchaReady ? (
-                <div>
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={recaptchaSiteKey as string}
-                    onChange={(token) =>
-                      setFieldValue("recaptcha", token ?? "")
-                    }
-                    onExpired={() => setFieldValue("recaptcha", "")}
-                  />
-                  <ErrorMessage
-                    name="recaptcha"
-                    component="div"
-                    className="text-red-500 text-sm mt-1"
-                  />
-                </div>
-              ) : (
-                <p className="text-red-500 text-sm">
-                  reCAPTCHA is not configured for live signup. Please add your
-                  real Google reCAPTCHA site key to
-                  NEXT_PUBLIC_RECAPTCHA_SITE_KEY.
-                </p>
-              )}
-
               <Button
                 type="submit"
-                disabled={isLoading || !isRecaptchaReady}
+                disabled={isLoading}
                 className="w-full"
               >
                 {isLoading ? "Creating account..." : "Sign Up"}
