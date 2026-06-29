@@ -52,6 +52,22 @@ export const useSignupMutation = () => {
     };
 
     try {
+      // Verify the reCAPTCHA token server-side before creating the account.
+      const verifyRes = await fetch("/api/verify-recaptcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: values.recaptcha }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.success) {
+        toast.error(
+          verifyData.message ||
+            "reCAPTCHA verification failed. Please try again.",
+        );
+        return;
+      }
+
       await mutation.mutateAsync(payload);
       toast.success("Account created successfully 🎉");
       localStorage.setItem("userEmail", values.email);
