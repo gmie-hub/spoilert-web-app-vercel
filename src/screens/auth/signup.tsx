@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,13 +11,16 @@ import FacebookIcon from "@spt/assets/icons/search 1.svg";
 import GoogleIcon from "@spt/assets/icons/search 1.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
+import RecaptchaField from "@spt/components/recaptchaField";
 import Stack from "@spt/components/stack";
 import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
 import { validations } from "@spt/utils/validation";
-console.log("checkking......");
+
+import type ReCAPTCHA from "react-google-recaptcha";
 
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const validationSchema = object().shape({
     firstName: validations.firstName,
@@ -24,6 +29,7 @@ const SignUp = () => {
     email: validations.email,
     agreeToTerms: validations.agreeToTerms,
     password: validations.password,
+    recaptcha: validations.recaptcha,
   });
 
   return (
@@ -45,10 +51,14 @@ const SignUp = () => {
             email: "",
             password: "",
             agreeToTerms: false, // ✅ REQUIRED
+            recaptcha: "",
           }}
           validationSchema={validationSchema}
           onSubmit={async (values, helpers) => {
             await signupHandler(values, helpers);
+            // reCAPTCHA tokens are single-use — reset so the user can retry.
+            recaptchaRef.current?.reset();
+            helpers.setFieldValue("recaptcha", "");
           }}
         >
           {() => (
@@ -95,6 +105,8 @@ const SignUp = () => {
                 component="div"
                 className="text-red-500 text-sm"
               />
+
+              <RecaptchaField ref={recaptchaRef} />
 
               <Button
                 type="submit"

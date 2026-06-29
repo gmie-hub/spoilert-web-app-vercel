@@ -107,7 +107,6 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   };
 
 
-console.log("Categories");
 
   const mergedCategoryOptions =
     Categories?.data?.map((c) => ({
