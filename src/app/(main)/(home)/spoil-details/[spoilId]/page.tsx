@@ -75,14 +75,21 @@ export async function generateMetadata({
     getPlainText(spoil.description) ||
     `Discover ${title}, a learning experience on Spoilert.`;
   const imageUrl = getAbsoluteImageUrl(spoil.cover_image_url);
-  const images = imageUrl ? [{ url: imageUrl, alt: title }] : undefined;
+  const images = imageUrl
+    ? [{ url: imageUrl, width: 1200, height: 630, alt: title }]
+    : undefined;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `/spoil-details/${spoilId}`,
+    },
     openGraph: {
       title,
       description,
+      url: `/spoil-details/${spoilId}`,
+      siteName: "Spoilert",
       type: "article",
       images,
     },

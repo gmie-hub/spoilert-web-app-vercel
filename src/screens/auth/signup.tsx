@@ -5,7 +5,6 @@ import { useRef } from "react";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
-import type ReCAPTCHA from "react-google-recaptcha";
 import { object } from "yup";
 
 import FacebookIcon from "@spt/assets/icons/search 1.svg";
@@ -16,6 +15,8 @@ import RecaptchaField from "@spt/components/recaptchaField";
 import Stack from "@spt/components/stack";
 import { useSignupMutation } from "@spt/hooks/apiRequests/useSignupMutation";
 import { validations } from "@spt/utils/validation";
+
+import type ReCAPTCHA from "react-google-recaptcha";
 
 const SignUp = () => {
   const { signupHandler, isLoading } = useSignupMutation();

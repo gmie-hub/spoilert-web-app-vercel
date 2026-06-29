@@ -9,7 +9,6 @@ import CloseIcon from "@spt/assets/icons/xclose.svg";
 
 
 
-console.log('test re cap')
 const faqs = [
   {
     question: "What is a Spoylz on Spoilert?",
