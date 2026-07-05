@@ -87,7 +87,7 @@ const Header = () => {
     { icon: CreateSpoilIcon, name: "Create spoylz", href: createSpoilHref, requiresAuth: true },
     { icon: CommunityIcon, name: "Community", href: "/community", requiresAuth: true },
     ...(authUser
-      ? [{ icon: ProfileNavIcon, name: "Profile", href: "/profile" }]
+      ? [{ icon: ProfileNavIcon, name: "Profile", href: "/profile/profile-details" }]
       : []),
   ];
 
