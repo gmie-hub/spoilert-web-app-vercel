@@ -1,4 +1,4 @@
-import type { ModuleQuiz, OutlineData } from "@spt/types";
+import type { ModuleQuiz, OutlineData, QuizConfig } from "@spt/types";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import type { BasicsFormData } from "../types";
@@ -136,6 +136,35 @@ const mapServerModuleQuiz = (
   };
 };
 
+// Match a server pre/post spoil quiz and shape it like the locally-created
+// draft quiz — including the full `overview` — so the quiz screens can pre-fill
+// every field (title, description, no. of questions, time limit, passmark) when
+// editing. Mirrors `mapServerModuleQuiz`.
+const mapServerSpoilQuiz = (
+  quizzes: SpoilDetailsData["quizzes"] | undefined,
+  type: "pre" | "post",
+): QuizConfig | undefined => {
+  const quiz = quizzes?.find((item) => item.type === type);
+
+  if (!quiz) {
+    return undefined;
+  }
+
+  return {
+    id: `${type}-${quiz.id}`,
+    title: quiz.title ?? "",
+    description: quiz.description ?? "",
+    overview: {
+      title: quiz.title ?? "",
+      description: quiz.description ?? "",
+      numberOfQuestions:
+        quiz.no_of_questions != null ? String(quiz.no_of_questions) : "",
+      timeLimit: quiz.time_limit != null ? String(quiz.time_limit) : "",
+      passmark: quiz.pass_mark != null ? String(quiz.pass_mark) : "",
+    },
+  };
+};
+
 export const mapSpoilDetailsToOutline = (
   spoilData?: Partial<SpoilDetailsData> | null,
 ): OutlineData => ({
@@ -168,24 +197,6 @@ export const mapSpoilDetailsToOutline = (
           description: "",
         })) ?? [],
     })) ?? [],
-  preQuiz: spoilData?.quizzes?.find((quiz) => quiz.type === "pre")
-    ? {
-        id: `pre-${spoilData.quizzes.find((quiz) => quiz.type === "pre")?.id}`,
-        title:
-          spoilData.quizzes.find((quiz) => quiz.type === "pre")?.title ?? "",
-        description:
-          spoilData.quizzes.find((quiz) => quiz.type === "pre")?.description ??
-          "",
-      }
-    : undefined,
-  postQuiz: spoilData?.quizzes?.find((quiz) => quiz.type === "post")
-    ? {
-        id: `post-${spoilData.quizzes.find((quiz) => quiz.type === "post")?.id}`,
-        title:
-          spoilData.quizzes.find((quiz) => quiz.type === "post")?.title ?? "",
-        description:
-          spoilData.quizzes.find((quiz) => quiz.type === "post")?.description ??
-          "",
-      }
-    : undefined,
+  preQuiz: mapServerSpoilQuiz(spoilData?.quizzes, "pre"),
+  postQuiz: mapServerSpoilQuiz(spoilData?.quizzes, "post"),
 });

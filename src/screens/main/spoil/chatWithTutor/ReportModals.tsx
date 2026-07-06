@@ -115,9 +115,10 @@ interface ConfirmModalProps {
   onClose: () => void;
   onBack: () => void;
   onConfirm: () => void;
+  isLoading?: boolean;
 }
 
-export function ReportConfirmModal({ onClose, onBack, onConfirm }: ConfirmModalProps) {
+export function ReportConfirmModal({ onClose, onBack, onConfirm, isLoading }: ConfirmModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
@@ -159,9 +160,10 @@ export function ReportConfirmModal({ onClose, onBack, onConfirm }: ConfirmModalP
           <button
             type="button"
             onClick={onConfirm}
-            className="w-full py-3.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:bg-red-600 transition-colors"
+            disabled={isLoading}
+            className="w-full py-3.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Yes, Report Tutor
+            {isLoading ? "Reporting..." : "Yes, Report Tutor"}
           </button>
           <button
             type="button"

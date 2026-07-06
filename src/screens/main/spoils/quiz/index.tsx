@@ -7,7 +7,9 @@ import {  useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 import CustomStepper from "@spt/components/stepper";
+import { useGetQuizDetailsQuery } from "@spt/hooks/apiRequests/useGetQuizDetailsQuery";
 import useGetQuizQuestionsQuery from "@spt/hooks/apiRequests/useGetQuizQuestionsQuery";
+import { updateQuizAndQuestions } from "@spt/screens/main/spoils/createSpoils/utils/quizHelpers";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 
 import AddQuestions from "./steps/addQuestions";
@@ -54,6 +56,69 @@ const SpoilQuiz = () => {
     }
   }, [serverQuestions, questions.length]);
 
+  // In edit mode load the quiz overview (title, description, number of
+  // questions, time limit, passmark) straight from the server so the Overview
+  // fields always pre-fill — this doesn't rely on the local outline draft, which
+  // can be stale.
+  const isEditingServerQuiz = Boolean(spoilId && quizId);
+  const { quizDetailsData } = useGetQuizDetailsQuery(
+    isEditingServerQuiz ? Number(quizId) : 0,
+    { enabled: isEditingServerQuiz },
+  );
+
+  const hasLoadedServerOverview = useRef(false);
+
+  useEffect(() => {
+    if (hasLoadedServerOverview.current || !quizDetailsData) return;
+
+    const serverOverview: QuizOverviewDraft = {
+      title: quizDetailsData.title ?? "",
+      description: quizDetailsData.description ?? "",
+      numberOfQuestions:
+        quizDetailsData.no_of_questions != null
+          ? String(quizDetailsData.no_of_questions)
+          : "",
+      timeLimit:
+        quizDetailsData.time_limit != null
+          ? String(quizDetailsData.time_limit)
+          : "",
+      passmark:
+        quizDetailsData.pass_mark != null
+          ? String(quizDetailsData.pass_mark)
+          : "",
+    };
+
+    setOverview(serverOverview);
+
+    // Keep the sessionStorage init key (read by the Overview step) in sync with
+    // the freshly-fetched server values so the fields pre-fill even when the
+    // local outline draft is missing or stale.
+    try {
+      if (typeof window !== "undefined") {
+        const storageKey =
+          quizType === "post"
+            ? "postspoil-quiz-init"
+            : quizType === "module"
+              ? "modulespoil-quiz-init"
+              : "prespoil-quiz-init";
+        const existingRaw = sessionStorage.getItem(storageKey);
+        const existing = existingRaw ? JSON.parse(existingRaw) : {};
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            ...existing,
+            ...serverOverview,
+            overview: { ...(existing.overview ?? {}), ...serverOverview },
+          }),
+        );
+      }
+    } catch {
+      // ignore storage errors
+    }
+
+    hasLoadedServerOverview.current = true;
+  }, [quizDetailsData, quizType]);
+
   const setOutline = useCreateSpoilStore((s) => s.setOutline);
   const setBasics = useCreateSpoilStore((s) => s.setBasics);
 
@@ -93,71 +158,86 @@ const SpoilQuiz = () => {
             onEditOverview={() => goToStep(0)}
             onEditQuestions={() => goToStep(1)}
             onPublish={async () => {
+              // When the spoil already exists on the server (spoilId + quiz_id in
+              // the URL), the quiz is edited directly via the edit endpoints.
+              const isServerEdit = isEditingServerQuiz;
+
+              // persist directly into the advanced-spoil-draft store so the
+              // outline reflects the latest quiz immediately.
               try {
-                // const quizDraft = {
-                //   overview,
-                //   questions,
-                //   type: quizType || "module",
-                //   module_id: quizType === "pre" || quizType === "post" ? undefined : moduleId,
-                // };
+                const currentBasics = useCreateSpoilStore.getState().basics ?? {};
+                const quizPayload: any = {
+                  id: String(Date.now()),
+                  overview: overview,
+                  questions: questions,
+                  title: overview.title,
+                  description: overview.description,
+                };
 
-                // persist directly into the advanced-spoil-draft store
-                try {
-                  const currentBasics = useCreateSpoilStore.getState().basics ?? {};
-                  const quizPayload: any = {
-                    id: String(Date.now()),
-                    overview: overview,
-                    questions: questions,
-                    title: overview.title,
-                    description: overview.description,
+                // include passmark for post quizzes
+                if (quizType === "post") {
+                  // include both camelCase and snake_case pass mark keys
+                  quizPayload.overview = {
+                    ...quizPayload.overview,
+                    passmark: overview.passmark,
+                    pass_mark: overview.passmark,
                   };
+                  quizPayload.passmark = overview.passmark;
+                  quizPayload.pass_mark = overview.passmark;
+                }
 
-                  // include passmark for post quizzes
-                  if (quizType === "post") {
-                    // include both camelCase and snake_case pass mark keys
-                    quizPayload.overview = {
-                      ...quizPayload.overview,
-                      passmark: overview.passmark,
-                      pass_mark: overview.passmark,
-                    };
-                    quizPayload.passmark = overview.passmark;
-                    quizPayload.pass_mark = overview.passmark;
+                if (quizType === "pre" || quizType === "post") {
+                  // save full quiz (overview + questions) inside basics
+                  try {
+                    setBasics({ ...(currentBasics as any), ...(quizType === "pre" ? { preQuiz: quizPayload } : { postQuiz: quizPayload }) } as any);
+                  } catch {
+                    // ignore store errors
                   }
+                }
 
-                  if (quizType === "pre" || quizType === "post") {
-                    // save full quiz (overview + questions) inside basics
+                if (quizType === "module") {
+                  if (!moduleId) {
+                    toast.error("Module id is missing; cannot save module quiz into draft");
+                  } else {
+                    const currentOutline = useCreateSpoilStore.getState().outline ?? { modules: [] };
+                    const updatedModules = (currentOutline.modules || []).map((m: any) =>
+                      String(m.id) === String(moduleId) ? { ...m, quiz: quizPayload } : m,
+                    );
                     try {
-                      setBasics({ ...(currentBasics as any), ...(quizType === "pre" ? { preQuiz: quizPayload } : { postQuiz: quizPayload }) } as any);
+                      setOutline({ ...(currentOutline as any), modules: updatedModules } as any);
                     } catch {
                       // ignore store errors
                     }
                   }
-
-                  if (quizType === "module") {
-                    if (!moduleId) {
-                      toast.error("Module id is missing; cannot save module quiz into draft");
-                    } else {
-                      const currentOutline = useCreateSpoilStore.getState().outline ?? { modules: [] };
-                      const updatedModules = (currentOutline.modules || []).map((m: any) =>
-                        String(m.id) === String(moduleId) ? { ...m, quiz: quizPayload } : m,
-                      );
-                      try {
-                        setOutline({ ...(currentOutline as any), modules: updatedModules } as any);
-                      } catch {
-                        // ignore store errors
-                      }
-                    }
-                  }
-                } catch {
-                  // ignore any storage errors
                 }
 
-                toast.success("Quiz saved to draft");
-                // return to outline / create-spoils page
-                // router.push("/spoils/create-spoils");
-              } catch  {
-                // ignore
-                toast.error("Failed to save quiz draft");
+                if (!isServerEdit) {
+                  toast.success("Quiz saved to draft");
+                }
+              } catch {
+                if (!isServerEdit) {
+                  toast.error("Failed to save quiz draft");
+                }
+              }
+
+              // Edit mode: push the quiz + each question to the server via the
+              // edit endpoints (POST with `_method: patch` in the body). The
+              // payload mirrors the create payload, so spoil_id/module_id are
+              // forwarded too.
+              if (isServerEdit) {
+                try {
+                  await updateQuizAndQuestions(quizId, overview, questions, {
+                    type: quizType || "module",
+                    spoilId: spoilId ?? undefined,
+                    moduleId: moduleId ?? undefined,
+                  });
+                  toast.success("Quiz updated");
+                } catch (err) {
+                  toast.error("Failed to update quiz");
+                  // rethrow so Review keeps the user on the page instead of
+                  // navigating back after a failed update.
+                  throw err;
+                }
               }
             }}
           />

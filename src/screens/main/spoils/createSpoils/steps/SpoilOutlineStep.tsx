@@ -129,9 +129,13 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             variant="outline"
             className="justify-between"
             onClick={() => {
+              // Prefer the local draft (has in-progress edits + questions);
+              // otherwise fall back to the server quiz mapped into the outline so
+              // its overview fields pre-fill when editing an existing spoil.
+              const preInit = draftPreQuiz ?? data.preQuiz ?? null;
               try {
-                if (draftPreQuiz) {
-                  sessionStorage.setItem("prespoil-quiz-init", JSON.stringify(draftPreQuiz));
+                if (preInit) {
+                  sessionStorage.setItem("prespoil-quiz-init", JSON.stringify(preInit));
                 } else {
                   sessionStorage.removeItem("prespoil-quiz-init");
                 }
@@ -159,9 +163,13 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
             variant="outline"
             className="justify-between"
             onClick={() => {
+              // Prefer the local draft (has in-progress edits + questions);
+              // otherwise fall back to the server quiz mapped into the outline so
+              // its overview fields pre-fill when editing an existing spoil.
+              const postInit = draftPostQuiz ?? data.postQuiz ?? null;
               try {
-                if (draftPostQuiz) {
-                  sessionStorage.setItem("postspoil-quiz-init", JSON.stringify(draftPostQuiz));
+                if (postInit) {
+                  sessionStorage.setItem("postspoil-quiz-init", JSON.stringify(postInit));
                 } else {
                   sessionStorage.removeItem("postspoil-quiz-init");
                 }
