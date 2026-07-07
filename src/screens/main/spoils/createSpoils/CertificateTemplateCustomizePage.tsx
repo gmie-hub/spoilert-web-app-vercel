@@ -72,7 +72,9 @@ export default function CertificateTemplateCustomizePage() {
     }
 
     const extractedAssets = extractEmbeddedCertificateAssets(
-      spoilTemplate.template?.description || "",
+      spoilTemplate.template?.template_content ||
+        spoilTemplate.template?.description ||
+        "",
       {
         logoPlacement: certificateCustomization.logoPlacement,
         signaturePlacement: certificateCustomization.signaturePlacement,
@@ -84,7 +86,7 @@ export default function CertificateTemplateCustomizePage() {
       code: spoilTemplate.template?.name || "",
       name: certificateTemplate?.name || "Certificate Template",
       templateContent: extractedAssets.cleanedMarkup,
-      templateFileName: spoilTemplate.template?.fields[0]?.name || null,
+      templateFileName: spoilTemplate.template?.fields?.[0]?.name || null,
     });
 
     setCertificateCustomization(extractedAssets.assets);
@@ -102,7 +104,9 @@ export default function CertificateTemplateCustomizePage() {
   const resolvedCertificateTemplate = spoilTemplate
     ? (() => {
         const extractedAssets = extractEmbeddedCertificateAssets(
-          spoilTemplate.template?.description || "",
+          spoilTemplate.template?.template_content ||
+            spoilTemplate.template?.description ||
+            "",
           {
             logoPlacement: certificateCustomization.logoPlacement,
             signaturePlacement: certificateCustomization.signaturePlacement,
@@ -114,7 +118,7 @@ export default function CertificateTemplateCustomizePage() {
           code: spoilTemplate.template?.name || "",
           name: certificateTemplate?.name || "Certificate Template",
           templateContent: extractedAssets.cleanedMarkup,
-          templateFileName: spoilTemplate.template?.fields[0]?.name || null,
+          templateFileName: spoilTemplate.template?.fields?.[0]?.name || null,
         };
       })()
     : certificateTemplate;
@@ -199,12 +203,16 @@ export default function CertificateTemplateCustomizePage() {
 
     if (isEditMode) {
       await updateSpoilTemplateHandler(Number(resolvedSpoilId), templatePayload);
-    } else {
+    } else if (resolvedSpoilId) {
       await createSpoilTemplateHandler({
         spoil_id: Number(resolvedSpoilId),
         ...templatePayload,
       });
     }
+    // When creating a brand-new spoil there is no id yet — we only store the
+    // selected template in the draft here; it's posted to
+    // /certificates/template/spoil once the spoil is created (see
+    // createSpoilCertificateTemplate in the review controls).
 
     setCertificateTemplate({
       ...resolvedCertificateTemplate,

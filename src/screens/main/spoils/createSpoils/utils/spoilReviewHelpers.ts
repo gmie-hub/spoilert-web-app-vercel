@@ -2,10 +2,48 @@ import toast from "react-hot-toast";
 
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 import type { OutlineData } from "@spt/types";
+import api from "@spt/utils/apiClient";
 
 import { createQuizAndQuestions } from "./quizHelpers";
 
 export const isServerEntityId = (value: string | number) => /^\d+$/.test(String(value));
+
+// After a spoil is created it returns an id. Only paid spoils with a selected
+// certificate template send it up: POST /certificates/template/spoil with the
+// certificate payload plus the new spoil_id.
+export const createSpoilCertificateTemplate = async (
+  spoilId: number | string,
+) => {
+  const { basics, certificateTemplate } = useCreateSpoilStore.getState();
+
+  const isPaid = Boolean(
+    (basics as any)?.pricing && (basics as any).pricing !== "free",
+  );
+
+  if (!isPaid || !certificateTemplate?.templateContent) {
+    return null;
+  }
+
+  const payload = {
+    template: {
+      name: certificateTemplate.name,
+      certificate_template_name: certificateTemplate.templateFileName ?? null,
+      template_content: certificateTemplate.templateContent,
+    },
+    spoil_id: spoilId,
+  };
+
+  try {
+    const res = await api.post("/certificates/template/spoil", payload);
+    // eslint-disable-next-line no-console
+    console.log("Created certificate template for spoil", spoilId, res?.data ?? res);
+    return res;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to create certificate template for spoil", spoilId, err);
+    return null;
+  }
+};
 
 const getLessonUpdatePayload = (lesson: OutlineData["modules"][number]["lessons"][number]) => ({
   lessonId: lesson.id,

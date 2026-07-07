@@ -18,9 +18,13 @@ interface Props {
   spoilsCreated: number | null;
   expertise: string | null;
   followersCount: number | null;
+  isFollowing: boolean;
+  isReported: boolean;
   description: string | null;
   relatedSpoils: RelatedSpoilItem[];
   onReport: () => void;
+  /** Re-pull /spoils/{id} so tutor.is_following & followers_count refresh. */
+  onFollowSuccess: () => Promise<unknown> | void;
 }
 
 export function TutorProfile({
@@ -31,21 +35,32 @@ export function TutorProfile({
   spoilsCreated,
   expertise,
   followersCount,
+  isFollowing,
+  
   description,
   relatedSpoils,
   onReport,
+  onFollowSuccess,
 }: Props) {
-  const [following, setFollowing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { followTutorHandler, isLoading } = useFollowTutorMutation();
 
+  // `POST /followers` toggles follow/unfollow. On success we re-fetch the spoil
+  // so the button text (is_following) and followers count come from the server.
   const handleFollow = async () => {
-    if (following) {
-      setFollowing(false);
-      return;
+    if (isProcessing || isLoading) return;
+    setIsProcessing(true);
+    try {
+      const result = await followTutorHandler(tutorId);
+      if (result) {
+        await onFollowSuccess();
+      }
+    } finally {
+      setIsProcessing(false);
     }
-    const result = await followTutorHandler(tutorId);
-    if (result) setFollowing(true);
   };
+
+  const busy = isProcessing || isLoading;
 
   return (
     <div className="w-full lg:w-[420px] lg:flex-shrink-0">
@@ -92,21 +107,21 @@ export function TutorProfile({
           <button
             type="button"
             onClick={onReport}
-            className="cursor-pointer flex-1 py-2.5 rounded-xl border border-red-500 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors"
+            className="cursor-pointer flex-1 py-2.5 rounded-xl border border-red-500 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
-            Report Tutor
+            { "Report Tutor"}
           </button>
           <button
             type="button"
             onClick={handleFollow}
-            disabled={isLoading}
+            disabled={busy}
             className={`cursor-pointer flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-              following
+              isFollowing
                 ? "bg-[#0B5368] text-white hover:bg-[#094558]"
                 : "border border-[#0B5368] text-[#0B5368] hover:bg-[#EEF7FB]"
             }`}
           >
-            {isLoading ? "..." : following ? "Following" : "Follow"}
+            {busy ? "..." : isFollowing ? "Following" : "Follow"}
           </button>
         </div>
       </div>

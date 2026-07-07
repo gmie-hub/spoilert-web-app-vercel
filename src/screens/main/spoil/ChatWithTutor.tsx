@@ -12,6 +12,7 @@ import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
 import Button from "@spt/components/button";
 import SuccessState from "@spt/components/successState";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import useReportMutation from "@spt/hooks/apiRequests/useReportMutation";
 import { ChatInputBar } from "@spt/screens/main/profile/mySpoil/components/chatView/ChatInputBar";
 import { EmptyState } from "@spt/screens/main/profile/mySpoil/components/chatView/EmptyState";
 import { MessageBubble } from "@spt/screens/main/profile/mySpoil/components/chatView/MessageBubble";
@@ -49,7 +50,8 @@ export default function ChatWithTutor({ spoilId }: Props) {
   const [reportDesc, setReportDesc] = useState("");
   const [clearChatStep, setClearChatStep] = useState<ClearChatStep>(null);
 
-  const { data: spoil, isLoading } = useGetSpoilDetailsQuery(spoilId);
+  const { data: spoil, isLoading, refetch } = useGetSpoilDetailsQuery(spoilId);
+  const { reportHandler, isLoading: isReporting } = useReportMutation();
 
   const scrollToEnd = useCallback(() => {
     setTimeout(() => {
@@ -139,9 +141,12 @@ export default function ChatWithTutor({ spoilId }: Props) {
             spoilsCreated={tutor.total_spoils_created ?? null}
             expertise={expertise}
             followersCount={tutor.followers_count ?? null}
+            isFollowing={tutor.is_following ?? false}
+            isReported={tutor.is_reported ?? false}
             description={tutor?.profile?.bio ?? null}
             relatedSpoils={relatedSpoils}
             onReport={openReport}
+            onFollowSuccess={refetch}
           />
 
           {/* Right: Chat panel */}
@@ -284,7 +289,20 @@ export default function ChatWithTutor({ spoilId }: Props) {
         <ReportConfirmModal
           onClose={closeReport}
           onBack={() => setReportStep("reason")}
-          onConfirm={() => setReportStep("success")}
+          isLoading={isReporting}
+          onConfirm={async () => {
+            const res = await reportHandler({
+              id: tutor.id,
+              type: "tutor",
+              reason: selectedReason,
+              description: reportDesc,
+            });
+            if (res) {
+              setReportStep("success");
+              // re-pull /spoils/{id} so tutor.is_reported reflects the report.
+              await refetch();
+            }
+          }}
         />
       )}
       {reportStep === "success" && (

@@ -7,13 +7,30 @@ import api from "@spt/utils/apiClient";
 
 import type { AxiosError } from "axios";
 
+export interface VerifiedCertificatePerson {
+  id: number;
+  first_name: string;
+  last_name: string;
+  display_name?: string | null;
+  email?: string;
+}
+
+export interface VerifiedCertificateSpoil {
+  id: number;
+  title: string;
+  tutor?: VerifiedCertificatePerson | null;
+}
+
 export interface CertificateVerificationData {
-  certificate_title: string;
-  certificate_id: string;
-  recipient_name: string;
-  spoil_title: string;
-  tutor_name: string;
-  date_issued: string;
+  id: number;
+  cert_id: string;
+  url?: string;
+  resolved_url?: string;
+  status?: string;
+  generated_at?: string;
+  created_at?: string;
+  spoil?: VerifiedCertificateSpoil | null;
+  user?: VerifiedCertificatePerson | null;
 }
 
 interface CertificateVerificationResponse {

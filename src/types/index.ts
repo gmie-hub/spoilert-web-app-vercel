@@ -23,6 +23,10 @@ export interface QuizConfig {
   id: string;
   title: string;
   description: string;
+  /** Saved quiz overview (numberOfQuestions, timeLimit, passmark) so the quiz
+   * screens can pre-fill the fields when editing. */
+  overview?: unknown;
+  questions?: unknown[];
 }
 
 export interface ModuleQuiz {

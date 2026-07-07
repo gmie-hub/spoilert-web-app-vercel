@@ -25,7 +25,7 @@ export const useGetSpoilDetailsQuery = (
     return (await api.get(`/spoils/${resolvedSpoilId}`)).data;
   };
 
-  const { data, isLoading, isError, error } = useQuery<
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<
     SpoilDetailsResponse,
     AxiosError<ApiErrorResponse>
   >({
@@ -44,6 +44,10 @@ export const useGetSpoilDetailsQuery = (
     isLoading,
     isError,
     errorMessage,
+    // expose refetch so callers can re-pull /spoils/{id} after an action (e.g.
+    // follow/unfollow) to get the fresh tutor.is_following / followers_count.
+    refetch,
+    isFetching,
   };
 };
 

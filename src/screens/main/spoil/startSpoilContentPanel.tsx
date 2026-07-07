@@ -181,7 +181,7 @@ export const StartSpoilContentPanel = ({
           className={`mt-10 w-full rounded-[14px] py-4 ${
             activeLessonIsCompleted ? "bg-[#0E6076] hover:bg-[#0E6076]" : ""
           }`}
-          disabled={!activeLesson || activeLessonIsCompleted || isCompletingLesson}
+          // disabled={!activeLesson || activeLessonIsCompleted || isCompletingLesson}
           onClick={onCompleteLesson}
         >
           {activeLessonIsCompleted

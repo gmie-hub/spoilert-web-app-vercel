@@ -26,8 +26,12 @@ interface SpoilTemplateData {
 
 interface Template {
   name: string;
-  fields: Field[];
-  description: string;
+  fields?: Field[];
+  // Older responses used `description` for the markup; the current API returns
+  // it as `template_content` (matches the create payload).
+  description?: string;
+  template_content?: string;
+  certificate_template_name?: string;
 }
 
 interface Field {

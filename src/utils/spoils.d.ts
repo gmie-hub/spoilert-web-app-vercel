@@ -202,6 +202,8 @@ interface Tutor {
   profile: TutorProfile | null;
   total_spoils_created: null;
   followers_count: null;
+  is_following?: boolean;
+  is_reported?: boolean;
 }
 
 interface Relatedspoil {
