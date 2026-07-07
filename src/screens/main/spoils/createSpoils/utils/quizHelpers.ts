@@ -115,21 +115,31 @@ export const createQuizAndQuestions = async (
   }
 };
 
-// Edit a single existing question. The body mirrors the CREATE (post) question
-// payload — `quiz_id` at the top level plus a `questions` array — so the edit
-// looks exactly like the create; we only add `_method: patch` so the backend
-// treats the POST as an update (Laravel style).
+// Edit a single existing question. Sent as multipart FormData via POST to
+// /questions/{questionId} (e.g. /questions/3) with `_method: patch` in the body
+// so the backend treats the POST as an update (Laravel style).
 export const updateQuestion = async (
   questionId: any,
   questionPayload: any,
   quizId?: any,
 ) => {
-  const body: any = { questions: [questionPayload], _method: "patch" };
-  if (quizId !== undefined && quizId !== null) body.quiz_id = quizId;
+  const fd = new FormData();
+  fd.append("_method", "patch");
+  if (quizId !== undefined && quizId !== null) fd.append("quiz_id", String(quizId));
+  fd.append("question", questionPayload?.question ?? "");
+  fd.append("type", questionPayload?.type ?? "");
+  fd.append("answer", questionPayload?.answer ?? "");
+  if (Array.isArray(questionPayload?.options)) {
+    questionPayload.options.forEach((opt: any, index: number) => {
+      fd.append(`options[${index}]`, opt ?? "");
+    });
+  }
 
-  const res = await api.post(`/questions/${questionId}`, body);
+  const res = await api.post(`/questions/${questionId}`, fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   // eslint-disable-next-line no-console
-  console.log(`Patched question ${questionId}:`, body, "=>", res?.data ?? res);
+  console.log(`Patched question ${questionId}:`, res?.data ?? res);
   return res;
 };
 

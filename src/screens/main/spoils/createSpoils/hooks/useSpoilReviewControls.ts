@@ -21,6 +21,7 @@ import { mapSpoilDetailsToOutline } from "../steps/spoilBasicsHelpers";
 import {
   buildQuizCallbacks,
   clearPersistedAdvancedDraft,
+  createSpoilCertificateTemplate,
   getCreatedSpoilId,
   resetDraftProgress,
   syncOutlineChanges,
@@ -147,6 +148,8 @@ export const useSpoilReviewControls = ({
       const createdId = getCreatedSpoilId(response);
       if (createdId) {
         setCreatedSpoilId(Number(createdId));
+        // On success, push the selected certificate template up with the new id.
+        await createSpoilCertificateTemplate(createdId);
         setIsReviewModalOpen(true);
       }
     } catch {
@@ -248,6 +251,8 @@ export const useSpoilReviewControls = ({
         const createdId = getCreatedSpoilId(response);
         if (createdId) {
           setCreatedSpoilId(Number(createdId));
+          // On success, push the selected certificate template up with the new id.
+          await createSpoilCertificateTemplate(createdId);
           setIsSchedulePremiereModalOpen(false);
           setIsSpoilScheduledModalOpen(true);
         } else {

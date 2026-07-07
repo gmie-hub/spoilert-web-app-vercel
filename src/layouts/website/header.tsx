@@ -234,7 +234,12 @@ const Header = () => {
                   height={24}
                   className="md:w-[40px] md:h-[40px] rounded-full"
                 />
-                <p className="hidden md:block">{`${authUser?.first_name} ${authUser?.last_name}`}</p>
+                <p className="hidden md:block">
+                  {(() => {
+                    const fullName = `${authUser?.first_name} ${authUser?.last_name}`;
+                    return fullName.length > 15 ? `${fullName.slice(0, 15)}...` : fullName;
+                  })()}
+                </p>
                 <Image
                   src={ArrowDownIcon}
                   alt="arrow-down"
@@ -266,6 +271,7 @@ const Header = () => {
             </div>
           </Stack>
         )}
+
 
         {/* MOBILE MENU ICON - shown on mobile only (below md) */}
         <button
