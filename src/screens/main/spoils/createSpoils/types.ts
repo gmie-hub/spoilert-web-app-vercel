@@ -62,6 +62,9 @@ export interface QuizConfig {
   id: string;
   title: string;
   description: string;
+  /** Saved quiz overview so the quiz screens can pre-fill fields when editing. */
+  overview?: unknown;
+  questions?: unknown[];
 }
 
 export interface ModuleQuiz {

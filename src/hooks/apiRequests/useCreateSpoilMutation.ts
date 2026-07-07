@@ -57,9 +57,17 @@ export const useCreateSpoilMutation = () => {
       const maybeBasics = _;
       const isPassedBasics = maybeBasics && !(maybeBasics instanceof FormData) && typeof maybeBasics === "object" && (maybeBasics.title || maybeBasics.lessonType || maybeBasics.lessonContent || maybeBasics.lessonFile);
 
-      const { basics: storeBasics, outline: storeOutline } = useCreateSpoilStore.getState();
+      const { basics: storeBasics, outline: storeOutline, certificateTemplate } = useCreateSpoilStore.getState();
       const basics = isPassedBasics ? maybeBasics : storeBasics;
       const outline = isPassedBasics ? storeOutline : storeOutline;
+
+      // Only paid (non-free) spoils can carry a certificate. Send the flag as a
+      // "1"/"0" string; it's "1" when the spoil is paid AND a certificate
+      // template has been selected.
+      const isPaidSpoil = Boolean(basics.pricing && basics.pricing !== "free");
+      const hasCertificate = Boolean(
+        isPaidSpoil && certificateTemplate?.templateContent,
+      );
 
       if (basics.title) formData.append("title", basics.title);
       if (basics.pricing) formData.append("pricing", basics.pricing);
@@ -78,6 +86,8 @@ export const useCreateSpoilMutation = () => {
         formData.append("modules_no", String(basics.moduleCount));
       if (basics.lessonCount)
         formData.append("lessons_no", String(basics.lessonCount));
+
+      formData.append("has_certificate", hasCertificate ? "1" : "0");
 
       // If a scheduled premiere was set, include it as `premiere_at` in ISO format
       if (basics.scheduledDate) {

@@ -57,11 +57,28 @@ export const useLoginMutation = () => {
       // Redirect after login
       router.push("/"); // change this to your post-login route
     } catch (error: any) {
-      toast.error(error?.response?.data?.error ||
+      const errorMessage =
+        error?.response?.data?.error ||
         error?.response?.data?.message ||
-          error?.message ||
-          "Login failed"
-      );
+        error?.message ||
+        "Login failed";
+
+      toast.error(errorMessage);
+
+      // Account isn't verified yet — the backend re-sends an OTP and asks the
+      // user to verify. Send them to the email-verification screen (it reads
+      // `userEmail` from localStorage, same as the signup flow).
+      if (
+        typeof errorMessage === "string" &&
+        errorMessage.toLowerCase().includes("verify your email")
+      ) {
+        try {
+          localStorage.setItem("userEmail", values.email);
+        } catch {
+          // ignore storage errors
+        }
+        router.push("/auth/email-verification");
+      }
     } finally {
       setSubmitting(false);
     }

@@ -229,6 +229,19 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
       return;
     }
 
+    // If this was the last outstanding lesson, the whole Spoylz is now 100%
+    // complete — mark it complete so the certificate is generated. Respect the
+    // post-quiz gate: when a post-Spoylz quiz is still outstanding we leave the
+    // spoil for the learner to finish via the sidebar "Complete Spoil" action.
+    const justCompletedFinalLesson =
+      totalLessons > 0 &&
+      completedLessonsCount + (activeLessonIsCompleted ? 0 : 1) >= totalLessons;
+    const postQuizPending = quizGate.postQuiz && !quizGate.isPostSatisfied;
+
+    if (justCompletedFinalLesson && !postQuizPending) {
+      await completeSpoilHandler(spoil.id);
+    }
+
     // Celebrate the completed lesson; the card offers the certificate when one
     // is available (has_certificate === 1).
     setIsCongratsOpen(true);

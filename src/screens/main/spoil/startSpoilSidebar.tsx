@@ -343,7 +343,7 @@ export const StartSpoilSidebar = ({
         >
           {isCompletingSpoil ? "Completing..." : "Complete Spoylz"}
         </Button>
-      )}
+      )} 
     </aside>
   );
 };

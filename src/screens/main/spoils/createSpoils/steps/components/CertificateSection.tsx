@@ -50,8 +50,11 @@ const CertificateSection: FC<CertificateSectionProps> = ({
       id: spoilTemplate.id,
       code: spoilTemplate?.template?.name,
       name: certificateTemplate?.name || "Certificate Template",
-      templateContent: spoilTemplate.template?.description || "",
-      templateFileName: spoilTemplate.template?.fields[0]?.name || null,
+      templateContent:
+        spoilTemplate.template?.template_content ||
+        spoilTemplate.template?.description ||
+        "",
+      templateFileName: spoilTemplate.template?.fields?.[0]?.name || null,
     });
   }, [certificateTemplate?.name, setCertificateTemplate, spoilTemplate]);
 
@@ -60,7 +63,10 @@ const CertificateSection: FC<CertificateSectionProps> = ({
         id: spoilTemplate.id,
         code: spoilTemplate?.template?.name,
         name: certificateTemplate?.name || "Certificate Template",
-        templateContent: spoilTemplate.template?.description || "",
+        templateContent:
+          spoilTemplate.template?.template_content ||
+          spoilTemplate.template?.description ||
+          "",
       }
     : certificateTemplate;
 
