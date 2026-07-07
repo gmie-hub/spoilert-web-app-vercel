@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
+import useCompleteSpoilMutation, {
+  type SpoilCertificate,
+} from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplateQuery";
 import CertificateTemplatePreview from "@spt/screens/main/spoils/createSpoils/components/CertificateTemplatePreview";
@@ -21,7 +24,137 @@ interface CertificateValues {
   courseName?: string;
   instructorName?: string;
   certificateId?: string;
+  /** Verification link the certificate's QR code should encode. */
+  verifyUrl?: string | null;
 }
+
+// Render a scannable QR that points at the certificate's verification page.
+// We use a zero-dependency image service so the QR works both in the preview
+// iframe and in the printed/downloaded document.
+const buildQrImageSrc = (verifyUrl: string) =>
+  `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data=${encodeURIComponent(
+    verifyUrl,
+  )}`;
+
+// The QR node in the badge could be an <img>, a placeholder <canvas>/<svg>, or
+// a <picture>. Look for them in priority order (a real <img> first) so we don't
+// accidentally grab a decorative icon.
+const findQrVisual = (root: Element): Element | null => {
+  for (const selector of ["img", "canvas", "svg", "picture"]) {
+    const found = root.querySelector(selector);
+    if (found) return found;
+  }
+  return null;
+};
+
+// Point a QR node at the encoded verification link. For an <img> we just swap
+// its src; other node types are replaced with an <img> carrying over the
+// designer's sizing so it keeps the same footprint in the badge.
+const applyQrToVisual = (
+  doc: Document,
+  node: Element,
+  qrSrc: string,
+  verifyUrl: string,
+) => {
+  let image: HTMLImageElement;
+
+  if (node.tagName === "IMG") {
+    image = node as HTMLImageElement;
+    image.removeAttribute("srcset");
+    image.setAttribute("src", qrSrc);
+  } else {
+    image = doc.createElement("img");
+    image.alt = "Certificate verification QR code";
+    image.src = qrSrc;
+
+    const original = node as HTMLElement;
+    const className = original.getAttribute?.("class");
+    if (className) image.setAttribute("class", className);
+    if (original.style?.width) image.style.width = original.style.width;
+    if (original.style?.height) image.style.height = original.style.height;
+
+    node.replaceWith(image);
+  }
+
+  // The QR-service image is 240px, so when the template didn't size the QR
+  // explicitly it would render oversized. Give it a modest badge size in that
+  // case, and always cap it to its container so it can never dominate the sheet.
+  const hasExplicitWidth =
+    image.getAttribute("width") !== null ||
+    Boolean(image.style.width && image.style.width !== "auto");
+  if (!hasExplicitWidth) {
+    image.style.width = "100px";
+    image.style.height = "100px";
+  }
+  image.style.maxWidth = "100%";
+  image.style.maxHeight = "100%";
+  image.style.objectFit = "contain";
+
+  // Scanning uses the encoded pixels, but if the QR is wrapped in a link make
+  // that link resolve to the verification page too.
+  const anchor = image.closest("a");
+  if (anchor) {
+    anchor.setAttribute("href", verifyUrl);
+    anchor.setAttribute("target", "_blank");
+    anchor.setAttribute("rel", "noopener noreferrer");
+  }
+};
+
+// Climb up to `maxDepth` ancestors from `start`, returning the first QR-looking
+// node found. Used to reach the QR sitting next to the id / "VERIFY" labels.
+const findQrVisualNear = (
+  start: Element | null,
+  maxDepth = 4,
+): Element | null => {
+  let current: Element | null = start;
+  for (let depth = 0; current && depth < maxDepth; depth += 1) {
+    const visual = findQrVisual(current);
+    if (visual) return visual;
+    current = current.parentElement;
+  }
+  return null;
+};
+
+// Encode the verification link into the certificate's existing QR code. The
+// badge markup varies by template, so we locate the QR three ways, most
+// reliable first:
+//   1. An element explicitly marked as the QR (id/class/data contains "qr").
+//   2. The QR next to the `certificate_id` placeholder (renders the cert id).
+//   3. The QR next to the "VERIFY" label.
+// We only ever repoint the QR already in the badge — we never add a second one
+// or stretch it across the certificate.
+const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
+  if (!verifyUrl) return;
+
+  const qrSrc = buildQrImageSrc(verifyUrl);
+
+  const markedHost = doc.querySelector<HTMLElement>(
+    '[id*="qr" i], [class*="qr" i], [data-certificate-qr], img[alt*="qr" i]',
+  );
+  const markedVisual =
+    markedHost &&
+    (["IMG", "CANVAS", "SVG"].includes(markedHost.tagName)
+      ? markedHost
+      : findQrVisual(markedHost));
+  if (markedVisual) {
+    applyQrToVisual(doc, markedVisual, qrSrc, verifyUrl);
+    return;
+  }
+
+  const idAnchor = doc.getElementById("certificate_id");
+  const verifyLabel =
+    Array.from(doc.querySelectorAll<HTMLElement>("*")).find(
+      (element) =>
+        element.childElementCount === 0 &&
+        (element.textContent || "").trim().toLowerCase().includes("verify"),
+    ) ?? null;
+
+  const nearVisual =
+    findQrVisualNear(idAnchor) ?? findQrVisualNear(verifyLabel);
+  if (nearVisual) {
+    applyQrToVisual(doc, nearVisual, qrSrc, verifyUrl);
+  }
+};
 
 // A4 portrait override so the certificate fills the full sheet instead of
 // sitting as a small centered card on the template's own background.
@@ -66,6 +199,9 @@ const personalizeCertificate = (
     setText("instructor_name", values.instructorName);
     setText("certificate_id", values.certificateId);
 
+    // Encode the verification link into the certificate's QR code.
+    injectQrCode(doc, values.verifyUrl);
+
     // Finished certificate — remove the "editable" markers/underlines.
     doc.querySelectorAll("[contenteditable]").forEach((el) => {
       el.removeAttribute("contenteditable");
@@ -96,6 +232,29 @@ export default function MyLearningCertificatePage({
   const router = useRouter();
   const { data: spoil } = useGetSpoilDetailsQuery(spoilId);
   const user = useAuthStore((state) => state.user);
+  const { completeSpoilHandler } = useCompleteSpoilMutation();
+
+  // The completed certificate (cert id + verification link) is issued by the
+  // complete-spoil endpoint, so we complete the spoil when the learner views
+  // their certificate and keep the returned certificate data.
+  const [certificate, setCertificate] = useState<SpoilCertificate | null>(null);
+  const completedSpoilIdRef = useRef<string | number | null>(null);
+
+  useEffect(() => {
+    if (!spoilId || completedSpoilIdRef.current === spoilId) {
+      return;
+    }
+    completedSpoilIdRef.current = spoilId;
+
+    completeSpoilHandler(spoilId, { silent: true }).then((response) => {
+      if (response?.data?.certificate) {
+        setCertificate(response.data.certificate);
+      }
+    });
+    // completeSpoilHandler is recreated each render; the ref guard keeps this
+    // to a single call per spoil.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spoilId]);
 
   // Pull the actual certificate for this spoil from
   // /certificates/template/{spoilId}/spoil rather than showing a hardcoded image.
@@ -118,6 +277,13 @@ export default function MyLearningCertificatePage({
     (spoil?.tutor as { display_name?: string | null } | undefined)?.display_name,
   );
 
+  // Prefer the issued certificate's public id / verification link; fall back to
+  // the template id while the complete-spoil response is still loading.
+  const certificateId =
+    certificate?.cert_id ??
+    (spoilTemplate?.id ? String(spoilTemplate.id) : undefined);
+  const verifyUrl = certificate?.resolved_url || certificate?.url || null;
+
   // Inject the real values into the certificate template HTML.
   const certificateMarkup = useMemo(
     () =>
@@ -125,9 +291,10 @@ export default function MyLearningCertificatePage({
         recipientName: learnerName,
         courseName: spoil?.title,
         instructorName: tutorName,
-        certificateId: spoilTemplate?.id ? String(spoilTemplate.id) : undefined,
+        certificateId,
+        verifyUrl,
       }),
-    [rawMarkup, learnerName, spoil?.title, tutorName, spoilTemplate?.id],
+    [rawMarkup, learnerName, spoil?.title, tutorName, certificateId, verifyUrl],
   );
 
   const handleBack = () => {
