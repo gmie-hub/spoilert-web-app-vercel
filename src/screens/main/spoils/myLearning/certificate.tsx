@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
@@ -15,216 +16,16 @@ import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplate
 import CertificateTemplatePreview from "@spt/screens/main/spoils/createSpoils/components/CertificateTemplatePreview";
 import { useAuthStore } from "@spt/store/authStore";
 
+import {
+  buildFullName,
+  personalizeCertificate,
+  sanitizeFileName,
+  waitForIframeReady,
+} from "./certificateHelpers";
+
 interface MyLearningCertificatePageProps {
   spoilId: number | string;
 }
-
-interface CertificateValues {
-  recipientName?: string;
-  courseName?: string;
-  instructorName?: string;
-  certificateId?: string;
-  /** Verification link the certificate's QR code should encode. */
-  verifyUrl?: string | null;
-}
-
-// Render a scannable QR that points at the certificate's verification page.
-// We use a zero-dependency image service so the QR works both in the preview
-// iframe and in the printed/downloaded document.
-const buildQrImageSrc = (verifyUrl: string) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data=${encodeURIComponent(
-    verifyUrl,
-  )}`;
-
-// The QR node in the badge could be an <img>, a placeholder <canvas>/<svg>, or
-// a <picture>. Look for them in priority order (a real <img> first) so we don't
-// accidentally grab a decorative icon.
-const findQrVisual = (root: Element): Element | null => {
-  for (const selector of ["img", "canvas", "svg", "picture"]) {
-    const found = root.querySelector(selector);
-    if (found) return found;
-  }
-  return null;
-};
-
-// Point a QR node at the encoded verification link. For an <img> we just swap
-// its src; other node types are replaced with an <img> carrying over the
-// designer's sizing so it keeps the same footprint in the badge.
-const applyQrToVisual = (
-  doc: Document,
-  node: Element,
-  qrSrc: string,
-  verifyUrl: string,
-) => {
-  let image: HTMLImageElement;
-
-  if (node.tagName === "IMG") {
-    image = node as HTMLImageElement;
-    image.removeAttribute("srcset");
-    image.setAttribute("src", qrSrc);
-  } else {
-    image = doc.createElement("img");
-    image.alt = "Certificate verification QR code";
-    image.src = qrSrc;
-
-    const original = node as HTMLElement;
-    const className = original.getAttribute?.("class");
-    if (className) image.setAttribute("class", className);
-    if (original.style?.width) image.style.width = original.style.width;
-    if (original.style?.height) image.style.height = original.style.height;
-
-    node.replaceWith(image);
-  }
-
-  // The QR-service image is 240px, so when the template didn't size the QR
-  // explicitly it would render oversized. Give it a modest badge size in that
-  // case, and always cap it to its container so it can never dominate the sheet.
-  const hasExplicitWidth =
-    image.getAttribute("width") !== null ||
-    Boolean(image.style.width && image.style.width !== "auto");
-  if (!hasExplicitWidth) {
-    image.style.width = "100px";
-    image.style.height = "100px";
-  }
-  image.style.maxWidth = "100%";
-  image.style.maxHeight = "100%";
-  image.style.objectFit = "contain";
-
-  // Scanning uses the encoded pixels, but if the QR is wrapped in a link make
-  // that link resolve to the verification page too.
-  const anchor = image.closest("a");
-  if (anchor) {
-    anchor.setAttribute("href", verifyUrl);
-    anchor.setAttribute("target", "_blank");
-    anchor.setAttribute("rel", "noopener noreferrer");
-  }
-};
-
-// Climb up to `maxDepth` ancestors from `start`, returning the first QR-looking
-// node found. Used to reach the QR sitting next to the id / "VERIFY" labels.
-const findQrVisualNear = (
-  start: Element | null,
-  maxDepth = 4,
-): Element | null => {
-  let current: Element | null = start;
-  for (let depth = 0; current && depth < maxDepth; depth += 1) {
-    const visual = findQrVisual(current);
-    if (visual) return visual;
-    current = current.parentElement;
-  }
-  return null;
-};
-
-// Encode the verification link into the certificate's existing QR code. The
-// badge markup varies by template, so we locate the QR three ways, most
-// reliable first:
-//   1. An element explicitly marked as the QR (id/class/data contains "qr").
-//   2. The QR next to the `certificate_id` placeholder (renders the cert id).
-//   3. The QR next to the "VERIFY" label.
-// We only ever repoint the QR already in the badge — we never add a second one
-// or stretch it across the certificate.
-const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
-  if (!verifyUrl) return;
-
-  const qrSrc = buildQrImageSrc(verifyUrl);
-
-  const markedHost = doc.querySelector<HTMLElement>(
-    '[id*="qr" i], [class*="qr" i], [data-certificate-qr], img[alt*="qr" i]',
-  );
-  const markedVisual =
-    markedHost &&
-    (["IMG", "CANVAS", "SVG"].includes(markedHost.tagName)
-      ? markedHost
-      : findQrVisual(markedHost));
-  if (markedVisual) {
-    applyQrToVisual(doc, markedVisual, qrSrc, verifyUrl);
-    return;
-  }
-
-  const idAnchor = doc.getElementById("certificate_id");
-  const verifyLabel =
-    Array.from(doc.querySelectorAll<HTMLElement>("*")).find(
-      (element) =>
-        element.childElementCount === 0 &&
-        (element.textContent || "").trim().toLowerCase().includes("verify"),
-    ) ?? null;
-
-  const nearVisual =
-    findQrVisualNear(idAnchor) ?? findQrVisualNear(verifyLabel);
-  if (nearVisual) {
-    applyQrToVisual(doc, nearVisual, qrSrc, verifyUrl);
-  }
-};
-
-// A4 portrait override so the certificate fills the full sheet instead of
-// sitting as a small centered card on the template's own background.
-const A4_FULL_PAGE_CSS = `
-  html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
-  body { display: block !important; min-height: 100vh !important; }
-  .certificate-container,
-  body > *:not(script):not(style) {
-    max-width: none !important;
-    width: 100% !important;
-    min-height: 100vh !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
-`;
-
-// The certificate template is an HTML document with editable placeholder
-// elements (id="recipient_name" / "course_name" / "instructor_name" /
-// "certificate_id"). Swap in the real learner, spoylz and tutor values, drop the
-// editing affordances, and stretch it to fill a full A4 page.
-const personalizeCertificate = (
-  markup: string,
-  values: CertificateValues,
-): string => {
-  if (!markup) return "";
-  if (typeof window === "undefined" || typeof DOMParser === "undefined") {
-    return markup;
-  }
-
-  try {
-    const doc = new DOMParser().parseFromString(markup, "text/html");
-
-    const setText = (id: string, value?: string) => {
-      if (!value) return;
-      const el = doc.getElementById(id);
-      if (el) el.textContent = value;
-    };
-
-    setText("recipient_name", values.recipientName);
-    setText("course_name", values.courseName);
-    setText("instructor_name", values.instructorName);
-    setText("certificate_id", values.certificateId);
-
-    // Encode the verification link into the certificate's QR code.
-    injectQrCode(doc, values.verifyUrl);
-
-    // Finished certificate — remove the "editable" markers/underlines.
-    doc.querySelectorAll("[contenteditable]").forEach((el) => {
-      el.removeAttribute("contenteditable");
-    });
-
-    const style = doc.createElement("style");
-    style.textContent = A4_FULL_PAGE_CSS;
-    doc.head.appendChild(style);
-
-    return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
-  } catch {
-    return markup;
-  }
-};
-
-const buildFullName = (
-  first?: string | null,
-  last?: string | null,
-  display?: string | null,
-) => {
-  if (display) return display;
-  return [first, last].filter(Boolean).join(" ").trim();
-};
 
 export default function MyLearningCertificatePage({
   spoilId,
@@ -238,6 +39,7 @@ export default function MyLearningCertificatePage({
   // complete-spoil endpoint, so we complete the spoil when the learner views
   // their certificate and keep the returned certificate data.
   const [certificate, setCertificate] = useState<SpoilCertificate | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const completedSpoilIdRef = useRef<string | number | null>(null);
 
   useEffect(() => {
@@ -313,15 +115,152 @@ export default function MyLearningCertificatePage({
 
     // The certificate is rendered HTML, so open it in a new window and let the
     // user save it as a PDF via the browser's print dialog.
-    const printWindow = window.open("", "_blank");
+    const printWindow = window.open("", "_blank", "width=900,height=1200");
     if (!printWindow) {
+      toast.error(
+        "Please allow pop-ups so your certificate can open for download.",
+      );
       return;
     }
 
+    printWindow.document.open();
     printWindow.document.write(certificateMarkup);
     printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => printWindow.print(), 300);
+    // Sets the default file name when the user chooses "Save as PDF".
+    printWindow.document.title = certificateTitle;
+
+    const printDocument = printWindow.document;
+    let hasPrinted = false;
+
+    const triggerPrint = () => {
+      if (hasPrinted || printWindow.closed) {
+        return;
+      }
+      hasPrinted = true;
+      printWindow.focus();
+      printWindow.print();
+    };
+
+    // The QR code is an external image — wait for it (and any other images) to
+    // finish loading before printing, otherwise the saved PDF gets a blank QR.
+    const printWhenImagesReady = () => {
+      const images = Array.from(printDocument.images ?? []);
+      const pending = images.filter((image) => !image.complete);
+
+      if (pending.length === 0) {
+        window.setTimeout(triggerPrint, 200);
+        return;
+      }
+
+      let remaining = pending.length;
+      const onSettled = () => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          window.setTimeout(triggerPrint, 200);
+        }
+      };
+
+      pending.forEach((image) => {
+        image.addEventListener("load", onSettled, { once: true });
+        image.addEventListener("error", onSettled, { once: true });
+      });
+
+      // Safety net so a stalled image can never block the download entirely.
+      window.setTimeout(triggerPrint, 5000);
+    };
+
+    if (printDocument.readyState === "complete") {
+      printWhenImagesReady();
+    } else {
+      printWindow.addEventListener("load", printWhenImagesReady, {
+        once: true,
+      });
+    }
+  };
+
+  // Direct "Save as PDF" (no print dialog): render the certificate into an
+  // off-screen iframe, rasterise it with html2canvas and write it into a jsPDF
+  // A4 page. If anything fails (e.g. a non-CORS asset taints the canvas) we fall
+  // back to the print-to-PDF flow so the button always produces a certificate.
+  const handleDownloadPdf = async () => {
+    if (!certificateMarkup || typeof window === "undefined" || isDownloading) {
+      return;
+    }
+
+    setIsDownloading(true);
+
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.position = "fixed";
+    iframe.style.left = "-10000px";
+    iframe.style.top = "0";
+    iframe.style.width = "794px"; // ~A4 width at 96dpi
+    iframe.style.height = "1123px"; // ~A4 height at 96dpi
+    iframe.style.border = "0";
+    iframe.style.background = "#ffffff";
+
+    try {
+      document.body.appendChild(iframe);
+
+      const iframeDocument = iframe.contentDocument;
+      if (!iframeDocument) {
+        throw new Error("Unable to prepare the certificate for download.");
+      }
+
+      iframeDocument.open();
+      iframeDocument.write(certificateMarkup);
+      iframeDocument.close();
+
+      await waitForIframeReady(iframe);
+
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+
+      const canvas = await html2canvas(iframeDocument.body, {
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        scale: 2,
+        windowWidth: 794,
+        windowHeight: Math.max(1123, iframeDocument.body.scrollHeight),
+      });
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
+      });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imageData = canvas.toDataURL("image/png");
+      const imageWidth = pageWidth;
+      const imageHeight = (canvas.height * imageWidth) / canvas.width;
+
+      if (imageHeight <= pageHeight) {
+        pdf.addImage(imageData, "PNG", 0, 0, imageWidth, imageHeight);
+      } else {
+        // Taller than one page — tile the same image across pages.
+        let position = 0;
+        let remaining = imageHeight;
+        while (remaining > 0) {
+          pdf.addImage(imageData, "PNG", 0, position, imageWidth, imageHeight);
+          remaining -= pageHeight;
+          if (remaining > 0) {
+            pdf.addPage();
+            position -= pageHeight;
+          }
+        }
+      }
+
+      pdf.save(`${sanitizeFileName(certificateTitle)}.pdf`);
+    } catch {
+      // Capture failed — fall back to the browser print dialog.
+      handleDownload();
+    } finally {
+      iframe.remove();
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -363,10 +302,10 @@ export default function MyLearningCertificatePage({
           <Button
             variant="darkBlue"
             className="mt-8 w-full rounded-[12px] py-4"
-            onClick={handleDownload}
-            disabled={!certificateMarkup}
+            onClick={handleDownloadPdf}
+            disabled={!certificateMarkup || isDownloading}
           >
-            Download Certificate
+            {isDownloading ? "Preparing PDF…" : "Download Certificate"}
           </Button>
 
           <Button
