@@ -36,7 +36,7 @@ export function TutorProfile({
   expertise,
   followersCount,
   isFollowing,
-  isReported,
+  
   description,
   relatedSpoils,
   onReport,
