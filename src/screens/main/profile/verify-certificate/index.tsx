@@ -8,9 +8,11 @@ import { FiArrowLeft, FiInfo } from "react-icons/fi";
 import Button from "@spt/components/button";
 import { useVerifyCertificateQuery } from "@spt/hooks/apiRequests/useVerifyCertificateQuery";
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return "—";
   try {
     const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
     return date.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
@@ -19,6 +21,31 @@ function formatDate(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+// Build a display name from first/last (or a display name), collapsing the
+// duplicates the API sometimes returns (e.g. first_name === last_name).
+function buildPersonName(person?: {
+  first_name?: string;
+  last_name?: string;
+  display_name?: string | null;
+  email?: string;
+}): string {
+  if (!person) return "—";
+  if (person.display_name) return person.display_name;
+
+  const parts = [person.first_name, person.last_name].filter(
+    (part): part is string => Boolean(part && part.trim()),
+  );
+  const unique = parts.filter((part, index) => parts.indexOf(part) === index);
+  const name = unique.join(" ").trim();
+
+  return name || person.email || "—";
+}
+
+function capitalize(value?: string): string {
+  if (!value) return "—";
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function DetailCell({
@@ -110,36 +137,33 @@ export default function VerifyCertificatePage({
           <div className="rounded-xl border border-[#EEF3F6] overflow-hidden">
             <div className="grid grid-cols-2">
               <DetailCell
-                label="Certificate Title"
-                value={data.certificate_title}
-                borderRight
-                borderBottom
-              />
-              <DetailCell
-                label="Certificate ID"
-                value={data.certificate_id}
-                borderBottom
-              />
-              <DetailCell
                 label="Recipient Name"
-                value={data.recipient_name}
+                value={buildPersonName(data.user ?? undefined)}
                 borderRight
                 borderBottom
               />
               <DetailCell
                 label="Spoylz Title"
-                value={data.spoil_title}
+                value={data.spoil?.title || "—"}
                 borderBottom
               />
               <DetailCell
                 label="Tutor's Name"
-                value={data.tutor_name}
+                value={buildPersonName(data.spoil?.tutor ?? undefined)}
                 borderRight
+                borderBottom
               />
               <DetailCell
                 label="Date Issued"
-                value={formatDate(data.date_issued)}
+                value={formatDate(data.generated_at || data.created_at)}
+                borderBottom
               />
+              <DetailCell
+                label="Certificate ID"
+                value={data.cert_id}
+                borderRight
+              />
+              <DetailCell label="Status" value={capitalize(data.status)} />
             </div>
           </div>
         </div>
