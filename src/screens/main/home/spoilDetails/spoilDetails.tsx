@@ -22,7 +22,6 @@ import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQu
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { useAuthStore } from "@spt/store/authStore";
-import { SpoilDetailsData } from "@spt/utils/spoils";
 
 import HStack from "../../../../components/hstack";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
@@ -33,57 +32,18 @@ import BuySpoilPaymentModal, {
 import Details from "./details";
 import RedeemSuccessModal from "./RedeemSuccessModal";
 import ShareLinkModal from "./ShareLinkModal";
+import {
+  formatExpiryDate,
+  formatPrice,
+  getTutorInitials,
+  getTutorName,
+} from "./spoilDetails.helpers";
 import { SpoilMobileCTA, SpoilPricingCard } from "./SpoilPricingCard";
 import SponsorSpoilModal from "./SponsorSpoilModal";
 
 interface SpoilDetailsProps {
   spoilId: number | string;
 }
-
-const formatExpiryDate = (value?: string | null) => {
-  if (!value) return "No expiry date";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return `Expires on ${date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })}`;
-};
-
-const formatPrice = (spoil: SpoilDetailsData) => {
-  const amount = spoil.display_amount ?? spoil.amount;
-
-  if (spoil?.pricing?.toLowerCase() === "free") {
-    return "Free";
-  }
-
-  if (typeof amount === "number") {
-    return `₦${amount?.toLocaleString()}`;
-  }
-
-  return spoil?.pricing || "Pricing unavailable";
-};
-
-const getTutorName = (spoil: SpoilDetailsData) => {
-  const firstName = spoil.tutor?.first_name ?? "";
-  const lastName = spoil.tutor?.last_name ?? "";
-  const fullName = `${firstName} ${lastName}`.trim();
-
-  return fullName || "Unknown tutor";
-};
-
-const getTutorInitials = (spoil: SpoilDetailsData) => {
-  const firstInitial = spoil.tutor?.first_name?.[0] ?? "";
-  const lastInitial = spoil.tutor?.last_name?.[0] ?? "";
-
-  return `${firstInitial}${lastInitial}`.toUpperCase() || "NA";
-};
 
 export const ErrorState = ({ message }: { message: string }) => (
   <section className="px-5 lg:px-25 py-16">
