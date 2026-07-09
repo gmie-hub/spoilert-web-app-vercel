@@ -68,7 +68,7 @@ const extractSponsorships = (response?: SponsorshipsResponse): SponsorshipDatum[
   return [];
 };
 
-export const useGetSponsorshipsQuery = (isAdmin: boolean = true) => {
+export const useGetSponsorshipsQuery = (isAdmin: boolean = false) => {
   const user = useAuthStore((state) => state.user);
   const userId = user?.id;
 

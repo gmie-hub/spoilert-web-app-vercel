@@ -7,7 +7,8 @@ import Image from "next/image";
 import PlusIcon from "@spt/assets/icons/plusopen.svg";
 import CloseIcon from "@spt/assets/icons/xclose.svg";
 
-
+// eslint-disable-next-line no-console
+console.log("chec if deplo");
 
 const faqs = [
   {

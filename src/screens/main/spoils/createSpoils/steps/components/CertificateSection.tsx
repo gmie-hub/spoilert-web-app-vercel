@@ -19,11 +19,13 @@ import type { SpoilTypeOption } from "../../types";
 interface CertificateSectionProps {
   selectedType: SpoilTypeOption;
   spoilId?: number | string | null;
+  hasCertificate?: boolean;
 }
 
 const CertificateSection: FC<CertificateSectionProps> = ({
   selectedType,
   spoilId = null,
+  hasCertificate = false,
 }) => {
   const router = useRouter();
   const certificateTemplate = useCreateSpoilStore(
@@ -39,7 +41,11 @@ const CertificateSection: FC<CertificateSectionProps> = ({
   // id lives here. Fall back to it so the certificate flow stays linked to the
   // spoil being created and we can return to its details.
   const createdSpoilId = useAuthStore((state) => state.createdSpoilId);
-  const { data: spoilTemplate } = useGetSpoilTemplateQuery();
+  const resolvedSpoilId = spoilId ?? createdSpoilId;
+  const { data: spoilTemplate, isLoading: isLoadingSpoilTemplate } =
+    useGetSpoilTemplateQuery(resolvedSpoilId, {
+      enabled: Boolean(resolvedSpoilId && hasCertificate),
+    });
 
   useEffect(() => {
     if (!spoilTemplate) {
@@ -70,12 +76,21 @@ const CertificateSection: FC<CertificateSectionProps> = ({
       }
     : certificateTemplate;
 
+  const previewMarkup = resolvedTemplate?.templateContent ?? "";
+  const hasTemplatePreview = Boolean(previewMarkup);
+  const shouldEditCertificate = hasCertificate || Boolean(resolvedTemplate);
+  const placeholderText =
+    hasCertificate && isLoadingSpoilTemplate
+      ? "Loading Preview"
+      : hasCertificate
+        ? "Certificate Added"
+        : "No Certificate";
+
   const handleCustomize = () => {
-    const resolvedSpoilId = spoilId ?? createdSpoilId;
     const spoilIdParam = resolvedSpoilId ? `&spoilId=${resolvedSpoilId}` : "";
 
     router.push(
-      resolvedTemplate
+      shouldEditCertificate
         ? `/create-spoils/certificate-template/customize?flow=${selectedType}&mode=edit${spoilIdParam}`
         : `/create-spoils/certificate-template?flow=${selectedType}${spoilIdParam}`,
     );
@@ -86,10 +101,10 @@ const CertificateSection: FC<CertificateSectionProps> = ({
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="flex items-center gap-4">
           <div className="relative h-24 w-44 overflow-hidden rounded-xl">
-            {resolvedTemplate?.templateContent ? (
+            {hasTemplatePreview ? (
               <CertificateTemplatePreview
-                markup={resolvedTemplate.templateContent}
-                title={resolvedTemplate.name || "Certificate template preview"}
+                markup={previewMarkup}
+                title={resolvedTemplate?.name || "Certificate template preview"}
                 logoImage={certificateCustomization.logoImage}
                 signatureImage={certificateCustomization.signatureImage}
                 outerClassName="relative h-full w-full overflow-hidden bg-white"
@@ -98,7 +113,7 @@ const CertificateSection: FC<CertificateSectionProps> = ({
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-[#F2F7FA] text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A8A96]">
-                No Preview
+                {placeholderText}
               </div>
             )}
           </div>
@@ -108,10 +123,10 @@ const CertificateSection: FC<CertificateSectionProps> = ({
           className="rounded-lg bg-[#003344] px-6 text-white hover:bg-[#002233]"
           onClick={handleCustomize}
         >
-          {resolvedTemplate && (
+          {shouldEditCertificate && (
             <Image src={editIcon} alt="Edit" width={24} height={23} />
           )}
-          {resolvedTemplate ? "Edit Certificate" : "Select Certificate"}
+          {shouldEditCertificate ? "Edit Certificate" : "Add Certificate"}
         </Button>
       </div>
     </div>

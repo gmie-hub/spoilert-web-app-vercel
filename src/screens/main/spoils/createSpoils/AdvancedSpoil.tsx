@@ -45,6 +45,9 @@ const AdvancedSpoil = () => {
   const resetDraft = useCreateSpoilStore((s) => s.resetDraft);
   const loadedSpoilId = useCreateSpoilStore((s) => s.loadedSpoilId);
   const setLoadedSpoilId = useCreateSpoilStore((s) => s.setLoadedSpoilId);
+  const setCertificateTemplate = useCreateSpoilStore(
+    (s) => s.setCertificateTemplate,
+  );
 
   const createdSpoilId = useAuthStore((s) => s.createdSpoilId);
   const setCreatedSpoilIdInStore = useAuthStore((s) => s.setCreatedSpoilId);
@@ -66,12 +69,14 @@ const AdvancedSpoil = () => {
 
     setBasicsData(mapSpoilDataToForm(spoilData));
     setOutlineData(mapSpoilDetailsToOutline(spoilData));
+    setCertificateTemplate(null);
     setCreatedSpoilIdInStore?.(Number(spoilData.id));
     setLoadedSpoilId(spoilData.id);
   }, [
     isEditMode,
     loadedSpoilId,
     setBasicsData,
+    setCertificateTemplate,
     setCreatedSpoilIdInStore,
     setLoadedSpoilId,
     setOutlineData,
@@ -172,6 +177,7 @@ const AdvancedSpoil = () => {
             selectedType="advanced"
             isEditMode={isEditMode}
             spoilId={spoilIdParam}
+            hasCertificate={Number(spoilData?.has_certificate ?? 0) === 1}
             onPrevious={goToPreviousStep}
             onSubmit={() => {
               resetDraft();
