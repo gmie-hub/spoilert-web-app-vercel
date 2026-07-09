@@ -56,6 +56,7 @@ export const useUpdateSpoilMutation = () => {
       if (values.courseCode) formData.append("course_code", values.courseCode);
       if (values.moduleCount) formData.append("modules_no", String(values.moduleCount));
       if (values.lessonCount) formData.append("lessons_no", String(values.lessonCount));
+ 
       if (values.type) formData.append("type", String(values.type));
       if (values.scheduledDate) {
         formData.append(
@@ -83,6 +84,20 @@ export const useUpdateSpoilMutation = () => {
         formData.append(
           "status",
           String(values.status === true ? 1 : values.status === false ? 0 : values.status),
+        );
+      }
+
+      // 1 when a certificate template is attached (added), 0 when removed.
+      if (values.has_certificate != null) {
+        formData.append(
+          "has_certificate",
+          String(
+            values.has_certificate === true
+              ? 1
+              : values.has_certificate === false
+                ? 0
+                : values.has_certificate,
+          ),
         );
       }
 

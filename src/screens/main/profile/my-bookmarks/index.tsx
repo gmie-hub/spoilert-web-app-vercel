@@ -11,13 +11,7 @@ export default function MyBookmarksPage() {
   const { data: bookmarks, isLoading, isError, errorMessage } = useGetBookmarksQuery();
 
   // Normalize data
-  let bookmarkList = [];
-
-  if (Array.isArray(bookmarks) && bookmarks.length > 0) {
-    bookmarkList = bookmarks;
-  } else if (Array.isArray(bookmarks?.data) && bookmarks.data.length > 0) {
-    bookmarkList = bookmarks.data;
-  }
+  const bookmarkList = bookmarks?.data?.data || [];
 
   return (
     <div className="p-6">
@@ -32,9 +26,27 @@ export default function MyBookmarksPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {bookmarkList.length > 0 ? (
-            bookmarkList.map((bookmark: any, idx: number) => (
-              <BookmarkCard key={idx} {...bookmark} />
-            ))
+            bookmarkList.map((bookmark: any) => {
+              const spoil = bookmark.spoil;
+              const tutor = spoil?.tutor;
+              const author =
+                tutor?.display_name ||
+                `${tutor?.first_name ?? ""} ${tutor?.last_name ?? ""}`.trim();
+
+              return (
+                <BookmarkCard
+                  key={bookmark.id}
+                  spoilId={spoil?.id ?? bookmark.spoil_id}
+                  title={spoil?.title}
+                  image={spoil?.cover_image_url}
+                  author={author}
+                  isFree={spoil?.pricing === "free"}
+                  price={`₦${Number(
+                    spoil?.display_amount ?? spoil?.amount ?? 0
+                  ).toLocaleString()}`}
+                />
+              );
+            })
           ) : (
             <div className="col-span-2 text-gray-500">
               No bookmarks found.

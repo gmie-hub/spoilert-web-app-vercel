@@ -18,6 +18,7 @@ interface SpoilReviewStepProps {
   onSubmit: () => void;
   isEditMode?: boolean;
   spoilId?: number | string | null;
+  hasCertificate?: boolean;
   onEditBasics?: () => void;
   onEditOutline?: () => void;
 }
@@ -30,6 +31,7 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
   onSubmit,
   isEditMode = false,
   spoilId = null,
+  hasCertificate = false,
   onEditBasics,
   onEditOutline,
 }) => {
@@ -43,7 +45,11 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
       </div>
 
       {selectedType !== "simple" && isPaid && (
-        <CertificateSection selectedType={selectedType} spoilId={spoilId} />
+        <CertificateSection
+          selectedType={selectedType}
+          spoilId={spoilId}
+          hasCertificate={hasCertificate}
+        />
       )}
 
       <div className="space-y-4">

@@ -66,10 +66,12 @@ export const normalizeQuestions = (
     type: parseQuestionType(question.type),
   }));
 
-export const parseQuestionType = (value?: string | null): QuestionType =>
-  value?.toLowerCase() === "fill_in_blank"
-    ? "fill_in_blank"
-    : "multiple_choice";
+export const parseQuestionType = (value?: string | null): QuestionType => {
+  // The API may send either "fill_in_the_blank" or "fill_in_blank".
+  const normalized = value?.toLowerCase().trim() ?? "";
+
+  return normalized.includes("fill") ? "fill_in_blank" : "multiple_choice";
+};
 
 export const parseQuestionOptions = (value?: string | null) => {
   if (!value) {

@@ -5,8 +5,10 @@ import Image from "next/image";
 import AuthorIcon from "@spt/assets/icons/author.svg";
 import BanchIcon from "@spt/assets/icons/banchmarks.svg";
 import DeleteIcon from "@spt/assets/icons/deleteIconbanch.svg";
+import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 
 interface BookmarkCardProps {
+  spoilId: number;
   title: string;
   price: string;
   author: string;
@@ -15,35 +17,56 @@ interface BookmarkCardProps {
 }
 
 export default function BookmarkCard({
+  spoilId,
   title,
   price,
   author,
   image,
   isFree,
 }: BookmarkCardProps) {
+  const { addBookmark, isLoading } = useAddBookmarkMutation();
+
+  // The /bookmarks endpoint toggles, so calling it on an already-bookmarked
+  // spoil removes it. On success the mutation invalidates ["bookmarks", userId],
+  // which refetches useGetBookmarksQuery and drops this card from the list.
+  const handleRemoveBookmark = async () => {
+    if (!spoilId || isLoading) return;
+    await addBookmark(spoilId);
+  };
+
   return (
     <div className="flex bg-white rounded-[12px] shadow-sm p-4 gap-4 items-center min-h-[120px] relative group hover:shadow-md transition border border-[#F6F4F0] shadow-[#D4A4371A]">
-      <div className="w-28 h-28 rounded-xl overflow-hidden flex-shrink-0">
-        <Image
-          src={image}
-          alt={title}
-          width={117}
-          height={121}
-          className="object-cover w-full h-full"
-        />
+      <div className="w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 bg-[#F6F4F0]">
+        {image ? (
+          <Image
+            src={image}
+            alt={title || "Bookmark cover"}
+            width={117}
+            height={121}
+            className="object-cover w-full h-full"
+          />
+        ) : null}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <h3 className=" text-[16px] text-[#212529] truncate pr-2 leading-snug">
             {title}
           </h3>
-          <Image
-            className="text-[#F35B5B] hover:bg-[#F35B5B]/10 rounded-lg  transition border border-[#F6F4F0]"
-            src={DeleteIcon}
-            alt="DeleteIcon"
-            width={32}
-            height={32}
-          />
+          <button
+            type="button"
+            onClick={handleRemoveBookmark}
+            disabled={isLoading}
+            aria-label="Remove bookmark"
+            title="Remove bookmark"
+            className="flex-shrink-0 rounded-lg border border-[#F6F4F0] transition hover:bg-[#F35B5B]/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Image
+              src={DeleteIcon}
+              alt="Remove bookmark"
+              width={32}
+              height={32}
+            />
+          </button>
         </div>
         <div className="mt-2 flex items-center gap-2">
           {!isFree ? (

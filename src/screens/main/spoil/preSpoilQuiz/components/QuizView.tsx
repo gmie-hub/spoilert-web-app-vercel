@@ -98,7 +98,8 @@ export const QuizView = ({
         {currentQuestion.prompt}
       </div>
 
-      {currentQuestion.type === "multiple_choice" ? (
+      {currentQuestion.type === "multiple_choice" &&
+      currentQuestion.options.length > 0 ? (
         <div className="mt-6 space-y-4">
           {currentQuestion.options.map((option) => {
             const isSelected = responses[currentQuestion.id] === option;

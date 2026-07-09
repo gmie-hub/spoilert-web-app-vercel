@@ -4,6 +4,13 @@ import React, { useState } from "react";
 
 import Button from "@spt/components/button";
 import Modal from "@spt/components/modal";
+import useRedeemSponsorshipMutation from "@spt/hooks/apiRequests/useRedeemSponsorshipMutation";
+
+export interface RedeemedSpoil {
+  id: number;
+  title: string;
+  cover_image_url?: string | null;
+}
 
 interface BuySpoilPaymentModalProps {
   open: boolean;
@@ -18,6 +25,8 @@ interface BuySpoilPaymentModalProps {
   isMakingPayment?: boolean;
   // response data returned by the buy-spoil endpoint
   paymentData?: any;
+  // fired when a sponsorship code is redeemed successfully
+  onRedeemSuccess?: (spoil: RedeemedSpoil) => void;
 }
 
 const formatNaira = (value: number) => {
@@ -38,9 +47,33 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
   onMakePayment,
   isMakingPayment = false,
   paymentData,
+  onRedeemSuccess,
 }) => {
   const [discountCode, setDiscountCode] = useState("");
   const discount = 0;
+
+  const { redeemSponsorshipHandler, isLoading: isRedeeming } =
+    useRedeemSponsorshipMutation();
+
+  const trimmedCode = discountCode.trim();
+  const canRedeem = trimmedCode.length > 0 && !isRedeeming;
+
+  const handleRedeem = async () => {
+    const response = await redeemSponsorshipHandler(trimmedCode);
+    if (!response) return;
+
+    setDiscountCode("");
+
+    // the redeemed spoil is nested under data.sponsorship.spoil
+    const redeemedSpoil = response?.data?.sponsorship?.spoil;
+    if (redeemedSpoil?.id) {
+      onRedeemSuccess?.({
+        id: redeemedSpoil.id,
+        title: redeemedSpoil.title,
+        cover_image_url: redeemedSpoil.cover_image_url,
+      });
+    }
+  };
 
   const payment = paymentData?.payment;
   const paymentLink = payment?.payment_link;
@@ -104,8 +137,13 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
               placeholder="Enter sponsorship or discount code"
               className="h-12 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm text-[#1F2937] outline-none focus:border-[#9CA3AF]"
             />
-            <Button variant="yellow" className="!rounded-xl !px-6 !py-3">
-              Redeem
+            <Button
+              variant="yellow"
+              className="!rounded-xl !px-6 !py-3 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!canRedeem}
+              onClick={handleRedeem}
+            >
+              {isRedeeming ? "Redeeming..." : "Redeem"}
             </Button>
           </div>
         </div>

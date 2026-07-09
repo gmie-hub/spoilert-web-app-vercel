@@ -326,24 +326,25 @@ export const StartSpoilSidebar = ({
         >
           Spoylz Completed
         </button>
-      ) : (
+      ) : canCompleteSpoil ? (
+        // Only surface the CTA once every lesson is complete.
         <Button
           variant="darkBlue"
-          disabled={!canCompleteSpoil || isCompletingSpoil}
+          disabled={isCompletingSpoil}
           className={`mt-6 w-full rounded-[14px] py-3 ${
-            canCompleteSpoil && !isCompletingSpoil
-              ? ""
-              : "cursor-not-allowed bg-[#9CB4BC] hover:bg-[#9CB4BC]"
+            isCompletingSpoil
+              ? "cursor-not-allowed bg-[#9CB4BC] hover:bg-[#9CB4BC]"
+              : ""
           }`}
           onClick={() => {
-            if (!canCompleteSpoil || isCompletingSpoil) return;
+            if (isCompletingSpoil) return;
             onCompleteSpoil();
           }}
-          aria-disabled={!canCompleteSpoil || isCompletingSpoil}
+          aria-disabled={isCompletingSpoil}
         >
           {isCompletingSpoil ? "Completing..." : "Complete Spoylz"}
         </Button>
-      )} 
+      ) : null}
     </aside>
   );
 };

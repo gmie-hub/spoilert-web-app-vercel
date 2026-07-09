@@ -27,8 +27,11 @@ import { SpoilDetailsData } from "@spt/utils/spoils";
 import HStack from "../../../../components/hstack";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 
-import BuySpoilPaymentModal from "./BuySpoilPaymentModal";
+import BuySpoilPaymentModal, {
+  type RedeemedSpoil,
+} from "./BuySpoilPaymentModal";
 import Details from "./details";
+import RedeemSuccessModal from "./RedeemSuccessModal";
 import ShareLinkModal from "./ShareLinkModal";
 import { SpoilMobileCTA, SpoilPricingCard } from "./SpoilPricingCard";
 import SponsorSpoilModal from "./SponsorSpoilModal";
@@ -104,6 +107,8 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const [paymentData, setPaymentData] = useState<any>(null);
   const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [redeemedSpoil, setRedeemedSpoil] = useState<RedeemedSpoil | null>(null);
+  const [isRedeemSuccessOpen, setIsRedeemSuccessOpen] = useState(false);
   const { buySpoilHandler, isLoading: isBuyingSpoil } = useBuySpoilMutation();
   const { addBookmark, isLoading: isSaving } = useAddBookmarkMutation();
   const { shareSpoil } = useShareSpoilMutation();
@@ -173,6 +178,20 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
     if (paymentLink && typeof window !== "undefined") {
       window.open(paymentLink, "_blank", "noopener,noreferrer");
     }
+  };
+
+  // redeem success: close the payment modal and surface the success modal
+  const handleRedeemSuccess = (redeemed: RedeemedSpoil) => {
+    setIsPaymentModalOpen(false);
+    setRedeemedSpoil(redeemed);
+    setIsRedeemSuccessOpen(true);
+  };
+
+  // open the redeemed spoil in the learner (my learnings) experience
+  const handleViewRedeemedSpoil = () => {
+    if (!redeemedSpoil?.id) return;
+    setIsRedeemSuccessOpen(false);
+    router.push(`/spoil/${redeemedSpoil.id}/start`);
   };
 
   const handlePrimaryCtaClick = async () => {
@@ -373,6 +392,14 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
           onMakePayment={handleGoToGateway}
           isMakingPayment={isBuyingSpoil}
           paymentData={paymentData}
+          onRedeemSuccess={handleRedeemSuccess}
+        />
+
+        <RedeemSuccessModal
+          open={isRedeemSuccessOpen}
+          onClose={() => setIsRedeemSuccessOpen(false)}
+          spoil={redeemedSpoil}
+          onViewSpoil={handleViewRedeemedSpoil}
         />
 
         <SponsorSpoilModal
