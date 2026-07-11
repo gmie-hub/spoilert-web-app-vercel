@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
+import { AUTH_STORAGE_KEY } from "@spt/store/authStore";
+
 export const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   env: {
@@ -16,7 +18,7 @@ api.interceptors.request.use(
     if (typeof window !== "undefined") {
       if (typeof (config?.headers as any).authorization === "undefined") {
         const tokenModel = JSON.parse(
-          localStorage.getItem("spoilert-web&site#") || "{}"
+          localStorage.getItem(AUTH_STORAGE_KEY) || "{}"
         );
 
         if (tokenModel?.state?.token) {

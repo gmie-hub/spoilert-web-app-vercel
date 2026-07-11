@@ -44,7 +44,7 @@ const CongratulationsModal: React.FC<CongratulationsModalProps> = ({
               className="w-full rounded-full"
               onClick={() => {
                 onClose();
-                router.push(`/my-learnings/certificate/${spoilId}`);
+                router.push(`/my-learnings/certificate?spoilId=${spoilId}`);
               }}
             >
               View Certificate

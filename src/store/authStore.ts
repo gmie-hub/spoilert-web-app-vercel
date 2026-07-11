@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// localStorage key the auth state is persisted under. Shared so the axios
+// interceptor and the certificate deep-link bootstrap read/write the exact same
+// entry instead of duplicating the magic string.
+export const AUTH_STORAGE_KEY = "spoilert-web&site#";
+
 interface User {
   id: number;
   email: string;
@@ -60,7 +65,7 @@ export const useAuthStore = create<AuthState>()(
             "phoneNumber",
             "selectedCountry",
             "advanced-spoil-draft",
-            "spoilert-web&site#",
+            AUTH_STORAGE_KEY,
           ];
           keysToRemove.forEach((k) => localStorage.removeItem(k));
         } catch  {
@@ -69,7 +74,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "spoilert-web&site#", // key in localStorage
+      name: AUTH_STORAGE_KEY, // key in localStorage
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.hasHydrated = true;

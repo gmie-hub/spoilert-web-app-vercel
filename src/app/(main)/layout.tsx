@@ -2,8 +2,7 @@ import React from "react";
 
 import { Inter } from "next/font/google";
 
-import Footer from "@spt/layouts/footer/footer";
-import Header from "@spt/layouts/website/header";
+import SiteChrome from "@spt/layouts/SiteChrome";
 
 import "../globals.css";
 
@@ -21,9 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        {children}
-        <Footer />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

@@ -32,7 +32,7 @@ export default function MyLearningPage() {
   };
 
   const handleCertificateAction = (item: LearningItem) => {
-    router.push(`/my-learnings/certificate/${item.id}`);
+    router.push(`/my-learnings/certificate?spoilId=${item.id}`);
   };
 
   return (
