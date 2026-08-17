@@ -9,6 +9,8 @@ import LocationIcon from "@spt/assets/icons/location.svg";
 import GooglePlayBadge from "@spt/assets/icons/Mobile app store badge(1).svg";
 import AppStoreBadge from "@spt/assets/icons/Mobile app store badge(2).svg";
 import SMSIcon from "@spt/assets/icons/sms.svg";
+import ThreadsIcon from "@spt/assets/icons/threads.svg";
+import TikTokIcon from "@spt/assets/icons/tiktok.svg";
 import XIcon from "@spt/assets/icons/x-icon.svg";
 import Flex from "@spt/components/flex";
 import HStack from "@spt/components/hstack";
@@ -32,9 +34,11 @@ const navItems = [
 ];
 
 const socialLinks = [
-  { icon: XIcon, href: "https://www.twitter.com/" },
-  { icon: FacebookIcon, href: "https://www.facebook.com/" },
-  { icon: InstagramIcon, href: "https://www.instagram.com/" },
+  { icon: XIcon, href: "https://x.com/thespoilert" },
+  { icon: FacebookIcon, href: "https://www.facebook.com/profile.php?id=61582238722272" },
+  { icon: TikTokIcon, href: "https://www.tiktok.com/@thespoilert" },
+  { icon: ThreadsIcon, href: "https://www.threads.com/@thespoilert" },
+  { icon: InstagramIcon, href: "https://www.instagram.com/thespoilert/" },
   { icon: LinkedInIcon, href: "https://www.linkedin.com/" },
 ];
 
@@ -86,20 +90,32 @@ const Info = () => {
               <h5>Download App</h5>
 
               <HStack>
-                <Image
-                  src={AppStoreBadge}
-                  alt="app-store"
-                  width={134}
-                  height={41}
-                  style={{ height: "auto" }}
-                />
-                <Image
-                  src={GooglePlayBadge}
-                  alt="google-play"
-                  width={134}
-                  height={41}
-                  style={{ height: "auto" }}
-                />
+                <Link
+                  href="https://apps.apple.com/ng/app/spoilert/id6768010869"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    src={AppStoreBadge}
+                    alt="app-store"
+                    width={134}
+                    height={41}
+                    style={{ height: "auto" }}
+                  />
+                </Link>
+                <Link
+                  href="https://play.google.com/store/apps/details?id=com.app.spoilert"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    src={GooglePlayBadge}
+                    alt="google-play"
+                    width={134}
+                    height={41}
+                    style={{ height: "auto" }}
+                  />
+                </Link>
               </HStack>
             </Stack>
           </HStack>

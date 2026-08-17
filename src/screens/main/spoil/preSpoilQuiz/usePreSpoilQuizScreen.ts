@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,7 @@ import {
   type NormalizedQuestion,
   type QuizStage,
   getSpoilQuizByType,
+  hasReachedPassMark,
   normalizeQuestions,
 } from "./helpers";
 import { usePreSpoilQuizFlow } from "./usePreSpoilQuizFlow";
@@ -39,6 +40,8 @@ export interface ReadyPreSpoilQuizScreenState extends PreSpoilQuizBaseState {
   correctAnswersCount: number;
   currentQuestion: NormalizedQuestion | null;
   currentQuestionIndex: number;
+  hasAlreadyPassed: boolean;
+  hasPassed: boolean;
   isLastQuestion: boolean;
   isQuizDetailsError: boolean;
   isQuizDetailsLoading: boolean;
@@ -51,14 +54,17 @@ export interface ReadyPreSpoilQuizScreenState extends PreSpoilQuizBaseState {
   quizStage: QuizStage;
   remainingSeconds: number | null;
   responses: Record<number, string>;
+  scorePercent: number;
   spoilId: number;
   spoilTitle: string;
+  totalQuestionsCount: number;
   visitedQuestions: number[];
   onBack: () => void;
   onChangeResponse: (value: string) => void;
   onGoToQuestion: (index: number) => void;
   onNext: () => void;
   onPrevious: () => void;
+  onRetry: () => void;
   onStartFlow: () => void;
   onStartSpoil: () => void;
 }
@@ -117,11 +123,15 @@ export const usePreSpoilQuizScreen = ({
     handleNextQuestion,
     handlePreviousQuestion,
     handleResponseChange,
+    handleRetryQuiz,
     handleStartQuiz,
+    hasPassed,
     isLastQuestion,
     isSubmitting,
     remainingSeconds,
     responses,
+    scorePercent,
+    totalQuestionsCount,
     visitedQuestions,
   } = usePreSpoilQuizFlow({
     normalizedQuestions,
@@ -130,6 +140,39 @@ export const usePreSpoilQuizScreen = ({
     setQuizStage,
     spoilId: resolvedSpoilId,
   });
+
+  // Whether the learner already passed this quiz in a previous session, from the
+  // spoil summary (attempts + highest score) for the relevant quiz type.
+  const hasAlreadyPassed = useMemo(() => {
+    if (!spoil || !preSpoilQuiz) {
+      return false;
+    }
+
+    const summary =
+      quizType === "post"
+        ? spoil.post_spoil_quiz
+        : quizType === "module"
+          ? spoil.module_spoil_quiz
+          : spoil.pre_spoil_quiz;
+
+    if (Number(summary?.attempts ?? 0) <= 0) {
+      return false;
+    }
+
+    return hasReachedPassMark(
+      Number(summary?.highest_score ?? 0),
+      preSpoilQuiz.pass_mark,
+    );
+  }, [spoil, preSpoilQuiz, quizType]);
+
+  // Already passed → no need to show the quiz again. Send the learner on to the
+  // spoil. Only redirect from the intro so an in-progress or just-completed
+  // attempt is never interrupted.
+  useEffect(() => {
+    if (hasAlreadyPassed && quizStage === "intro" && spoil) {
+      router.replace(`/spoil/${spoil.id}/start`);
+    }
+  }, [hasAlreadyPassed, quizStage, spoil, router]);
 
   if (isLoading) {
     return { status: "loading" };
@@ -179,6 +222,8 @@ export const usePreSpoilQuizScreen = ({
     currentQuestion,
     currentQuestionIndex,
     description: pageContent.description,
+    hasAlreadyPassed,
+    hasPassed,
     isLastQuestion,
     isQuizDetailsError,
     isQuizDetailsLoading,
@@ -194,14 +239,17 @@ export const usePreSpoilQuizScreen = ({
     quizStats: pageContent.quizStats,
     remainingSeconds,
     responses,
+    scorePercent,
     spoilId: spoil.id,
     spoilTitle: spoil.title,
+    totalQuestionsCount,
     visitedQuestions,
     onBack: handleBack,
     onChangeResponse: handleResponseChange,
     onGoToQuestion: handleGoToQuestion,
     onNext: handleNextQuestion,
     onPrevious: handlePreviousQuestion,
+    onRetry: handleRetryQuiz,
     onStartFlow: handleStartFlow,
     onStartSpoil: handleStartSpoil,
   };
