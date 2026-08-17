@@ -18,10 +18,27 @@ export interface SubmitQuizAttemptPayload {
   answers: QuizAnswer[];
 }
 
+export interface QuizAttemptAnswer {
+  quiz_attempt_id: number;
+  question_id: number;
+  answer: string;
+  is_correct: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuizAttemptResult {
+  score: number;
+  total_questions: number;
+  correct_answers: number;
+  wrong_answers: number;
+  answers: QuizAttemptAnswer[];
+}
+
 export interface SubmitQuizAttemptResponse {
   message?: string;
-  data?: any;
-  [key: string]: any;
+  status?: boolean;
+  data?: QuizAttemptResult;
 }
 
 const useSubmitQuizAttemptMutation = () => {

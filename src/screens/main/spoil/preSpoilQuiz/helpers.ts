@@ -110,6 +110,34 @@ export const formatTimer = (totalSeconds: number | null) => {
 export const normalizeAnswer = (value?: string | null) =>
   value?.trim().toLowerCase() ?? "";
 
+/** Turns a correct/total tally into a 0–100 percentage score. */
+export const getScorePercent = ({
+  correctCount,
+  totalCount,
+}: {
+  correctCount: number;
+  totalCount: number;
+}) => (totalCount > 0 ? (correctCount / totalCount) * 100 : 0);
+
+/**
+ * Whether a percentage score meets the quiz pass mark. Pass marks are stored as
+ * percentage strings (e.g. "20.00"). When no valid pass mark is set we can't gate
+ * the learner, so we treat the attempt as passed.
+ */
+export const hasReachedPassMark = (
+  scorePercent: number,
+  passMark?: string | number | null,
+) => {
+  const mark =
+    passMark != null && String(passMark).trim() !== "" ? Number(passMark) : NaN;
+
+  if (!Number.isFinite(mark)) {
+    return true;
+  }
+
+  return scorePercent >= mark;
+};
+
 export const getQuestionStatus = ({
   hasAnswer,
   index,

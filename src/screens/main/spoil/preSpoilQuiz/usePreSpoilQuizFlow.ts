@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 
-import useSubmitQuizAttemptMutation from "@spt/hooks/apiRequests/useSubmitQuizAttemptMutation";
+import { useQueryClient } from "@tanstack/react-query";
+
+import useSubmitQuizAttemptMutation, {
+  type QuizAttemptResult,
+} from "@spt/hooks/apiRequests/useSubmitQuizAttemptMutation";
 import type { QuizDetailsData } from "@spt/types/quiz";
 
 import {
   type NormalizedQuestion,
   type QuizStage,
+  getScorePercent,
+  hasReachedPassMark,
   normalizeAnswer,
 } from "./helpers";
 
@@ -28,7 +34,11 @@ export const usePreSpoilQuizFlow = ({
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [visitedQuestions, setVisitedQuestions] = useState<number[]>([0]);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [attemptResult, setAttemptResult] = useState<QuizAttemptResult | null>(
+    null,
+  );
 
+  const queryClient = useQueryClient();
   const { submitQuizAttempt, isSubmitting } = useSubmitQuizAttemptMutation();
 
   const currentQuestion = normalizedQuestions[currentQuestionIndex] ?? null;
@@ -44,7 +54,9 @@ export const usePreSpoilQuizFlow = ({
     [normalizedQuestions, responses],
   );
 
-  const correctAnswersCount = useMemo(
+  // Answers graded locally from the learner's responses. Used as a fallback
+  // when there is no server result (e.g. the timer runs out before submitting).
+  const localCorrectAnswersCount = useMemo(
     () =>
       normalizedQuestions.filter(
         (question) =>
@@ -54,12 +66,26 @@ export const usePreSpoilQuizFlow = ({
     [normalizedQuestions, responses],
   );
 
+  // The submitted attempt is authoritative — the API grades it and returns the
+  // score. Fall back to the local tally only when no attempt was submitted.
+  const correctAnswersCount =
+    attemptResult?.correct_answers ?? localCorrectAnswersCount;
+  const totalQuestionsCount =
+    attemptResult?.total_questions ?? normalizedQuestions.length;
+
+  const scorePercent = getScorePercent({
+    correctCount: correctAnswersCount,
+    totalCount: totalQuestionsCount,
+  });
+  const hasPassed = hasReachedPassMark(scorePercent, quizDetailsData?.pass_mark);
+
   useEffect(() => {
     setQuizStage("intro");
     setCurrentQuestionIndex(0);
     setResponses({});
     setVisitedQuestions([0]);
     setRemainingSeconds(null);
+    setAttemptResult(null);
   }, [spoilId, setQuizStage]);
 
   useEffect(() => {
@@ -115,6 +141,17 @@ export const usePreSpoilQuizFlow = ({
 
   const handleStartQuiz = () => setQuizStage("quiz");
 
+  // Send the learner back through the quiz from the start after a failed
+  // attempt, clearing the previous responses, timer and result.
+  const handleRetryQuiz = () => {
+    setAttemptResult(null);
+    setResponses({});
+    setVisitedQuestions([0]);
+    setCurrentQuestionIndex(0);
+    setRemainingSeconds(null);
+    setQuizStage("quiz");
+  };
+
   const handleResponseChange = (value: string) => {
     if (!currentQuestion) {
       return;
@@ -136,7 +173,11 @@ export const usePreSpoilQuizFlow = ({
         const result = await submitQuizAttempt(quizDetailsData.id, responses);
 
         if (result) {
+          setAttemptResult(result.data ?? null);
           setQuizStage("completed");
+          // The spoil summary (attempts / highest score) is now stale — refresh
+          // it so the quiz gate reflects this attempt on the next navigation.
+          queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
         }
       } else {
         setQuizStage("completed");
@@ -161,12 +202,16 @@ export const usePreSpoilQuizFlow = ({
     handleNextQuestion,
     handlePreviousQuestion,
     handleResponseChange,
+    handleRetryQuiz,
     handleStartQuiz,
+    hasPassed,
     isLastQuestion,
     isSubmitting,
     quizStage,
     remainingSeconds,
     responses,
+    scorePercent,
+    totalQuestionsCount,
     visitedQuestions,
   };
 };

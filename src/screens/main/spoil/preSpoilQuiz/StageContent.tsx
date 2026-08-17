@@ -16,14 +16,13 @@ export const PreSpoilQuizStageContent = ({
   if (screen.quizStage === "completed") {
     return (
       <CompletionView
-        answeredQuestionsCount={screen.answeredQuestionsCount}
         correctAnswersCount={screen.correctAnswersCount}
+        hasPassed={screen.hasPassed}
         normalizedQuestions={screen.normalizedQuestions}
         pageTitle={screen.pageTitle}
-        preSpoilQuizPassMark={screen.preSpoilQuizPassMark}
-        preSpoilQuizTimeLimit={screen.preSpoilQuizTimeLimit}
         quizDetailsData={screen.quizDetailsData}
-        spoilTitle={screen.spoilTitle}
+        totalQuestionsCount={screen.totalQuestionsCount}
+        onRetry={screen.onRetry}
         onStartSpoil={screen.onStartSpoil}
       />
     );
