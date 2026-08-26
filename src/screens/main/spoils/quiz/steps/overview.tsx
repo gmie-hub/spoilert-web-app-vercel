@@ -52,9 +52,18 @@ const validationSchema = Yup.object({
       originalValue === "" ? undefined : value,
     )
     .typeError("Pass mark must be a number")
-    .integer("Pass mark must be a whole number")
     .min(0, "Pass mark must be at least 0")
     .max(100, "Pass mark cannot exceed 100")
+    // The API stores the pass mark with two decimal places.
+    .test(
+      "two-decimal-places",
+      "Pass mark can have at most 2 decimal places",
+      (_value, context) => {
+        const typed = String(context.originalValue ?? "").trim();
+
+        return typed === "" || /^\d*(\.\d{0,2})?$/.test(typed);
+      },
+    )
     .required("Pass mark is required"),
 });
 
@@ -255,8 +264,9 @@ const Overview: FC<OverviewProps> = ({
             <Input
               name="passmark"
               label="Pass Mark (%)"
-              placeholder="Enter pass mark (e.g. 50)"
+              placeholder="Enter pass mark (e.g. 50 or 49.5)"
               numericOnly
+              allowDecimal
             />
 
             <Button

@@ -1,4 +1,8 @@
 import api from "@spt/utils/apiClient";
+import {
+  type ReportCreationFailure,
+  getApiErrorMessage,
+} from "@spt/utils/creationFailures";
 
 // Server-created questions come back with a plain numeric id; locally-added
 // draft questions use a generated string id. This lets the edit flow tell
@@ -69,11 +73,27 @@ export const postQuestionsForQuiz = async (
   }
 };
 
+const QUIZ_LABELS: Record<string, string> = {
+  pre: "Pre-Spoylz quiz",
+  post: "Post-Spoylz quiz",
+  module: "Module quiz",
+};
+
 export const createQuizAndQuestions = async (
   quiz: any,
-  opts: { type: string; spoilId?: number | string; moduleId?: number | string; moduleRes?: any } = { type: "pre" }
+  opts: {
+    type: string;
+    spoilId?: number | string;
+    moduleId?: number | string;
+    moduleRes?: any;
+    /** Overrides the generic quiz name in failure messages. */
+    label?: string;
+    onStepFailed?: ReportCreationFailure;
+  } = { type: "pre" }
 ) => {
   if (!quiz) return null;
+
+  const quizLabel = opts.label ?? QUIZ_LABELS[opts.type] ?? "Quiz";
 
   const fd = new FormData();
   if (quiz.title) fd.append("title", quiz.title);
@@ -106,22 +126,54 @@ export const createQuizAndQuestions = async (
     questionsPayload = quiz.questions.map((q: any) => buildQuestionPayload(q));
   }
 
+  let quizRes;
+  let createdQuizId = null;
+
   try {
-    const quizRes = await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
-    const createdQuizId = quizRes?.data?.id ?? quizRes?.data?.quiz?.id ?? quizRes?.data?.data?.id ?? null;
+    quizRes = await api.post("/quiz", fd, { headers: { "Content-Type": "multipart/form-data" } });
+    createdQuizId = quizRes?.data?.id ?? quizRes?.data?.quiz?.id ?? quizRes?.data?.data?.id ?? null;
     // eslint-disable-next-line no-console
     console.log(`Created quiz (${opts.type}) id:`, createdQuizId, "questions:", questionsPayload, "raw:", quizRes?.data ?? quizRes);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`Failed to create quiz (${opts.type})`, err);
+    // Nothing saved for this quiz, so the retry runs the whole step again.
+    opts.onStepFailed?.({
+      id: `quiz-${opts.type}-${opts.moduleId ?? opts.spoilId ?? "spoil"}`,
+      kind: "quiz",
+      label: quizLabel,
+      actionLabel: "Recreate Quiz",
+      message: getApiErrorMessage(err, "Failed to create this quiz"),
+      retry: () => createQuizAndQuestions(quiz, opts),
+    });
+    throw err;
+  }
 
-    let questionsRes = null;
-    if (createdQuizId && questionsPayload.length > 0) {
-      questionsRes = await postQuestionsForQuiz(createdQuizId, questionsPayload, opts.type);
-    }
+  if (!createdQuizId || questionsPayload.length === 0) {
+    return { quizRes, questionsRes: null };
+  }
+
+  try {
+    const questionsRes = await postQuestionsForQuiz(createdQuizId, questionsPayload, opts.type);
 
     return { quizRes, questionsRes };
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error(`Failed to create quiz (${opts.type})`, err);
-    throw err;
+    console.error(`Failed to create questions for quiz (${opts.type})`, err);
+    // The quiz itself saved — only its questions need posting again, so the
+    // retry must not recreate the quiz.
+    const savedQuizId = createdQuizId;
+
+    opts.onStepFailed?.({
+      id: `questions-${savedQuizId}`,
+      kind: "questions",
+      label: `${quizLabel} questions`,
+      actionLabel: "Recreate Questions",
+      message: getApiErrorMessage(err, "Failed to create these questions"),
+      retry: () => postQuestionsForQuiz(savedQuizId, questionsPayload, opts.type),
+    });
+
+    return { quizRes, questionsRes: null };
   }
 };
 

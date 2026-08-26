@@ -7,6 +7,10 @@ import { useAuthStore } from "@spt/store/authStore";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
+import {
+  type ReportCreationFailure,
+  getApiErrorMessage,
+} from "@spt/utils/creationFailures";
 
 
 import type { AxiosError } from "axios";
@@ -47,6 +51,8 @@ export const useCreateSpoilMutation = () => {
       // originalModule is the local/module object from the outline (client id)
       onModuleCreated?: (moduleId: number | string, moduleData?: any, originalModule?: any) => void;
       onLessonsCreated?: (moduleId: number | string, lessonRes?: any) => void;
+      // Reports a module/lesson step that failed, with a retry for that step.
+      onStepFailed?: ReportCreationFailure;
     },
   ) => {
     try {
@@ -185,53 +191,94 @@ export const useCreateSpoilMutation = () => {
 
         // Call module creation endpoint for each module in outline
         if (typeof createModuleHandler === "function") {
+          const getModuleId = (moduleRes: any) =>
+            moduleRes?.data?.id ?? moduleRes?.data?.module_id ?? moduleRes?.data?.data?.id ?? null;
+
+          const createModuleFor = async (outlineModule: any) => {
+            const moduleRes = await createModuleHandler({
+              title: outlineModule.title,
+              description: outlineModule.description,
+              spoil_id: createdId,
+            });
+            const moduleId = getModuleId(moduleRes);
+
+            // notify caller about module creation (include original module object)
+            try {
+              if (moduleId) callbacks?.onModuleCreated?.(moduleId, moduleRes, outlineModule);
+            } catch {
+              // ignore callback errors
+            }
+
+            return moduleId;
+          };
+
+          const createLessonsFor = async (moduleId: number | string, outlineModule: any) => {
+            const lessons = Array.isArray(outlineModule.lessons) ? outlineModule.lessons : [];
+
+            if (lessons.length === 0 || typeof createLessonHandler !== "function") {
+              return;
+            }
+
+            const lessonRes = await createLessonHandler(
+              moduleId,
+              lessons.map((lesson: any) => ({
+                title: lesson.title,
+                type: lesson.type,
+                content: lesson.content,
+                file: lesson.file instanceof File ? lesson.file : null,
+                description: lesson.description,
+              })),
+            );
+
+            try {
+              callbacks?.onLessonsCreated?.(moduleId, lessonRes);
+            } catch {
+              // ignore callback errors
+            }
+          };
+
           for (const outlineModule of outline.modules) {
-              try {
-                const moduleRes = await createModuleHandler({
-                  title: outlineModule.title,
-                  description: outlineModule.description,
-                  spoil_id: createdId,
-                });
+            let moduleId: number | string | null = null;
 
-                // extract created module id from response
-                const moduleId = moduleRes?.data?.id ?? moduleRes?.data?.module_id ?? moduleRes?.data?.data?.id ?? null;
+            try {
+              moduleId = await createModuleFor(outlineModule);
+            } catch (error) {
+              // The module never saved, so its lessons never ran either — the
+              // retry recreates both.
+              callbacks?.onStepFailed?.({
+                id: `module-${outlineModule.id ?? outlineModule.title}`,
+                kind: "module",
+                label: `Module "${outlineModule.title}"`,
+                actionLabel: "Recreate Module",
+                message: getApiErrorMessage(error, "Failed to create this module"),
+                retry: async () => {
+                  const retriedModuleId = await createModuleFor(outlineModule);
 
-                // notify caller about module creation (include original module object)
-                try {
-                  if (moduleId) callbacks?.onModuleCreated?.(moduleId, moduleRes, outlineModule);
-                } catch {
-                  // ignore callback errors
-                }
-
-                // create lessons under the created module if handler provided
-                if (moduleId && Array.isArray(outlineModule.lessons) && outlineModule.lessons.length > 0) {
-                  if (typeof createLessonHandler === "function") {
-                    try {
-                      const lessonRes = await createLessonHandler(
-                        moduleId,
-                        outlineModule.lessons.map((lesson) => ({
-                          title: lesson.title,
-                          type: lesson.type,
-                          content: lesson.content,
-                          file: lesson.file instanceof File ? lesson.file : null,
-                          description: lesson.description,
-                        })),
-                      );
-                      try {
-                        callbacks?.onLessonsCreated?.(moduleId, lessonRes);
-                      } catch {
-                        // ignore callback errors
-                      }
-                    } catch {
-                      // Error creating lessons for module
-                    }
-                  } else {
-                    // createLessonHandler not provided; skipping lesson creation for module
+                  if (retriedModuleId) {
+                    await createLessonsFor(retriedModuleId, outlineModule);
                   }
-                }
-              } catch {
-                // Error creating module, continue with next module
-              }
+                },
+              });
+              continue;
+            }
+
+            if (!moduleId) continue;
+
+            // The module saved; only its lessons need running again.
+            const savedModuleId = moduleId;
+
+            try {
+              await createLessonsFor(savedModuleId, outlineModule);
+            } catch (error) {
+              callbacks?.onStepFailed?.({
+                id: `lessons-${savedModuleId}`,
+                kind: "lessons",
+                label: `Lessons for "${outlineModule.title}"`,
+                actionLabel: "Recreate Lessons",
+                message: getApiErrorMessage(error, "Failed to create these lessons"),
+                retry: () => createLessonsFor(savedModuleId, outlineModule),
+              });
+            }
           }
         } else {
           // createModuleHandler not provided; skipping module creation

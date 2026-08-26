@@ -19,6 +19,9 @@ interface Props {
   /** digits only: strips anything non-numeric as the user types */
   numericOnly?: boolean;
 
+  /** with `numericOnly`: also accept a single decimal point, e.g. 49.5 */
+  allowDecimal?: boolean;
+
   /** for side effects like account verification */
   onValueChange?: (value: string) => void;
 }
@@ -30,6 +33,7 @@ const Input: FC<Props> = ({
   type = "text",
   disabled = false,
   numericOnly = false,
+  allowDecimal = false,
   onValueChange,
 }) => {
   const [field, meta, helpers] = useField(name);
@@ -38,11 +42,21 @@ const Input: FC<Props> = ({
   const hasError = meta.touched && Boolean(meta.error);
   const isPassword = type === "password";
 
+  // Digits only — or digits plus a single decimal point when decimals are
+  // allowed. A trailing "." is kept so the value can still be typed out.
+  const sanitizeNumeric = (value: string) => {
+    if (!allowDecimal) return value.replace(/\D/g, "");
+
+    const [whole, ...rest] = value.replace(/[^\d.]/g, "").split(".");
+
+    return rest.length > 0 ? `${whole}.${rest.join("")}` : whole;
+  };
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
 
     const value = numericOnly
-      ? e.target.value.replace(/\D/g, "")
+      ? sanitizeNumeric(e.target.value)
       : e.target.value;
 
     helpers.setValue(value);
@@ -70,8 +84,11 @@ const Input: FC<Props> = ({
         (e.ctrlKey || e.metaKey) &&
         ["a", "c", "v", "x"].includes(e.key.toLowerCase());
       const isDigit = /^[0-9]$/.test(e.key);
+      // Only the first decimal point is worth a keystroke.
+      const isDecimalPoint =
+        allowDecimal && e.key === "." && !String(field.value ?? "").includes(".");
 
-      if (!isControlKey && !isShortcut && !isDigit) {
+      if (!isControlKey && !isShortcut && !isDigit && !isDecimalPoint) {
         e.preventDefault();
       }
     }
@@ -98,8 +115,16 @@ const Input: FC<Props> = ({
         <input
           {...field}
           type={inputType}
-          inputMode={numericOnly ? "numeric" : undefined}
-          pattern={numericOnly ? "[0-9]*" : undefined}
+          inputMode={
+            numericOnly ? (allowDecimal ? "decimal" : "numeric") : undefined
+          }
+          pattern={
+            numericOnly
+              ? allowDecimal
+                ? "[0-9]*[.]?[0-9]*"
+                : "[0-9]*"
+              : undefined
+          }
           autoComplete={numericOnly ? "off" : undefined}
           placeholder={placeholder}
           disabled={disabled}
