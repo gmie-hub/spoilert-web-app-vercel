@@ -2,23 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
-import ChatIcon from "@spt/assets/icons/chat.svg";
 import HeroImage from "@spt/assets/icons/heroimage3.svg";
 import MenuIcon from "@spt/assets/icons/menu.svg";
-import Button from "@spt/components/button";
 import useCompleteLessonMutation from "@spt/hooks/apiRequests/useCompleteLessonMutation";
 import useCompleteSpoilMutation from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
-import useJoinCommunityMutation from "@spt/hooks/apiRequests/useJoinCommunityMutation";
 
 import CongratulationsModal from "./CongratulationsModal";
-import { Breadcrumbs } from "./preSpoilQuiz/components/Breadcrumbs";
 import { StartSpoilContentPanel } from "./startSpoilContentPanel";
+import { StartSpoilHeader } from "./StartSpoilHeader";
 import { StartSpoilSidebar } from "./startSpoilSidebar";
 import { LoadingState, MessageState } from "./startSpoilStates";
 import {
@@ -37,11 +32,8 @@ interface StartSpoilPageProps {
 
 export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { completeLessonHandler, isCompletingLesson } = useCompleteLessonMutation();
   const { completeSpoilHandler, isCompletingSpoil } = useCompleteSpoilMutation();
-  const { joinCommunityHandler, isLoading: isJoiningCommunity } =
-    useJoinCommunityMutation();
   const { data: spoil, isLoading, isError, errorMessage } =
     useGetSpoilDetailsQuery(spoilId);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
@@ -177,42 +169,10 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   }
 
   const heroImage = spoil.cover_image_url || HeroImage;
-  // A spoil may not have a community at all. When it does, `has_joined` tells
-  // us whether the current user is already a member.
-  const community = spoil.community;
-  const hasJoinedCommunity = community?.has_joined ?? false;
   const activeLessonIsCompleted = activeLesson
     ? activeLesson.status === "completed"
     : false;
   const canCompleteSpoil = totalLessons > 0 && completedLessonsCount >= totalLessons;
-
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-
-    router.push(`/spoil/${spoil.id}`);
-  };
-
-  const handleCommunityAction = async () => {
-    if (!community) return;
-
-    // Already a member -> take them to the community area.
-    if (hasJoinedCommunity) {
-      router.push("/community");
-      return;
-    }
-
-    // Not a member yet -> join, then refresh spoil details so the button
-    // flips to "View Community".
-    if (isJoiningCommunity) return;
-
-    const response = await joinCommunityHandler(community.id);
-    if (response) {
-      await queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
-    }
-  };
 
   const handleToggleModule = (moduleId: number) => {
     const index = modules.findIndex((module) => module.id === moduleId);
@@ -391,36 +351,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   return (
     <section className="min-h-screen bg-[#FAFAFA] px-4 py-8 sm:px-6 lg:px-20">
       <div className="mx-auto max-w-[1280px]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <Breadcrumbs crumbLabel="Start Spoil" onBack={handleBack} spoilId={spoil.id} />
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              variant="outline"
-              className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D]"
-              iconLeft={<Image src={ChatIcon} alt="" width={20} height={20} />}
-              onClick={() => router.push(`/spoil/${spoil.id}/chat-tutor`)}
-            >
-              Chat Tutor
-            </Button>
-
-            {community && (
-              <Button
-                variant="darkBlue"
-                className="gap-2 rounded-[14px] px-5 py-3"
-                iconRight={<Image src={ArrowRightIcon} alt="" width={16} height={16} />}
-                onClick={handleCommunityAction}
-                disabled={isJoiningCommunity}
-              >
-                {hasJoinedCommunity
-                  ? "View Community"
-                  : isJoiningCommunity
-                    ? "Joining..."
-                    : "Join Community"}
-              </Button>
-            )}
-          </div>
-        </div>
+        <StartSpoilHeader community={spoil.community} spoilId={spoil.id} />
 
         <div
           className={`mt-8 grid items-start gap-6 ${
