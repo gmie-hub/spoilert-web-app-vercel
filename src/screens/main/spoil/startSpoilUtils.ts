@@ -139,7 +139,11 @@ export const getInitialSelection = (spoil: SpoilDetailsData) => {
 };
 
 export const isModuleComplete = (module: SpoilModule) => {
-  if ((module.percentage_completed ?? 0) >= 100) {
+  if (Number(module.percentage_completed ?? 0) >= 100) {
+    return true;
+  }
+
+  if (module.status?.toLowerCase() === "completed") {
     return true;
   }
 
@@ -147,23 +151,101 @@ export const isModuleComplete = (module: SpoilModule) => {
     return false;
   }
 
-  return module.lessons.every((lesson) => lesson.status === "completed");
+  return module.lessons.every(
+    (lesson) => lesson.status?.toLowerCase() === "completed",
+  );
 };
 
 export type SpoilQuiz = SpoilDetailsData["quizzes"][number];
 
-const isQuizAttempted = (quiz?: SpoilQuiz | null) =>
-  (quiz?.attempts?.length ?? 0) > 0;
+type QuizAttemptSummary = SpoilDetailsData["pre_spoil_quiz"] | null;
+
+/** What the learner has done with one quiz. */
+export interface QuizStatus {
+  /** The spoil actually has this quiz. */
+  exists: boolean;
+  attempts: number;
+  /** Best recorded score, or null when the quiz was never attempted. */
+  highestScore: number | null;
+  /** Score needed to pass, or null when the quiz sets none. */
+  passMark: number | null;
+  isTaken: boolean;
+  isPassed: boolean;
+}
+
+/** Renders a score without trailing zeros: 23 -> "23%", "20.00" -> "20%". */
+export const formatQuizScore = (value: number | null) =>
+  value === null ? null : `${Number(value)}%`;
+
+const NO_QUIZ_STATUS: QuizStatus = {
+  exists: false,
+  attempts: 0,
+  highestScore: null,
+  passMark: null,
+  isTaken: false,
+  isPassed: false,
+};
+
+const toNumberOrNull = (value: unknown): number | null => {
+  if (value == null || String(value).trim() === "") return null;
+
+  const parsed = Number(value);
+
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const getBestAttemptScore = (quiz: SpoilQuiz): number | null => {
+  const scores = (quiz.attempts ?? [])
+    .map((attempt) => toNumberOrNull(attempt?.score))
+    .filter((score): score is number => score !== null);
+
+  return scores.length > 0 ? Math.max(...scores) : null;
+};
+
+/**
+ * Builds a quiz's learner status. `summary` is the spoil-level attempt summary
+ * (`pre_spoil_quiz` / `post_spoil_quiz`); module quizzes have none of their own
+ * — `module_spoil_quiz` aggregates every module — so they read the attempts
+ * embedded in the quiz itself.
+ */
+const buildQuizStatus = (
+  quiz: SpoilQuiz | null,
+  summary?: QuizAttemptSummary,
+): QuizStatus => {
+  if (!quiz) return NO_QUIZ_STATUS;
+
+  const attempts = Math.max(
+    toNumberOrNull(summary?.attempts) ?? 0,
+    quiz.attempts?.length ?? 0,
+  );
+  const highestScore =
+    toNumberOrNull(summary?.highest_score) ?? getBestAttemptScore(quiz);
+  const passMark = toNumberOrNull(quiz.pass_mark);
+  const isTaken = attempts > 0;
+
+  return {
+    exists: true,
+    attempts,
+    highestScore,
+    passMark,
+    isTaken,
+    // With no pass mark set, taking the quiz is enough to pass it.
+    isPassed: isTaken && (passMark === null || (highestScore ?? 0) >= passMark),
+  };
+};
 
 export interface SpoilQuizGate {
   preQuiz: SpoilQuiz | null;
   postQuiz: SpoilQuiz | null;
+  preStatus: QuizStatus;
+  postStatus: QuizStatus;
   /** Pre-quiz passed (attempted AND reached the pass mark), or there is none. */
   isPreSatisfied: boolean;
   /** Post-quiz taken at least once, or there is none. */
   isPostSatisfied: boolean;
   getModuleQuiz: (moduleId: number) => SpoilQuiz | null;
-  /** A module's quiz has been taken at least once, or it has none. */
+  getModuleQuizStatus: (moduleId: number) => QuizStatus;
+  /** A module's quiz has been passed, or the module has no quiz. */
   isModuleQuizSatisfied: (moduleId: number) => boolean;
 }
 
@@ -179,23 +261,8 @@ export const getSpoilQuizGate = (spoil: SpoilDetailsData): SpoilQuizGate => {
   const postQuiz =
     quizzes.find((quiz) => quiz.type?.toLowerCase() === "post") ?? null;
 
-  const isPreSatisfied = (() => {
-    if (!preQuiz) return true;
-
-    const attempts = Number(spoil.pre_spoil_quiz?.attempts ?? 0);
-    if (attempts <= 0) return false;
-
-    const passMark = preQuiz.pass_mark != null ? Number(preQuiz.pass_mark) : 0;
-    const highestScore = Number(spoil.pre_spoil_quiz?.highest_score ?? 0);
-
-    return highestScore >= passMark;
-  })();
-
-  const isPostSatisfied = (() => {
-    if (!postQuiz) return true;
-    const attempts = Number(spoil.post_spoil_quiz?.attempts ?? 0);
-    return attempts > 0 || isQuizAttempted(postQuiz);
-  })();
+  const preStatus = buildQuizStatus(preQuiz, spoil.pre_spoil_quiz);
+  const postStatus = buildQuizStatus(postQuiz, spoil.post_spoil_quiz);
 
   const getModuleQuiz = (moduleId: number) =>
     quizzes.find(
@@ -204,34 +271,58 @@ export const getSpoilQuizGate = (spoil: SpoilDetailsData): SpoilQuizGate => {
         Number(quiz.module_id) === Number(moduleId),
     ) ?? null;
 
-  const isModuleQuizSatisfied = (moduleId: number) =>
-    isQuizAttempted(getModuleQuiz(moduleId));
+  const getModuleQuizStatus = (moduleId: number) =>
+    buildQuizStatus(getModuleQuiz(moduleId));
 
   return {
     preQuiz,
     postQuiz,
-    isPreSatisfied,
-    isPostSatisfied,
+    preStatus,
+    postStatus,
+    isPreSatisfied: !preQuiz || preStatus.isPassed,
+    isPostSatisfied: !postQuiz || postStatus.isTaken,
     getModuleQuiz,
-    isModuleQuizSatisfied,
+    getModuleQuizStatus,
+    isModuleQuizSatisfied: (moduleId: number) =>
+      !getModuleQuiz(moduleId) || getModuleQuizStatus(moduleId).isPassed,
   };
+};
+
+export type ModuleUnlockBlocker =
+  | { module: SpoilModule; quiz: SpoilQuiz; reason: "quiz" }
+  | { module: SpoilModule; reason: "incomplete" };
+
+/**
+ * Why a later module is still locked. If an earlier module has a quiz that
+ * has not been passed, that quiz is the blocker — later content must not open.
+ */
+export const getModuleUnlockBlocker = (
+  modules: SpoilModule[],
+  index: number,
+  gate: SpoilQuizGate,
+): ModuleUnlockBlocker | null => {
+  for (let i = 0; i < index; i += 1) {
+    const previous = modules[i];
+    const quiz = gate.getModuleQuiz(previous.id);
+
+    if (quiz && !gate.isModuleQuizSatisfied(previous.id)) {
+      return { reason: "quiz", module: previous, quiz };
+    }
+
+    if (!isModuleComplete(previous)) {
+      return { reason: "incomplete", module: previous };
+    }
+  }
+
+  return null;
 };
 
 /**
  * A module is unlocked only when every earlier module is fully complete AND its
- * module quiz (if any) has been taken. The first module is always unlocked.
+ * module quiz (if any) has been passed. The first module is always unlocked.
  */
 export const isModuleUnlocked = (
   modules: SpoilModule[],
   index: number,
   gate: SpoilQuizGate,
-) => {
-  for (let i = 0; i < index; i += 1) {
-    const previous = modules[i];
-
-    if (!isModuleComplete(previous)) return false;
-    if (!gate.isModuleQuizSatisfied(previous.id)) return false;
-  }
-
-  return true;
-};
+) => getModuleUnlockBlocker(modules, index, gate) === null;

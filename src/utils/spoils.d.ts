@@ -136,7 +136,7 @@ interface Quiz {
   id: number;
   title: string;
   type: string;
-  module_id: null;
+  module_id: number | null;
   spoil_id: number;
   description: string;
   no_of_questions: number;
@@ -145,7 +145,21 @@ interface Quiz {
   deleted_at: null;
   created_at: string;
   updated_at: string;
-  attempts: any[];
+  /** The current learner's attempts at this quiz. */
+  attempts: QuizAttempt[];
+}
+
+interface QuizAttempt {
+  id: number;
+  user_id: number;
+  quiz_id: number;
+  score: number;
+  total: number;
+  started_at: string;
+  completed_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Module {
@@ -168,7 +182,7 @@ interface Lesson {
   slug: string;
   description: null;
   type: string;
-  content: null;
+  content: string | null;
   content_url: string;
   spoil_id: number;
   module_id: number;
@@ -237,7 +251,7 @@ interface Category {
 }
 
 interface Prespoilquiz {
-  highest_score: null;
+  highest_score: number | null;
   attempts: number;
 }
 

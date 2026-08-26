@@ -57,8 +57,22 @@ amount: yup
       .transform(() => null);
   }),
   expiryDate: yup.string().trim().nullable(),
-  moduleCount: yup.string().trim().nullable(),
-  lessonCount: yup.string().trim().nullable(),
+  moduleCount: yup
+    .string()
+    .trim()
+    .nullable()
+    .matches(/^\d+$/, {
+      message: "Enter a valid number of modules",
+      excludeEmptyString: true,
+    }),
+  lessonCount: yup
+    .string()
+    .trim()
+    .nullable()
+    .matches(/^\d+$/, {
+      message: "Enter a valid number of lessons",
+      excludeEmptyString: true,
+    }),
   description: yup.string().trim().required('required '),
   learningOutcome: yup.string().trim(),
   lessonType:

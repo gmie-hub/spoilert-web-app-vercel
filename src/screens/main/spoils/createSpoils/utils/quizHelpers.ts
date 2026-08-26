@@ -89,7 +89,17 @@ export const createQuizAndQuestions = async (
   fd.append("no_of_questions", noOfQuestions);
 
   if (quiz.overview?.timeLimit) fd.append("time_limit", String(quiz.overview.timeLimit));
-  if (quiz.overview?.pass_mark) fd.append("pass_mark", String(quiz.overview.pass_mark));
+
+  // The overview form stores the pass mark as `passmark`; drafts and server
+  // payloads use `pass_mark`. Accept either and always send `pass_mark`.
+  const passMark =
+    quiz.overview?.passmark ??
+    quiz.overview?.pass_mark ??
+    quiz.passmark ??
+    quiz.pass_mark;
+  if (passMark !== undefined && passMark !== null && passMark !== "") {
+    fd.append("pass_mark", String(passMark));
+  }
 
   let questionsPayload: any[] = [];
   if (Array.isArray(quiz.questions) && quiz.questions.length > 0) {

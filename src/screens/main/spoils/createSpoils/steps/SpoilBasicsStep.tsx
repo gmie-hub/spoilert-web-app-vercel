@@ -18,12 +18,7 @@ import LessonFileUpload from "../components/LessonFileUpload";
 import UploadSpoilImage from "../components/UploadSpoilImage";
 import { makeBasicsValidationSchema } from "../validations";
 
-import {
-  lessonOptions,
-  mapSpoilDataToForm,
-  moduleOptions,
-  pricingOptions,
-} from "./spoilBasicsHelpers";
+import { mapSpoilDataToForm, pricingOptions } from "./spoilBasicsHelpers";
 
 import type { BasicsFormData, SpoilTypeOption } from "../types";
 
@@ -225,18 +220,20 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
 
               {selectedType !== "simple" && (
                 <>
-                  <Select
+                  <Input
                     name="moduleCount"
                     label="Modules"
-                    placeholder="Select number of modules"
-                    options={moduleOptions}
+                    placeholder="Enter number of modules"
+                    numericOnly
+                    type="text"
                   />
 
-                  <Select
+                  <Input
                     name="lessonCount"
                     label="Lessons"
-                    placeholder="Select number of lessons"
-                    options={lessonOptions}
+                    placeholder="Enter number of lessons"
+                    numericOnly
+                    type="text"
                   />
                 </>
               )}

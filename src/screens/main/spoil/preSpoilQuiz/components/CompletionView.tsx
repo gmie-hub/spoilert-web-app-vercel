@@ -11,27 +11,67 @@ import type { NormalizedQuestion } from "../helpers";
 
 interface CompletionViewProps {
   correctAnswersCount: number;
+  hasCertificate?: boolean;
   hasPassed: boolean;
+  isContinuing?: boolean;
   normalizedQuestions: NormalizedQuestion[];
   pageTitle: string;
   quizDetailsData?: QuizDetailsData;
+  quizType?: string;
   totalQuestionsCount: number;
   onRetry: () => void;
   onStartSpoil: () => void;
 }
 
+const getPassedCopy = ({
+  hasCertificate,
+  quizType,
+}: {
+  hasCertificate: boolean;
+  quizType: string;
+}) => {
+  if (quizType === "post") {
+    return {
+      message: hasCertificate
+        ? "Great job! You've completed this Spoylz. You can now print your certificate."
+        : "Great job! You've completed this Spoylz.",
+      buttonLabel: hasCertificate ? "Print Certificate" : "Continue",
+    };
+  }
+
+  if (quizType === "module") {
+    return {
+      message: "Great job! Continue to the next part of this Spoylz.",
+      buttonLabel: "Continue Learning",
+    };
+  }
+
+  return {
+    message:
+      "Great job!👍 This was just to assess your current knowledge. Now, let's start learning",
+    buttonLabel: "Start Spoylz",
+  };
+};
+
 export const CompletionView = ({
   correctAnswersCount,
+  hasCertificate = false,
   hasPassed,
+  isContinuing = false,
   normalizedQuestions,
   pageTitle,
   quizDetailsData,
+  quizType = "pre",
   totalQuestionsCount,
   onRetry,
   onStartSpoil,
 }: CompletionViewProps) => {
   const totalQuestions = totalQuestionsCount || normalizedQuestions.length;
   const passMark = quizDetailsData?.pass_mark;
+  const passedCopy = getPassedCopy({
+    hasCertificate,
+    quizType: String(quizType).toLowerCase(),
+  });
 
   return (
     <div className="mx-auto mt-10 max-w-[650px]">
@@ -57,8 +97,7 @@ export const CompletionView = ({
 
         {hasPassed ? (
           <p className="mx-auto mt-3 max-w-[520px] leading-7 text-black">
-            Great job!👍 This was just to assess your current knowledge. Now,
-            let&apos;s start learning
+            {passedCopy.message}
           </p>
         ) : (
           <p className="mx-auto mt-3 max-w-[520px] leading-7 text-black">
@@ -73,8 +112,9 @@ export const CompletionView = ({
             variant="darkBlue"
             className="mt-8 w-full py-3"
             onClick={onStartSpoil}
+            disabled={isContinuing}
           >
-            Start Spoylz
+            {isContinuing ? "Please wait..." : passedCopy.buttonLabel}
           </Button>
         ) : (
           <Button

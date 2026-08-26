@@ -17,10 +17,13 @@ export const PreSpoilQuizStageContent = ({
     return (
       <CompletionView
         correctAnswersCount={screen.correctAnswersCount}
+        hasCertificate={screen.hasCertificate}
         hasPassed={screen.hasPassed}
+        isContinuing={screen.isContinuing}
         normalizedQuestions={screen.normalizedQuestions}
         pageTitle={screen.pageTitle}
         quizDetailsData={screen.quizDetailsData}
+        quizType={screen.quizType}
         totalQuestionsCount={screen.totalQuestionsCount}
         onRetry={screen.onRetry}
         onStartSpoil={screen.onStartSpoil}

@@ -4,27 +4,11 @@ import Image from "next/image";
 
 import CameraIcon from "@spt/assets/icons/camera.svg";
 import EditIcon from "@spt/assets/icons/white-edit.svg";
+import { htmlToPlainText } from "@spt/utils/richText";
 
 import InfoItem from "./InfoItem";
 
 import type { BasicsFormData, SpoilTypeOption } from "../../types";
-
-// Lesson content comes from the rich-text editor as an HTML string. This review
-// row shows plain text, so convert the markup to readable text: turn block
-// boundaries into spaces, drop the tags, decode entities, and collapse spacing.
-const htmlToPlainText = (value?: string | null): string => {
-  if (!value) return "";
-
-  const spaced = value.replace(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi, " ");
-
-  const text =
-    typeof window !== "undefined" && typeof DOMParser !== "undefined"
-      ? (new DOMParser().parseFromString(spaced, "text/html").body
-          .textContent ?? "")
-      : spaced.replace(/<[^>]*>/g, "");
-
-  return text.replace(/\s+/g, " ").trim();
-};
 
 interface SpoilBasicsSectionProps {
   basics?: BasicsFormData;
