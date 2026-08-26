@@ -35,16 +35,13 @@ const SpoilReviewStep: FC<SpoilReviewStepProps> = ({
   onEditBasics,
   onEditOutline,
 }) => {
-  // Only paid (non-free) spoils get the option to add a certificate.
-  const isPaid = Boolean(basics.pricing && basics.pricing !== "free");
-
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Spoylz Review</h2>
       </div>
 
-      {selectedType !== "simple" && isPaid && (
+      {selectedType !== "simple" && (
         <CertificateSection
           selectedType={selectedType}
           spoilId={spoilId}

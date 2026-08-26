@@ -61,13 +61,10 @@ export const useCreateSpoilMutation = () => {
       const basics = isPassedBasics ? maybeBasics : storeBasics;
       const outline = isPassedBasics ? storeOutline : storeOutline;
 
-      // Only paid (non-free) spoils can carry a certificate. Send the flag as a
-      // "1"/"0" string; it's "1" when the spoil is paid AND a certificate
-      // template has been selected.
-      const isPaidSpoil = Boolean(basics.pricing && basics.pricing !== "free");
-      const hasCertificate = Boolean(
-        isPaidSpoil && certificateTemplate?.templateContent,
-      );
+      // Free and paid spoils can both carry a certificate. Send the flag as a
+      // "1"/"0" string; it's "1" whenever a certificate template has been
+      // selected.
+      const hasCertificate = Boolean(certificateTemplate?.templateContent);
 
       if (basics.title) formData.append("title", basics.title);
       if (basics.pricing) formData.append("pricing", basics.pricing);

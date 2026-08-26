@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import useGetNotificationsQuery, {
 } from "@spt/hooks/apiRequests/useGetNotificationsQuery";
 import useReadNotificationsMutation from "@spt/hooks/apiRequests/useReadNotificationsMutation";
 import useClickOutside from "@spt/hooks/useClickOutside";
+import { resolveNotificationRoute } from "@spt/utils/notificationRoute";
 
 // Relative time, e.g. "5m ago" / "2d ago", falling back to a date for old items.
 const timeAgo = (iso: string) => {
@@ -46,7 +47,37 @@ const NotificationBell = ({ className = "" }: { className?: string }) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   useClickOutside(wrapperRef, () => setOpen(false));
+
+  // The bell is not the last thing in the header — the avatar and the mobile
+  // menu button sit to its right. That means an `absolute right-0` panel is
+  // anchored ~100px in from the screen edge, so on a phone a 360px card hangs
+  // off the left of the viewport. Below `sm` we pin the panel to the viewport
+  // instead, measuring the bell so it lands just under it whatever height the
+  // header currently is.
+  const [panel, setPanel] = useState({ compact: false, top: 0 });
+
+  const measure = useCallback(() => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    setPanel({
+      compact: window.innerWidth < 640,
+      top: rect ? rect.bottom + 8 : 0,
+    });
+  }, []);
+
+  // Measured before opening (not in an effect) so the panel never paints in the
+  // wrong place first; kept in sync afterwards for rotation and resizes.
+  const toggleOpen = () => {
+    if (!open) measure();
+    setOpen(!open);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [open, measure]);
 
   const { data: notifications, isLoading, refetch } = useGetNotificationsQuery({
     page: 1,
@@ -76,10 +107,9 @@ const NotificationBell = ({ className = "" }: { className?: string }) => {
 
   const handleOpenNotification = (n: UserNotification) => {
     if (!n.is_read) readNotificationsHandler([n.id]).catch(() => {});
-    if (n.route) {
-      setOpen(false);
-      router.push(n.route);
-    }
+    setOpen(false);
+    // Nothing resolvable to open — fall back to the full notifications list.
+    router.push(resolveNotificationRoute(n) ?? "/notifications");
   };
 
   const handleViewMore = (n: UserNotification) => {
@@ -98,10 +128,12 @@ const NotificationBell = ({ className = "" }: { className?: string }) => {
   return (
     <div className={`relative ${className}`} ref={wrapperRef}>
       <button
+        ref={buttonRef}
         type="button"
         aria-label="Notifications"
-        onClick={() => setOpen((v) => !v)}
-        className="bg-gray-faint relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full md:h-10 md:w-10"
+        aria-expanded={open}
+        onClick={toggleOpen}
+        className="bg-gray-faint relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full md:h-10 md:w-10"
       >
         <Image
           src={NotificationIcon}
@@ -116,7 +148,14 @@ const NotificationBell = ({ className = "" }: { className?: string }) => {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-[360px] max-w-[92vw] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+        <div
+          className={`z-50 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl ${
+            panel.compact
+              ? "fixed left-3 right-3"
+              : "absolute right-0 top-12 w-[360px] max-w-[92vw]"
+          }`}
+          style={panel.compact ? { top: panel.top } : undefined}
+        >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <p className="flex items-center gap-2 text-sm font-semibold text-[#1E1E1E]">
@@ -130,7 +169,7 @@ const NotificationBell = ({ className = "" }: { className?: string }) => {
           </div>
 
           {/* List */}
-          <div className="max-h-[380px] overflow-y-auto">
+          <div className="max-h-[min(380px,55vh)] overflow-y-auto overscroll-contain">
             {isLoading && dropdownList.length === 0 ? (
               <div className="px-4 py-10 text-center text-xs text-gray-400">
                 Loading…
@@ -166,9 +205,10 @@ const NotificationBell = ({ className = "" }: { className?: string }) => {
                       <p className="text-[11px] text-gray-400">
                         {timeAgo(n.created_at)}
                       </p>
-                      {/* Message stays hidden until the row is hovered. */}
+                      {/* Touch screens have no hover, so the message shows
+                          outright on mobile and is hover-revealed from sm up. */}
                       {n.body && (
-                        <p className="mt-1 hidden text-xs leading-relaxed text-gray-500 group-hover:block">
+                        <p className="mt-1 block text-xs leading-relaxed text-gray-500 sm:hidden sm:group-hover:block">
                           {preview}
                           {truncated && (
                             <button

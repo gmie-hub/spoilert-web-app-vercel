@@ -8,19 +8,16 @@ import { createQuizAndQuestions } from "./quizHelpers";
 
 export const isServerEntityId = (value: string | number) => /^\d+$/.test(String(value));
 
-// After a spoil is created it returns an id. Only paid spoils with a selected
-// certificate template send it up: POST /certificates/template/spoil with the
-// certificate payload plus the new spoil_id.
+// After a spoil is created it returns an id. Any spoil with a selected
+// certificate template — free or paid — sends it up:
+// POST /certificates/template/spoil with the certificate payload plus the new
+// spoil_id.
 export const createSpoilCertificateTemplate = async (
   spoilId: number | string,
 ) => {
-  const { basics, certificateTemplate } = useCreateSpoilStore.getState();
+  const { certificateTemplate } = useCreateSpoilStore.getState();
 
-  const isPaid = Boolean(
-    (basics as any)?.pricing && (basics as any).pricing !== "free",
-  );
-
-  if (!isPaid || !certificateTemplate?.templateContent) {
+  if (!certificateTemplate?.templateContent) {
     return null;
   }
 

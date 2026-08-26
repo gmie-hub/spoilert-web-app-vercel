@@ -99,17 +99,13 @@ export const useSpoilReviewControls = ({
 
     // Keep the spoil's certificate flag in sync with what the tutor has
     // attached or already saved on the spoil details.
-    // when it isn't (they removed it). Mirrors the create flow — only paid,
-    // non-simple spoils can carry a certificate.
-    const isPaid = Boolean(
-      mergedBasics.pricing && mergedBasics.pricing !== "free",
-    );
+    // when it isn't (they removed it). Mirrors the create flow — any non-simple
+    // spoil can carry a certificate, free or paid.
     const hasExistingCertificate =
       Number(spoilDetails?.has_certificate ?? 0) === 1;
     const hasDraftCertificate = Boolean(certificateTemplate?.templateContent);
     const hasCertificate = Boolean(
       selectedType !== "simple" &&
-        isPaid &&
         (hasDraftCertificate || hasExistingCertificate),
     );
 
