@@ -3,24 +3,26 @@ import toast from "react-hot-toast";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
 import type { OutlineData } from "@spt/types";
 import api from "@spt/utils/apiClient";
+import {
+  type ReportCreationFailure,
+  getApiErrorMessage,
+} from "@spt/utils/creationFailures";
 
 import { createQuizAndQuestions } from "./quizHelpers";
 
 export const isServerEntityId = (value: string | number) => /^\d+$/.test(String(value));
 
-// After a spoil is created it returns an id. Only paid spoils with a selected
-// certificate template send it up: POST /certificates/template/spoil with the
-// certificate payload plus the new spoil_id.
+// After a spoil is created it returns an id. Any spoil with a selected
+// certificate template — free or paid — sends it up:
+// POST /certificates/template/spoil with the certificate payload plus the new
+// spoil_id.
 export const createSpoilCertificateTemplate = async (
   spoilId: number | string,
+  onStepFailed?: ReportCreationFailure,
 ) => {
-  const { basics, certificateTemplate } = useCreateSpoilStore.getState();
+  const { certificateTemplate } = useCreateSpoilStore.getState();
 
-  const isPaid = Boolean(
-    (basics as any)?.pricing && (basics as any).pricing !== "free",
-  );
-
-  if (!isPaid || !certificateTemplate?.templateContent) {
+  if (!certificateTemplate?.templateContent) {
     return null;
   }
 
@@ -41,6 +43,19 @@ export const createSpoilCertificateTemplate = async (
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("Failed to create certificate template for spoil", spoilId, err);
+    onStepFailed?.({
+      id: `certificate-${spoilId}`,
+      kind: "certificate",
+      label: "Certificate template",
+      actionLabel: "Recreate Certificate",
+      message: getApiErrorMessage(err, "Failed to attach the certificate template"),
+      retry: async () => {
+        const res = await api.post("/certificates/template/spoil", payload);
+
+        return res;
+      },
+    });
+
     return null;
   }
 };
@@ -123,7 +138,10 @@ export const validateDraftQuizzes = () => {
   return true;
 };
 
-export const buildQuizCallbacks = () => ({
+export const buildQuizCallbacks = (onStepFailed?: ReportCreationFailure) => ({
+  // Passed straight through so the module/lesson steps report failures too.
+  onStepFailed,
+
   onSpoilCreated: async (spoilId: number | string) => {
     try {
       const basics = useCreateSpoilStore.getState().basics ?? {};
@@ -131,15 +149,15 @@ export const buildQuizCallbacks = () => ({
       const postQuiz = (basics as any).postQuiz;
 
       try {
-        await createQuizAndQuestions(preQuiz, { type: "pre", spoilId });
+        await createQuizAndQuestions(preQuiz, { type: "pre", spoilId, onStepFailed });
       } catch {
-        // ignore per original behavior
+        // reported through onStepFailed; keep going with the post quiz
       }
 
       try {
-        await createQuizAndQuestions(postQuiz, { type: "post", spoilId });
+        await createQuizAndQuestions(postQuiz, { type: "post", spoilId, onStepFailed });
       } catch {
-        // ignore per original behavior
+        // reported through onStepFailed
       }
     } catch {
       // ignore callback failures
@@ -166,9 +184,17 @@ export const buildQuizCallbacks = () => ({
       }
 
       try {
-        await createQuizAndQuestions(quizConfig, { type: "module", moduleId, moduleRes });
+        await createQuizAndQuestions(quizConfig, {
+          type: "module",
+          moduleId,
+          moduleRes,
+          label: originalModule?.title
+            ? `Quiz for "${originalModule.title}"`
+            : "Module quiz",
+          onStepFailed,
+        });
       } catch {
-        // ignore per original behavior
+        // reported through onStepFailed
       }
     } catch {
       // ignore callback failures

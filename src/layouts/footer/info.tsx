@@ -99,7 +99,7 @@ const Info = () => {
                     src={AppStoreBadge}
                     alt="app-store"
                     width={134}
-                    height={41}
+                    height={41} 
                     style={{ height: "auto" }}
                   />
                 </Link>

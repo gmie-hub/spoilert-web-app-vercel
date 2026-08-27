@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FaBan } from "react-icons/fa";
 import { FiChevronDown, FiChevronUp, FiLock } from "react-icons/fi";
 
 import CalendarIcon from "@spt/assets/icons/calendar.svg";
@@ -10,10 +9,13 @@ import MenuIcon from "@spt/assets/icons/menu.svg";
 import Button from "@spt/components/button";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
+import PostSpoilQuizPanel from "./PostSpoilQuizPanel";
+import { ModuleQuizStatusRow, PreSpoilQuizRow } from "./SpoilQuizRows";
 import {
   type SpoilLesson,
   type SpoilModule,
   formatExpiryDate,
+  getModuleUnlockBlocker,
   getSpoilQuizGate,
   isModuleComplete,
   isModuleUnlocked,
@@ -52,10 +54,11 @@ export const StartSpoilSidebar = ({
 }: StartSpoilSidebarProps) => {
   const router = useRouter();
 
-  // A post-Spoylz quiz only exists when the spoil has a quiz of type "post".
-  const hasPostQuiz = Boolean(
-    spoil?.quizzes?.some((quiz) => quiz.type === "post"),
-  );
+  // Quiz gate drives module locking, the per-module quiz CTA and the pre/post
+  // quiz status shown in this panel.
+  const quizGate = getSpoilQuizGate(spoil);
+
+  const preStatus = quizGate.preStatus;
 
   const canTakePostQuiz = (() => {
     // backend may provide overall percentage as numeric or string fields
@@ -93,9 +96,6 @@ export const StartSpoilSidebar = ({
     router.push(`/spoil/${spoil.id}/post-spoil-quiz`);
   };
 
-  // Quiz gate drives module locking and the per-module quiz CTA.
-  const quizGate = getSpoilQuizGate(spoil);
-
   const handleTakeModuleQuiz = (moduleId: number) => {
     router.push(`/spoil/${spoil.id}/module-quiz?moduleId=${moduleId}`);
   };
@@ -122,6 +122,10 @@ export const StartSpoilSidebar = ({
         {formatExpiryDate(spoil.expires_at)}
       </p>
 
+      {quizGate.preQuiz && (
+        <PreSpoilQuizRow quiz={quizGate.preQuiz} status={preStatus} />
+      )}
+
       <div className="mt-6 space-y-4">
         {modules.length > 0 ? (
           modules.map((module, index) => {
@@ -129,11 +133,16 @@ export const StartSpoilSidebar = ({
             const isActive = module.id === activeModule?.id;
             const moduleCompleted = isModuleComplete(module);
             const moduleUnlocked = isModuleUnlocked(modules, index, quizGate);
+            const unlockBlocker = getModuleUnlockBlocker(
+              modules,
+              index,
+              quizGate,
+            );
             const moduleQuiz = quizGate.getModuleQuiz(module.id);
+            const moduleQuizStatus = quizGate.getModuleQuizStatus(module.id);
             const needsModuleQuiz =
-              moduleCompleted &&
-              !!moduleQuiz &&
-              !quizGate.isModuleQuizSatisfied(module.id);
+              moduleCompleted && !!moduleQuiz && !moduleQuizStatus.isPassed;
+            const lockedByPreviousQuiz = unlockBlocker?.reason === "quiz";
 
             return (
               <div
@@ -169,13 +178,8 @@ export const StartSpoilSidebar = ({
 
                   <button
                     type="button"
-                    onClick={() => {
-                      if (moduleUnlocked) onSelectModule(module);
-                    }}
-                    disabled={!moduleUnlocked}
-                    className={`min-w-0 flex-1 text-left ${
-                      moduleUnlocked ? "" : "cursor-not-allowed"
-                    }`}
+                    onClick={() => onSelectModule(module)}
+                    className="min-w-0 flex-1 text-left"
                   >
                     <p className="text-xs text-[#9CA3AF]">Module {index + 1}</p>
                     <p className="mt-1 truncate text-[15px] font-medium text-[#212529]">
@@ -204,12 +208,32 @@ export const StartSpoilSidebar = ({
                   )}
                 </div>
 
-                {!moduleUnlocked && (
-                  <div className="border-t border-[#EEF1F3] bg-[#FCFCFC] px-4 py-3 text-xs text-[#7C8792]">
-                    Complete the previous module and its quiz to unlock this
-                    module.
+                {!moduleUnlocked && lockedByPreviousQuiz && (
+                  <div className="border-t border-[#EEF1F3] bg-[#FFF7ED] px-4 py-3">
+                    <p className="text-xs font-medium text-[#9A6A2B]">
+                      Pass the previous module quiz to unlock this module.
+                    </p>
+                    <Button
+                      variant="darkBlue"
+                      onClick={() => {
+                        if (unlockBlocker?.reason === "quiz") {
+                          handleTakeModuleQuiz(unlockBlocker.module.id);
+                        }
+                      }}
+                      className="mt-3 w-full rounded-[12px] py-2.5 text-sm"
+                    >
+                      Take Module Quiz
+                    </Button>
                   </div>
                 )}
+
+                {!moduleUnlocked && !lockedByPreviousQuiz && (
+                  <div className="border-t border-[#EEF1F3] bg-[#FCFCFC] px-4 py-3 text-xs text-[#7C8792]">
+                    Complete the previous module to unlock this module.
+                  </div>
+                )}
+
+                {moduleUnlocked && <ModuleQuizStatusRow status={moduleQuizStatus} />}
 
                 {moduleUnlocked && needsModuleQuiz && (
                   <div className="border-t border-[#EEF1F3] bg-[#FFF7ED] px-4 py-3">
@@ -286,37 +310,11 @@ export const StartSpoilSidebar = ({
         )}
       </div>
 
-      {hasPostQuiz && (
-        <div className="mt-5 rounded-[16px] border border-[#B7DCE8] bg-[#EAF7FB] px-4 py-4">
-          <p className="flex items-start gap-3 text-sm leading-6 text-[#5A6A73]">
-            <FiLock className="mt-1 shrink-0 text-[#7C93A0]" size={16} />
-            <span>
-              <span className="font-medium text-[#4B5C65]">Post Spoylz Quiz</span>{" "}
-              -{" "}
-              {canTakePostQuiz
-                ? "You have unlocked the post-Spoylz quiz."
-                : "You have to complete all modules to unlock your certificate"}
-            </span>
-          </p>
-
-          <div className="group relative w-full">
-            <Button
-              variant="darkBlue"
-              disabled={!canTakePostQuiz}
-              onClick={handleTakePostQuiz}
-              className={`mt-4 w-full rounded-[12px] py-3 text-white ${
-                !canTakePostQuiz ? "cursor-not-allowed bg-[#8FB0BA]" : ""
-              }`}
-            >
-              Take Post-Spoylz Quiz
-            </Button>
-
-            {!canTakePostQuiz && (
-              <FaBan className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 text-red-500 text-lg group-hover:block" />
-            )}
-          </div>
-        </div>
-      )}
+      <PostSpoilQuizPanel
+        canTakeQuiz={canTakePostQuiz}
+        status={quizGate.postStatus}
+        onTakeQuiz={handleTakePostQuiz}
+      />
 
       {isSpoilCompleted ? (
         <button

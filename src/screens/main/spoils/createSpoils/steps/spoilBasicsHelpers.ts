@@ -5,19 +5,10 @@ import type { BasicsFormData } from "../types";
 
 export const pricingModels = ["free", "paid"];
 
-export const buildNumberOptions = (limit: number) =>
-  Array.from({ length: limit }, (_, index) => {
-    const value = String(index + 1);
-    return { value, label: value };
-  });
-
 export const pricingOptions = pricingModels.map((pricing) => ({
   label: pricing,
   value: pricing,
 }));
-
-export const moduleOptions = buildNumberOptions(20);
-export const lessonOptions = buildNumberOptions(60);
 
 // Server quizzes are mapped with an id like "pre-193" / "post-195" /
 // "module-194". Pull the numeric server quiz id back out so we can fetch its

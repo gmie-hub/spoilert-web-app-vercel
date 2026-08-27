@@ -64,7 +64,7 @@ export interface QuizDatum {
   id: number;
   title: string;
   type: string;
-  module_id: null;
+  module_id: number | null;
   spoil_id: number;
   description: string;
   no_of_questions: number;
@@ -73,4 +73,5 @@ export interface QuizDatum {
   deleted_at: null;
   created_at: string;
   updated_at: string;
+  attempts?: Array<{ score?: number | string | null }>;
 }

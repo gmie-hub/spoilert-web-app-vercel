@@ -174,17 +174,15 @@ const SpoilQuiz = () => {
                   description: overview.description,
                 };
 
-                // include passmark for post quizzes
-                if (quizType === "post") {
-                  // include both camelCase and snake_case pass mark keys
-                  quizPayload.overview = {
-                    ...quizPayload.overview,
-                    passmark: overview.passmark,
-                    pass_mark: overview.passmark,
-                  };
-                  quizPayload.passmark = overview.passmark;
-                  quizPayload.pass_mark = overview.passmark;
-                }
+                // Every quiz type carries a pass mark. Include both the
+                // camelCase and snake_case keys the payload builders read.
+                quizPayload.overview = {
+                  ...quizPayload.overview,
+                  passmark: overview.passmark,
+                  pass_mark: overview.passmark,
+                };
+                quizPayload.passmark = overview.passmark;
+                quizPayload.pass_mark = overview.passmark;
 
                 if (quizType === "pre" || quizType === "post") {
                   // save full quiz (overview + questions) inside basics

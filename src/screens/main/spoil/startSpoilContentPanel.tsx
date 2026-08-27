@@ -5,6 +5,7 @@ import { FiPlay } from "react-icons/fi";
 
 import PolygonIcon from "@spt/assets/icons/Polygon 1.svg";
 import Button from "@spt/components/button";
+import { containsHtml, htmlToPlainText } from "@spt/utils/richText";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import LessonContentViewer from "./LessonContentViewer";
@@ -50,6 +51,14 @@ export const StartSpoilContentPanel = ({
   // The play overlay only makes sense for video lessons; other file types
   // (pdf, image, etc.) still open by clicking the hero.
   const isVideoLesson = activeLesson?.type === "video";
+  // Text lessons have no file to open — their body lives in "content" as
+  // rich-text HTML (older lessons store plain text), so it renders under the
+  // lesson title instead of in the viewer.
+  const lessonContent =
+    activeLesson?.type?.toLowerCase() === "text"
+      ? (activeLesson.content ?? "")
+      : "";
+  const hasLessonContent = Boolean(htmlToPlainText(lessonContent));
 
   return (
     <div className="min-w-0">
@@ -111,6 +120,18 @@ export const StartSpoilContentPanel = ({
           <p className="mt-2 text-sm text-[#7C8792]">
             {completedLessonsCount}/{totalLessons} lessons completed
           </p>
+
+          {hasLessonContent &&
+            (containsHtml(lessonContent) ? (
+              <div
+                className="mt-5 max-w-[820px] text-[15px] leading-8 text-[#5F6368] [&_a]:text-[var(--color-blue)] [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                dangerouslySetInnerHTML={{ __html: lessonContent }}
+              />
+            ) : (
+              <p className="mt-5 max-w-[820px] whitespace-pre-line text-[15px] leading-8 text-[#5F6368]">
+                {lessonContent}
+              </p>
+            ))}
         </div>
 
         <div className="mt-8">
@@ -181,7 +202,7 @@ export const StartSpoilContentPanel = ({
           className={`mt-10 w-full rounded-[14px] py-4 ${
             activeLessonIsCompleted ? "bg-[#0E6076] hover:bg-[#0E6076]" : ""
           }`}
-          // disabled={!activeLesson || activeLessonIsCompleted || isCompletingLesson}
+          disabled={!activeLesson || activeLessonIsCompleted || isCompletingLesson}
           onClick={onCompleteLesson}
         >
           {activeLessonIsCompleted

@@ -16,6 +16,7 @@ interface Payload {
   username: string;
   email: string;
   password: string;
+  register_method: string;
 }
 
 interface SignupResponse {
@@ -49,6 +50,7 @@ export const useSignupMutation = () => {
       username: values.username,
       email: values.email,
       password: values.password,
+      register_method: "WEB"
     };
 
     try {

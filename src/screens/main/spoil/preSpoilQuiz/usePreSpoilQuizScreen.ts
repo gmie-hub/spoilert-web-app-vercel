@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import useCompleteSpoilMutation from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import { useGetQuizBySpoilId } from "@spt/hooks/apiRequests/useGetQuizBySpoilId";
 import { useGetQuizDetailsQuery } from "@spt/hooks/apiRequests/useGetQuizDetailsQuery";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
@@ -41,7 +42,9 @@ export interface ReadyPreSpoilQuizScreenState extends PreSpoilQuizBaseState {
   currentQuestion: NormalizedQuestion | null;
   currentQuestionIndex: number;
   hasAlreadyPassed: boolean;
+  hasCertificate: boolean;
   hasPassed: boolean;
+  isContinuing: boolean;
   isLastQuestion: boolean;
   isQuizDetailsError: boolean;
   isQuizDetailsLoading: boolean;
@@ -52,6 +55,7 @@ export interface ReadyPreSpoilQuizScreenState extends PreSpoilQuizBaseState {
   quizDetailsData?: QuizDetailsData;
   quizDetailsErrorMessage: string;
   quizStage: QuizStage;
+  quizType: string;
   remainingSeconds: number | null;
   responses: Record<number, string>;
   scorePercent: number;
@@ -82,6 +86,8 @@ export const usePreSpoilQuizScreen = ({
   const router = useRouter();
   const [quizStage, setQuizStage] = useState<QuizStage>("intro");
   const resolvedSpoilId = Number.isFinite(Number(spoilId)) ? Number(spoilId) : 0;
+  const { completeSpoilHandler, isCompletingSpoil } =
+    useCompleteSpoilMutation();
 
   const {
     data: spoil,
@@ -141,19 +147,28 @@ export const usePreSpoilQuizScreen = ({
     spoilId: resolvedSpoilId,
   });
 
-  // Whether the learner already passed this quiz in a previous session, from the
-  // spoil summary (attempts + highest score) for the relevant quiz type.
+  // Whether the learner already passed this quiz in a previous session.
+  // Module quizzes cannot use `module_spoil_quiz` — that summary aggregates
+  // every module — so they read attempts on this quiz only.
   const hasAlreadyPassed = useMemo(() => {
     if (!spoil || !preSpoilQuiz) {
       return false;
     }
 
+    if (quizType === "module") {
+      const scores = (preSpoilQuiz.attempts ?? [])
+        .map((attempt) => Number(attempt?.score))
+        .filter((score) => Number.isFinite(score));
+
+      if (scores.length === 0) {
+        return false;
+      }
+
+      return hasReachedPassMark(Math.max(...scores), preSpoilQuiz.pass_mark);
+    }
+
     const summary =
-      quizType === "post"
-        ? spoil.post_spoil_quiz
-        : quizType === "module"
-          ? spoil.module_spoil_quiz
-          : spoil.pre_spoil_quiz;
+      quizType === "post" ? spoil.post_spoil_quiz : spoil.pre_spoil_quiz;
 
     if (Number(summary?.attempts ?? 0) <= 0) {
       return false;
@@ -201,7 +216,21 @@ export const usePreSpoilQuizScreen = ({
     router.push(`/spoil/${spoil.id}`);
   };
 
-  const handleStartSpoil = () => {
+  const hasCertificate = spoil.has_certificate === 1;
+
+  const handleStartSpoil = async () => {
+    if (String(quizType).toLowerCase() === "post") {
+      await completeSpoilHandler(spoil.id, { silent: true });
+
+      if (hasCertificate) {
+        router.push(`/my-learnings/certificate?spoilId=${spoil.id}`);
+        return;
+      }
+
+      router.push("/my-learnings?tab=completed");
+      return;
+    }
+
     router.push(`/spoil/${spoil.id}/start`);
   };
 
@@ -223,7 +252,9 @@ export const usePreSpoilQuizScreen = ({
     currentQuestionIndex,
     description: pageContent.description,
     hasAlreadyPassed,
+    hasCertificate,
     hasPassed,
+    isContinuing: isCompletingSpoil,
     isLastQuestion,
     isQuizDetailsError,
     isQuizDetailsLoading,
@@ -236,6 +267,7 @@ export const usePreSpoilQuizScreen = ({
     quizDetailsData,
     quizDetailsErrorMessage,
     quizStage,
+    quizType,
     quizStats: pageContent.quizStats,
     remainingSeconds,
     responses,

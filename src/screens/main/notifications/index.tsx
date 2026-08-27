@@ -16,6 +16,7 @@ import useGetNotificationsQuery, {
 } from "@spt/hooks/apiRequests/useGetNotificationsQuery";
 import useReadNotificationsMutation from "@spt/hooks/apiRequests/useReadNotificationsMutation";
 import { getErrorMessage } from "@spt/utils/error";
+import { resolveNotificationRoute } from "@spt/utils/notificationRoute";
 
 import { ErrorState } from "../home/spoilDetails/spoilDetails";
 import { LoadingState } from "../spoil/preSpoilQuiz/components/LoadingState";
@@ -120,6 +121,7 @@ const NotificationsPage: FC = () => {
               <div className="mt-6 space-y-4">
                 {notifications.map((n) => {
                   const isExpanded = expandedId === n.id;
+                  const target = resolveNotificationRoute(n);
                   return (
                     <div
                       key={n.id}
@@ -188,12 +190,12 @@ const NotificationsPage: FC = () => {
                               {n.body}
                             </p>
 
-                            {n.route && (
+                            {target && (
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  router.push(n.route);
+                                  router.push(target);
                                 }}
                                 className="mt-3 text-sm font-medium text-[#013B4D] hover:underline"
                               >

@@ -18,8 +18,7 @@ interface OverviewProps {
   quizType?: string;
 }
 
-const buildValidationSchema = (quizType?: string) =>
-  Yup.object({
+const validationSchema = Yup.object({
   title: Yup.string()
     .trim()
     .min(3, "Quiz title must be at least 3 characters")
@@ -48,19 +47,25 @@ const buildValidationSchema = (quizType?: string) =>
     .min(1, "Time limit must be at least 1 minute")
     .max(600, "Time limit cannot exceed 600 minutes")
     .required("Time limit is required"),
-    passmark:
-      quizType === "post"
-        ? Yup.number()
-            .transform((value, originalValue) =>
-              originalValue === "" ? undefined : value,
-            )
-            .typeError("Passmark must be a number")
-            .integer("Passmark must be a whole number")
-            .min(0, "Passmark must be at least 0")
-            .max(100, "Passmark cannot exceed 100")
-            .required("Passmark is required for post-quiz")
-        : Yup.mixed().notRequired(),
-  });
+  passmark: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? undefined : value,
+    )
+    .typeError("Pass mark must be a number")
+    .min(0, "Pass mark must be at least 0")
+    .max(100, "Pass mark cannot exceed 100")
+    // The API stores the pass mark with two decimal places.
+    .test(
+      "two-decimal-places",
+      "Pass mark can have at most 2 decimal places",
+      (_value, context) => {
+        const typed = String(context.originalValue ?? "").trim();
+
+        return typed === "" || /^\d*(\.\d{0,2})?$/.test(typed);
+      },
+    )
+    .required("Pass mark is required"),
+});
 
 const Overview: FC<OverviewProps> = ({
   initialValues,
@@ -122,7 +127,7 @@ const Overview: FC<OverviewProps> = ({
       <Formik<QuizOverviewDraft>
         initialValues={derivedInitial}
         enableReinitialize
-        validationSchema={buildValidationSchema(quizType)}
+        validationSchema={validationSchema}
         validateOnBlur
         validateOnChange
         onSubmit={(values) => {
@@ -246,24 +251,23 @@ const Overview: FC<OverviewProps> = ({
               name="numberOfQuestions"
               label="Number of Questions"
               placeholder="How many questions?"
-              type="number"
+              numericOnly
             />
 
             <Input
               name="timeLimit"
               label="Time Limit"
               placeholder="Set time limit for the whole quiz"
-              type="number"
+              numericOnly
             />
 
-            {quizType === "post" && (
-              <Input
-                name="passmark"
-                label="Passmark"
-                placeholder="Enter passmark (e.g. 50)"
-                type="number"
-              />
-            )}
+            <Input
+              name="passmark"
+              label="Pass Mark (%)"
+              placeholder="Enter pass mark (e.g. 50 or 49.5)"
+              numericOnly
+              allowDecimal
+            />
 
             <Button
               type="submit"

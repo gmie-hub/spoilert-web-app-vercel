@@ -23,7 +23,9 @@ import { StartSpoilSidebar } from "./startSpoilSidebar";
 import { LoadingState, MessageState } from "./startSpoilStates";
 import {
   getInitialSelection,
+  getModuleUnlockBlocker,
   getSpoilQuizGate,
+  isModuleUnlocked,
   splitLearningOutcomes,
 } from "./startSpoilUtils";
 
@@ -71,6 +73,37 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
       router.replace(`/spoil/${spoil.id}/pre-spoil-quiz`);
     }
   }, [spoil, router]);
+
+  // Later-module gate: if the active module is still locked because an earlier
+  // module quiz has not been passed, open that quiz instead of its content.
+  useEffect(() => {
+    if (!spoil || activeModuleId == null) return;
+
+    const modulesList = spoil.modules ?? [];
+    const index = modulesList.findIndex((module) => module.id === activeModuleId);
+    if (index <= 0) return;
+
+    const gate = getSpoilQuizGate(spoil);
+    const blocker = getModuleUnlockBlocker(modulesList, index, gate);
+
+    if (blocker?.reason === "quiz") {
+      router.replace(
+        `/spoil/${spoil.id}/module-quiz?moduleId=${blocker.module.id}`,
+      );
+      return;
+    }
+
+    if (blocker?.reason === "incomplete") {
+      const fallbackLesson =
+        blocker.module.lessons?.find(
+          (lesson) => lesson.status?.toLowerCase() === "current",
+        ) ?? blocker.module.lessons?.[0];
+
+      setActiveModuleId(blocker.module.id);
+      setActiveLessonId(fallbackLesson?.id ?? null);
+      setOpenModuleIds(new Set([blocker.module.id]));
+    }
+  }, [spoil, activeModuleId, router]);
 
   const modules = useMemo(() => spoil?.modules ?? [], [spoil?.modules]);
   const learningItems = useMemo(
@@ -131,6 +164,18 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     return <MessageState message="Taking you to the pre-Spoylz quiz..." />;
   }
 
+  const activeModuleIndex = modules.findIndex(
+    (module) => module.id === activeModule?.id,
+  );
+  const activeModuleBlocker =
+    activeModuleIndex >= 0
+      ? getModuleUnlockBlocker(modules, activeModuleIndex, quizGate)
+      : null;
+
+  if (activeModuleBlocker?.reason === "quiz") {
+    return <MessageState message="Taking you to the module quiz..." />;
+  }
+
   const heroImage = spoil.cover_image_url || HeroImage;
   // A spoil may not have a community at all. When it does, `has_joined` tells
   // us whether the current user is already a member.
@@ -170,6 +215,11 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   };
 
   const handleToggleModule = (moduleId: number) => {
+    const index = modules.findIndex((module) => module.id === moduleId);
+    if (index < 0 || !isModuleUnlocked(modules, index, quizGate)) {
+      return;
+    }
+
     setOpenModuleIds((current) => {
       const next = new Set(current);
 
@@ -183,13 +233,45 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     });
   };
 
+  const handleLockedModule = (module: SpoilModule) => {
+    const index = modules.findIndex((item) => item.id === module.id);
+    const blocker = getModuleUnlockBlocker(modules, index, quizGate);
+
+    if (blocker?.reason === "quiz") {
+      router.push(`/spoil/${spoil.id}/module-quiz?moduleId=${blocker.module.id}`);
+      return true;
+    }
+
+    if (blocker?.reason === "incomplete") {
+      const fallbackLesson =
+        blocker.module.lessons?.find(
+          (lesson) => lesson.status?.toLowerCase() === "current",
+        ) ?? blocker.module.lessons?.[0];
+
+      setActiveModuleId(blocker.module.id);
+      setActiveLessonId(fallbackLesson?.id ?? null);
+      setOpenModuleIds((current) => new Set([...current, blocker.module.id]));
+      return true;
+    }
+
+    return false;
+  };
+
   const handleSelectModule = (module: SpoilModule) => {
+    if (handleLockedModule(module)) {
+      return;
+    }
+
     setActiveModuleId(module.id);
     setActiveLessonId(module.lessons?.[0]?.id ?? null);
     setOpenModuleIds((current) => new Set([...current, module.id]));
   };
 
   const handleSelectLesson = (module: SpoilModule, lesson: SpoilLesson) => {
+    if (handleLockedModule(module)) {
+      return;
+    }
+
     setActiveModuleId(module.id);
     setActiveLessonId(lesson.id);
   };
@@ -197,6 +279,10 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   // Make the lesson active, then open its content in a new tab — the same
   // behaviour as the hero play button, triggered from the sidebar "Open".
   const handleOpenLesson = (module: SpoilModule, lesson: SpoilLesson) => {
+    if (handleLockedModule(module)) {
+      return;
+    }
+
     handleSelectLesson(module, lesson);
 
     if (lesson.content_url) {
@@ -206,6 +292,10 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
   };
 
   const handleOpenLessonContent = () => {
+    if (activeModule && handleLockedModule(activeModule)) {
+      return;
+    }
+
     if (!activeLesson?.content_url) {
       return;
     }
@@ -219,6 +309,15 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
       return;
     }
 
+    // Already completed — don't call the API again or re-open the modal.
+    if (activeLessonIsCompleted) {
+      return;
+    }
+
+    if (activeModule && handleLockedModule(activeModule)) {
+      return;
+    }
+
     if (isCompletingLesson) {
       return;
     }
@@ -226,6 +325,27 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     const response = await completeLessonHandler(activeLesson.id);
 
     if (!response) {
+      return;
+    }
+
+    const remainingInModule =
+      activeModule?.lessons?.filter(
+        (lesson) =>
+          lesson.id !== activeLesson.id &&
+          lesson.status?.toLowerCase() !== "completed",
+      ) ?? [];
+    const moduleQuiz = activeModule
+      ? quizGate.getModuleQuiz(activeModule.id)
+      : null;
+    const moduleQuizPending =
+      !!moduleQuiz &&
+      !!activeModule &&
+      !quizGate.isModuleQuizSatisfied(activeModule.id);
+
+    // Last lesson in this module — send the learner to the module quiz before
+    // they can open the next module's content.
+    if (remainingInModule.length === 0 && moduleQuizPending && activeModule) {
+      router.push(`/spoil/${spoil.id}/module-quiz?moduleId=${activeModule.id}`);
       return;
     }
 

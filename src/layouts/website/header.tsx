@@ -2,7 +2,6 @@
 
 import React, { useRef, useState } from "react";
 
-import Stack from "@mui/material/Stack";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -216,13 +215,13 @@ const Header = () => {
         )}
 
         {hasHydrated && authUser && (
-          <Stack direction="row" spacing={{ xs: 2, md: 2 }} alignItems="center" className="md:flex">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3 md:gap-4">
             <NotificationBell />
 
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                className="cursor-pointer flex items-center gap-2 focus:outline-none"
+                className="flex min-w-0 cursor-pointer items-center gap-1.5 focus:outline-none sm:gap-2"
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
                 aria-label="Open profile menu"
                 type="button"
@@ -232,9 +231,9 @@ const Header = () => {
                   alt="user"
                   width={24}
                   height={24}
-                  className="md:w-[40px] md:h-[40px] rounded-full"
+                  className="h-6 w-6 shrink-0 rounded-full object-cover md:h-10 md:w-10"
                 />
-                <p className="hidden md:block">
+                <p className="hidden max-w-[140px] truncate lg:block">
                   {(() => {
                     const fullName = `${authUser?.first_name} ${authUser?.last_name}`;
                     return fullName.length > 15 ? `${fullName.slice(0, 15)}...` : fullName;
@@ -245,7 +244,7 @@ const Header = () => {
                   alt="arrow-down"
                   width={16}
                   height={16}
-                  className="md:w-[24px] md:h-[24px]"
+                  className="hidden shrink-0 sm:block md:h-6 md:w-6"
                 />
               </button>
               {isDropdownOpen && (
@@ -269,13 +268,13 @@ const Header = () => {
                 </div>
               )}
             </div>
-          </Stack>
+          </div>
         )}
 
 
         {/* MOBILE MENU ICON - shown on mobile only (below md) */}
         <button
-          className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          className="md:hidden shrink-0 rounded-md p-1.5 hover:bg-gray-100 sm:p-2"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -285,7 +284,7 @@ const Header = () => {
 
       {/* ================= SEARCH ROW ================= */}
       <div className="border-t border-gray-100 bg-white">
-        <div className="mx-auto flex max-w-[1400px] justify-center py-3 sm:py-4 px-2 sm:px-0">
+        <div className="mx-auto flex max-w-[1400px] justify-center py-2.5 sm:py-4">
           <div className="relative w-full max-w-[650px]">
             {/* Search icon inside input */}
             <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">

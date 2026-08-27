@@ -37,7 +37,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   if (!isMenuOpen) return null;
 
   return (
-    <div className="lg:hidden border-t border-gray-200 bg-white py-4 sm:py-5 space-y-4 sm:space-y-6 px-4 sm:px-6">
+    <div className="md:hidden max-h-[70vh] overflow-y-auto border-t border-gray-200 bg-white py-4 sm:py-5 space-y-4 sm:space-y-6 px-4 sm:px-6">
       {/* Mobile Nav Links */}
       <div className="flex flex-col gap-1 sm:gap-2">
         {navLinks.map((link) => {

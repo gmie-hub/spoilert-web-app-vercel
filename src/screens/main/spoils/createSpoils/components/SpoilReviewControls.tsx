@@ -2,6 +2,7 @@
 
 import type { FC } from "react";
 
+import CreationIssuesModal from "../components/CreationIssuesModal";
 import SpoilReviewModals from "../components/SpoilReviewModals";
 import { useSpoilReviewControls } from "../hooks/useSpoilReviewControls";
 import ReviewActionButtons from "../steps/components/ReviewActionButtons";
@@ -24,6 +25,12 @@ const SpoilReviewControls: FC<Props> = ({
   onSubmit,
 }) => {
   const {
+    creationFailures,
+    recreatedLabels,
+    retryingFailureId,
+    isCreationIssuesModalOpen,
+    handleRetryCreationFailure,
+    handleCloseCreationIssues,
     isReviewModalOpen,
     isPublishCommunityModalOpen,
     isSchedulePremiereModalOpen,
@@ -90,6 +97,15 @@ const SpoilReviewControls: FC<Props> = ({
         onCloseSpoilScheduledModal={handleSpoilScheduledClose}
         isCreateCommunitySuccessModalOpen={isCreateCommunitySuccessModalOpen}
         onCloseCreateCommunitySuccessModal={handleCreateCommunitySuccessClose}
+      />
+
+      <CreationIssuesModal
+        open={isCreationIssuesModalOpen}
+        failures={creationFailures}
+        recreatedLabels={recreatedLabels}
+        retryingFailureId={retryingFailureId}
+        onRetry={handleRetryCreationFailure}
+        onContinue={handleCloseCreationIssues}
       />
     </>
   );

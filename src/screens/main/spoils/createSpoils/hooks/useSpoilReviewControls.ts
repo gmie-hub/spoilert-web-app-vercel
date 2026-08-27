@@ -28,6 +28,8 @@ import {
   validateDraftQuizzes,
 } from "../utils/spoilReviewHelpers";
 
+import { useCreationFailures } from "./useCreationFailures";
+
 import type { SchedulePremiereFormState } from "../components/ScheduleSpoilPremiereModal";
 import type { BasicsFormData, SpoilTypeOption } from "../types";
 
@@ -57,6 +59,20 @@ export const useSpoilReviewControls = ({
   const [isPublishing, setIsPublishing] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [createdSpoilId, setCreatedSpoilId] = useState<number | null>(null);
+
+  // Every create step reports its own failure here so the tutor can recreate
+  // just the module, lessons, quiz or questions that did not save.
+  const {
+    failures: creationFailures,
+    recreatedLabels,
+    retryingFailureId,
+    isIssuesModalOpen: isCreationIssuesModalOpen,
+    reportFailure,
+    resetFailures,
+    finishCreation,
+    retryFailure,
+    closeIssuesModal,
+  } = useCreationFailures();
 
   const { createSpoilHandler } = useCreateSpoilMutation();
   const { updateSpoilHandler } = useUpdateSpoilMutation();
@@ -99,17 +115,13 @@ export const useSpoilReviewControls = ({
 
     // Keep the spoil's certificate flag in sync with what the tutor has
     // attached or already saved on the spoil details.
-    // when it isn't (they removed it). Mirrors the create flow — only paid,
-    // non-simple spoils can carry a certificate.
-    const isPaid = Boolean(
-      mergedBasics.pricing && mergedBasics.pricing !== "free",
-    );
+    // when it isn't (they removed it). Mirrors the create flow — any non-simple
+    // spoil can carry a certificate, free or paid.
     const hasExistingCertificate =
       Number(spoilDetails?.has_certificate ?? 0) === 1;
     const hasDraftCertificate = Boolean(certificateTemplate?.templateContent);
     const hasCertificate = Boolean(
       selectedType !== "simple" &&
-        isPaid &&
         (hasDraftCertificate || hasExistingCertificate),
     );
 
@@ -156,6 +168,7 @@ export const useSpoilReviewControls = ({
         return;
       }
 
+      resetFailures();
       clearPersistedAdvancedDraft();
 
       const response = await createSpoilHandler(
@@ -163,15 +176,16 @@ export const useSpoilReviewControls = ({
         {},
         createModuleHandler,
         createLessonHandler,
-        buildQuizCallbacks(),
+        buildQuizCallbacks(reportFailure),
       );
 
       const createdId = getCreatedSpoilId(response);
       if (createdId) {
         setCreatedSpoilId(Number(createdId));
         // On success, push the selected certificate template up with the new id.
-        await createSpoilCertificateTemplate(createdId);
-        setIsReviewModalOpen(true);
+        await createSpoilCertificateTemplate(createdId, reportFailure);
+        // Anything that failed along the way is offered for recreation first.
+        finishCreation(() => setIsReviewModalOpen(true));
       }
     } catch {
       // ignore
@@ -198,6 +212,8 @@ export const useSpoilReviewControls = ({
       const storedBasics = useCreateSpoilStore.getState().basics;
       setBasicsInDraft?.({ ...(storedBasics ?? {}), is_draft: 1 } as any);
 
+      resetFailures();
+
       let response: any = null;
       try {
         response = await createSpoilHandler(
@@ -205,6 +221,7 @@ export const useSpoilReviewControls = ({
           { setSubmitting: () => {} },
           createModuleHandler,
           createLessonHandler,
+          { onStepFailed: reportFailure },
         );
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -213,8 +230,10 @@ export const useSpoilReviewControls = ({
 
       const createdId = getCreatedSpoilId(response);
       if (createdId) {
-        resetDraftProgress();
-        routeAfterCompletion();
+        finishCreation(() => {
+          resetDraftProgress();
+          routeAfterCompletion();
+        });
       } else {
         toast.error("Failed to save draft. Please try again.");
       }
@@ -262,22 +281,24 @@ export const useSpoilReviewControls = ({
         }
 
         setIsScheduling(true);
+        resetFailures();
+
         const response = await createSpoilHandler(
           new FormData(),
           { setSubmitting: () => {} },
           createModuleHandler,
           createLessonHandler,
+          { onStepFailed: reportFailure },
         );
 
         const createdId = getCreatedSpoilId(response);
+        setIsSchedulePremiereModalOpen(false);
+
         if (createdId) {
           setCreatedSpoilId(Number(createdId));
           // On success, push the selected certificate template up with the new id.
-          await createSpoilCertificateTemplate(createdId);
-          setIsSchedulePremiereModalOpen(false);
-          setIsSpoilScheduledModalOpen(true);
-        } else {
-          setIsSchedulePremiereModalOpen(false);
+          await createSpoilCertificateTemplate(createdId, reportFailure);
+          finishCreation(() => setIsSpoilScheduledModalOpen(true));
         }
       } catch {
         setIsSchedulePremiereModalOpen(false);
@@ -300,6 +321,12 @@ export const useSpoilReviewControls = ({
   };
 
   return {
+    creationFailures,
+    recreatedLabels,
+    retryingFailureId,
+    isCreationIssuesModalOpen,
+    handleRetryCreationFailure: retryFailure,
+    handleCloseCreationIssues: closeIssuesModal,
     isReviewModalOpen,
     isPublishCommunityModalOpen,
     isSchedulePremiereModalOpen,
