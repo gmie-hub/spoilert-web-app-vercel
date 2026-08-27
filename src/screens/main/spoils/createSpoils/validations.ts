@@ -81,5 +81,7 @@ amount: yup
       : yup.string().trim().nullable(),
   });
 
+  
+
 // Backwards-compatible default (non-simple) schema.
 export const basicsValidationSchema = makeBasicsValidationSchema();
