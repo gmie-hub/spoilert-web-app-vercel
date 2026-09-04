@@ -132,7 +132,8 @@ const Input: FC<Props> = ({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           className={`
-            h-12 w-full px-3 rounded-lg border outline-none text-sm
+            h-12 w-full px-3 rounded-lg border outline-none text-sm bg-[#FBFBFB]
+            placeholder:text-gray-400
             [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
             ${hasError ? "border-red-500" : "border-gray-200"}
             ${disabled && "bg-gray-100 cursor-not-allowed"}
