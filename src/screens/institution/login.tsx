@@ -40,9 +40,9 @@ const InstitutionLogin = () => {
       <Stack className="w-full max-w-none space-y-8">
         <motion.div
           variants={childVariants}
-          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-blue-lightest)]"
+          className="flex h-14 w-14 items-center justify-center"
         >
-          <Image src={LogoMark} alt="" width={24} height={18} />
+          <Image src={LogoMark} alt="" width={38} height={29} />
         </motion.div>
 
         <div className="space-y-2 w-full">
@@ -50,7 +50,7 @@ const InstitutionLogin = () => {
             Welcome Back 👋
           </h1>
           <p className="text-sm sm:text-md text-gray-500">
-            Enter your details to log in
+            Enter your details to Log In
           </p>
         </div>
 
@@ -88,8 +88,18 @@ const InstitutionLogin = () => {
         >
           {({ values, handleChange, isValid }) => (
             <Form className="space-y-6 w-full max-w-none">
-              <Input name="email" type="email" label="Email Address" />
-              <Input name="password" type="password" label="Password" />
+              <Input
+                name="email"
+                type="email"
+                label="Email Address"
+                placeholder="example@domain.com"
+              />
+              <Input
+                name="password"
+                type="password"
+                label="Password"
+                placeholder="Input your password"
+              />
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-gray-700 text-sm">
@@ -134,7 +144,7 @@ const InstitutionLogin = () => {
             href="/institution/signup"
             className="font-medium text-[var(--color-yellow)] hover:underline"
           >
-            Sign Up as an institution
+            Apply as an Institution
           </Link>
         </p>
       </Stack>

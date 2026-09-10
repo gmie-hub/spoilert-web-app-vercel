@@ -4,9 +4,10 @@ import React from "react";
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import StarIcon from "@spt/assets/icons/star.svg";
-import AuthImage from "@spt/assets/images/authImage.png";
+import AuthImage from "@spt/assets/images/image.png";
 import { Card } from "@spt/components";
 
 const containerVariants = {
@@ -18,11 +19,28 @@ const containerVariants = {
   },
 };
 
+const defaultHero = {
+  title: "Spoylz For Institutions",
+  description:
+    "Join our community of institutions and start providing quality education to your students.",
+};
+
+const heroByPath: Record<string, { title: string; description: string }> = {
+  "/institution/login": {
+    title: "Spoilert For Institutions",
+    description:
+      "Manage your institution with ease. Track your lecturers, courses, earnings, and overall institution performance all from one dashboard.",
+  },
+};
+
 interface InstitutionAuthLayoutProps {
   children: React.ReactNode;
 }
 
 const InstitutionAuthLayout = ({ children }: InstitutionAuthLayoutProps) => {
+  const pathname = usePathname();
+  const { title, description } = heroByPath[pathname] ?? defaultHero;
+
   return (
     <section className="w-full lg:min-h-screen">
       <motion.div
@@ -31,8 +49,8 @@ const InstitutionAuthLayout = ({ children }: InstitutionAuthLayoutProps) => {
         animate="visible"
         className="flex min-h-screen w-full flex-col bg-white lg:flex-row"
       >
-        <div className="hidden lg:flex lg:w-1/2 lg:p-8 xl:p-10">
-          <div className="relative h-full w-full overflow-hidden rounded-[28px]">
+        <div className="hidden lg:flex lg:w-1/2">
+          <div className="relative h-full w-full overflow-hidden">
             <Image
               src={AuthImage}
               alt="Institution using Spoylz"
@@ -43,20 +61,13 @@ const InstitutionAuthLayout = ({ children }: InstitutionAuthLayoutProps) => {
 
             <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-blue)]/88 via-[var(--color-blue)]/78 to-[var(--color-blue)]/92" />
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center xl:px-16">
-              <Image
-                src={StarIcon}
-                alt=""
-                width={36}
-                height={36}
-                className="brightness-0 invert"
-              />
-              <h2 className="mt-6 max-w-md text-[32px] font-semibold leading-tight tracking-[-0.02em] text-white xl:text-[40px]">
-                Spoylz For Institutions
+            <div className="absolute inset-0 flex flex-col items-start justify-center gap-4 px-10 text-left xl:px-14">
+              <Image src={StarIcon} alt="" width={32} height={32} />
+              <h2 className="max-w-md text-[32px] font-semibold leading-tight tracking-[-0.02em] text-white xl:text-[40px]">
+                {title}
               </h2>
-              <p className="mt-4 max-w-[340px] text-[15px] leading-7 text-white/85">
-                Join our community of institutions and start providing quality
-                education to your students.
+              <p className="max-w-[360px] text-[15px] leading-7 text-white/85">
+                {description}
               </p>
             </div>
           </div>

@@ -3,13 +3,13 @@
 import React from "react";
 
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 
-import FacebookIcon from "@spt/assets/icons/FacebookBlue.svg";
-import GoogleIcon from "@spt/assets/icons/search 1.svg";
+// import FacebookIcon from "@spt/assets/icons/FacebookBlue.svg";
+// import GoogleIcon from "@spt/assets/icons/search 1.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import Stack from "@spt/components/stack";
@@ -140,7 +140,7 @@ const Login = () => {
           </Link>
         </p>
 
-        <p className="mx-auto text-center text-sm sm:text-md text-gray-500">
+        {/* <p className="mx-auto text-center text-sm sm:text-md text-gray-500">
           OR
         </p>
 
@@ -157,8 +157,8 @@ const Login = () => {
           }
         >
           Continue with Google
-        </Button>
-
+        </Button> */}
+{/* 
         <Button
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
@@ -172,7 +172,7 @@ const Login = () => {
           }
         >
           Continue with Facebook
-        </Button>
+        </Button> */}
       </Stack>
     </main>
   );

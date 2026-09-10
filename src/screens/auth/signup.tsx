@@ -3,12 +3,12 @@
 import { useRef } from "react";
 
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { object } from "yup";
 
-import FacebookIcon from "@spt/assets/icons/search 1.svg";
-import GoogleIcon from "@spt/assets/icons/search 1.svg";
+// import FacebookIcon from "@spt/assets/icons/search 1.svg";
+// import GoogleIcon from "@spt/assets/icons/search 1.svg";
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
 import RecaptchaField from "@spt/components/recaptchaField";
@@ -127,10 +127,10 @@ const SignUp = () => {
             Log in
           </Link>
         </p>
-        <p className="mx-auto text-center text-sm sm:text-md text-gray-500">
+        {/* <p className="mx-auto text-center text-sm sm:text-md text-gray-500">
           OR
-        </p>
-        <Button
+        </p> */}
+        {/* <Button
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
           iconLeft={
@@ -138,8 +138,8 @@ const SignUp = () => {
           }
         >
           Continue with Google
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           variant="lightBlue"
           className="w-full flex items-center justify-center gap-2"
           iconLeft={
@@ -147,7 +147,7 @@ const SignUp = () => {
           }
         >
           Continue with Facebook
-        </Button>{" "}
+        </Button>{" "} */}
       </Stack>
     </main>
   );
