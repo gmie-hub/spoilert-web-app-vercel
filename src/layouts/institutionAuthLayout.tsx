@@ -42,12 +42,12 @@ const InstitutionAuthLayout = ({ children }: InstitutionAuthLayoutProps) => {
   const { title, description } = heroByPath[pathname] ?? defaultHero;
 
   return (
-    <section className="w-full lg:min-h-screen">
+    <section className="w-full lg:h-screen lg:overflow-hidden">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex min-h-screen w-full flex-col bg-white lg:flex-row"
+        className="flex min-h-screen w-full flex-col bg-white lg:h-full lg:min-h-0 lg:flex-row"
       >
         <div className="hidden lg:flex lg:w-1/2">
           <div className="relative h-full w-full overflow-hidden">
