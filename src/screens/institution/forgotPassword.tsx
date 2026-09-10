@@ -33,20 +33,19 @@ const InstitutionForgotPassword = () => {
     <main className="w-full max-w-none">
       <Stack className="w-full max-w-none space-y-8">
         <motion.div
-          onClick={router.back}
-          variants={childVariants}
-          className="flex justify-right w-full cursor-pointer"
-          whileHover={{ scale: 1.05 }}
-        >
-          <Image src={BackIcon} alt=" " width={24} height={24} />
-          <span>Back</span>
-        </motion.div>
-
-        <motion.div
           variants={childVariants}
           className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-blue-lightest)]"
         >
           <Image src={LogoMark} alt="" width={24} height={18} />
+        </motion.div>
+
+        <motion.div
+          onClick={router.back}
+          variants={childVariants}
+          className="flex w-full cursor-pointer justify-start"
+          whileHover={{ scale: 1.05 }}
+        >
+          <Image src={BackIcon} alt="Back" width={20} height={20} />
         </motion.div>
 
         <div className="space-y-2 w-full">

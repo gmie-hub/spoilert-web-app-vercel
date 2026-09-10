@@ -74,7 +74,7 @@ const InstitutionAuthLayout = ({ children }: InstitutionAuthLayoutProps) => {
         </div>
 
         <div className="flex min-h-screen w-full flex-col overflow-y-auto bg-white px-5 py-10 sm:px-8 md:py-14 lg:min-h-0 lg:w-1/2 lg:px-12">
-          <Card className="mx-auto my-auto w-full min-w-0 max-w-[460px] rounded-[28px] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-10">
+          <Card className="mx-auto my-auto h-[667px] w-[619px] min-w-0 max-w-full rounded-[28px] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-10">
             {children}
           </Card>
         </div>
