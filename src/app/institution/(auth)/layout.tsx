@@ -3,10 +3,10 @@ import React from "react";
 import { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import InstitutionRouteChrome from "@spt/layouts/institutionRouteChrome";
+import InstitutionAuthLayout from "@spt/layouts/institutionAuthLayout";
 
-import "../globals.css";
-import QueryProvider from "../providers/QueryProvider";
+import "../../globals.css";
+import QueryProvider from "../../providers/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "Create or log in to your Spoylz institution account to manage learners, courses, earnings and performance.",
 };
 
-export default function InstitutionLayout({
+export default function InstitutionAuthRouteLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -29,7 +29,7 @@ export default function InstitutionLayout({
   return (
     <QueryProvider>
       <div className={inter.className}>
-        <InstitutionRouteChrome>{children}</InstitutionRouteChrome>
+        <InstitutionAuthLayout>{children}</InstitutionAuthLayout>
       </div>
     </QueryProvider>
   );

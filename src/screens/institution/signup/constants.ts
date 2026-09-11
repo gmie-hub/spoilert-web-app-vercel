@@ -20,51 +20,69 @@ export const INSTITUTION_COUNTRIES = [
   { value: "CA", label: "Canada" },
 ];
 
-export type SignupStep =
-  | "account"
-  | "institution"
-  | "details"
-  | "verify"
-  | "workspace"
-  | "success";
+export const NIGERIA_STATES = [
+  "Abia",
+  "Adamawa",
+  "Akwa Ibom",
+  "Anambra",
+  "Bauchi",
+  "Bayelsa",
+  "Benue",
+  "Borno",
+  "Cross River",
+  "Delta",
+  "Ebonyi",
+  "Edo",
+  "Ekiti",
+  "Enugu",
+  "FCT - Abuja",
+  "Gombe",
+  "Imo",
+  "Jigawa",
+  "Kaduna",
+  "Kano",
+  "Katsina",
+  "Kebbi",
+  "Kogi",
+  "Kwara",
+  "Lagos",
+  "Nasarawa",
+  "Niger",
+  "Ogun",
+  "Ondo",
+  "Osun",
+  "Oyo",
+  "Plateau",
+  "Rivers",
+  "Sokoto",
+  "Taraba",
+  "Yobe",
+  "Zamfara",
+].map((state) => ({ value: state, label: state }));
+
+export const INSTITUTION_POSITIONS = [
+  { value: "owner", label: "Owner / Proprietor" },
+  { value: "administrator", label: "Administrator" },
+  { value: "registrar", label: "Registrar" },
+  { value: "principal", label: "Principal / Head Teacher" },
+  { value: "dean", label: "Dean" },
+  { value: "hod", label: "Head of Department" },
+  { value: "it_officer", label: "IT Officer" },
+  { value: "other", label: "Other" },
+];
+
+export type SignupStep = "institution" | "contact" | "review" | "success";
 
 export const SIGNUP_STEPS: SignupStep[] = [
-  "account",
   "institution",
-  "details",
-  "verify",
-  "workspace",
+  "contact",
+  "review",
   "success",
 ];
 
-export const STEP_COPY: Record<
-  Exclude<SignupStep, "success">,
-  { title: string; subtitle: string; button: string }
-> = {
-  account: {
-    title: "Create Account",
-    subtitle: "Fill the form below to get started.",
-    button: "Next",
-  },
-  institution: {
-    title: "Let's get to know you.",
-    subtitle: "Tell us about your institution.",
-    button: "Next",
-  },
-  details: {
-    title: "Add Details.",
-    subtitle: "Help us understand your institution's needs.",
-    button: "Next",
-  },
-  verify: {
-    title: "Verify Email.",
-    subtitle:
-      "We have sent a verification code to your email address. Please enter it below.",
-    button: "Verify",
-  },
-  workspace: {
-    title: "Almost there.",
-    subtitle: "Set up your workspace name.",
-    button: "Complete",
-  },
-};
+export const STEPPER_LABELS: Record<Exclude<SignupStep, "success">, string> =
+  {
+    institution: "Institution Info",
+    contact: "Contact Info",
+    review: "Review",
+  };

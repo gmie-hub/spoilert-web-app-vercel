@@ -12,7 +12,6 @@ import SMSIcon from "@spt/assets/icons/sms.svg";
 import ThreadsIcon from "@spt/assets/icons/threads.svg";
 import TikTokIcon from "@spt/assets/icons/tiktok.svg";
 import XIcon from "@spt/assets/icons/x-icon.svg";
-import Button from "@spt/components/button";
 import Flex from "@spt/components/flex";
 import HStack from "@spt/components/hstack";
 import Stack from "@spt/components/stack";
@@ -32,6 +31,10 @@ const navItems = [
   { label: "About Us", href: "/about-us" },
   { label: "FAQs", href: "/faqs" },
   { label: "Contact Us", href: "/contact-us" },
+
+    { label: "Verify Certificate", href: "/verify-certificate" },
+  { label: "Institution Login", href: "/institution/login" },
+
 ];
 
 const socialLinks = [
@@ -85,11 +88,11 @@ const Info = () => {
               </HStack>
             </nav>
 
-            <Link href="/institution/login">
-              <Button variant="whiteOutline" className="rounded-full px-6 py-2.5 text-sm">
-                Institution Login
-              </Button>
-            </Link>
+              {/* <Link href="/institution/login">
+                <Button variant="whiteOutline" className="rounded-full px-6 py-2.5 text-sm">
+                  Institution Login
+                </Button>
+              </Link> */}
           </Stack>
 
           <HStack>
