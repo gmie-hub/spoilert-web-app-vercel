@@ -1,4 +1,3 @@
-import type { FormikProps } from "formik";
 import Link from "next/link";
 
 import Button from "@spt/components/button";
@@ -14,6 +13,7 @@ import {
 } from "../constants";
 
 import type { InstitutionApplicationValues } from "../types";
+import type { FormikProps } from "formik";
 
 const StepForm = ({
   step,
