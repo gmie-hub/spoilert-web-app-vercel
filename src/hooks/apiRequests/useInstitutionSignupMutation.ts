@@ -45,7 +45,7 @@ interface RegisterResponse {
   message: string;
   data?: {
     token?: string;
-    user?: unknown;
+    user?: any;
   };
 }
 
