@@ -87,6 +87,18 @@ html {
   display: none; /* Chrome, Safari, Opera */
 }
 
+/* Tailwind v4 preflight sets cursor: default on buttons; restore the pointer
+   cursor app-wide so every clickable control (buttons, tabs, filters,
+   pagination, role="button" elements) reads as interactive. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* Remove the native increment/decrease arrows on number inputs */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {

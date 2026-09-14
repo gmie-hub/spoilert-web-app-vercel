@@ -6,7 +6,15 @@ import { usePathname } from "next/navigation";
 
 import Footer from "@spt/layouts/footer/footer";
 import InstitutionAuthLayout from "@spt/layouts/institutionAuthLayout";
+import InstitutionDashboardLayout from "@spt/layouts/institutionDashboardLayout";
 import Header from "@spt/layouts/website/header";
+
+const DASHBOARD_PREFIXES = [
+  "/institution/dashboard",
+  "/institution/lecturers",
+  "/institution/spoylz-management",
+  "/institution/revenue",
+];
 
 interface InstitutionRouteChromeProps {
   children: React.ReactNode;
@@ -14,6 +22,10 @@ interface InstitutionRouteChromeProps {
 
 const InstitutionRouteChrome = ({ children }: InstitutionRouteChromeProps) => {
   const pathname = usePathname();
+
+  if (DASHBOARD_PREFIXES.some((prefix) => pathname?.startsWith(prefix))) {
+    return <InstitutionDashboardLayout>{children}</InstitutionDashboardLayout>;
+  }
 
   if (
     pathname?.startsWith("/institution/signup") ||

@@ -2,21 +2,29 @@
 
 import { useState } from "react";
 
-import { Form, Formik } from "formik";
-import * as Yup from "yup";
+import { useRouter } from "next/navigation";
 
-import { Card } from "@spt/components";
-import Button from "@spt/components/button";
-import Input from "@spt/components/input";
-import { validations } from "@spt/utils/validation";
+import { SuccessModal } from "@spt/components";
 
-interface OnboardingStep {
-  title: string;
-  description: string;
-  status: "done" | "active" | "pending";
-}
+import AddBankAccountStep, { type BankDetails } from "./components/AddBankAccountStep";
+import CompletionStep from "./components/CompletionStep";
+import ConfirmBankAccount from "./components/ConfirmBankAccount";
+import CreatePasswordStep from "./components/CreatePasswordStep";
+import OtpStep from "./components/OtpStep";
+import Overview, { type OnboardingStepInfo } from "./components/Overview";
 
-const STEPS: OnboardingStep[] = [
+type OnboardingView =
+  | "overview"
+  | "create-password"
+  | "verify-email"
+  | "verify-phone"
+  | "add-bank"
+  | "confirm-bank"
+  | "complete";
+
+type SuccessModalKind = "password" | "email" | "phone" | "bank" | null;
+
+const INITIAL_STEPS: OnboardingStepInfo[] = [
   {
     title: "Institution Profile",
     description: "Basic information and representative details",
@@ -34,184 +42,149 @@ const STEPS: OnboardingStep[] = [
   },
 ];
 
-const activeIndex = STEPS.findIndex((step) => step.status === "active");
-const progress = ((activeIndex + 1) / STEPS.length) * 100;
-
-const passwordSchema = Yup.object({
-  password: validations.password,
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Passwords do not match")
-    .required("Please re-enter your password"),
-});
-
-type OnboardingView = "overview" | "create-password";
-
 const InstitutionAccountSetup = ({
   institutionName = "University of Lagos",
   institutionEmail = "adetounoshikoya@gmail.com",
+  institutionPhone = "09012345678",
 }: {
   institutionName?: string;
   institutionEmail?: string;
+  institutionPhone?: string;
 }) => {
+  const router = useRouter();
   const [view, setView] = useState<OnboardingView>("overview");
+  const [modal, setModal] = useState<SuccessModalKind>(null);
+  const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
+  const [, setBankDetails] = useState<BankDetails | null>(null);
 
-  if (view === "create-password") {
-    return (
-      <CreatePasswordStep
-        institutionName={institutionName}
-        institutionEmail={institutionEmail}
-      />
-    );
-  }
+  const activeStepTitle = steps.find((step) => step.status === "active")?.title;
+
+  const renderView = () => {
+    switch (view) {
+      case "create-password":
+        return (
+          <CreatePasswordStep
+            institutionName={institutionName}
+            institutionEmail={institutionEmail}
+            onSuccess={() => setModal("password")}
+          />
+        );
+      case "verify-email":
+        return (
+          <OtpStep
+            title="Verify Your Email"
+            description={`We've sent a 6-digit code to ${institutionEmail}. Enter it below to verify your email.`}
+            onSubmit={() => setModal("email")}
+          />
+        );
+      case "verify-phone":
+        return (
+          <OtpStep
+            title="Verify Your Phone Number"
+            description={`We've sent a 6-digit code to ${institutionPhone}. Enter it below to verify your phone number.`}
+            onSubmit={() => setModal("phone")}
+          />
+        );
+      case "add-bank":
+        return (
+          <AddBankAccountStep
+            onNext={(details) => {
+              setBankDetails(details);
+              setView("confirm-bank");
+            }}
+          />
+        );
+      case "confirm-bank":
+        return (
+          <ConfirmBankAccount
+            isSaving={false}
+            onBack={() => setView("add-bank")}
+            onConfirm={() => setModal("bank")}
+          />
+        );
+      case "complete":
+        return (
+          <CompletionStep
+            onLogin={() => router.push("/institution/login")}
+            onBackHome={() => router.push("/")}
+          />
+        );
+      case "overview":
+      default:
+        return (
+          <Overview
+            institutionName={institutionName}
+            steps={steps}
+            onContinue={() =>
+              setView(activeStepTitle === "Add Bank Account" ? "add-bank" : "create-password")
+            }
+          />
+        );
+    }
+  };
 
   return (
-    <OverviewStep onContinue={() => setView("create-password")} institutionName={institutionName} />
-  );
-};
+    <>
+      {renderView()}
 
-const OverviewStep = ({
-  onContinue,
-  institutionName,
-}: {
-  onContinue: () => void;
-  institutionName: string;
-}) => (
-  <main className="w-full bg-white">
-    <Card className="mx-auto my-10 w-full max-w-[648px] rounded-2xl border border-gray-100 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-10 sm:my-14">
-      <h1 className="text-2xl font-semibold text-[#212529] sm:text-[28px]">
-        Complete Your Institution Account Set Up
-      </h1>
-      <p className="mt-1 text-sm text-[#6B7280]">{institutionName}</p>
-
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
-        <div
-          className="h-full rounded-full bg-[var(--color-green)] transition-all"
-          style={{ width: `${progress}%` }}
+      {modal === "password" && (
+        <SuccessModal
+          title="Password Created Successfully 🎉"
+          description="You can now log in with your email and the password you just created"
+          onContinue={() => {
+            setModal(null);
+            setView("verify-email");
+          }}
         />
-      </div>
+      )}
 
-      <div className="mt-6 space-y-3">
-        {STEPS.map((step, index) => (
-          <StepRow key={step.title} step={step} index={index} />
-        ))}
-      </div>
+      {modal === "email" && (
+        <SuccessModal
+          title="Email Verified Successfully 🎉"
+          description="Your email address has been verified. Let's verify your phone number next."
+          onContinue={() => {
+            setModal(null);
+            setView("verify-phone");
+          }}
+        />
+      )}
 
-      <Button type="button" className="mt-8 w-full" onClick={onContinue}>
-        Continue
-      </Button>
-    </Card>
-  </main>
-);
+      {modal === "phone" && (
+        <SuccessModal
+          title="Phone Number Verified Successfully 🎉"
+          description="Your phone number has been verified. Next, add a bank account to receive your institution earnings."
+          onContinue={() => {
+            setModal(null);
+            setSteps((prev) =>
+              prev.map((step) => {
+                if (step.title === "Create Password") return { ...step, status: "done" };
+                if (step.title === "Add Bank Account") return { ...step, status: "active" };
+                return step;
+              }),
+            );
+            setView("overview");
+          }}
+        />
+      )}
 
-const StepRow = ({ step, index }: { step: OnboardingStep; index: number }) => {
-  const isActive = step.status === "active";
-  const isDone = step.status === "done";
-
-  return (
-    <div
-      className={`flex items-start gap-3 rounded-xl border p-4 ${
-        isActive
-          ? "border-[var(--color-blue-lightest)] bg-[var(--color-blue-lightest)]"
-          : "border-gray-100 bg-white"
-      }`}
-    >
-      <span
-        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-          isDone
-            ? "bg-[var(--color-yellow)] text-white"
-            : isActive
-              ? "bg-[var(--color-blue)] text-white"
-              : "bg-gray-100 text-gray-400"
-        }`}
-      >
-        {isDone ? (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M20 6.5L9.5 17L4 11.5"
-              stroke="white"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        ) : (
-          index + 1
-        )}
-      </span>
-      <div>
-        <p
-          className={`text-sm font-semibold ${
-            isActive || isDone ? "text-[#212529]" : "text-gray-400"
-          }`}
-        >
-          {step.title}
-        </p>
-        <p className={`text-sm ${isActive ? "text-[#6B7280]" : "text-gray-400"}`}>
-          {step.description}
-        </p>
-      </div>
-    </div>
+      {modal === "bank" && (
+        <SuccessModal
+          title="Bank Account Added Successfully 🎉"
+          description="Your institution bank account has been added successfully."
+          buttonLabel="Complete Account Set-Up"
+          onContinue={() => {
+            setModal(null);
+            setSteps((prev) =>
+              prev.map((step) =>
+                step.title === "Add Bank Account" ? { ...step, status: "done" } : step,
+              ),
+            );
+            setView("complete");
+          }}
+        />
+      )}
+    </>
   );
 };
-
-const CreatePasswordStep = ({
-  institutionName,
-  institutionEmail,
-}: {
-  institutionName: string;
-  institutionEmail: string;
-}) => (
-  <main className="w-full bg-white">
-    <Card className="mx-auto my-10 w-full max-w-[648px] rounded-2xl border border-gray-100 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-10 sm:my-14">
-      <h1 className="text-center text-2xl font-semibold text-[#212529] sm:text-[28px]">
-        Create a Password
-      </h1>
-      <p className="mx-auto mt-2 max-w-[420px] text-center text-sm text-[#6B7280]">
-        Create your log in password to access the {institutionName} institution
-        account.
-      </p>
-
-      <Formik
-        initialValues={{
-          email: institutionEmail,
-          password: "",
-          confirmPassword: "",
-        }}
-        validationSchema={passwordSchema}
-        validateOnBlur
-        validateOnChange={false}
-        onSubmit={(_values, actions) => {
-          actions.setSubmitting(false);
-        }}
-      >
-        {({ isValid, isSubmitting }) => (
-          <Form className="mt-8 space-y-5">
-            <Input name="email" label="Email Address" disabled />
-            <Input
-              name="password"
-              type="password"
-              label="Password"
-              placeholder="Create your password"
-            />
-            <Input
-              name="confirmPassword"
-              type="password"
-              label="Confirm Password"
-              placeholder="Re-enter your password"
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!isValid || isSubmitting}
-            >
-              Continue
-            </Button>
-          </Form>
-        )}
-      </Formik>
-    </Card>
-  </main>
-);
 
 export default InstitutionAccountSetup;
