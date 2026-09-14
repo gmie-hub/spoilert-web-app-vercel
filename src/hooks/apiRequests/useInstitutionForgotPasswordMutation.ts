@@ -29,7 +29,7 @@ export const useInstitutionForgotPasswordMutation = () => {
   const forgotPassword = async (
     payload: Payload,
   ): Promise<ForgotPasswordResponse> => {
-    return (await api.post("/institution/auth/forgot-password", payload)).data;
+    return (await api.post("/auth/forgot-password", payload)).data;
   };
 
   const mutation = useMutation<
@@ -55,7 +55,7 @@ export const useInstitutionForgotPasswordMutation = () => {
       toast.success(response?.message || "Verification code sent 📬");
       localStorage.setItem(INSTITUTION_EMAIL_KEY, values.email);
 
-      router.push("/institution/verify-code");
+      router.push("/institution/reset-password");
 
       resetForm();
     } catch (error: any) {

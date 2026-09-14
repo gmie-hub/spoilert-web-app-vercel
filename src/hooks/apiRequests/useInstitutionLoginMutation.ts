@@ -28,7 +28,7 @@ export const useInstitutionLoginMutation = () => {
   const router = useRouter();
 
   const login = async (payload: Payload): Promise<LoginResponse> => {
-    return (await api.post("/institution/auth/login", payload)).data;
+    return (await api.post("/auth/login", payload)).data;
   };
 
   const mutation = useMutation<

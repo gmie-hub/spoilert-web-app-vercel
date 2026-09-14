@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 
 import { Card } from "@spt/components";
+import { useGetApplicationByIdQuery } from "@spt/hooks/apiRequests/useGetApplicationByIdQuery";
+import { useInstitutionApplicationMutation } from "@spt/hooks/apiRequests/useInstitutionApplicationMutation";
 import { validations } from "@spt/utils/validation";
 
 import ReviewStep from "./components/ReviewStep";
@@ -15,6 +17,7 @@ import StepForm from "./components/StepForm";
 import StepIndicator from "./components/StepIndicator";
 import SuccessStep from "./components/SuccessStep";
 import { SIGNUP_STEPS, type SignupStep } from "./constants";
+import { mapApplicationToFormValues } from "./utils";
 
 import type { InstitutionApplicationValues } from "./types";
 
@@ -60,9 +63,34 @@ const childVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
 };
 
-const InstitutionSignup = () => {
+const InstitutionSignup = ({ id }: { id?: string }) => {
   const router = useRouter();
   const [step, setStep] = useState<SignupStep>("institution");
+  const { applyHandler, isLoading: isSubmittingApplication } = useInstitutionApplicationMutation();
+  const {
+    data: application,
+    isLoading: isLoadingApplication,
+    isError: isApplicationError,
+    errorMessage: applicationErrorMessage,
+  } = useGetApplicationByIdQuery(id);
+
+  const formInitialValues = application ? mapApplicationToFormValues(application) : initialValues;
+
+  if (id && isLoadingApplication) {
+    return (
+      <main className="flex min-h-[60vh] w-full items-center justify-center bg-white">
+        <p className="text-sm text-[#6B7280]">Loading your application…</p>
+      </main>
+    );
+  }
+
+  if (id && isApplicationError) {
+    return (
+      <main className="flex min-h-[60vh] w-full items-center justify-center bg-white px-4">
+        <p className="max-w-sm text-center text-sm text-[#6B7280]">{applicationErrorMessage}</p>
+      </main>
+    );
+  }
 
   const goTo = (target: SignupStep) => setStep(target);
 
@@ -109,7 +137,8 @@ const InstitutionSignup = () => {
   return (
     <main className="w-full bg-white">
       <Formik
-        initialValues={initialValues}
+        initialValues={formInitialValues}
+        enableReinitialize
         validationSchema={
           step === "review" || step === "success"
             ? undefined
@@ -146,11 +175,11 @@ const InstitutionSignup = () => {
                       {step === "review" ? (
                         <ReviewStep
                           values={formik.values}
-                          isSubmitting={formik.isSubmitting}
+                          isSubmitting={isSubmittingApplication}
                           onEdit={goTo}
-                          onSubmit={() => {
-                            formik.setSubmitting(false);
-                            setStep("success");
+                          onSubmit={async () => {
+                            const success = await applyHandler(formik.values);
+                            if (success) setStep("success");
                           }}
                         />
                       ) : (

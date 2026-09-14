@@ -20,7 +20,7 @@ export const useInstitutionResendCodeMutation = () => {
   const resendCode = async (
     payload: ResendCodePayload,
   ): Promise<ResendCodeResponse> => {
-    return (await api.post("/institution/auth/resend-code", payload)).data;
+    return (await api.post("/auth/resend-otp", payload)).data;
   };
 
   const mutation = useMutation<

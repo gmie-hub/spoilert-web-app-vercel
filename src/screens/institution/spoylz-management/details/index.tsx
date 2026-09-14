@@ -126,7 +126,7 @@ const SpoylzManagementDetails = ({ id }: { id: string }) => {
       {activeTab === "Spoylz Outline" && <SpoylzOutlineTab />}
       {activeTab === "Spoylz Quiz & Leaderboard" && <SpoylzQuizLeaderboardTab />}
       {activeTab === "Spoylz Reviews" && <SpoylzReviewsTab />}
-      {activeTab === "Enrolled Students" && <EnrolledStudentsTab />}
+      {activeTab === "Enrolled Students" && <EnrolledStudentsTab simplified={item.type === "Simple"} />}
       {activeTab === "Spoylz Metrics" && <SpoylzMetricsTab />}
 
       {statusModalAction && (

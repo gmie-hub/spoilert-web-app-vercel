@@ -2,8 +2,8 @@
 
 import { StatCard } from "@spt/components";
 
-import RevenueTrendChart from "./components/RevenueTrendChart";
 import { LecturersIcon, RevenueIcon, SpoylzIcon, StudentsIcon } from "./components/icons";
+import RevenueTrendChart from "./components/RevenueTrendChart";
 
 const TOP_STATS = [
   { label: "Total Lecturers", value: "50", icon: <LecturersIcon />, iconBg: "bg-orange-50" },

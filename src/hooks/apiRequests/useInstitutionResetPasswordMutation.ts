@@ -8,16 +8,15 @@ import { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
 import { INSTITUTION_EMAIL_KEY } from "./useInstitutionForgotPasswordMutation";
-import { INSTITUTION_RESET_TOKEN_KEY } from "./useInstitutionVerifyCodeMutation";
 
 import type { AxiosError } from "axios";
 import type { FormikValues } from "formik";
 
 interface Payload {
-  email: string;
-  reset_token: string;
+  code: string;
   password: string;
-  password_confirmation: string;
+  password_confirmation?: string;
+  email: string;
 }
 
 interface ResetPasswordResponse {
@@ -30,7 +29,7 @@ export const useInstitutionResetPasswordMutation = () => {
   const resetPassword = async (
     payload: Payload,
   ): Promise<ResetPasswordResponse> => {
-    return (await api.post("/institution/auth/reset-password", payload)).data;
+    return (await api.post("/auth/reset-password", payload)).data;
   };
 
   const mutation = useMutation<
@@ -48,17 +47,13 @@ export const useInstitutionResetPasswordMutation = () => {
       typeof window !== "undefined"
         ? localStorage.getItem(INSTITUTION_EMAIL_KEY) || ""
         : "";
-    const resetToken =
-      typeof window !== "undefined"
-        ? localStorage.getItem(INSTITUTION_RESET_TOKEN_KEY) || ""
-        : "";
 
     try {
       const payload: Payload = {
-        email,
-        reset_token: resetToken,
+        code: values?.otp,
         password: values.password,
         password_confirmation: values.password,
+        email,
       };
 
       const response = await mutation.mutateAsync(payload);
@@ -66,7 +61,6 @@ export const useInstitutionResetPasswordMutation = () => {
       toast.success(response?.message || "Password reset successful 🔐");
       if (typeof window !== "undefined") {
         localStorage.removeItem(INSTITUTION_EMAIL_KEY);
-        localStorage.removeItem(INSTITUTION_RESET_TOKEN_KEY);
       }
 
       router.push("/institution/reset-password-successfully");

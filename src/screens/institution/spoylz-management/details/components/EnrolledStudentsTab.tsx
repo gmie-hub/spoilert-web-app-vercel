@@ -8,7 +8,7 @@ import { type EnrolledStudent, MOCK_ENROLLED_STUDENTS } from "../../../lecturers
 import EnrolledStudentsTable from "../../../lecturers/details/components/spoylz/EnrolledStudentsTable";
 import StudentProgress from "../../../lecturers/details/components/spoylz/StudentProgress";
 
-const EnrolledStudentsTab = () => {
+const EnrolledStudentsTab = ({ simplified = false }: { simplified?: boolean }) => {
   const [selectedStudent, setSelectedStudent] = useState<EnrolledStudent | null>(null);
 
   if (selectedStudent) {
@@ -17,6 +17,7 @@ const EnrolledStudentsTab = () => {
         student={selectedStudent}
         onBack={() => setSelectedStudent(null)}
         onViewProfile={() => toast("Learner profile page coming soon")}
+        simplified={simplified}
       />
     );
   }

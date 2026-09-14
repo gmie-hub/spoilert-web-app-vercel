@@ -34,10 +34,12 @@ const StudentProgress = ({
   student,
   onBack,
   onViewProfile,
+  simplified = false,
 }: {
   student: EnrolledStudent;
   onBack: () => void;
   onViewProfile?: () => void;
+  simplified?: boolean;
 }) => (
   <div>
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -68,23 +70,14 @@ const StudentProgress = ({
 
     <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-        <h3 className="text-lg font-semibold text-[#212529]">Progress</h3>
-        <div className="mt-3">
-          <Row2
-            left={{ label: "Progress", value: `${student.progress}%` }}
-            right={{ label: "Overall Modules", value: student.overallModules }}
-          />
-          <Row2
-            left={{ label: "Modules Completed", value: student.modulesCompleted }}
-            right={{ label: "Modules Pending", value: student.modulesPending }}
-          />
-          <RowFull label="Current Module" value={student.currentModule} />
-          <RowFull label="Current Lesson" value={student.currentLesson} />
-          <Row2
-            left={{ label: "Pre-Spoylz Quiz Score", value: student.preQuizScore }}
-            right={{ label: "Post-Spoylz Quiz Score", value: student.postQuizScore }}
-          />
-          <div className="grid grid-cols-2 gap-4 py-4">
+        <h3 className="border-b border-gray-100 pb-4 text-lg font-semibold text-[#212529]">Progress</h3>
+
+        {simplified ? (
+          <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-3">
+            <div>
+              <p className="text-sm text-gray-400">Progress</p>
+              <p className="mt-1 font-medium text-[#212529]">{student.progress}%</p>
+            </div>
             <div>
               <p className="text-sm text-gray-400">Date Enrolled</p>
               <p className="mt-1 font-medium text-[#212529]">{student.dateEnrolled}</p>
@@ -96,25 +89,56 @@ const StudentProgress = ({
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-        <h3 className="text-lg font-semibold text-[#212529]">Progress Breakdown</h3>
-        <div className="mt-3">
-          {student.moduleBreakdown.map((module, index) => (
-            <div key={module.title} className="border-b border-gray-100 py-4 last:border-0">
-              <p className="text-sm text-gray-400">
-                Module {index + 1} ({module.lessons} Lessons)
-              </p>
-              <p className="mt-1 font-medium text-[#212529]">{module.title}</p>
-              <div className="mt-2">
-                <Badge label={module.status} />
+        ) : (
+          <div className="mt-3">
+            <Row2
+              left={{ label: "Progress", value: `${student.progress}%` }}
+              right={{ label: "Overall Modules", value: student.overallModules }}
+            />
+            <Row2
+              left={{ label: "Modules Completed", value: student.modulesCompleted }}
+              right={{ label: "Modules Pending", value: student.modulesPending }}
+            />
+            <RowFull label="Current Module" value={student.currentModule} />
+            <RowFull label="Current Lesson" value={student.currentLesson} />
+            <Row2
+              left={{ label: "Pre-Spoylz Quiz Score", value: student.preQuizScore }}
+              right={{ label: "Post-Spoylz Quiz Score", value: student.postQuizScore }}
+            />
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div>
+                <p className="text-sm text-gray-400">Date Enrolled</p>
+                <p className="mt-1 font-medium text-[#212529]">{student.dateEnrolled}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Status</p>
+                <div className="mt-1">
+                  <Badge label={student.status} />
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
+
+      {!simplified && (
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
+          <h3 className="text-lg font-semibold text-[#212529]">Progress Breakdown</h3>
+          <div className="mt-3">
+            {student.moduleBreakdown.map((module, index) => (
+              <div key={module.title} className="border-b border-gray-100 py-4 last:border-0">
+                <p className="text-sm text-gray-400">
+                  Module {index + 1} ({module.lessons} Lessons)
+                </p>
+                <p className="mt-1 font-medium text-[#212529]">{module.title}</p>
+                <div className="mt-2">
+                  <Badge label={module.status} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   </div>
 );
