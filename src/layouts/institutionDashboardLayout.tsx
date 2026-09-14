@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  /* Temporarily hidden from the sidebar — leaving only Dashboard visible.
   {
     label: "Lecturers",
     href: "/institution/lecturers",
@@ -76,6 +77,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  */
 ];
 
 interface InstitutionDashboardLayoutProps {
