@@ -147,7 +147,8 @@ const VerifyIdentity = ({ onNext, userVerificationDetails }: { onNext: () => voi
                     ? "Upload your NIN slip"
                     : "Upload government issued ID"
                 }
-                placeholder="Upload Image"
+                placeholder="Upload Image or PDF"
+                accept=".png,.jpg,.jpeg,.pdf"
               />
 
             </div>

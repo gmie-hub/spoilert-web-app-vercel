@@ -31,6 +31,10 @@ const navItems = [
   { label: "About Us", href: "/about-us" },
   { label: "FAQs", href: "/faqs" },
   { label: "Contact Us", href: "/contact-us" },
+
+    { label: "Verify Certificate", href: "/verify-certificate" },
+  { label: "Institution Login", href: "/institution/login" },
+
 ];
 
 const socialLinks = [
@@ -83,6 +87,12 @@ const Info = () => {
                 ))}
               </HStack>
             </nav>
+
+              {/* <Link href="/institution/login">
+                <Button variant="whiteOutline" className="rounded-full px-6 py-2.5 text-sm">
+                  Institution Login
+                </Button>
+              </Link> */}
           </Stack>
 
           <HStack>

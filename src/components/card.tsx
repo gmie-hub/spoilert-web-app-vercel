@@ -6,7 +6,7 @@
 
   const Card: FC<ComponentProps> = ({ className = "", children }) => {
     return (
-      <div className={`${className} p-8 w-full shadow-[0_0_40px_0_#D4A43712]`}>
+      <div className={`p-8 w-full shadow-[0_0_40px_0_#D4A43712] ${className}`}>
         {children}
       </div>
     );

@@ -61,7 +61,7 @@ const ProfileSidebar = ({
   const handleLogout = () => {
     logout();
     setLogoutModalOpen(false);
-    router.push("/auth/signin");
+    router.push("/");
   };
 
   return (
