@@ -24,6 +24,8 @@ interface LoginResponse {
   };
 }
 
+const BLOCKED_ROLES = ["admin", "super-admin"];
+
 export const useInstitutionLoginMutation = () => {
   const router = useRouter();
 
@@ -51,6 +53,12 @@ export const useInstitutionLoginMutation = () => {
 
       if (response.data) {
         const { token, user } = response.data;
+
+        if (BLOCKED_ROLES.includes(String(user?.role).toLowerCase())) {
+          toast.error("Admins can't log in here");
+          return;
+        }
+
         useAuthStore.getState().setAuth({ user, token });
       }
 

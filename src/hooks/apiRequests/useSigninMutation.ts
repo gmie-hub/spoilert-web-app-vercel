@@ -25,6 +25,8 @@ interface LoginResponse {
   };
 }
 
+const BLOCKED_ROLES = ["admin", "super-admin"];
+
 export const useLoginMutation = () => {
     const router = useRouter();
   
@@ -48,10 +50,16 @@ export const useLoginMutation = () => {
 
       // Store token in localStorage (or cookies)
       // localStorage.setItem("token", response.data.token);
-        if (response.data) {
-      const { token, user } = response.data;
-      useAuthStore.getState().setAuth({ user, token }); // save to Zustand
-    }
+      if (response.data) {
+        const { token, user } = response.data;
+
+        if (BLOCKED_ROLES.includes(String(user?.role).toLowerCase())) {
+          toast.error("Admins can't log in here");
+          return;
+        }
+
+        useAuthStore.getState().setAuth({ user, token }); // save to Zustand
+      }
       toast.success("Logged in successfully 🎉");
 
       // Redirect after login
