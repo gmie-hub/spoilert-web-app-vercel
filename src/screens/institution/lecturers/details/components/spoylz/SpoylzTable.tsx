@@ -5,6 +5,7 @@ import { useState } from "react";
 import { FilterBar, Pagination } from "@spt/components";
 
 import Badge from "./Badge";
+
 import type { SpoylzItem } from "./constants";
 
 const SpoylzTable = ({

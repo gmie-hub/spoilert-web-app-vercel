@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 
 import { Pagination } from "@spt/components";
 
-import type { Lecturer } from "../constants";
 import StatusBadge from "./StatusBadge";
+
+import type { Lecturer } from "../constants";
 
 const LecturersTable = ({ lecturers }: { lecturers: Lecturer[] }) => {
   const router = useRouter();

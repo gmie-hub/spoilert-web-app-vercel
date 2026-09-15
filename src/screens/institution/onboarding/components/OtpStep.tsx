@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { Card } from "@spt/components";
 import Button from "@spt/components/button";

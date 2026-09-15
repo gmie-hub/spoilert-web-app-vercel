@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import Badge from "./Badge";
+
 import type { SpoylzItem } from "./constants";
 
 const FieldCell = ({ label, value }: { label: string; value: ReactNode }) => (

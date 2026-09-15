@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { MOCK_ENROLLED_STUDENTS, MOCK_SPOYLZ, type EnrolledStudent, type SpoylzItem } from "./constants";
+import { type EnrolledStudent, MOCK_ENROLLED_STUDENTS, MOCK_SPOYLZ, type SpoylzItem } from "./constants";
 import EnrolledStudentsTable from "./EnrolledStudentsTable";
 import SpoylzDetails from "./SpoylzDetails";
 import SpoylzTable from "./SpoylzTable";

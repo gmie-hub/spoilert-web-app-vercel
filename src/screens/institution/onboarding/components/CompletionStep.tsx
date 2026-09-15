@@ -4,7 +4,7 @@ import DoneIcon from "@spt/assets/icons/doeninstitute.svg";
 import { Card } from "@spt/components";
 import Button from "@spt/components/button";
 
-import { StepRow, type OnboardingStepInfo } from "./Overview";
+import { type OnboardingStepInfo, StepRow } from "./Overview";
 
 const COMPLETED_STEPS: OnboardingStepInfo[] = [
   {
