@@ -46,7 +46,7 @@ const InstitutionAccountSetup = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
-  const [view, setView] = useState<OnboardingView>("verify-phone");
+  const [view, setView] = useState<OnboardingView>("overview");
   const [modal, setModal] = useState<SuccessModalKind>(null);
   const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
 
