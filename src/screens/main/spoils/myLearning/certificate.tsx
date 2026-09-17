@@ -301,6 +301,7 @@ export default function MyLearningCertificatePage({
                 markup={certificateMarkup}
                 title={certificateTitle}
                 useResponsiveScaling
+                nativeCanvasSize
                 outerClassName="relative overflow-hidden bg-white"
               />
             ) : (

@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 
 import Image from "next/image";
@@ -25,6 +26,11 @@ import {
   restoreSelectionOffsets,
 } from "./certificateTemplateEditing";
 
+// Matches the fixed size the download/print flow renders the certificate at
+// (~A4 at 96dpi), so the on-screen preview lays out identically to the PDF.
+const NATIVE_CANVAS_WIDTH = 794;
+const NATIVE_CANVAS_HEIGHT = 1123;
+
 interface CertificateTemplatePreviewProps {
   markup: string;
   title: string;
@@ -38,6 +44,16 @@ interface CertificateTemplatePreviewProps {
   children?: ReactNode;
   /** When true, the canvas fills the container width and preserves A4 aspect ratio instead of using fixed pixel dimensions. */
   useResponsiveScaling?: boolean;
+  /**
+   * When true (alongside useResponsiveScaling), the iframe always renders the
+   * certificate at its native A4 pixel size (same as the PDF/print capture)
+   * and is scaled down to fit the container with a CSS transform, instead of
+   * shrinking the iframe's own viewport width. Shrinking the viewport instead
+   * makes fixed-size text reflow onto more lines at narrow widths (e.g. on
+   * mobile), which can make the certificate taller than the fixed aspect-ratio
+   * box and get clipped with no way to scroll to the rest.
+   */
+  nativeCanvasSize?: boolean;
   editableElementOverrides?: Record<string, CertificateElementOverride>;
   onSelectEditableElement?: (
     selection: EditableCertificateElementSelection | null,
@@ -64,6 +80,7 @@ export default function CertificateTemplatePreview({
   transform,
   children,
   useResponsiveScaling = false,
+  nativeCanvasSize = false,
   editableElementOverrides,
   onSelectEditableElement,
   onUpdateEditableElement,
@@ -71,6 +88,8 @@ export default function CertificateTemplatePreview({
 }: CertificateTemplatePreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const nativeCanvasWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [nativeCanvasScale, setNativeCanvasScale] = useState(1);
   const editableElementsRef = useRef<EditableCertificateElementRecord[]>([]);
   const selectedElementIdRef = useRef<string | null>(null);
   const selectionOffsetsRef = useRef<{ start: number; end: number } | null>(
@@ -84,6 +103,27 @@ export default function CertificateTemplatePreview({
   const hasEmbeddedSignature = markup.includes(
     'data-certificate-embedded-asset="signature"',
   );
+
+  useEffect(() => {
+    if (!nativeCanvasSize) {
+      return;
+    }
+
+    const wrapper = nativeCanvasWrapperRef.current;
+    if (!wrapper) {
+      return;
+    }
+
+    const updateScale = () => {
+      setNativeCanvasScale(wrapper.clientWidth / NATIVE_CANVAS_WIDTH);
+    };
+
+    updateScale();
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    resizeObserver.observe(wrapper);
+    return () => resizeObserver.disconnect();
+  }, [nativeCanvasSize]);
 
   useEffect(() => {
     onSelectEditableElementRef.current = onSelectEditableElement;
@@ -340,6 +380,53 @@ export default function CertificateTemplatePreview({
       }
     }
   }, [editableElementOverrides, isInteractive]);
+
+  if (useResponsiveScaling && nativeCanvasSize) {
+    return (
+      <div className={`w-full ${outerClassName}`} ref={nativeCanvasWrapperRef}>
+        <div
+          className="relative w-full overflow-hidden bg-white"
+          style={{ height: NATIVE_CANVAS_HEIGHT * nativeCanvasScale }}
+        >
+          <div
+            ref={canvasRef}
+            className="absolute left-0 top-0 origin-top-left bg-white"
+            style={{
+              width: NATIVE_CANVAS_WIDTH,
+              height: NATIVE_CANVAS_HEIGHT,
+              transform: `scale(${nativeCanvasScale})`,
+            }}
+          >
+            <iframe
+              ref={iframeRef}
+              title={title}
+              srcDoc={markup}
+              sandbox={
+                isInteractive
+                  ? "allow-same-origin allow-scripts"
+                  : "allow-scripts"
+              }
+              onLoad={handleIframeLoad}
+              className={`h-full w-full border-0 bg-white ${
+                isInteractive ? "pointer-events-auto" : "pointer-events-none"
+              }`}
+            />
+
+            {hasEmbeddedLogo
+              ? null
+              : renderDraggableAsset("logo", logoImage, logoPlacement)}
+            {renderDraggableAsset(
+              "signature",
+              hasEmbeddedSignature ? null : signatureImage,
+              signaturePlacement,
+            )}
+
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (useResponsiveScaling) {
     return (

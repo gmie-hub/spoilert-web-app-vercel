@@ -5,7 +5,7 @@ import Button from "@spt/components/button";
 
 const SuccessStep = ({
   onContinue,
-  onGotMail,
+  
 }: {
   onContinue: () => void;
   onGotMail: () => void;
