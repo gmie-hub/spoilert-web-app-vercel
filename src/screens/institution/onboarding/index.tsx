@@ -6,9 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { SuccessModal } from "@spt/components";
 
-import AddBankAccountStep, { type BankDetails } from "./components/AddBankAccountStep";
 import CompletionStep from "./components/CompletionStep";
-import ConfirmBankAccount from "./components/ConfirmBankAccount";
 import CreatePasswordStep from "./components/CreatePasswordStep";
 import OtpStep from "./components/OtpStep";
 import Overview, { type OnboardingStepInfo } from "./components/Overview";
@@ -16,13 +14,10 @@ import Overview, { type OnboardingStepInfo } from "./components/Overview";
 type OnboardingView =
   | "overview"
   | "create-password"
-  | "verify-email"
   | "verify-phone"
-  | "add-bank"
-  | "confirm-bank"
   | "complete";
 
-type SuccessModalKind = "password" | "email" | "phone" | "bank" | null;
+type SuccessModalKind = "password" | "phone" | null;
 
 const INITIAL_STEPS: OnboardingStepInfo[] = [
   {
@@ -32,13 +27,8 @@ const INITIAL_STEPS: OnboardingStepInfo[] = [
   },
   {
     title: "Create Password",
-    description: "Create your log in password, verify your email and phone number",
+    description: "Create your log in password and verify your phone number",
     status: "active",
-  },
-  {
-    title: "Add Bank Account",
-    description: "Required to receive your institution earnings",
-    status: "pending",
   },
 ];
 
@@ -46,20 +36,19 @@ const InstitutionAccountSetup = ({
   institutionName = "University of Lagos",
   institutionEmail = "adetounoshikoya@gmail.com",
   institutionPhone = "09012345678",
+  institutionCountryCode = "234",
 }: {
   institutionName?: string;
   institutionEmail?: string;
   institutionPhone?: string;
+  institutionCountryCode?: string;
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
-  const [view, setView] = useState<OnboardingView>("overview");
+  const [view, setView] = useState<OnboardingView>("verify-phone");
   const [modal, setModal] = useState<SuccessModalKind>(null);
   const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
-  const [, setBankDetails] = useState<BankDetails | null>(null);
-
-  const activeStepTitle = steps.find((step) => step.status === "active")?.title;
 
   const renderView = () => {
     switch (view) {
@@ -72,37 +61,14 @@ const InstitutionAccountSetup = ({
             onSuccess={() => setModal("password")}
           />
         );
-      case "verify-email":
-        return (
-          <OtpStep
-            title="Verify Your Email"
-            description={`We've sent a 6-digit code to ${institutionEmail}. Enter it below to verify your email.`}
-            onSubmit={() => setModal("email")}
-          />
-        );
       case "verify-phone":
         return (
           <OtpStep
             title="Verify Your Phone Number"
             description={`We've sent a 6-digit code to ${institutionPhone}. Enter it below to verify your phone number.`}
+            countryCode={institutionCountryCode}
+            phoneNumber={institutionPhone.replace(/^0/, "")}
             onSubmit={() => setModal("phone")}
-          />
-        );
-      case "add-bank":
-        return (
-          <AddBankAccountStep
-            onNext={(details) => {
-              setBankDetails(details);
-              setView("confirm-bank");
-            }}
-          />
-        );
-      case "confirm-bank":
-        return (
-          <ConfirmBankAccount
-            isSaving={false}
-            onBack={() => setView("add-bank")}
-            onConfirm={() => setModal("bank")}
           />
         );
       case "complete":
@@ -118,9 +84,7 @@ const InstitutionAccountSetup = ({
           <Overview
             institutionName={institutionName}
             steps={steps}
-            onContinue={() =>
-              setView(activeStepTitle === "Add Bank Account" ? "add-bank" : "create-password")
-            }
+            onContinue={() => setView("create-password")}
           />
         );
     }
@@ -136,17 +100,6 @@ const InstitutionAccountSetup = ({
           description="You can now log in with your email and the password you just created"
           onContinue={() => {
             setModal(null);
-            setView("verify-email");
-          }}
-        />
-      )}
-
-      {modal === "email" && (
-        <SuccessModal
-          title="Email Verified Successfully 🎉"
-          description="Your email address has been verified. Let's verify your phone number next."
-          onContinue={() => {
-            setModal(null);
             setView("verify-phone");
           }}
         />
@@ -155,31 +108,13 @@ const InstitutionAccountSetup = ({
       {modal === "phone" && (
         <SuccessModal
           title="Phone Number Verified Successfully 🎉"
-          description="Your phone number has been verified. Next, add a bank account to receive your institution earnings."
-          onContinue={() => {
-            setModal(null);
-            setSteps((prev) =>
-              prev.map((step) => {
-                if (step.title === "Create Password") return { ...step, status: "done" };
-                if (step.title === "Add Bank Account") return { ...step, status: "active" };
-                return step;
-              }),
-            );
-            setView("overview");
-          }}
-        />
-      )}
-
-      {modal === "bank" && (
-        <SuccessModal
-          title="Bank Account Added Successfully 🎉"
-          description="Your institution bank account has been added successfully."
+          description="Your phone number has been verified. Your institution account set-up is complete."
           buttonLabel="Complete Account Set-Up"
           onContinue={() => {
             setModal(null);
             setSteps((prev) =>
               prev.map((step) =>
-                step.title === "Add Bank Account" ? { ...step, status: "done" } : step,
+                step.title === "Create Password" ? { ...step, status: "done" } : step,
               ),
             );
             setView("complete");

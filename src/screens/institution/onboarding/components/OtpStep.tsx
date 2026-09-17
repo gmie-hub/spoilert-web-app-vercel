@@ -2,20 +2,54 @@
 
 import React, { useRef, useState } from "react";
 
+import toast from "react-hot-toast";
+
 import { Card } from "@spt/components";
 import Button from "@spt/components/button";
+import { usePhoneResendOtpMutation } from "@spt/hooks/apiRequests/usePhoneResendOtpMutation";
+import { useVerifyOtpMutation } from "@spt/hooks/apiRequests/usePhoneVerifyOtpMutation";
 
 const OtpStep = ({
   title,
   description,
+  countryCode,
+  phoneNumber,
   onSubmit,
 }: {
   title: string;
   description: string;
+  countryCode: string;
+  phoneNumber: string;
   onSubmit: () => void;
 }) => {
   const [code, setCode] = useState("");
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const { verifyOtp, isLoading: isVerifying } = useVerifyOtpMutation();
+  const { resendOtpForPhone, isLoading: isResending } =
+    usePhoneResendOtpMutation();
+
+  const handleVerify = async () => {
+    if (code.length !== 6 || isVerifying) return;
+
+    try {
+      const response = await verifyOtp({ code });
+      toast.success(response?.message || "Phone number verified successfully ✅");
+      onSubmit();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Invalid or expired code",
+      );
+    }
+  };
+
+  const handleResend = () => {
+    if (isResending) return;
+    resendOtpForPhone(countryCode, phoneNumber);
+  };
 
   const handleChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "");
@@ -67,13 +101,22 @@ const OtpStep = ({
           ))}
         </div>
 
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={isResending}
+          className="mx-auto mt-4 block text-center text-sm font-medium text-[var(--color-blue)] hover:underline disabled:opacity-50"
+        >
+          {isResending ? "Resending…" : "Resend Code"}
+        </button>
+
         <Button
           type="button"
-          className="mt-8 w-full"
-          disabled={code.length !== 6}
-          onClick={onSubmit}
+          className="mt-4 w-full"
+          disabled={code.length !== 6 || isVerifying}
+          onClick={handleVerify}
         >
-          Continue
+          {isVerifying ? "Verifying…" : "Continue"}
         </Button>
       </Card>
     </main>

@@ -137,8 +137,29 @@ export const usePhoneResendOtpMutation = () => {
     }
   };
 
+  // For callers that already know the phone/country code (e.g. it's fixed for
+  // the flow, not collected via a form) — skips the localStorage lookup above.
+  const resendOtpForPhone = async (countryCode: string, phoneNumber: string) => {
+    try {
+      const response = await mutation.mutateAsync({
+        country_code: countryCode.replace("+", ""),
+        phone_number: phoneNumber,
+      });
+
+      toast.success(response?.message || "OTP resent successfully 📲");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to resend OTP",
+      );
+    }
+  };
+
   return {
     resendOtpHandler,
+    resendOtpForPhone,
     isLoading: mutation.isPending,
   };
 };

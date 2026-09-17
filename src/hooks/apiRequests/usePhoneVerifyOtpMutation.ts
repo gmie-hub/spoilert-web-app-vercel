@@ -61,6 +61,10 @@ export const useVerifyOtpMutation = () => {
 
   return {
     verifyOtpHandler,
+    // Raw mutate for non-Formik callers (e.g. custom digit-box OTP inputs)
+    // that need to know whether verification actually succeeded before
+    // advancing, rather than the handler above which always resolves.
+    verifyOtp: mutation.mutateAsync,
     isLoading: mutation.isPending,
   };
 };
