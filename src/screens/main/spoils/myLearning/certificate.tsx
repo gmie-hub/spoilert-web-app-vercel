@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,9 @@ import toast from "react-hot-toast";
 
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
+import useCompleteSpoilMutation, {
+  type SpoilCertificate,
+} from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplateQuery";
 import CertificateTemplatePreview from "@spt/screens/main/spoils/createSpoils/components/CertificateTemplatePreview";
@@ -31,20 +34,52 @@ export default function MyLearningCertificatePage({
   const { data: spoil } = useGetSpoilDetailsQuery(spoilId);
   const user = useAuthStore((state) => state.user);
 
-  // This page is display-only: it renders and downloads the certificate but must
-  // not mark the spoil complete. We deliberately do NOT call the complete-spoil
-  // endpoint (/spoils/learner/complete) here.
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // This page is display-only and must never mark the spoil complete again —
+  // but the cert id / QR verification link only come back from the
+  // complete-spoil endpoint. Calling it here with `silent: true` is exactly
+  // what that option exists for: it's idempotent on an already-completed
+  // spoil (no toast, no re-triggering completion side effects), it just
+  // hands back the already-issued certificate.
+  const { completeSpoilHandler } = useCompleteSpoilMutation();
+  const [certificate, setCertificate] = useState<SpoilCertificate | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    completeSpoilHandler(spoilId, { silent: true }).then((response) => {
+      if (!cancelled) {
+        setCertificate(response?.data?.certificate ?? null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spoilId]);
 
   // Pull the actual certificate for this spoil from
   // /certificates/template/{spoilId}/spoil rather than showing a hardcoded image.
   const { data: spoilTemplate, isLoading: isTemplateLoading } =
     useGetSpoilTemplateQuery(spoilId);
 
+  // The backend prefixes `template_content` with a plain-text scan banner
+  // (e.g. "✅ Template dark_slate_merit.html is already safe") before the
+  // actual certificate HTML. Drop everything before the first tag so that
+  // banner never renders at the top of the certificate.
+  const stripToHtml = (value?: string | null): string => {
+    if (typeof value !== "string") return "";
+    const firstTagIndex = value.indexOf("<");
+    return firstTagIndex === -1 ? "" : value.slice(firstTagIndex);
+  };
+
   const rawMarkup =
-    spoilTemplate?.template?.template_content ??
-    spoilTemplate?.template?.description ??
-    "";
+    stripToHtml(spoilTemplate?.template?.template_content) ||
+    stripToHtml(spoilTemplate?.template?.description);
 
   const certificateTitle = spoil?.title
     ? `${spoil.title} certificate`
@@ -57,12 +92,10 @@ export default function MyLearningCertificatePage({
     (spoil?.tutor as { display_name?: string | null } | undefined)?.display_name,
   );
 
-  // The issued cert id / verification link come from the complete-spoil endpoint,
-  // which we no longer call here, so use the template id and omit the verify link.
-  const certificateId = spoilTemplate?.id
-    ? String(spoilTemplate.id)
-    : undefined;
-  const verifyUrl = null;
+  const certificateId =
+    certificate?.cert_id ??
+    (spoilTemplate?.id ? String(spoilTemplate.id) : undefined);
+  const verifyUrl = certificate?.resolved_url ?? null;
 
   // Inject the real values into the certificate template HTML.
   const certificateMarkup = useMemo(
