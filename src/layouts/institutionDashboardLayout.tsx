@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import SpoilertLogo from "@spt/assets/icons/Group(2).svg";
+import useClickOutside from "@spt/hooks/useClickOutside";
+import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
 
 interface NavItem {
   label: string;
@@ -92,6 +97,10 @@ const InstitutionDashboardLayout = ({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
   useEffect(() => {
     try {
@@ -124,13 +133,12 @@ const InstitutionDashboardLayout = ({
       >
         <div className="flex h-full flex-col overflow-hidden">
           <div className="flex h-[88px] shrink-0 items-center justify-center border-b border-gray-100 px-4">
-            {collapsed ? (
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-blue)] text-sm font-semibold text-white">
-                S
-              </span>
-            ) : (
-              <span className="w-full truncate text-lg font-semibold tracking-wide text-[#212529]">LOGO</span>
-            )}
+            <Image
+              src={SpoilertLogo}
+              alt="Spoilert"
+              width={collapsed ? 36 : 45}
+              height={collapsed ? 36 : 45}
+            />
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-4">
@@ -194,21 +202,56 @@ const InstitutionDashboardLayout = ({
             </p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-400">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M4.5 19c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <div className="relative shrink-0" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              aria-label="Open profile menu"
+              className="flex items-center gap-2 focus:outline-none"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-400">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M4.5 19c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+                className={`shrink-0 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 z-50 mt-2 w-44 rounded-lg border border-gray-200 bg-white shadow-lg">
+                <button
+                  type="button"
+                  className="block w-full rounded-lg px-4 py-3 text-left text-sm text-red-600 hover:bg-gray-100"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    setIsLogoutConfirmOpen(true);
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
         <main className="min-w-0 flex-1 overflow-x-hidden px-6 py-8 sm:px-10">{children}</main>
       </div>
+
+      <LogoutConfirmModal
+        open={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        redirectTo="/institution/login"
+      />
     </div>
   );
 };

@@ -62,8 +62,9 @@ export const useLoginMutation = () => {
       }
       toast.success("Logged in successfully 🎉");
 
-      // Redirect after login
-      router.push("/"); // change this to your post-login route
+      // Redirect after login — institutions go to their dashboard, everyone else home
+      const role = String(response.data?.user?.role).toLowerCase();
+      router.push(role === "institution" ? "/institution/dashboard" : "/");
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.error ||

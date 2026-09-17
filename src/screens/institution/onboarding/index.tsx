@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { SuccessModal } from "@spt/components";
 
@@ -52,6 +52,8 @@ const InstitutionAccountSetup = ({
   institutionPhone?: string;
 }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
   const [view, setView] = useState<OnboardingView>("overview");
   const [modal, setModal] = useState<SuccessModalKind>(null);
   const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
@@ -66,6 +68,7 @@ const InstitutionAccountSetup = ({
           <CreatePasswordStep
             institutionName={institutionName}
             institutionEmail={institutionEmail}
+            token={token}
             onSuccess={() => setModal("password")}
           />
         );
