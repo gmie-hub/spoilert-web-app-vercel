@@ -7,11 +7,13 @@ import { useAuthStore } from "@spt/store/authStore";
 interface LogoutConfirmModalProps {
   open: boolean;
   onClose: () => void;
+  redirectTo?: string;
 }
 
 const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
   open,
   onClose,
+  redirectTo = "/",
 }) => {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
@@ -39,7 +41,7 @@ const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
             onClick={() => {
               onClose();
               logout();
-              router.push("/");
+              router.push(redirectTo);
             }}
           >
             Logout

@@ -14,12 +14,7 @@ const COMPLETED_STEPS: OnboardingStepInfo[] = [
   },
   {
     title: "Create Password",
-    description: "Create your log in password, verify your email and phone number",
-    status: "done",
-  },
-  {
-    title: "Add Bank Account",
-    description: "Required to receive your institution earnings",
+    description: "Create your log in password and verify your phone number",
     status: "done",
   },
 ];

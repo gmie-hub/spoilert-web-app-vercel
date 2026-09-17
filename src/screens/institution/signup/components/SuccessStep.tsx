@@ -5,7 +5,7 @@ import Button from "@spt/components/button";
 
 const SuccessStep = ({
   onContinue,
-  onGotMail,
+  
 }: {
   onContinue: () => void;
   onGotMail: () => void;
@@ -25,14 +25,7 @@ const SuccessStep = ({
     <Button type="button" className="mt-8 w-full" onClick={onContinue}>
       Back to Home
     </Button>
-    <Button
-      type="button"
-      variant="outline"
-      className="mt-4 w-full"
-      onClick={onGotMail}
-    >
-      Got Mail
-    </Button>
+  
   </div>
 );
 

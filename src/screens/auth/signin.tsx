@@ -28,7 +28,11 @@ const Login = () => {
   // if we already have a token & user in store, redirect to home
   React.useEffect(() => {
     if (token && user) {
-      router.push("/");
+      router.push(
+        String(user?.role).toLowerCase() === "institution"
+          ? "/institution/dashboard"
+          : "/",
+      );
     }
   }, [token, user, router]);
 
