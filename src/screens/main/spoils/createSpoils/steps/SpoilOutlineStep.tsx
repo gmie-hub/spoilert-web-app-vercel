@@ -94,8 +94,15 @@ const SpoilOutlineStep: FC<SpoilOutlineStepProps> = ({
    
 
   return (
-    <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6 md:sticky md:top-24 md:self-start md:h-[calc(100vh-6rem)] md:overflow-auto">
-      <div className="sticky top-0 z-50 bg-white flex flex-nowrap items-center justify-between gap-4 w-full py-3">
+    <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl space-y-6">
+      {/*
+        This bar sticks within the page's normal scroll (same single scroll
+        context the site header uses) at the header's real height, so it
+        settles just below the header instead of overlapping it, and the
+        content that follows (quiz box, modules) scrolls up and tucks
+        cleanly behind it.
+      */}
+      <div className="sticky top-[var(--site-header-height)] z-40 bg-white flex flex-nowrap items-center justify-between gap-4 w-full py-3">
         <div>
           <h2 className="mt-2 text-xl font-semibold text-black">
             Spoylz Outline

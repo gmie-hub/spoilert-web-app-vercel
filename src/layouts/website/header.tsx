@@ -43,7 +43,30 @@ const Header = () => {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
+
+  // The header's real height varies by breakpoint and content (e.g. the
+  // profile name/menu wrapping). Anything elsewhere on the page that needs to
+  // sit just below the sticky header (rather than overlap it) reads this
+  // instead of guessing a fixed offset.
+  React.useEffect(() => {
+    const header = headerRef.current;
+    if (!header || typeof ResizeObserver === "undefined") return;
+
+    const updateHeight = () => {
+      document.documentElement.style.setProperty(
+        "--site-header-height",
+        `${header.offsetHeight}px`,
+      );
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(header);
+
+    return () => observer.disconnect();
+  }, []);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -106,7 +129,10 @@ const Header = () => {
 
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-[100px]">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-[100px]"
+    >
       {/* ================= TOP NAV ROW ================= */}
       <div className="mx-auto flex max-w-[1400px] items-center justify-between py-3 sm:py-4">
         {/* LEFT SIDE: LOGO + NAV LINKS */}

@@ -128,6 +128,7 @@ export default function MyLearningCertificatePage({
       ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificateId)}`
       : null);
 
+
   // Inject the real values into the certificate template HTML.
   const certificateMarkup = useMemo(
     () =>

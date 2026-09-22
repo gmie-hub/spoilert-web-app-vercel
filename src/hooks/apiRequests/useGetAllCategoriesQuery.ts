@@ -20,7 +20,7 @@ export const useGetAllCategoriesQuery = (page?: number, search?: string) => {
     )?.data;
   };
 
-  const { data, isLoading, isError, error } = useQuery<
+  const { data, isLoading, isFetching, isError, error } = useQuery<
     CategoriesResponse,
     AxiosError<ApiErrorResponse>
   >({
@@ -37,6 +37,10 @@ export const useGetAllCategoriesQuery = (page?: number, search?: string) => {
   return {
     data: data?.data,
     isLoading,
+    // True for every fetch (including a page-2+ or search refetch), unlike
+    // `isLoading` which is only true once, on the very first load — callers
+    // paginating/searching need this one to know when a fetch is in flight.
+    isFetching,
     categoryErrorMessage: errorMessage,
     isError,
   };
