@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
 import useCompleteSpoilMutation, {
+  type CompleteSpoilPayment,
   type SpoilCertificate,
 } from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
@@ -26,6 +27,12 @@ import {
 interface MyLearningCertificatePageProps {
   spoilId: number | string;
 }
+
+const formatNaira = (value: number) =>
+  `₦${value.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 
 export default function MyLearningCertificatePage({
   spoilId,
@@ -46,6 +53,11 @@ export default function MyLearningCertificatePage({
   const [certificate, setCertificate] = useState<SpoilCertificate | null>(
     null,
   );
+  // Set when the endpoint responds with `status: "payment_required"` — the
+  // certificate fee hasn't been paid, so no certificate has been issued yet.
+  const [pendingPayment, setPendingPayment] =
+    useState<CompleteSpoilPayment | null>(null);
+  const [isCheckingCertificate, setIsCheckingCertificate] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +65,12 @@ export default function MyLearningCertificatePage({
     completeSpoilHandler(spoilId, { silent: true }).then((response) => {
       if (!cancelled) {
         setCertificate(response?.data?.certificate ?? null);
+        setPendingPayment(
+          response?.data?.status === "payment_required"
+            ? (response?.data?.payment ?? null)
+            : null,
+        );
+        setIsCheckingCertificate(false);
       }
     });
 
@@ -92,10 +110,23 @@ export default function MyLearningCertificatePage({
     (spoil?.tutor as { display_name?: string | null } | undefined)?.display_name,
   );
 
-  const certificateId =
-    certificate?.cert_id ??
-    (spoilTemplate?.id ? String(spoilTemplate.id) : undefined);
-  const verifyUrl = certificate?.resolved_url ?? null;
+  // `spoilTemplate.id` is only a placeholder fallback for when the real
+  // certificate hasn't come back yet — it must never be used while payment is
+  // pending, since that's not a real certificate id and would produce a QR
+  // that verifies nothing.
+  const certificateId = pendingPayment
+    ? undefined
+    : (certificate?.cert_id ??
+      (spoilTemplate?.id ? String(spoilTemplate.id) : undefined));
+  // The "silent" idempotent replay of an already-completed spoil doesn't
+  // always echo back `resolved_url` even though it has a `cert_id` — without
+  // a verify link the QR has nothing to encode and the badge stays blank. Fall
+  // back to building the same link ourselves from the public verify route.
+  const verifyUrl =
+    certificate?.resolved_url ??
+    (certificateId && typeof window !== "undefined"
+      ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificateId)}`
+      : null);
 
   // Inject the real values into the certificate template HTML.
   const certificateMarkup = useMemo(
@@ -109,6 +140,12 @@ export default function MyLearningCertificatePage({
       }),
     [rawMarkup, learnerName, spoil?.title, tutorName, certificateId, verifyUrl],
   );
+
+  const handlePayNow = () => {
+    if (pendingPayment?.payment_link && typeof window !== "undefined") {
+      window.open(pendingPayment.payment_link, "_blank", "noopener,noreferrer");
+    }
+  };
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -229,12 +266,19 @@ export default function MyLearningCertificatePage({
         import("jspdf"),
       ]);
 
+      // The certificate is always a single A4 sheet — clip the capture to
+      // exactly one page's worth of pixels (794x1123) instead of following
+      // the iframe's scrollHeight. Any accidental overflow inside the
+      // template is a rendering bug, not real extra content, so it should be
+      // cropped rather than spilled onto extra tiled pages.
       const canvas = await html2canvas(iframeDocument.body, {
         useCORS: true,
         backgroundColor: "#ffffff",
         scale: 2,
+        width: 794,
+        height: 1123,
         windowWidth: 794,
-        windowHeight: Math.max(1123, iframeDocument.body.scrollHeight),
+        windowHeight: 1123,
       });
 
       const pdf = new jsPDF({
@@ -245,24 +289,7 @@ export default function MyLearningCertificatePage({
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imageData = canvas.toDataURL("image/png");
-      const imageWidth = pageWidth;
-      const imageHeight = (canvas.height * imageWidth) / canvas.width;
-
-      if (imageHeight <= pageHeight) {
-        pdf.addImage(imageData, "PNG", 0, 0, imageWidth, imageHeight);
-      } else {
-        // Taller than one page — tile the same image across pages.
-        let position = 0;
-        let remaining = imageHeight;
-        while (remaining > 0) {
-          pdf.addImage(imageData, "PNG", 0, position, imageWidth, imageHeight);
-          remaining -= pageHeight;
-          if (remaining > 0) {
-            pdf.addPage();
-            position -= pageHeight;
-          }
-        }
-      }
+      pdf.addImage(imageData, "PNG", 0, 0, pageWidth, pageHeight);
 
       pdf.save(`${sanitizeFileName(certificateTitle)}.pdf`);
     } catch {
@@ -291,34 +318,60 @@ export default function MyLearningCertificatePage({
         </h1>
 
         <div className="mx-auto mt-10 max-w-[760px] rounded-[20px] border border-[#ECEFF2] bg-white p-4 shadow-[0_18px_60px_rgba(15,23,42,0.06)] sm:p-7">
-          <div className="overflow-hidden rounded-[14px] border border-[#F0F2F4] bg-white">
-            {isTemplateLoading ? (
-              <div className="flex h-[420px] items-center justify-center text-sm text-[#5F6B76]">
-                Loading certificate…
-              </div>
-            ) : certificateMarkup ? (
-              <CertificateTemplatePreview
-                markup={certificateMarkup}
-                title={certificateTitle}
-                useResponsiveScaling
-                nativeCanvasSize
-                outerClassName="relative overflow-hidden bg-white"
-              />
-            ) : (
-              <div className="flex h-[420px] items-center justify-center px-6 text-center text-sm text-[#5F6B76]">
-                No certificate is available for this Spoylz yet.
-              </div>
-            )}
-          </div>
+          {pendingPayment ? (
+            <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+              <h2 className="text-lg font-semibold text-[#212529]">
+                Pay to unlock your certificate
+              </h2>
+              <p className="max-w-sm text-sm text-[#5F6B76]">
+                You&apos;ve completed this Spoylz — pay the certificate fee of{" "}
+                <span className="font-semibold text-[#212529]">
+                  {formatNaira(Number(pendingPayment.amount))}
+                </span>{" "}
+                to issue and download your certificate.
+              </p>
 
-          <Button
-            variant="darkBlue"
-            className="mt-8 w-full rounded-[12px] py-4"
-            onClick={handleDownloadPdf}
-            disabled={!certificateMarkup || isDownloading}
-          >
-            {isDownloading ? "Preparing PDF…" : "Download Certificate"}
-          </Button>
+              <Button
+                variant="darkBlue"
+                className="mt-4 w-full max-w-xs rounded-[12px] py-4"
+                onClick={handlePayNow}
+                disabled={!pendingPayment.payment_link}
+              >
+                Pay Now
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-hidden rounded-[14px] border border-[#F0F2F4] bg-white">
+                {isTemplateLoading || isCheckingCertificate ? (
+                  <div className="flex h-[420px] items-center justify-center text-sm text-[#5F6B76]">
+                    Loading certificate…
+                  </div>
+                ) : certificateMarkup ? (
+                  <CertificateTemplatePreview
+                    markup={certificateMarkup}
+                    title={certificateTitle}
+                    useResponsiveScaling
+                    nativeCanvasSize
+                    outerClassName="relative overflow-hidden bg-white"
+                  />
+                ) : (
+                  <div className="flex h-[420px] items-center justify-center px-6 text-center text-sm text-[#5F6B76]">
+                    No certificate is available for this Spoylz yet.
+                  </div>
+                )}
+              </div>
+
+              <Button
+                variant="darkBlue"
+                className="mt-8 w-full rounded-[12px] py-4"
+                onClick={handleDownloadPdf}
+                disabled={!certificateMarkup || isDownloading}
+              >
+                {isDownloading ? "Preparing PDF…" : "Download Certificate"}
+              </Button>
+            </>
+          )}
 
           <Button
             variant="outline"

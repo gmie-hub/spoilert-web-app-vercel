@@ -61,6 +61,14 @@ const applyQrToVisual = (
     node.replaceWith(image);
   }
 
+  // A <picture>'s <source> siblings take priority over the <img src> we just
+  // set — if we leave them in place the browser keeps showing the template's
+  // original placeholder instead of the real QR. Drop them so our src wins.
+  const picture = image.closest("picture");
+  if (picture) {
+    picture.querySelectorAll("source").forEach((source) => source.remove());
+  }
+
   // The QR-service image is 240px, so when the template didn't size the QR
   // explicitly it would render oversized. Give it a modest badge size in that
   // case, and always cap it to its container so it can never dominate the sheet.
@@ -141,13 +149,17 @@ const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
   }
 };
 
+// Marks the single element we stretch to fill the A4 sheet (see below) —
+// scoped to one element via a data attribute rather than a broad selector so
+// we never touch sibling elements we don't know about.
+const A4_ROOT_ATTR = "data-certificate-a4-root";
+
 // A4 portrait override so the certificate fills the full sheet instead of
 // sitting as a small centered card on the template's own background.
 const A4_FULL_PAGE_CSS = `
   html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
   body { display: block !important; min-height: 100vh !important; }
-  .certificate-container,
-  body > *:not(script):not(style) {
+  [${A4_ROOT_ATTR}] {
     max-width: none !important;
     width: 100% !important;
     min-height: 100vh !important;
@@ -191,6 +203,21 @@ export const personalizeCertificate = (
     doc.querySelectorAll("[contenteditable]").forEach((el) => {
       el.removeAttribute("contenteditable");
     });
+
+    // Pick the single element that represents the certificate "card" —
+    // templates commonly wrap it in `.certificate-container`, but fall back to
+    // the body's first real element (skipping script/style) otherwise. Only
+    // this one element gets stretched to fill the A4 sheet; every other
+    // top-level element (icon sprites, decorative layers, etc.) is left as-is
+    // so it can't accidentally get forced to a full extra 100vh of height.
+    const a4Root =
+      doc.querySelector<HTMLElement>(".certificate-container") ??
+      Array.from(doc.body.children).find(
+        (el): el is HTMLElement =>
+          el instanceof HTMLElement && !["SCRIPT", "STYLE"].includes(el.tagName),
+      ) ??
+      null;
+    a4Root?.setAttribute(A4_ROOT_ATTR, "");
 
     const style = doc.createElement("style");
     style.textContent = A4_FULL_PAGE_CSS;

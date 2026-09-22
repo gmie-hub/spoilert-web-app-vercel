@@ -27,9 +27,33 @@ export interface SpoilCertificate {
   [key: string]: unknown;
 }
 
+export interface CompleteSpoilPaymentCharges {
+  tax_amount?: number;
+  net_amount?: number;
+  admin_charge?: number;
+  certificate_fee?: number;
+  tutor_amount?: number;
+}
+
+// Present instead of `certificate` when `status` is "payment_required" — the
+// certificate fee hasn't been paid yet, so no certificate has been issued.
+export interface CompleteSpoilPayment {
+  id: number;
+  reference: string;
+  gateway: string;
+  amount: string;
+  currency: string;
+  payment_link: string;
+  status: string;
+  charges?: CompleteSpoilPaymentCharges;
+}
+
 interface CompleteSpoilData {
+  // e.g. "completed" | "payment_required".
+  status?: string;
   progress_percentage?: number;
   certificate?: SpoilCertificate | null;
+  payment?: CompleteSpoilPayment | null;
   [key: string]: unknown;
 }
 
