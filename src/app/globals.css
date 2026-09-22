@@ -4,6 +4,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Actual rendered height of the sticky site header, kept in sync by
+     Header.tsx. The fallback only applies before that effect runs. */
+  --site-header-height: 96px;
 }
 
 @theme inline {

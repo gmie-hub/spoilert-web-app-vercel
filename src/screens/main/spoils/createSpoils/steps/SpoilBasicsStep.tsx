@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Form, Formik, useFormikContext } from "formik";
 
@@ -68,12 +68,55 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   selectedType,
   // onBackToSelection,
 }) => {
+  // Category options are paginated + searched server-side: `categoryPage`
+  // drives which page to fetch, `categorySearch` is the backend search term,
+  // and `categoryOptions` accumulates pages as the dropdown is scrolled so
+  // earlier pages stay visible instead of being replaced by the next one.
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
   const {
     data: Categories,
     isLoading,
+    isFetching: isFetchingCategories,
     isError,
     categoryErrorMessage,
-  } = useGetAllCategoriesQuery();
+  } = useGetAllCategoriesQuery(categoryPage, categorySearch || undefined);
+
+  useEffect(() => {
+    // `keepPreviousData` can hand back the previous page/search's data as a
+    // placeholder while the next request is in flight — only accept a page
+    // once it actually matches what we asked for, otherwise we'd briefly
+    // append stale results to the wrong list.
+    if (!Categories || Categories.current_page !== categoryPage) return;
+
+    const mapped = Categories.data.map((c) => ({
+      label: c.name,
+      value: String(c.id),
+    }));
+
+    setCategoryOptions((prev) =>
+      categoryPage === 1 ? mapped : [...prev, ...mapped],
+    );
+  }, [Categories, categoryPage]);
+
+  const hasMoreCategories = Boolean(
+    Categories && Categories.current_page < Categories.last_page,
+  );
+
+  const handleCategorySearchChange = (value: string) => {
+    setCategorySearch(value);
+    setCategoryPage(1);
+  };
+
+  const handleCategoryReachEnd = () => {
+    if (hasMoreCategories && !isFetchingCategories) {
+      setCategoryPage((page) => page + 1);
+    }
+  };
 
 
 
@@ -102,12 +145,6 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
   };
 
 
-
-  const mergedCategoryOptions =
-    Categories?.data?.map((c) => ({
-      label: c.name,
-      value: String(c.id),
-    })) ?? [];
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-sm md:max-w-2xl">
@@ -160,9 +197,13 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                 name="category"
                 label="Category"
                 placeholder="Select category"
-                options={mergedCategoryOptions}
+                options={categoryOptions}
                 hasAsterisk
-                isLoading={isLoading}
+                isLoading={isLoading || isFetchingCategories}
+                searchable
+                filterOnFrontend={false}
+                onSearchChange={handleCategorySearchChange}
+                onReachEnd={handleCategoryReachEnd}
               />
               {isError && (
                 <p className="text-sm text-red-500">{categoryErrorMessage}</p>
