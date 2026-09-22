@@ -27,6 +27,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     errorMessage,
     handleCompleteLesson,
     handleCompleteSpoil,
+    handleContinueLearning,
     handleOpenLesson,
     handleOpenLessonContent,
     handleSelectLesson,
@@ -45,6 +46,7 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
     openModuleIds,
     redirectMessage,
     setIsSidebarVisible,
+    showCertificateInCongrats,
     spoil,
     totalLessons,
   } = useStartSpoilScreen(spoilId);
@@ -126,7 +128,8 @@ export default function StartSpoilPage({ spoilId }: StartSpoilPageProps) {
       <CongratulationsModal
         open={isCongratsOpen}
         onClose={closeCongrats}
-        hasCertificate={Number(spoil?.has_certificate) === 1}
+        showCertificate={showCertificateInCongrats}
+        onContinue={handleContinueLearning}
         spoilId={spoil.id}
       />
     </section>

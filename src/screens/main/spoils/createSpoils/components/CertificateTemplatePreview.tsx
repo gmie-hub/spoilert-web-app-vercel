@@ -224,7 +224,8 @@ export default function CertificateTemplatePreview({
           <Image
             src={image}
             alt={`Certificate ${asset}`}
-            className="pointer-events-none h-full w-full object-contain"
+            fill
+            className="pointer-events-none object-contain"
             draggable={false}
           />
         </div>

@@ -326,3 +326,35 @@ export const isModuleUnlocked = (
   index: number,
   gate: SpoilQuizGate,
 ) => getModuleUnlockBlocker(modules, index, gate) === null;
+
+export interface NextLessonTarget {
+  moduleId: number;
+  lessonId: number;
+}
+
+/**
+ * Where "Continue Learning" should take the learner after completing
+ * `currentLesson` — the next lesson in the same module, or the first lesson
+ * of the next module when this was the module's last lesson. Null once there
+ * is nothing left (this was the last lesson of the last module).
+ */
+export const getNextLessonTarget = (
+  modules: SpoilModule[],
+  currentModule: SpoilModule,
+  currentLesson: SpoilLesson,
+): NextLessonTarget | null => {
+  const lessons = currentModule.lessons ?? [];
+  const lessonIndex = lessons.findIndex((lesson) => lesson.id === currentLesson.id);
+
+  if (lessonIndex >= 0 && lessonIndex < lessons.length - 1) {
+    return { moduleId: currentModule.id, lessonId: lessons[lessonIndex + 1].id };
+  }
+
+  const moduleIndex = modules.findIndex((module) => module.id === currentModule.id);
+  const nextModule = moduleIndex >= 0 ? modules[moduleIndex + 1] : undefined;
+  const nextLesson = nextModule?.lessons?.[0];
+
+  return nextModule && nextLesson
+    ? { moduleId: nextModule.id, lessonId: nextLesson.id }
+    : null;
+};

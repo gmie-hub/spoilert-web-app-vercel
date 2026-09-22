@@ -12,12 +12,22 @@ import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQu
 import {
   getInitialSelection,
   getModuleUnlockBlocker,
+  getNextLessonTarget,
   getSpoilQuizGate,
   isModuleUnlocked,
   splitLearningOutcomes,
 } from "./startSpoilUtils";
 
-import type { SpoilLesson, SpoilModule } from "./startSpoilUtils";
+import type { NextLessonTarget, SpoilLesson, SpoilModule } from "./startSpoilUtils";
+
+interface CongratsState {
+  /** Show "View Certificate" instead of "Continue Learning". */
+  showCertificate: boolean;
+  /** Where "Continue Learning" navigates to; null once there is no next lesson. */
+  nextLessonTarget: NextLessonTarget | null;
+  /** No next lesson, but a post-Spoylz quiz is still outstanding. */
+  goToPostQuiz: boolean;
+}
 
 /**
  * All state, gating and actions behind the Start Spoil page. The page itself
@@ -33,7 +43,7 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
   const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null);
   const [openModuleIds, setOpenModuleIds] = useState<Set<number>>(new Set());
-  const [isCongratsOpen, setIsCongratsOpen] = useState(false);
+  const [congratsState, setCongratsState] = useState<CongratsState | null>(null);
   // Id of the lesson whose content is currently shown inline in the panel.
   const [openedLessonId, setOpenedLessonId] = useState<number | null>(null);
 
@@ -254,7 +264,7 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
   };
 
   const handleCompleteLesson = async () => {
-    if (!spoil || !quizGate || !activeLesson) {
+    if (!spoil || !quizGate || !activeLesson || !activeModule) {
       return;
     }
 
@@ -263,7 +273,7 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
       return;
     }
 
-    if (activeModule && handleLockedModule(activeModule)) {
+    if (handleLockedModule(activeModule)) {
       return;
     }
 
@@ -277,23 +287,19 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
       return;
     }
 
-    const remainingInModule =
-      activeModule?.lessons?.filter(
-        (lesson) =>
-          lesson.id !== activeLesson.id &&
-          lesson.status?.toLowerCase() !== "completed",
-      ) ?? [];
-    const moduleQuiz = activeModule
-      ? quizGate.getModuleQuiz(activeModule.id)
-      : null;
+    const remainingInModule = activeModule.lessons?.filter(
+      (lesson) =>
+        lesson.id !== activeLesson.id &&
+        lesson.status?.toLowerCase() !== "completed",
+    ) ?? [];
+    const moduleQuiz = quizGate.getModuleQuiz(activeModule.id);
     const moduleQuizPending =
-      !!moduleQuiz &&
-      !!activeModule &&
-      !quizGate.isModuleQuizSatisfied(activeModule.id);
+      !!moduleQuiz && !quizGate.isModuleQuizSatisfied(activeModule.id);
 
     // Last lesson in this module — send the learner to the module quiz before
-    // they can open the next module's content.
-    if (remainingInModule.length === 0 && moduleQuizPending && activeModule) {
+    // they can open the next module's content. No congratulations yet; the
+    // quiz gate takes priority.
+    if (remainingInModule.length === 0 && moduleQuizPending) {
       router.push(`/spoil/${spoil.id}/module-quiz?moduleId=${activeModule.id}`);
       return;
     }
@@ -301,19 +307,53 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
     // If this was the last outstanding lesson, the whole Spoylz is now 100%
     // complete — mark it complete so the certificate is generated. Respect the
     // post-quiz gate: when a post-Spoylz quiz is still outstanding we leave the
-    // spoil for the learner to finish via the sidebar "Complete Spoil" action.
+    // spoil for the learner to finish via the post-Spoylz quiz.
     const justCompletedFinalLesson =
       totalLessons > 0 &&
       completedLessonsCount + (activeLessonIsCompleted ? 0 : 1) >= totalLessons;
-    const postQuizPending = quizGate.postQuiz && !quizGate.isPostSatisfied;
+    const postQuizPending = !!quizGate.postQuiz && !quizGate.isPostSatisfied;
 
     if (justCompletedFinalLesson && !postQuizPending) {
       await completeSpoilHandler(spoil.id);
     }
 
-    // Celebrate the completed lesson; the card offers the certificate when one
-    // is available (has_certificate === 1).
-    setIsCongratsOpen(true);
+    // Where "Continue Learning" should go next: the following lesson (same
+    // module or the next one), the post-Spoylz quiz if this was the very last
+    // lesson and one is outstanding, or nowhere — in which case the modal
+    // offers the certificate instead (when this Spoylz has one).
+    const nextLessonTarget = getNextLessonTarget(modules, activeModule, activeLesson);
+    const hasCertificate = Number(spoil.has_certificate) === 1;
+
+    setCongratsState({
+      showCertificate: nextLessonTarget === null && !postQuizPending && hasCertificate,
+      nextLessonTarget,
+      goToPostQuiz: nextLessonTarget === null && postQuizPending,
+    });
+  };
+
+  // "Continue Learning" in the congratulations modal — advance to the next
+  // lesson, or to the post-Spoylz quiz when this was the last lesson and one
+  // is still outstanding. Otherwise there is nothing left, so it just closes.
+  const handleContinueLearning = () => {
+    const target = congratsState;
+    setCongratsState(null);
+
+    if (!target || !spoil) {
+      return;
+    }
+
+    if (target.nextLessonTarget) {
+      const { moduleId, lessonId } = target.nextLessonTarget;
+
+      setActiveModuleId(moduleId);
+      setActiveLessonId(lessonId);
+      setOpenModuleIds((current) => new Set([...current, moduleId]));
+      return;
+    }
+
+    if (target.goToPostQuiz) {
+      router.push(`/spoil/${spoil.id}/post-spoil-quiz`);
+    }
   };
 
   const handleCompleteSpoil = async () => {
@@ -342,12 +382,13 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
     activeLessonIsCompleted,
     activeModule,
     canCompleteSpoil,
-    closeCongrats: () => setIsCongratsOpen(false),
+    closeCongrats: () => setCongratsState(null),
     closeContent: () => setOpenedLessonId(null),
     completedLessonsCount,
     errorMessage,
     handleCompleteLesson,
     handleCompleteSpoil,
+    handleContinueLearning,
     handleOpenLesson,
     handleOpenLessonContent,
     handleSelectLesson,
@@ -356,7 +397,7 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
     heroImage: spoil?.cover_image_url || HeroImage,
     isCompletingLesson,
     isCompletingSpoil,
-    isCongratsOpen,
+    isCongratsOpen: congratsState !== null,
     isContentOpen: !!activeLesson && openedLessonId === activeLesson.id,
     isError,
     isLoading,
@@ -366,6 +407,7 @@ export const useStartSpoilScreen = (spoilId: number | string) => {
     openModuleIds,
     redirectMessage,
     setIsSidebarVisible,
+    showCertificateInCongrats: congratsState?.showCertificate ?? false,
     spoil,
     totalLessons,
   };

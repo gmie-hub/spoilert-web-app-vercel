@@ -10,15 +10,23 @@ import Modal from "@spt/components/modal";
 interface CongratulationsModalProps {
   open: boolean;
   onClose: () => void;
-  /** Whether this spoil awards a certificate (has_certificate === 1). */
-  hasCertificate: boolean;
+  /**
+   * Show "View Certificate" instead of "Continue Learning". Only true once
+   * this Spoylz is fully complete: the just-completed lesson was the last
+   * lesson of the last module, any post-Spoylz quiz has been satisfied, and
+   * the Spoylz actually awards a certificate.
+   */
+  showCertificate: boolean;
+  /** Advance to the next lesson (or the post-Spoylz quiz) — see caller. */
+  onContinue: () => void;
   spoilId: number | string;
 }
 
 const CongratulationsModal: React.FC<CongratulationsModalProps> = ({
   open,
   onClose,
-  hasCertificate,
+  showCertificate,
+  onContinue,
   spoilId,
 }) => {
   const router = useRouter();
@@ -38,7 +46,7 @@ const CongratulationsModal: React.FC<CongratulationsModalProps> = ({
         </p>
 
         <div className="mt-6 flex w-full flex-col gap-3">
-          {hasCertificate && (
+          {showCertificate ? (
             <Button
               variant="default"
               className="w-full rounded-full"
@@ -49,15 +57,15 @@ const CongratulationsModal: React.FC<CongratulationsModalProps> = ({
             >
               View Certificate
             </Button>
+          ) : (
+            <Button
+              variant="default"
+              className="w-full rounded-full"
+              onClick={onContinue}
+            >
+              Continue Learning
+            </Button>
           )}
-
-          <Button
-            variant={hasCertificate ? "outline" : "default"}
-            className="w-full rounded-full"
-            onClick={onClose}
-          >
-            Continue Learning
-          </Button>
         </div>
       </div>
     </Modal>

@@ -95,7 +95,15 @@ export default function MyLearningCertificatePage({
   const certificateId =
     certificate?.cert_id ??
     (spoilTemplate?.id ? String(spoilTemplate.id) : undefined);
-  const verifyUrl = certificate?.resolved_url ?? null;
+  // The "silent" idempotent replay of an already-completed spoil doesn't
+  // always echo back `resolved_url` even though it has a `cert_id` — without
+  // a verify link the QR has nothing to encode and the badge stays blank. Fall
+  // back to building the same link ourselves from the public verify route.
+  const verifyUrl =
+    certificate?.resolved_url ??
+    (certificateId && typeof window !== "undefined"
+      ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificateId)}`
+      : null);
 
   // Inject the real values into the certificate template HTML.
   const certificateMarkup = useMemo(
@@ -229,12 +237,19 @@ export default function MyLearningCertificatePage({
         import("jspdf"),
       ]);
 
+      // The certificate is always a single A4 sheet — clip the capture to
+      // exactly one page's worth of pixels (794x1123) instead of following
+      // the iframe's scrollHeight. Any accidental overflow inside the
+      // template is a rendering bug, not real extra content, so it should be
+      // cropped rather than spilled onto extra tiled pages.
       const canvas = await html2canvas(iframeDocument.body, {
         useCORS: true,
         backgroundColor: "#ffffff",
         scale: 2,
+        width: 794,
+        height: 1123,
         windowWidth: 794,
-        windowHeight: Math.max(1123, iframeDocument.body.scrollHeight),
+        windowHeight: 1123,
       });
 
       const pdf = new jsPDF({
@@ -245,24 +260,7 @@ export default function MyLearningCertificatePage({
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imageData = canvas.toDataURL("image/png");
-      const imageWidth = pageWidth;
-      const imageHeight = (canvas.height * imageWidth) / canvas.width;
-
-      if (imageHeight <= pageHeight) {
-        pdf.addImage(imageData, "PNG", 0, 0, imageWidth, imageHeight);
-      } else {
-        // Taller than one page — tile the same image across pages.
-        let position = 0;
-        let remaining = imageHeight;
-        while (remaining > 0) {
-          pdf.addImage(imageData, "PNG", 0, position, imageWidth, imageHeight);
-          remaining -= pageHeight;
-          if (remaining > 0) {
-            pdf.addPage();
-            position -= pageHeight;
-          }
-        }
-      }
+      pdf.addImage(imageData, "PNG", 0, 0, pageWidth, pageHeight);
 
       pdf.save(`${sanitizeFileName(certificateTitle)}.pdf`);
     } catch {
