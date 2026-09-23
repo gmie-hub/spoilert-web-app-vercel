@@ -116,11 +116,7 @@ const findQrVisualNear = (
 //   3. The QR next to the "VERIFY" label.
 // We only ever repoint the QR already in the badge — we never add a second one
 // or stretch it across the certificate.
-const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
-  if (!verifyUrl) return;
-
-  const qrSrc = buildQrImageSrc(verifyUrl);
-
+const findQrTarget = (doc: Document): Element | null => {
   const markedHost = doc.querySelector<HTMLElement>(
     '[id*="qr" i], [class*="qr" i], [data-certificate-qr], img[alt*="qr" i]',
   );
@@ -129,10 +125,7 @@ const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
     (["IMG", "CANVAS", "SVG"].includes(markedHost.tagName)
       ? markedHost
       : findQrVisual(markedHost));
-  if (markedVisual) {
-    applyQrToVisual(doc, markedVisual, qrSrc, verifyUrl);
-    return;
-  }
+  if (markedVisual) return markedVisual;
 
   const idAnchor = doc.getElementById("certificate_id");
   const verifyLabel =
@@ -142,10 +135,46 @@ const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
         (element.textContent || "").trim().toLowerCase().includes("verify"),
     ) ?? null;
 
-  const nearVisual =
-    findQrVisualNear(idAnchor) ?? findQrVisualNear(verifyLabel);
-  if (nearVisual) {
-    applyQrToVisual(doc, nearVisual, qrSrc, verifyUrl);
+  return findQrVisualNear(idAnchor) ?? findQrVisualNear(verifyLabel);
+};
+
+const injectQrCode = (doc: Document, verifyUrl?: string | null) => {
+  const target = findQrTarget(doc);
+  if (!target) return;
+
+  // No real verification link — hide the template's sample QR rather than
+  // showing one that verifies nothing.
+  if (!verifyUrl) {
+    (target as HTMLElement).style.display = "none";
+    return;
+  }
+
+  applyQrToVisual(doc, target, buildQrImageSrc(verifyUrl), verifyUrl);
+};
+
+// Matches a bare id label such as "ID:", "Cert ID", "Certificate ID #".
+const ID_LABEL_PATTERN = /^(cert(ificate)?\s*)?id\s*[:#-]?$/i;
+
+// Fill in the certificate id, or — when there's no real id — hide it along
+// with its "ID:" label so nothing shows at all.
+const applyCertificateId = (doc: Document, certificateId?: string) => {
+  const el = doc.getElementById("certificate_id");
+  if (!el) return;
+
+  if (certificateId) {
+    el.textContent = certificateId;
+    return;
+  }
+
+  el.textContent = "";
+  el.style.display = "none";
+
+  // The "ID:" label is usually a sibling in the same wrapper — hide the
+  // wrapper too when the label is all that's left in it.
+  const parent = el.parentElement;
+  const remainingText = (parent?.textContent || "").trim();
+  if (parent && parent !== doc.body && ID_LABEL_PATTERN.test(remainingText)) {
+    parent.style.display = "none";
   }
 };
 
@@ -185,6 +214,19 @@ export const personalizeCertificate = (
   try {
     const doc = new DOMParser().parseFromString(markup, "text/html");
 
+    // The finished certificate is static. Templates can ship scripts (or
+    // inline on* handlers) that generate their own random id on every load,
+    // overwriting the real one — so the id changed on each refresh while the
+    // QR stayed the same. Strip them so only the values we inject are shown.
+    doc.querySelectorAll("script").forEach((script) => script.remove());
+    doc.querySelectorAll("*").forEach((el) => {
+      Array.from(el.attributes).forEach((attr) => {
+        if (attr.name.toLowerCase().startsWith("on")) {
+          el.removeAttribute(attr.name);
+        }
+      });
+    });
+
     const setText = (id: string, value?: string) => {
       if (!value) return;
       const el = doc.getElementById(id);
@@ -194,10 +236,12 @@ export const personalizeCertificate = (
     setText("recipient_name", values.recipientName);
     setText("course_name", values.courseName);
     setText("instructor_name", values.instructorName);
-    setText("certificate_id", values.certificateId);
-
-    // Encode the verification link into the certificate's QR code.
+    // Encode the verification link into the certificate's QR code (or hide
+    // the QR when there is none). Runs before the id is hidden so the QR can
+    // still be located next to the id placeholder.
     injectQrCode(doc, values.verifyUrl);
+
+    applyCertificateId(doc, values.certificateId);
 
     // Finished certificate — remove the "editable" markers/underlines.
     doc.querySelectorAll("[contenteditable]").forEach((el) => {

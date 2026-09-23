@@ -110,23 +110,33 @@ export default function MyLearningCertificatePage({
     (spoil?.tutor as { display_name?: string | null } | undefined)?.display_name,
   );
 
-  // `spoilTemplate.id` is only a placeholder fallback for when the real
-  // certificate hasn't come back yet — it must never be used while payment is
-  // pending, since that's not a real certificate id and would produce a QR
-  // that verifies nothing.
-  const certificateId = pendingPayment
-    ? undefined
-    : (certificate?.cert_id ??
-      (spoilTemplate?.id ? String(spoilTemplate.id) : undefined));
+  // The QR verification link is the single source of truth for the
+  // certificate id: the id printed on the certificate is read straight out of
+  // the link the QR encodes, so the two can never disagree. No template-id
+  // fallback — that isn't a real certificate id.
   // The "silent" idempotent replay of an already-completed spoil doesn't
-  // always echo back `resolved_url` even though it has a `cert_id` — without
-  // a verify link the QR has nothing to encode and the badge stays blank. Fall
-  // back to building the same link ourselves from the public verify route.
-  const verifyUrl =
-    certificate?.resolved_url ??
-    (certificateId && typeof window !== "undefined"
-      ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificateId)}`
-      : null);
+  // always echo back `resolved_url` even though it has a `cert_id`, so build
+  // the same public verify link from `cert_id` in that case.
+  const verifyUrl = pendingPayment
+    ? null
+    : (certificate?.resolved_url ??
+      (certificate?.cert_id && typeof window !== "undefined"
+        ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificate.cert_id)}`
+        : null));
+
+  // …/verify-certificate/qrcode/{id} → {id}
+  const certificateId = useMemo(() => {
+    if (!verifyUrl) return undefined;
+    try {
+      const segments = new URL(verifyUrl, "http://placeholder").pathname
+        .split("/")
+        .filter(Boolean);
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment ? decodeURIComponent(lastSegment) : undefined;
+    } catch {
+      return undefined;
+    }
+  }, [verifyUrl]);
 
 
   // Inject the real values into the certificate template HTML.
@@ -305,17 +315,17 @@ export default function MyLearningCertificatePage({
   return (
     <section className="min-h-screen bg-[#FAFAFA] px-4 py-8 sm:px-6 lg:px-20">
       <div className="mx-auto max-w-[1120px]">
-        <button
+        {/* <button
           type="button"
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm font-medium text-[#0C4A5C]"
         >
           <Image src={ArrowLeftIcon} alt="Back" width={18} height={18} />
           Back
-        </button>
+        </button> */}
 
         <h1 className="mt-10 text-[40px] font-semibold tracking-[-0.03em] text-[#212529]">
-          My Learnings
+          My Certificate
         </h1>
 
         <div className="mx-auto mt-10 max-w-[760px] rounded-[20px] border border-[#ECEFF2] bg-white p-4 shadow-[0_18px_60px_rgba(15,23,42,0.06)] sm:p-7">
