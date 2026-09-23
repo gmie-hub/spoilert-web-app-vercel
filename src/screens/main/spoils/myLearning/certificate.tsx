@@ -110,23 +110,33 @@ export default function MyLearningCertificatePage({
     (spoil?.tutor as { display_name?: string | null } | undefined)?.display_name,
   );
 
-  // `spoilTemplate.id` is only a placeholder fallback for when the real
-  // certificate hasn't come back yet — it must never be used while payment is
-  // pending, since that's not a real certificate id and would produce a QR
-  // that verifies nothing.
-  const certificateId = pendingPayment
-    ? undefined
-    : (certificate?.cert_id ??
-      (spoilTemplate?.id ? String(spoilTemplate.id) : undefined));
+  // The QR verification link is the single source of truth for the
+  // certificate id: the id printed on the certificate is read straight out of
+  // the link the QR encodes, so the two can never disagree. No template-id
+  // fallback — that isn't a real certificate id.
   // The "silent" idempotent replay of an already-completed spoil doesn't
-  // always echo back `resolved_url` even though it has a `cert_id` — without
-  // a verify link the QR has nothing to encode and the badge stays blank. Fall
-  // back to building the same link ourselves from the public verify route.
-  const verifyUrl =
-    certificate?.resolved_url ??
-    (certificateId && typeof window !== "undefined"
-      ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificateId)}`
-      : null);
+  // always echo back `resolved_url` even though it has a `cert_id`, so build
+  // the same public verify link from `cert_id` in that case.
+  const verifyUrl = pendingPayment
+    ? null
+    : (certificate?.resolved_url ??
+      (certificate?.cert_id && typeof window !== "undefined"
+        ? `${window.location.origin}/verify-certificate/qrcode/${encodeURIComponent(certificate.cert_id)}`
+        : null));
+
+  // …/verify-certificate/qrcode/{id} → {id}
+  const certificateId = useMemo(() => {
+    if (!verifyUrl) return undefined;
+    try {
+      const segments = new URL(verifyUrl, "http://placeholder").pathname
+        .split("/")
+        .filter(Boolean);
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment ? decodeURIComponent(lastSegment) : undefined;
+    } catch {
+      return undefined;
+    }
+  }, [verifyUrl]);
 
 
   // Inject the real values into the certificate template HTML.
