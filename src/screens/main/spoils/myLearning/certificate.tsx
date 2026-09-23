@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import Image from "next/image";
+// import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
+// import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
 import Button from "@spt/components/button";
 import useCompleteSpoilMutation, {
   type CompleteSpoilPayment,
@@ -384,13 +384,13 @@ export default function MyLearningCertificatePage({
             </>
           )}
 
-          <Button
+          {/* <Button
             variant="outline"
             className="mt-4 w-full rounded-[12px] border-[#D7DCE0] py-4 text-[#0B5368] hover:bg-white"
             onClick={() => router.push("/")}
           >
             Back to Home
-          </Button>
+          </Button> */}
         </div>
       </div>
     </section>
