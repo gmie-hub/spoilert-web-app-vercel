@@ -15,7 +15,6 @@ import { useForgotPasswordMutation } from "@spt/hooks/apiRequests/useForgotPassw
 import { validations } from "@spt/utils/validation";
 
 
-console.log('deployed')
 const ForgotPassword = () => {
   const { forgotPasswordHandler, isLoading } = useForgotPasswordMutation();
   const router = useRouter();
