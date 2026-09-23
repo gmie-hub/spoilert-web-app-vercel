@@ -315,17 +315,17 @@ export default function MyLearningCertificatePage({
   return (
     <section className="min-h-screen bg-[#FAFAFA] px-4 py-8 sm:px-6 lg:px-20">
       <div className="mx-auto max-w-[1120px]">
-        <button
+        {/* <button
           type="button"
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm font-medium text-[#0C4A5C]"
         >
           <Image src={ArrowLeftIcon} alt="Back" width={18} height={18} />
           Back
-        </button>
+        </button> */}
 
         <h1 className="mt-10 text-[40px] font-semibold tracking-[-0.03em] text-[#212529]">
-          My Learnings
+          My Certificate
         </h1>
 
         <div className="mx-auto mt-10 max-w-[760px] rounded-[20px] border border-[#ECEFF2] bg-white p-4 shadow-[0_18px_60px_rgba(15,23,42,0.06)] sm:p-7">
