@@ -175,6 +175,7 @@ export const StartSpoilContentPanel = ({
             What you will learn
           </h3>
 
+
           {learningItems.length > 0 ? (
             <div className="mt-4 space-y-4">
               {learningItems.map((item, index) => (
