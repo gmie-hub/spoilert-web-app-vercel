@@ -14,6 +14,8 @@ import Stack from "@spt/components/stack";
 import { useForgotPasswordMutation } from "@spt/hooks/apiRequests/useForgotPasswordMutation";
 import { validations } from "@spt/utils/validation";
 
+
+console.log('deployed')
 const ForgotPassword = () => {
   const { forgotPasswordHandler, isLoading } = useForgotPasswordMutation();
   const router = useRouter();
