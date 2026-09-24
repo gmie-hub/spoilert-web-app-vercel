@@ -147,9 +147,19 @@ export default function MyLearningCertificatePage({
         courseName: spoil?.title,
         instructorName: tutorName,
         certificateId,
+        issuedAt: certificate?.generated_at ?? certificate?.created_at,
         verifyUrl,
       }),
-    [rawMarkup, learnerName, spoil?.title, tutorName, certificateId, verifyUrl],
+    [
+      rawMarkup,
+      learnerName,
+      spoil?.title,
+      tutorName,
+      certificateId,
+      certificate?.generated_at,
+      certificate?.created_at,
+      verifyUrl,
+    ],
   );
 
   const handlePayNow = () => {
@@ -282,10 +292,23 @@ export default function MyLearningCertificatePage({
       // the iframe's scrollHeight. Any accidental overflow inside the
       // template is a rendering bug, not real extra content, so it should be
       // cropped rather than spilled onto extra tiled pages.
+      //
+      // Hand html2canvas a canvas owned by the iframe document. By default it
+      // creates one in the app's document, where the template's web fonts
+      // aren't loaded — the words are laid out in the template font but
+      // painted in a wider fallback font, so they overlap ("ofull",
+      // "attendanceand"). A canvas resolves fonts from its own document, so
+      // this one paints with the same font the layout used.
+      const captureScale = 2;
+      const captureCanvas = iframeDocument.createElement("canvas");
+      captureCanvas.width = 794 * captureScale;
+      captureCanvas.height = 1123 * captureScale;
+
       const canvas = await html2canvas(iframeDocument.body, {
+        canvas: captureCanvas,
         useCORS: true,
         backgroundColor: "#ffffff",
-        scale: 2,
+        scale: captureScale,
         width: 794,
         height: 1123,
         windowWidth: 794,
@@ -329,7 +352,7 @@ export default function MyLearningCertificatePage({
         </h1>
 
         <div className="mx-auto mt-10 max-w-[760px] rounded-[20px] border border-[#ECEFF2] bg-white p-4 shadow-[0_18px_60px_rgba(15,23,42,0.06)] sm:p-7">
-          {pendingPayment ? (
+          {pendingPayment && pendingPayment ? (
             <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
               <h2 className="text-lg font-semibold text-[#212529]">
                 Pay to unlock your certificate

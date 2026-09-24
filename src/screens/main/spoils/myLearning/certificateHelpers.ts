@@ -3,6 +3,8 @@ interface CertificateValues {
   courseName?: string;
   instructorName?: string;
   certificateId?: string;
+  /** When the certificate was issued (`generated_at` from the API). */
+  issuedAt?: string | null;
   /** Verification link the certificate's QR code should encode. */
   verifyUrl?: string | null;
 }
@@ -178,6 +180,57 @@ const applyCertificateId = (doc: Document, certificateId?: string) => {
   }
 };
 
+// "September 17, 2026" — same format the verify-certificate page shows.
+const formatIssueDate = (value?: string | null) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// Placeholder ids templates use for the issue date, most specific first.
+const DATE_PLACEHOLDER_IDS = [
+  "issue_date",
+  "issued_date",
+  "date_issued",
+  "certificate_date",
+  "completion_date",
+  "generated_at",
+  "date",
+];
+
+// A sample date baked into the template, e.g. "January 1, 2025",
+// "1 Jan 2025", "01/01/2025" or "2025-01-01".
+const SAMPLE_DATE_PATTERN =
+  /^(\w+\s+\d{1,2},?\s+\d{4}|\d{1,2}(st|nd|rd|th)?\s+\w+,?\s+\d{4}|\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{4}-\d{2}-\d{2})$/i;
+
+// Fill in the date the certificate was generated. Prefer an explicit date
+// placeholder; otherwise replace the template's hardcoded sample date so it
+// never shows a date the learner didn't earn it on.
+const applyIssueDate = (doc: Document, issuedAt?: string | null) => {
+  const formatted = formatIssueDate(issuedAt);
+  if (!formatted) return;
+
+  const placeholder =
+    DATE_PLACEHOLDER_IDS.map((id) => doc.getElementById(id)).find(Boolean) ??
+    doc.querySelector<HTMLElement>("[data-certificate-date]");
+  if (placeholder) {
+    placeholder.textContent = formatted;
+    return;
+  }
+
+  const sampleDate = Array.from(doc.body.querySelectorAll<HTMLElement>("*")).find(
+    (element) =>
+      element.childElementCount === 0 &&
+      SAMPLE_DATE_PATTERN.test((element.textContent || "").trim()),
+  );
+  if (sampleDate) sampleDate.textContent = formatted;
+};
+
 // Marks the single element we stretch to fill the A4 sheet (see below) —
 // scoped to one element via a data attribute rather than a broad selector so
 // we never touch sibling elements we don't know about.
@@ -242,6 +295,7 @@ export const personalizeCertificate = (
     injectQrCode(doc, values.verifyUrl);
 
     applyCertificateId(doc, values.certificateId);
+    applyIssueDate(doc, values.issuedAt);
 
     // Finished certificate — remove the "editable" markers/underlines.
     doc.querySelectorAll("[contenteditable]").forEach((el) => {
@@ -291,8 +345,9 @@ export const sanitizeFileName = (name: string) =>
     .replace(/^-+|-+$/g, "")
     .toLowerCase() || "certificate";
 
-// Resolve once the iframe document and all of its images (QR, logo, signature)
-// have finished loading, so the PDF capture never grabs a half-loaded page.
+// Resolve once the iframe document, its web fonts and all of its images (QR,
+// logo, signature) have finished loading, so the PDF capture never grabs a
+// half-loaded page or paints text before the template font is ready.
 export const waitForIframeReady = (iframe: HTMLIFrameElement) =>
   new Promise<void>((resolve) => {
     let settled = false;
@@ -302,9 +357,15 @@ export const waitForIframeReady = (iframe: HTMLIFrameElement) =>
       resolve();
     };
 
-    const settleImages = () => {
+    const settleImages = async () => {
       const doc = iframe.contentDocument;
       if (!doc) return finish();
+
+      try {
+        await doc.fonts?.ready;
+      } catch {
+        // Font loading failures shouldn't block the download.
+      }
 
       const pending = Array.from(doc.images ?? []).filter(
         (image) => !image.complete,

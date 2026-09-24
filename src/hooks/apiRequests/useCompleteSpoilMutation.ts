@@ -21,6 +21,7 @@ export interface SpoilCertificate {
   resolved_url?: string;
   status?: string;
   generated_at?: string;
+  created_at?: string;
   spoil_id?: number;
   user_id?: number;
   tutor_id?: number;
