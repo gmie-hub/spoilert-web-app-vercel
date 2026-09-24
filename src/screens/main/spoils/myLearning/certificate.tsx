@@ -19,9 +19,8 @@ import { useAuthStore } from "@spt/store/authStore";
 
 import {
   buildFullName,
+  loadUsedFonts,
   personalizeCertificate,
-  sanitizeFileName,
-  waitForIframeReady,
 } from "./certificateHelpers";
 
 interface MyLearningCertificatePageProps {
@@ -40,8 +39,6 @@ export default function MyLearningCertificatePage({
   const router = useRouter();
   const { data: spoil } = useGetSpoilDetailsQuery(spoilId);
   const user = useAuthStore((state) => state.user);
-
-  const [isDownloading, setIsDownloading] = useState(false);
 
   // This page is display-only and must never mark the spoil complete again —
   // but the cert id / QR verification link only come back from the
@@ -182,8 +179,11 @@ export default function MyLearningCertificatePage({
       return;
     }
 
-    // The certificate is rendered HTML, so open it in a new window and let the
-    // user save it as a PDF via the browser's print dialog.
+    // Save the certificate through the browser's own "Save as PDF", so the PDF
+    // is drawn by the same engine as the preview — identical fonts, spacing and
+    // colours, with real (sharp) text. Rasterising it with html2canvas instead
+    // redrew each word itself and the words ran together whenever the
+    // template's web font wasn't available to its canvas.
     const printWindow = window.open("", "_blank", "width=900,height=1200");
     if (!printWindow) {
       toast.error(
@@ -210,9 +210,12 @@ export default function MyLearningCertificatePage({
       printWindow.print();
     };
 
-    // The QR code is an external image — wait for it (and any other images) to
-    // finish loading before printing, otherwise the saved PDF gets a blank QR.
-    const printWhenImagesReady = () => {
+    // Wait for the template's web fonts (so the PDF never falls back to a
+    // default font) and for the QR code and other images (otherwise the saved
+    // PDF gets a blank QR) before printing.
+    const printWhenImagesReady = async () => {
+      await loadUsedFonts(printDocument);
+
       const images = Array.from(printDocument.images ?? []);
       const pending = images.filter((image) => !image.complete);
 
@@ -244,94 +247,6 @@ export default function MyLearningCertificatePage({
       printWindow.addEventListener("load", printWhenImagesReady, {
         once: true,
       });
-    }
-  };
-
-  // Direct "Save as PDF" (no print dialog): render the certificate into an
-  // off-screen iframe, rasterise it with html2canvas and write it into a jsPDF
-  // A4 page. If anything fails (e.g. a non-CORS asset taints the canvas) we fall
-  // back to the print-to-PDF flow so the button always produces a certificate.
-  const handleDownloadPdf = async () => {
-    if (!certificateMarkup || typeof window === "undefined" || isDownloading) {
-      return;
-    }
-
-    setIsDownloading(true);
-
-    const iframe = document.createElement("iframe");
-    iframe.setAttribute("aria-hidden", "true");
-    iframe.style.position = "fixed";
-    iframe.style.left = "-10000px";
-    iframe.style.top = "0";
-    iframe.style.width = "794px"; // ~A4 width at 96dpi
-    iframe.style.height = "1123px"; // ~A4 height at 96dpi
-    iframe.style.border = "0";
-    iframe.style.background = "#ffffff";
-
-    try {
-      document.body.appendChild(iframe);
-
-      const iframeDocument = iframe.contentDocument;
-      if (!iframeDocument) {
-        throw new Error("Unable to prepare the certificate for download.");
-      }
-
-      iframeDocument.open();
-      iframeDocument.write(certificateMarkup);
-      iframeDocument.close();
-
-      await waitForIframeReady(iframe);
-
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import("html2canvas"),
-        import("jspdf"),
-      ]);
-
-      // The certificate is always a single A4 sheet — clip the capture to
-      // exactly one page's worth of pixels (794x1123) instead of following
-      // the iframe's scrollHeight. Any accidental overflow inside the
-      // template is a rendering bug, not real extra content, so it should be
-      // cropped rather than spilled onto extra tiled pages.
-      //
-      // Hand html2canvas a canvas owned by the iframe document. By default it
-      // creates one in the app's document, where the template's web fonts
-      // aren't loaded — the words are laid out in the template font but
-      // painted in a wider fallback font, so they overlap ("ofull",
-      // "attendanceand"). A canvas resolves fonts from its own document, so
-      // this one paints with the same font the layout used.
-      const captureScale = 2;
-      const captureCanvas = iframeDocument.createElement("canvas");
-      captureCanvas.width = 794 * captureScale;
-      captureCanvas.height = 1123 * captureScale;
-
-      const canvas = await html2canvas(iframeDocument.body, {
-        canvas: captureCanvas,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        scale: captureScale,
-        width: 794,
-        height: 1123,
-        windowWidth: 794,
-        windowHeight: 1123,
-      });
-
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "pt",
-        format: "a4",
-      });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imageData = canvas.toDataURL("image/png");
-      pdf.addImage(imageData, "PNG", 0, 0, pageWidth, pageHeight);
-
-      pdf.save(`${sanitizeFileName(certificateTitle)}.pdf`);
-    } catch {
-      // Capture failed — fall back to the browser print dialog.
-      handleDownload();
-    } finally {
-      iframe.remove();
-      setIsDownloading(false);
     }
   };
 
@@ -399,10 +314,10 @@ export default function MyLearningCertificatePage({
               <Button
                 variant="darkBlue"
                 className="mt-8 w-full rounded-[12px] py-4"
-                onClick={handleDownloadPdf}
-                disabled={!certificateMarkup || isDownloading}
+                onClick={handleDownload}
+                disabled={!certificateMarkup}
               >
-                {isDownloading ? "Preparing PDF…" : "Download Certificate"}
+                Download Certificate
               </Button>
             </>
           )}

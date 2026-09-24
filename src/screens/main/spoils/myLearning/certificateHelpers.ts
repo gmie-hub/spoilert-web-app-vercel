@@ -238,7 +238,18 @@ const A4_ROOT_ATTR = "data-certificate-a4-root";
 
 // A4 portrait override so the certificate fills the full sheet instead of
 // sitting as a small centered card on the template's own background.
+// The print rules make "Save as PDF" match the preview: one borderless A4
+// page, with background colours kept (browsers drop them when printing
+// unless told otherwise, which would blank out dark templates).
 const A4_FULL_PAGE_CSS = `
+  @page { size: A4; margin: 0; }
+  html, body, body * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @media print {
+    html, body { height: 297mm !important; overflow: hidden !important; }
+  }
   html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
   body { display: block !important; min-height: 100vh !important; }
   [${A4_ROOT_ATTR}] {
@@ -336,59 +347,27 @@ export const buildFullName = (
   return [first, last].filter(Boolean).join(" ").trim();
 };
 
-// Make a title safe to use as a download file name.
-export const sanitizeFileName = (name: string) =>
-  (name || "certificate")
-    .trim()
-    .replace(/[^a-z0-9\-_ ]+/gi, "")
-    .replace(/\s+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase() || "certificate";
+// Explicitly load every font face the certificate's text uses, so it's never
+// printed in a fallback font. `fonts.ready` alone isn't enough: browsers only
+// fetch a web font once text using it has been laid out, so `ready` can
+// resolve before the template fonts have even started loading.
+// `fonts.load()` fetches each face on demand.
+export const loadUsedFonts = async (doc: Document) => {
+  const view = doc.defaultView;
+  if (!doc.fonts || !view) return;
 
-// Resolve once the iframe document, its web fonts and all of its images (QR,
-// logo, signature) have finished loading, so the PDF capture never grabs a
-// half-loaded page or paints text before the template font is ready.
-export const waitForIframeReady = (iframe: HTMLIFrameElement) =>
-  new Promise<void>((resolve) => {
-    let settled = false;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      resolve();
-    };
-
-    const settleImages = async () => {
-      const doc = iframe.contentDocument;
-      if (!doc) return finish();
-
-      try {
-        await doc.fonts?.ready;
-      } catch {
-        // Font loading failures shouldn't block the download.
-      }
-
-      const pending = Array.from(doc.images ?? []).filter(
-        (image) => !image.complete,
-      );
-      if (pending.length === 0) return finish();
-
-      let remaining = pending.length;
-      const onImage = () => {
-        remaining -= 1;
-        if (remaining <= 0) finish();
-      };
-      pending.forEach((image) => {
-        image.addEventListener("load", onImage, { once: true });
-        image.addEventListener("error", onImage, { once: true });
-      });
-    };
-
-    if (iframe.contentDocument?.readyState === "complete") {
-      settleImages();
-    } else {
-      iframe.addEventListener("load", settleImages, { once: true });
-    }
-
-    // Safety net: never hang if an image stalls.
-    window.setTimeout(finish, 6000);
+  const fonts = new Set<string>();
+  doc.body?.querySelectorAll<HTMLElement>("*").forEach((element) => {
+    if (!element.textContent?.trim()) return;
+    const style = view.getComputedStyle(element);
+    fonts.add(
+      `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`,
+    );
   });
+
+  // A face that fails to load shouldn't block the download.
+  await Promise.all(
+    Array.from(fonts).map((font) => doc.fonts.load(font).catch(() => [])),
+  );
+  await doc.fonts.ready.catch(() => undefined);
+};
