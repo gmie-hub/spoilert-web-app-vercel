@@ -3,6 +3,8 @@ interface CertificateValues {
   courseName?: string;
   instructorName?: string;
   certificateId?: string;
+  /** When the certificate was issued (`generated_at` from the API). */
+  issuedAt?: string | null;
   /** Verification link the certificate's QR code should encode. */
   verifyUrl?: string | null;
 }
@@ -178,6 +180,57 @@ const applyCertificateId = (doc: Document, certificateId?: string) => {
   }
 };
 
+// "September 17, 2026" — same format the verify-certificate page shows.
+const formatIssueDate = (value?: string | null) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// Placeholder ids templates use for the issue date, most specific first.
+const DATE_PLACEHOLDER_IDS = [
+  "issue_date",
+  "issued_date",
+  "date_issued",
+  "certificate_date",
+  "completion_date",
+  "generated_at",
+  "date",
+];
+
+// A sample date baked into the template, e.g. "January 1, 2025",
+// "1 Jan 2025", "01/01/2025" or "2025-01-01".
+const SAMPLE_DATE_PATTERN =
+  /^(\w+\s+\d{1,2},?\s+\d{4}|\d{1,2}(st|nd|rd|th)?\s+\w+,?\s+\d{4}|\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{4}-\d{2}-\d{2})$/i;
+
+// Fill in the date the certificate was generated. Prefer an explicit date
+// placeholder; otherwise replace the template's hardcoded sample date so it
+// never shows a date the learner didn't earn it on.
+const applyIssueDate = (doc: Document, issuedAt?: string | null) => {
+  const formatted = formatIssueDate(issuedAt);
+  if (!formatted) return;
+
+  const placeholder =
+    DATE_PLACEHOLDER_IDS.map((id) => doc.getElementById(id)).find(Boolean) ??
+    doc.querySelector<HTMLElement>("[data-certificate-date]");
+  if (placeholder) {
+    placeholder.textContent = formatted;
+    return;
+  }
+
+  const sampleDate = Array.from(doc.body.querySelectorAll<HTMLElement>("*")).find(
+    (element) =>
+      element.childElementCount === 0 &&
+      SAMPLE_DATE_PATTERN.test((element.textContent || "").trim()),
+  );
+  if (sampleDate) sampleDate.textContent = formatted;
+};
+
 // Marks the single element we stretch to fill the A4 sheet (see below) —
 // scoped to one element via a data attribute rather than a broad selector so
 // we never touch sibling elements we don't know about.
@@ -185,7 +238,18 @@ const A4_ROOT_ATTR = "data-certificate-a4-root";
 
 // A4 portrait override so the certificate fills the full sheet instead of
 // sitting as a small centered card on the template's own background.
+// The print rules make "Save as PDF" match the preview: one borderless A4
+// page, with background colours kept (browsers drop them when printing
+// unless told otherwise, which would blank out dark templates).
 const A4_FULL_PAGE_CSS = `
+  @page { size: A4; margin: 0; }
+  html, body, body * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @media print {
+    html, body { height: 297mm !important; overflow: hidden !important; }
+  }
   html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
   body { display: block !important; min-height: 100vh !important; }
   [${A4_ROOT_ATTR}] {
@@ -242,6 +306,7 @@ export const personalizeCertificate = (
     injectQrCode(doc, values.verifyUrl);
 
     applyCertificateId(doc, values.certificateId);
+    applyIssueDate(doc, values.issuedAt);
 
     // Finished certificate — remove the "editable" markers/underlines.
     doc.querySelectorAll("[contenteditable]").forEach((el) => {
@@ -282,52 +347,27 @@ export const buildFullName = (
   return [first, last].filter(Boolean).join(" ").trim();
 };
 
-// Make a title safe to use as a download file name.
-export const sanitizeFileName = (name: string) =>
-  (name || "certificate")
-    .trim()
-    .replace(/[^a-z0-9\-_ ]+/gi, "")
-    .replace(/\s+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase() || "certificate";
+// Explicitly load every font face the certificate's text uses, so it's never
+// printed in a fallback font. `fonts.ready` alone isn't enough: browsers only
+// fetch a web font once text using it has been laid out, so `ready` can
+// resolve before the template fonts have even started loading.
+// `fonts.load()` fetches each face on demand.
+export const loadUsedFonts = async (doc: Document) => {
+  const view = doc.defaultView;
+  if (!doc.fonts || !view) return;
 
-// Resolve once the iframe document and all of its images (QR, logo, signature)
-// have finished loading, so the PDF capture never grabs a half-loaded page.
-export const waitForIframeReady = (iframe: HTMLIFrameElement) =>
-  new Promise<void>((resolve) => {
-    let settled = false;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      resolve();
-    };
-
-    const settleImages = () => {
-      const doc = iframe.contentDocument;
-      if (!doc) return finish();
-
-      const pending = Array.from(doc.images ?? []).filter(
-        (image) => !image.complete,
-      );
-      if (pending.length === 0) return finish();
-
-      let remaining = pending.length;
-      const onImage = () => {
-        remaining -= 1;
-        if (remaining <= 0) finish();
-      };
-      pending.forEach((image) => {
-        image.addEventListener("load", onImage, { once: true });
-        image.addEventListener("error", onImage, { once: true });
-      });
-    };
-
-    if (iframe.contentDocument?.readyState === "complete") {
-      settleImages();
-    } else {
-      iframe.addEventListener("load", settleImages, { once: true });
-    }
-
-    // Safety net: never hang if an image stalls.
-    window.setTimeout(finish, 6000);
+  const fonts = new Set<string>();
+  doc.body?.querySelectorAll<HTMLElement>("*").forEach((element) => {
+    if (!element.textContent?.trim()) return;
+    const style = view.getComputedStyle(element);
+    fonts.add(
+      `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`,
+    );
   });
+
+  // A face that fails to load shouldn't block the download.
+  await Promise.all(
+    Array.from(fonts).map((font) => doc.fonts.load(font).catch(() => [])),
+  );
+  await doc.fonts.ready.catch(() => undefined);
+};
