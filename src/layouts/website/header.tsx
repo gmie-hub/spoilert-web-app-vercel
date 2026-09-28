@@ -131,7 +131,7 @@ const Header = () => {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-[100px]"
+      className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white "
     >
       {/* ================= TOP NAV ROW ================= */}
       <div className="mx-auto flex max-w-[1400px] items-center justify-between py-3 sm:py-4">

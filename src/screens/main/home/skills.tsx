@@ -14,7 +14,7 @@ const SkillPage = () => {
     <>
     { data?.data?.data && data?.data?.data?.length > 0 && 
       
-      <WebsiteSection className="py-4 w-full bg-[#F4FCFF]">
+      <WebsiteSection contained className="py-4 w-full bg-[#F4FCFF]">
       <Stack>
         {/* Title */}
         <motion.h1

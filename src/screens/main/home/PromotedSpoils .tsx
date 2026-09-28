@@ -12,7 +12,7 @@ const PromotedSpoils = () => {
 
   return (<>
   {activePromotions && activePromotions?.length > 0 && (
-      <WebsiteSection className="py-4 w-full">
+      <WebsiteSection contained className="py-4 w-full">
       <Stack>
         {/* Title */}
 

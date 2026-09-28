@@ -22,7 +22,7 @@ const SelfDev = () => {
 
   return (
     <>{spoils && spoils.length > 0 && (
-    <WebsiteSection className="w-full bg-[#014751] py-10 md:py-14">
+    <WebsiteSection contained className="w-full bg-[#014751] py-10 md:py-14">
       {/* Title */}
       <motion.h1
         className="text-2xl md:text-4xl font-bold text-center text-white mb-10"
@@ -45,7 +45,7 @@ const SelfDev = () => {
 
       {/* Main Layout */}
       {!isLoading && !isError && (
-      <div className="w-full px-4 sm:px-6 md:px-8">
+      <div className="w-full">
         {/* ✅ Two White Column Boxes — stacked (1 per row) up to xl, side by side on xl+ */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 w-full">
           {/* LEFT COLUMN */}

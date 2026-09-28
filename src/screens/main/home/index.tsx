@@ -25,7 +25,7 @@ const HomePage = () => {
       <PromotedAdsCarousel />
       <SelfDev />
       <TrendingSpoil />
-      <GetStarted />
+      <GetStarted contained />
       <BackToTopButton/>
     </main>
   );
