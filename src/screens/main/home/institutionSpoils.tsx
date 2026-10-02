@@ -59,50 +59,47 @@ const InstitutionSpoils = () => {
               }
             }}
           >
-            {/* Thumbnail image (top on mobile, left on sm+) */}
-            {spoil?.cover_image_url && (
-              <div className="relative w-full h-48 sm:w-44 sm:h-[201px] rounded-md overflow-hidden flex-shrink-0">
+            {/* Thumbnail image (top on mobile, left on sm+) — the box stays even without a cover */}
+            <div className="relative w-full h-48 sm:w-44 sm:h-[201px] rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
+              {spoil?.cover_image_url && (
                 <Image
-                  src={spoil?.cover_image_url}
-                  alt={spoil.title}
+                  src={spoil.cover_image_url}
+                  alt={spoil.title || "Spoil cover"}
                   fill
                   className="object-cover"
-                  
                 />
-
-                {/* Bookmark */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addBookmark(spoil.id);
-                  }}
-                  disabled={isBookmarking}
-                  className="absolute top-2 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
-                >
-                {spoil?.is_bookmarked ?  <Image
-                    src={BookedmarkIcon}
-                    alt="bookmark"
-                    width={15}
-                    height={15}
-                  />: <Image
-                    src={BookmarkIcon}
-                    alt="bookmark"
-                    width={15}
-                    height={15}
-                  /> }
-                </button>
-              </div>
-            )}
-
-            {/* Content */}
-            <div className="flex-1">
-              {spoil.institution && (
-                <p className="text-xs sm:text-sm font-medium text-[var(--color-black)] pb-1">
-                  {spoil.institution}
-                </p>
               )}
-              <h3 className="pb-1 text-base sm:text-lg font-medium text-[var(--color-black)]">
+
+              {/* Bookmark */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addBookmark(spoil.id);
+                }}
+                disabled={isBookmarking}
+                className="absolute top-2 right-3 bg-white rounded-full p-2 shadow-md transition hover:scale-110 disabled:cursor-not-allowed"
+              >
+              {spoil?.is_bookmarked ?  <Image
+                  src={BookedmarkIcon}
+                  alt="bookmark"
+                  width={15}
+                  height={15}
+                />: <Image
+                  src={BookmarkIcon}
+                  alt="bookmark"
+                  width={15}
+                  height={15}
+                /> }
+              </button>
+            </div>
+
+            {/* Content — institution (1 line) and title (2 lines) keep their space so every card is the same size */}
+            <div className="flex-1 min-w-0">
+              <p className="mb-1 min-h-[1lh] truncate text-xs sm:text-sm font-medium text-[var(--color-black)]">
+                {spoil.institution}
+              </p>
+              <h3 className="mb-1 line-clamp-2 min-h-[2lh] text-base sm:text-lg font-medium text-[var(--color-black)]">
                 {spoil.title}
               </h3>
             {  spoil.pricing === "free" ?     <p className="pb-2 text-sm sm:text-lg font-semibold text-gray-900"> Free </p>
@@ -111,7 +108,7 @@ const InstitutionSpoils = () => {
               </p>}
 
               <div className="flex items-center gap-3 my-3">
-                <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
+                <div className="w-8 h-8 shrink-0 rounded-full bg-gray-200 overflow-hidden relative">
                   {spoil.tutor?.avatar ? (
                     <Image
                       src={spoil?.tutor?.avatar}
@@ -128,7 +125,7 @@ const InstitutionSpoils = () => {
                   )}
                 </div>
 
-                <span className="text-[11px] px-3 py-1 rounded-full bg-[var(--color-blue-lightest)] text-[var(--color-blue)]">
+                <span className="min-w-0 truncate text-[11px] px-3 py-1 rounded-full bg-[var(--color-blue-lightest)] text-[var(--color-blue)]">
                   {spoil.category?.name || "Category"}
                 </span>
               </div>

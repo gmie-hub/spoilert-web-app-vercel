@@ -39,11 +39,12 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
   return (
     <Link
       href={spoilHref}
-      className="block"
+      className="block h-full"
       onClick={() => onViewSpoil?.(spoil)}
     >
+      {/* h-full stretches the card to the tallest one in its row */}
       <motion.div
-        className={`bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden border border-gray-100 cursor-pointer ${className}`}
+        className={`h-full bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden border border-gray-100 cursor-pointer ${className}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -53,14 +54,16 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
         }}
         whileHover={{ y: -6 }}
       >
-        {/* 🖼 Image */}
-        <div className="relative w-full h-[237px] overflow-hidden">
-          <Image
-            src={spoil?.cover_image_url}
-            alt={spoil?.title}
-            fill
-            className="object-cover"
-          />
+        {/* 🖼 Image — the box stays even without a cover */}
+        <div className="relative w-full h-[237px] overflow-hidden bg-gray-100">
+          {spoil?.cover_image_url && (
+            <Image
+              src={spoil.cover_image_url}
+              alt={spoil?.title || "Spoil cover"}
+              fill
+              className="object-cover"
+            />
+          )}
 
           {/* ⭐ Bookmark */}
           <button
@@ -79,8 +82,8 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
 
         {/* 📄 Content */}
         <div className="p-4 space-y-3">
-          {/* Title */}
-          <h3 className="text-[18px]  text-[#212529] line-clamp-2">
+          {/* Title — always takes 2 rows of space, even when the title fits in 1 row */}
+          <h3 className="text-[18px]  text-[#212529] line-clamp-2 min-h-[2lh]">
             {spoil?.title}
           </h3>
 
@@ -106,8 +109,8 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
                 />
               ) : (
                 <span className="flex items-center justify-center w-full h-full text-[10px] font-semibold text-gray-600">
-                  {spoil?.tutor?.first_name[0]}
-                  {spoil?.tutor?.last_name[0]}
+                  {spoil?.tutor?.first_name?.[0]}
+                  {spoil?.tutor?.last_name?.[0]}
                 </span>
               )}
             </div>
@@ -117,9 +120,9 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
             </p>
           </HStack>
 
-          {/* Category + Rating */}
+          {/* Category + Rating — category stays on one line so long names don't make the card taller */}
           <Stack spacing="gap-2">
-            <span className="text-[12px] px-2 py-1 rounded-full text-[var(--color-blue)] bg-[var(--color-blue-lightest)] w-fit">
+            <span className="text-[12px] px-2 py-1 rounded-full text-[var(--color-blue)] bg-[var(--color-blue-lightest)] w-fit max-w-full truncate">
               {spoil?.category?.name || "Uncategorized"}
             </span>
 

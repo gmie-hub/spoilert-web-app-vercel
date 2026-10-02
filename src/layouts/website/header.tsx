@@ -75,6 +75,20 @@ const Header = () => {
 
   const authUser = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const isInstitution = String(authUser?.role).toLowerCase() === "institution";
+  const accountLink = isInstitution
+    ? { name: "Dashboard", href: "/institution/dashboard" }
+    : { name: "Profile", href: "/profile/profile-details" };
+  const displayName = isInstitution
+    ? authUser?.name ?? ""
+    : `${authUser?.first_name ?? ""} ${authUser?.last_name ?? ""}`.trim();
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join("") || (authUser?.email?.[0]?.toUpperCase() ?? "");
   const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
 
   // Extract complex expressions for useEffect dependencies
@@ -109,7 +123,7 @@ const Header = () => {
     { icon: CreateSpoilIcon, name: "Create spoylz", href: createSpoilHref, requiresAuth: true },
     { icon: CommunityIcon, name: "Community", href: "/community", requiresAuth: true },
     ...(authUser
-      ? [{ icon: ProfileNavIcon, name: "Profile", href: "/profile/profile-details" }]
+      ? [{ icon: ProfileNavIcon, ...accountLink }]
       : []),
   ];
 
@@ -252,18 +266,21 @@ const Header = () => {
                 aria-label="Open profile menu"
                 type="button"
               >
-                <Image
-                  src={authUser?.avatar || UserImage}
-                  alt="user"
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 shrink-0 rounded-full object-cover md:h-10 md:w-10"
-                />
+                {authUser?.avatar || !initials ? (
+                  <Image
+                    src={authUser?.avatar || UserImage}
+                    alt="user"
+                    width={24}
+                    height={24}
+                    className="h-6 w-6 shrink-0 rounded-full object-cover md:h-10 md:w-10"
+                  />
+                ) : (
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#D6DEF8] text-[10px] font-semibold text-[#0B5368] md:h-10 md:w-10 md:text-sm">
+                    {initials}
+                  </span>
+                )}
                 <p className="hidden max-w-[140px] truncate lg:block">
-                  {(() => {
-                    const fullName = `${authUser?.first_name} ${authUser?.last_name}`;
-                    return fullName.length > 15 ? `${fullName.slice(0, 15)}...` : fullName;
-                  })()}
+                  {displayName.length > 15 ? `${displayName.slice(0, 15)}...` : displayName}
                 </p>
                 <Image
                   src={ArrowDownIcon}
@@ -276,11 +293,11 @@ const Header = () => {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <Link
-                    href="/profile"
+                    href={isInstitution ? "/institution/dashboard" : "/profile"}
                     className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Profile
+                    {accountLink.name}
                   </Link>
                   <button
                     className="block w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-100 rounded-b-lg"

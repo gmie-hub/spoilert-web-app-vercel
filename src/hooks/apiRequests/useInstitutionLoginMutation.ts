@@ -63,7 +63,7 @@ export const useInstitutionLoginMutation = () => {
       }
 
       toast.success("Logged in successfully 🎉");
-      router.push("/");
+      router.push("/institution/dashboard");
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.error ||

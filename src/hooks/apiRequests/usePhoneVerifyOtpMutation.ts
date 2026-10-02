@@ -20,11 +20,22 @@ interface VerifyOtpResponse {
   // Add other response fields if needed, e.g., token, user info
 }
 
-export const useVerifyOtpMutation = () => {
+// `authToken` is for flows with no logged-in session (e.g. institution
+// onboarding, where the token comes from the invite link) — it's sent instead
+// of the stored auth token.
+export const useVerifyOtpMutation = (authToken?: string) => {
   const verifyOtp = async (
     payload: VerifyOtpPayload,
   ): Promise<VerifyOtpResponse> => {
-    return (await api.post("users/phone/verify-otp", payload)).data;
+    return (
+      await api.post(
+        "users/phone/verify-otp",
+        payload,
+        authToken
+          ? { headers: { Authorization: `Bearer ${authToken}` } }
+          : undefined,
+      )
+    ).data;
   };
 
   const mutation = useMutation<
