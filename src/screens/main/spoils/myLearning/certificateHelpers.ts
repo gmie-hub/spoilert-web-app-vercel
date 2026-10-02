@@ -236,9 +236,10 @@ const applyIssueDate = (doc: Document, issuedAt?: string | null) => {
 // we never touch sibling elements we don't know about.
 const A4_ROOT_ATTR = "data-certificate-a4-root";
 
-// A4 width in CSS pixels (210mm at 96dpi) — the same canvas width the
-// on-screen preview renders the certificate at.
-const A4_WIDTH_PX = 794;
+// A4 in CSS pixels (210mm x 297mm at 96dpi) — the same canvas the on-screen
+// preview renders the certificate at.
+export const A4_WIDTH_PX = 794;
+export const A4_HEIGHT_PX = 1123;
 
 // A4 portrait override so the certificate fills the full sheet instead of
 // sitting as a small centered card on the template's own background.
@@ -248,12 +249,17 @@ const A4_WIDTH_PX = 794;
 // The sheet is sized in absolute A4 units, never `100%` / `100vh`: on a phone
 // those resolve to the narrow, tall screen, so the text reflowed into a long
 // strip that printed across two pages.
+// <html> is left to size itself around <body>. Templates' own print rules
+// often pin it to 297mm, and the fit-to-page zoom below only shrinks <body>,
+// so on a smaller printable area (Safari, which ignores @page) the leftover
+// <html> height printed as a second page.
 const A4_FULL_PAGE_CSS = `
   @page { size: A4; margin: 0; }
   html, body, body * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+  html { width: auto !important; height: auto !important; min-height: 0 !important; }
   html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
   body {
     display: block !important;

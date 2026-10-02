@@ -22,6 +22,7 @@ import {
   loadUsedFonts,
   personalizeCertificate,
 } from "./certificateHelpers";
+import { createCertificatePdf, isTouchDevice } from "./certificatePdf";
 
 interface MyLearningCertificatePageProps {
   spoilId: number | string;
@@ -55,6 +56,7 @@ export default function MyLearningCertificatePage({
   const [pendingPayment, setPendingPayment] =
     useState<CompleteSpoilPayment | null>(null);
   const [isCheckingCertificate, setIsCheckingCertificate] = useState(true);
+  const [isPreparingPdf, setIsPreparingPdf] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,8 +176,36 @@ export default function MyLearningCertificatePage({
     router.push("/my-learnings?tab=completed");
   };
 
-  const handleDownload = () => {
-    if (!certificateMarkup || typeof window === "undefined") {
+  const handleDownload = async () => {
+    if (!certificateMarkup || typeof window === "undefined" || isPreparingPdf) {
+      return;
+    }
+
+    // Phones and tablets get the PDF file built directly: their print dialogs
+    // pick their own paper size, margins and scaling, and split the
+    // certificate across two pages. Laptops keep the print flow below, which
+    // gives sharp, selectable text.
+    if (isTouchDevice()) {
+      setIsPreparingPdf(true);
+      try {
+        const pdf = await createCertificatePdf(certificateMarkup);
+        pdf.save(
+          `${certificateTitle.replace(/[\\/:*?"<>|]+/g, "").trim() || "certificate"}.pdf`,
+        );
+        return;
+      } catch {
+        // Couldn't build the file (e.g. an image blocked the capture) — fall
+        // back to the print dialog so the button still produces a certificate.
+      } finally {
+        setIsPreparingPdf(false);
+      }
+    }
+
+    printCertificate();
+  };
+
+  const printCertificate = () => {
+    if (!certificateMarkup) {
       return;
     }
 
@@ -315,9 +345,11 @@ export default function MyLearningCertificatePage({
                 variant="darkBlue"
                 className="mt-8 w-full rounded-[12px] py-4"
                 onClick={handleDownload}
-                disabled={!certificateMarkup}
+                disabled={!certificateMarkup || isPreparingPdf}
               >
-                Download Certificate
+                {isPreparingPdf
+                  ? "Preparing certificate…"
+                  : "Download Certificate"}
               </Button>
             </>
           )}
