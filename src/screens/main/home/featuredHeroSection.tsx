@@ -28,17 +28,20 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
       className="flex w-full items-start gap-4 rounded-[24px] bg-white p-4 text-left shadow-[0_18px_40px_rgba(8,55,72,0.08)] ring-1 ring-[#E8F1F5] transition hover:-translate-y-0.5 hover:shadow-[0_22px_50px_rgba(8,55,72,0.12)]"
     >
       <div className="relative h-[112px] w-[120px] shrink-0 overflow-hidden rounded-[18px] bg-[#EAF2F5]">
-        <Image
-          src={spoil.cover_image_url}
-          alt={spoil.title}
-          fill
-          className="object-cover"
-          sizes="120px"
-        />
+        {spoil.cover_image_url && (
+          <Image
+            src={spoil.cover_image_url}
+            alt={spoil.title || "Spoil cover"}
+            fill
+            className="object-cover"
+            sizes="120px"
+          />
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <h3 className="line-clamp-2 text-[18px] font-medium leading-[1.25] text-[#20262D]">
+        {/* Title always takes 2 lines so every featured card is the same height */}
+        <h3 className="line-clamp-2 min-h-[2lh] text-[18px] font-medium leading-[1.25] text-[#20262D]">
           {spoil.title}
         </h3>
 
@@ -71,8 +74,8 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
           <span className="truncate">{tutorName || "Spoilert Tutor"}</span>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex items-center gap-1 text-[13px] text-[#20262D]">
+        <div className="mt-2 flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1 text-[13px] text-[#20262D]">
             <Image src={RatingIcon} alt="rating" width={16} height={16} />
             <span>
               {(spoil.average_rating ?? 0).toFixed(1)} (
@@ -80,7 +83,7 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
             </span>
           </div>
 
-          <span className="rounded-full bg-[#DFF2FB] px-3 py-1 text-[12px] font-medium text-[#0B5368]">
+          <span className="min-w-0 truncate rounded-full bg-[#DFF2FB] px-3 py-1 text-[12px] font-medium text-[#0B5368]">
             {spoil.category?.name || "Featured"}
           </span>
         </div>

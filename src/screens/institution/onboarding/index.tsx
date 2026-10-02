@@ -34,18 +34,18 @@ const INITIAL_STEPS: OnboardingStepInfo[] = [
 
 const InstitutionAccountSetup = ({
   institutionName = "University of Lagos",
-  institutionEmail = "adetounoshikoya@gmail.com",
   institutionPhone = "09012345678",
   institutionCountryCode = "234",
 }: {
   institutionName?: string;
-  institutionEmail?: string;
   institutionPhone?: string;
   institutionCountryCode?: string;
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
+  // Comes from the onboarding link, e.g. /onboarding?token=...&email=name%40domain.com
+  const email = searchParams.get("email") || "";
   const [view, setView] = useState<OnboardingView>("overview");
   const [modal, setModal] = useState<SuccessModalKind>(null);
   const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
@@ -56,7 +56,7 @@ const InstitutionAccountSetup = ({
         return (
           <CreatePasswordStep
             institutionName={institutionName}
-            institutionEmail={institutionEmail}
+            institutionEmail={email}
             token={token}
             onSuccess={() => setModal("password")}
           />
@@ -68,6 +68,7 @@ const InstitutionAccountSetup = ({
             description={`We've sent a 6-digit code to ${institutionPhone}. Enter it below to verify your phone number.`}
             countryCode={institutionCountryCode}
             phoneNumber={institutionPhone.replace(/^0/, "")}
+            token={token}
             onSubmit={() => setModal("phone")}
           />
         );

@@ -86,11 +86,22 @@ interface ResendOtpResponse {
   message: string;
 }
 
-export const usePhoneResendOtpMutation = () => {
+// `authToken` is for flows with no logged-in session (e.g. institution
+// onboarding, where the token comes from the invite link) — it's sent instead
+// of the stored auth token.
+export const usePhoneResendOtpMutation = (authToken?: string) => {
   const resendOtp = async (
     payload: ResendOtpPayload,
   ): Promise<ResendOtpResponse> => {
-    return (await api.post("users/phone/resend-otp", payload)).data;
+    return (
+      await api.post(
+        "users/phone/resend-otp",
+        payload,
+        authToken
+          ? { headers: { Authorization: `Bearer ${authToken}` } }
+          : undefined,
+      )
+    ).data;
   };
 
   const mutation = useMutation<

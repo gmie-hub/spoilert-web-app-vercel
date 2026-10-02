@@ -9,7 +9,7 @@ import GooglePlay from "@spt/assets/icons/googoleicon.svg";
 import Phone from "@spt/assets/icons/phone.svg";
 import PhoneSmall from "@spt/assets/icons/phonesmalscreen.svg";
 
-const GetStarted = () => {
+const GetStarted = ({ contained = false }: { contained?: boolean }) => {
   const containerVariants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
@@ -25,13 +25,19 @@ const GetStarted = () => {
   };
 
   return (
-    <section className="px-6 md:px-[100px] md:py-[72px]">
+    <section
+      className={`md:py-[72px] ${
+        contained ? "px-4 sm:px-6 lg:px-10 xl:px-[40px]" : "px-6 md:px-[100px]"
+      }`}
+    >
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="relative mx-auto w-full max-w-[1240px] overflow-hidden rounded-[12.8px] flex flex-col md:flex-row items-center gap-12 px-6 pt-8 pb-10 md:px-16 md:pt-8 md:pb-0"
+        className={`relative mx-auto w-full ${
+          contained ? "max-w-[1400px]" : "max-w-[1240px]"
+        } overflow-hidden rounded-[12.8px] flex flex-col md:flex-row items-center gap-12 px-6 pt-8 pb-10 md:px-16 md:pt-8 md:pb-0`}
       >
         {/* Background SVG */}
         <Image

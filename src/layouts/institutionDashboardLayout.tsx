@@ -33,7 +33,6 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  /* Temporarily hidden from the sidebar — leaving only Dashboard visible.
   {
     label: "Lecturers",
     href: "/institution/lecturers",
@@ -46,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  /* Temporarily hidden from the sidebar — leaving only Dashboard and Lecturers visible.
   {
     label: "Spoylz Management",
     href: "/institution/spoylz-management",
@@ -99,8 +99,18 @@ const InstitutionDashboardLayout = ({
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
+
+  useEffect(() => {
+    if (!isMobileNavOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileNavOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isMobileNavOpen]);
 
   useEffect(() => {
     try {
@@ -124,6 +134,33 @@ const InstitutionDashboardLayout = ({
     });
   };
 
+  // Shared by the desktop sidebar and the mobile drawer; the drawer is never collapsed.
+  const renderNavLinks = (isCollapsed: boolean) =>
+    NAV_ITEMS.map((item) => {
+      const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          title={isCollapsed ? item.label : undefined}
+          onClick={() => setIsMobileNavOpen(false)}
+          className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+            isCollapsed ? "justify-center px-0" : ""
+          } ${
+            active
+              ? "bg-[var(--color-blue-lightest)] text-[var(--color-blue)]"
+              : "text-gray-500 hover:bg-gray-50"
+          }`}
+        >
+          {active && (
+            <span className="absolute -left-4 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--color-blue)]" />
+          )}
+          {item.icon(active)}
+          {!isCollapsed && item.label}
+        </Link>
+      );
+    });
+
   return (
     <div className="flex min-h-screen w-full bg-[#F9FAFB]">
       <aside
@@ -133,38 +170,18 @@ const InstitutionDashboardLayout = ({
       >
         <div className="flex h-full flex-col overflow-hidden">
           <div className="flex h-[88px] shrink-0 items-center justify-center border-b border-gray-100 px-4">
-            <Image
-              src={SpoilertLogo}
-              alt="Spoilert"
-              width={collapsed ? 36 : 45}
-              height={collapsed ? 36 : 45}
-            />
+            <Link href="/" aria-label="Go to home page">
+              <Image
+                src={SpoilertLogo}
+                alt="Spoilert"
+                width={collapsed ? 36 : 45}
+                height={collapsed ? 36 : 45}
+              />
+            </Link>
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-4">
-            {NAV_ITEMS.map((item) => {
-              const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    collapsed ? "justify-center px-0" : ""
-                  } ${
-                    active
-                      ? "bg-[var(--color-blue-lightest)] text-[var(--color-blue)]"
-                      : "text-gray-500 hover:bg-gray-50"
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute -left-4 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--color-blue)]" />
-                  )}
-                  {item.icon(active)}
-                  {!collapsed && item.label}
-                </Link>
-              );
-            })}
+            {renderNavLinks(collapsed)}
           </nav>
 
           <button
@@ -192,14 +209,27 @@ const InstitutionDashboardLayout = ({
       </aside>
 
       <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col">
-        <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-gray-100 bg-white px-6 sm:px-10">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold text-[#212529] sm:text-xl">
-              Welcome Back, {institutionName}
-            </h1>
-            <p className="truncate text-sm text-gray-400">
-              Here&rsquo;s a quick overview of Spoilert&rsquo;s latest activities
-            </p>
+        <header className="sticky top-0 z-40 flex h-[88px] shrink-0 items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 sm:px-10">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={isMobileNavOpen}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 lg:hidden"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-semibold text-[#212529] sm:text-xl">
+                Welcome Back, {institutionName}
+              </h1>
+              <p className="truncate text-sm text-gray-400">
+                Here&rsquo;s a quick overview of Spoilert&rsquo;s latest activities
+              </p>
+            </div>
           </div>
 
           <div className="relative shrink-0" ref={dropdownRef}>
@@ -244,8 +274,39 @@ const InstitutionDashboardLayout = ({
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 overflow-x-hidden px-6 py-8 sm:px-10">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-8 sm:px-10">{children}</main>
       </div>
+
+      {isMobileNavOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setIsMobileNavOpen(false)}
+            className="absolute inset-0 bg-black/40"
+          />
+          <aside className="relative flex h-full w-[280px] max-w-[85vw] flex-col bg-white shadow-xl">
+            <div className="flex h-[88px] shrink-0 items-center justify-between border-b border-gray-100 px-4">
+              <Link href="/" aria-label="Go to home page" onClick={() => setIsMobileNavOpen(false)}>
+                <Image src={SpoilertLogo} alt="Spoilert" width={45} height={45} />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(false)}
+                aria-label="Close menu"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-4">
+              {renderNavLinks(false)}
+            </nav>
+          </aside>
+        </div>
+      )}
 
       <LogoutConfirmModal
         open={isLogoutConfirmOpen}

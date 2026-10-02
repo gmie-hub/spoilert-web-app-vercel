@@ -40,7 +40,7 @@ const AddLecturerModal = ({
   onAdded,
 }: {
   onClose: () => void;
-  onAdded: (values: LecturerFormValues) => void;
+  onAdded: (values: LecturerFormValues) => Promise<void>;
 }) => (
   <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 py-10">
     <div className="w-full max-w-[560px] rounded-2xl bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.15)] sm:p-10">
@@ -68,9 +68,9 @@ const AddLecturerModal = ({
         validationSchema={validationSchema}
         validateOnBlur
         validateOnChange={false}
-        onSubmit={(values, actions) => {
+        onSubmit={async (values, actions) => {
+          await onAdded(values);
           actions.setSubmitting(false);
-          onAdded(values);
         }}
       >
         {({ isValid, isSubmitting }) => (
@@ -88,7 +88,7 @@ const AddLecturerModal = ({
                 Cancel
               </Button>
               <Button type="submit" className="flex-1" disabled={!isValid || isSubmitting}>
-                Add Lecturer
+                {isSubmitting ? "Adding..." : "Add Lecturer"}
               </Button>
             </div>
           </Form>

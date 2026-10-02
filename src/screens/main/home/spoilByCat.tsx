@@ -61,7 +61,7 @@ const SpoilByCategory = () => {
   return (
     <>
       {items &&items?.length > 0 && (
-        <WebsiteSection className="my-14 w-full">
+        <WebsiteSection contained className="my-14 w-full">
           {/* HEADER */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3 sm:gap-0">
             <h2 className="text-xl font-semibold">Spoylz By Categories</h2>

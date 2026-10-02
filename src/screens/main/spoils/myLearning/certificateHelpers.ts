@@ -236,31 +236,68 @@ const applyIssueDate = (doc: Document, issuedAt?: string | null) => {
 // we never touch sibling elements we don't know about.
 const A4_ROOT_ATTR = "data-certificate-a4-root";
 
+// A4 width in CSS pixels (210mm at 96dpi) — the same canvas width the
+// on-screen preview renders the certificate at.
+const A4_WIDTH_PX = 794;
+
 // A4 portrait override so the certificate fills the full sheet instead of
 // sitting as a small centered card on the template's own background.
 // The print rules make "Save as PDF" match the preview: one borderless A4
 // page, with background colours kept (browsers drop them when printing
 // unless told otherwise, which would blank out dark templates).
+// The sheet is sized in absolute A4 units, never `100%` / `100vh`: on a phone
+// those resolve to the narrow, tall screen, so the text reflowed into a long
+// strip that printed across two pages.
 const A4_FULL_PAGE_CSS = `
   @page { size: A4; margin: 0; }
   html, body, body * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  @media print {
-    html, body { height: 297mm !important; overflow: hidden !important; }
-  }
   html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
-  body { display: block !important; min-height: 100vh !important; }
+  body {
+    display: block !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
   [${A4_ROOT_ATTR}] {
     max-width: none !important;
     width: 100% !important;
-    min-height: 100vh !important;
+    min-height: 297mm !important;
     margin: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
 `;
+
+// Some phone browsers ignore `@page { size: A4 }` and print on Letter paper or
+// add their own margins, leaving less than a full A4 sheet — the bottom of the
+// certificate then spilled onto a second page. Print media queries measure the
+// real printable area, so shrink the sheet in 1% steps until it fits there.
+// Each step zooms 2% below the size it tested for, leaving room for the 1mm
+// tolerance that keeps an exact A4 page (laptops) from matching at all.
+const FIT_TO_PAGE_CSS = Array.from({ length: 30 }, (_, step) => {
+  const tested = 1 - step / 100;
+  const maxWidth = (210 * tested - 1).toFixed(1);
+  const maxHeight = (297 * tested - 1).toFixed(1);
+  return `@media print and (max-width: ${maxWidth}mm), print and (max-height: ${maxHeight}mm) {
+    body { zoom: ${(tested - 0.02).toFixed(2)} !important; margin: 0 auto !important; }
+  }`;
+}).join("\n");
+
+// Lay the page out at the A4 width on every device. Templates usually ship
+// `width=device-width`, which made phones lay the certificate out at ~390px.
+const pinViewportToA4 = (doc: Document) => {
+  doc
+    .querySelectorAll('meta[name="viewport"]')
+    .forEach((meta) => meta.remove());
+  const viewport = doc.createElement("meta");
+  viewport.setAttribute("name", "viewport");
+  viewport.setAttribute("content", `width=${A4_WIDTH_PX}`);
+  doc.head.prepend(viewport);
+};
 
 // The certificate template is an HTML document with editable placeholder
 // elements (id="recipient_name" / "course_name" / "instructor_name" /
@@ -328,8 +365,9 @@ export const personalizeCertificate = (
       null;
     a4Root?.setAttribute(A4_ROOT_ATTR, "");
 
+    pinViewportToA4(doc);
     const style = doc.createElement("style");
-    style.textContent = A4_FULL_PAGE_CSS;
+    style.textContent = A4_FULL_PAGE_CSS + FIT_TO_PAGE_CSS;
     doc.head.appendChild(style);
 
     return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;

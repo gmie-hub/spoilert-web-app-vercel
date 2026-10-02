@@ -14,20 +14,22 @@ const OtpStep = ({
   description,
   countryCode,
   phoneNumber,
+  token,
   onSubmit,
 }: {
   title: string;
   description: string;
   countryCode: string;
   phoneNumber: string;
+  token: string;
   onSubmit: () => void;
 }) => {
   const [code, setCode] = useState("");
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const { verifyOtp, isLoading: isVerifying } = useVerifyOtpMutation();
+  const { verifyOtp, isLoading: isVerifying } = useVerifyOtpMutation(token);
   const { resendOtpForPhone, isLoading: isResending } =
-    usePhoneResendOtpMutation();
+    usePhoneResendOtpMutation(token);
 
   const handleVerify = async () => {
     if (code.length !== 6 || isVerifying) return;

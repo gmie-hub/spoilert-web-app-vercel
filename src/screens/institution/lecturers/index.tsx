@@ -4,43 +4,27 @@ import { useState } from "react";
 
 import { FilterBar, SuccessModal } from "@spt/components";
 import Button from "@spt/components/button";
+import useAddLecturerMutation from "@spt/hooks/apiRequests/useAddLecturerMutation";
+import useGetLecturersQuery from "@spt/hooks/apiRequests/useGetLecturersQuery";
 
 import AddLecturerModal, { type LecturerFormValues } from "./components/AddLecturerModal";
 import EmptyState from "./components/EmptyState";
 import LecturersMetrics from "./components/LecturersMetrics";
 import LecturersTable from "./components/LecturersTable";
-import { type Lecturer, MOCK_LECTURERS } from "./constants";
+import { type Lecturer } from "./constants";
 
 const InstitutionLecturers = () => {
-  const [lecturers, setLecturers] = useState<Lecturer[]>(MOCK_LECTURERS);
+  const { lecturers, isLoading, isError, errorMessage } = useGetLecturersQuery();
+  const { addLecturerHandler } = useAddLecturerMutation();
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [addedEmail, setAddedEmail] = useState<string | null>(null);
 
-  const handleAdded = (values: LecturerFormValues) => {
-    const newLecturer: Lecturer = {
-      id: `new-${Date.now()}`,
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      phone: values.phone,
-      faculty: values.faculty,
-      department: values.department,
-      position: values.position,
-      totalCourses: 0,
-      inviteStatus: "Pending",
-      dateSent: new Date().toLocaleDateString("en-GB").split("/").join("-"),
-      lastLogin: "-",
-      metrics: {
-        totalRevenueGenerated: "₦0",
-        totalSpoylzCreated: 0,
-        studentsEnrolled: 0,
-        institutionEarnings: "₦0",
-        lecturerEarnings: "₦0",
-      },
-    };
-
-    setLecturers((prev) => [newLecturer, ...prev]);
+  // On success the lecturers query is refetched, so the new lecturer shows up
+  // in the list; on failure the modal stays open with the error toast.
+  const handleAdded = async (values: LecturerFormValues) => {
+    const added = await addLecturerHandler(values);
+    if (!added) return;
     setShowAddModal(false);
     setAddedEmail(values.email);
   };
@@ -54,16 +38,33 @@ const InstitutionLecturers = () => {
     );
   });
 
+  const countByStatus = (status: Lecturer["inviteStatus"]) =>
+    lecturers.filter((lecturer) => lecturer.inviteStatus === status).length;
+
   return (
     <div className="w-full space-y-6">
-      {lecturers.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="h-[120px] animate-pulse rounded-2xl bg-[#F3F4F6]" />
+          <div className="h-[400px] animate-pulse rounded-2xl bg-[#F3F4F6]" />
+        </div>
+      ) : isError && lecturers.length === 0 ? (
+        <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-red-600">
+          {errorMessage}
+        </div>
+      ) : lecturers.length === 0 ? (
         <EmptyState onAddLecturer={() => setShowAddModal(true)} />
       ) : (
         <>
           <div>
             <h1 className="text-2xl font-semibold text-[#212529]">Lecturers Metrics</h1>
             <div className="mt-5">
-              <LecturersMetrics total={20} pending={5000} accepted={3000} declined={5000} />
+              <LecturersMetrics
+                total={lecturers.length}
+                pending={countByStatus("Pending")}
+                accepted={countByStatus("Accepted")}
+                declined={countByStatus("Declined")}
+              />
             </div>
           </div>
 

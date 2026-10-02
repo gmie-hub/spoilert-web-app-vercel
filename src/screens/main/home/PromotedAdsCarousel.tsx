@@ -61,7 +61,7 @@ const PromotedAdsCarousel = () => {
   if (isLoading) {
     return (
       <>{items && items.length > 0 && (
-      <WebsiteSection className="my-14 w-full">
+      <WebsiteSection contained className="my-14 w-full">
         <h2 className="text-[16px] sm:text-[40px] font-semibold text-center mb-6">
           Promoted Ads
         </h2>
@@ -85,7 +85,7 @@ const PromotedAdsCarousel = () => {
   ============================== */
   if (isError) {
     return (
-      <WebsiteSection className="my-14 w-full">
+      <WebsiteSection contained className="my-14 w-full">
         <h2 className="text-xl font-semibold text-center mb-6">Promoted Ads</h2>
         <div className="text-center text-sm text-red-600">
           {errorMessage || "Failed to load promoted ads."}
@@ -100,7 +100,7 @@ const PromotedAdsCarousel = () => {
      Main Render
   ============================== */
   return (
-    <WebsiteSection className="my-14 w-full">
+    <WebsiteSection contained className="my-14 w-full">
       <h2 className="text-xl font-semibold text-center mb-6">Promoted Ads</h2>
 
       <div className="relative">

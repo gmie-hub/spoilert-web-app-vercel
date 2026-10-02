@@ -22,7 +22,7 @@ const SelfDev = () => {
 
   return (
     <>{spoils && spoils.length > 0 && (
-    <WebsiteSection className="w-full bg-[#014751] py-10 md:py-14">
+    <WebsiteSection contained className="w-full bg-[#014751] py-10 md:py-14">
       {/* Title */}
       <motion.h1
         className="text-2xl md:text-4xl font-bold text-center text-white mb-10"
@@ -45,7 +45,7 @@ const SelfDev = () => {
 
       {/* Main Layout */}
       {!isLoading && !isError && (
-      <div className="w-full px-4 sm:px-6 md:px-8">
+      <div className="w-full">
         {/* ✅ Two White Column Boxes — stacked (1 per row) up to xl, side by side on xl+ */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 w-full">
           {/* LEFT COLUMN */}
@@ -103,18 +103,19 @@ const SpoilCard = ({ spoil, index }: any) => {
       transition={{ delay: index * 0.1 }}
       className="bg-[#EFFCFF] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start"
     >
-      {/* Thumbnail */}
-      <div className="relative w-full h-44 sm:w-[139px] sm:h-[124px] rounded-lg overflow-hidden flex-shrink-0">
-        <Image src={spoil.cover_image_url} alt={spoil.title} fill className="object-cover" />
+      {/* Thumbnail — the box stays even without a cover */}
+      <div className="relative w-full h-44 sm:w-[139px] sm:h-[124px] rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+        {spoil.cover_image_url && (
+          <Image src={spoil.cover_image_url} alt={spoil.title || "Spoil cover"} fill className="object-cover" />
+        )}
       </div>
 
-      {/* Content */}
+      {/* Content — title (2 lines) and category keep their space so every card is the same size */}
       <div className="flex-1 min-w-0">
         {/* Title */}
-        <h2 className="font-semibold text-sm sm:text-base text-[#03363b] line-clamp-2">{spoil.title}</h2>
+        <h2 className="font-semibold text-sm sm:text-base text-[#03363b] line-clamp-2 min-h-[2lh]">{spoil.title}</h2>
 
         {/* Price */}
-      
           {spoil?.pricing === "free" ? (
             <p className="text-[18px] font-semibold text-[var(--color-black)]">
               {" "}
@@ -140,8 +141,8 @@ const SpoilCard = ({ spoil, index }: any) => {
               />
             ) : (
               <span className="flex items-center justify-center w-full h-full text-[10px] font-semibold text-gray-600">
-                {spoil?.tutor?.first_name[0]}
-                {spoil?.tutor?.last_name[0]}
+                {spoil?.tutor?.first_name?.[0]}
+                {spoil?.tutor?.last_name?.[0]}
               </span>
             )}
           </div>
@@ -151,12 +152,14 @@ const SpoilCard = ({ spoil, index }: any) => {
           </p>
         </HStack>
 
-        {/* Category */}
-        {spoil?.category?.name && (
-          <span className="inline-block mt-2 text-xs sm:text-sm px-2 py-1 rounded-full bg-[#dff6f7] text-[#0b595b]">
-            {spoil?.category?.name}
-          </span>
-        )}
+        {/* Category — hidden but still takes its space when missing */}
+        <span
+          className={`mt-2 block w-fit max-w-full truncate text-xs sm:text-sm px-2 py-1 rounded-full bg-[#dff6f7] text-[#0b595b] ${
+            spoil?.category?.name ? "" : "invisible"
+          }`}
+        >
+          {spoil?.category?.name || " "}
+        </span>
 
         {/* Rating */}
         <div className="flex items-center gap-1 mt-2 text-yellow-500 text-xs">

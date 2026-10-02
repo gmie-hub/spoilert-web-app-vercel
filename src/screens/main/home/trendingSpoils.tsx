@@ -18,7 +18,7 @@ const TrendingSpoil = () => {
 
   return (
     <>{data?.data?.data && data?.data?.data?.length > 0 && (
-    <WebsiteSection className="my-10 w-full">
+    <WebsiteSection contained className="my-10 w-full">
       <Stack className="gap-8 md:gap-12">
         <motion.h1
           className="text-2xl md:text-4xl font-semibold text-center text-black self-center"

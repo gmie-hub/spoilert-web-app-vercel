@@ -13,6 +13,8 @@ interface User {
   first_name: string;
   last_name: string;
   middle_name: string | null;
+  // Institution accounts carry their display name here; first/last_name are null.
+  name?: string | null;
   country: string;
   country_code: string;
   preferred_currency: string;

@@ -25,20 +25,20 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
 
   return (
     <motion.div
-      className="bg-white rounded-2xl shadow-[0px_4px_40px_0px_#1E1E1E12] border border-gray-100 overflow-hidden w-full items-stretch cursor-pointer"
+      className="bg-white rounded-2xl shadow-[0px_4px_40px_0px_#1E1E1E12] border border-gray-100 overflow-hidden w-full h-full flex flex-col cursor-pointer"
       initial={{ opacity: 0, y: 25 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.15 }}
       whileHover={{ y: -6 }}
       onClick={handleNavigate}
     >
-      {/* Top Content */}
+      {/* Top Content — every line keeps its space (even when data is missing) so all cards are the same size */}
       <div className="p-4 space-y-3">
         {/* Tutor + Badge */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden relative">
+            <div className="w-8 h-8 shrink-0 rounded-full bg-gray-200 overflow-hidden relative">
               {spoil?.tutor?.avatar && spoil?.tutor?.avatar ? (
                 <Image
                   src={spoil?.tutor?.avatar || ''}
@@ -56,59 +56,59 @@ const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
               )}
             </div>
 
-            <p className="text-sm font-medium text-[var(--color-blue)]  ">
+            <p className="truncate text-sm font-medium text-[var(--color-blue)]">
               {spoil.tutor?.first_name} {spoil.tutor?.last_name}
             </p>
           </div>
 
           {/* Promoted Badge */}
-          <span className="text-[11px] px-3 py-1 rounded-full bg-[var(--color-yellow-lighter)] text-orange-500 font-medium">
+          <span className="shrink-0 text-[11px] px-3 py-1 rounded-full bg-[var(--color-yellow-lighter)] text-orange-500 font-medium">
             Promoted
           </span>
         </div>
 
-        {/* Institution */}
-        {spoil.institution && (
-          <p className="text-xs font-medium  text-[var(--color-black)]">
-            {spoil.institution}
-          </p>
-        )}
+        {/* Institution — always 1 line, kept even when empty */}
+        <p className="min-h-[1lh] truncate text-xs font-medium  text-[var(--color-black)]">
+          {spoil.institution}
+        </p>
 
-        {/* Title */}
-        <h3 className="text-sm font-semibold text-[var(--color-black)]">
+        {/* Title — always 2 lines of space */}
+        <h3 className="line-clamp-2 min-h-[2lh] text-sm font-semibold text-[var(--color-black)]">
           {spoil.title}
         </h3>
 
         {/* Price + Category */}
-        <div className="flex items-center justify-between  text-[var(--color-black)]">
+        <div className="flex items-center justify-between gap-3  text-[var(--color-black)]">
          {spoil.pricing === "free" ? (
-            <p className="text-sm font-bold text-gray-900">Free</p>
+            <p className="shrink-0 text-sm font-bold text-gray-900">Free</p>
           ) : (
-            <p className="text-sm font-bold text-gray-900">
+            <p className="shrink-0 text-sm font-bold text-gray-900">
               ₦{spoil.display_amount?.toLocaleString()}
             </p>
           )}
 
-          <span className="text-[11px]  rounded-full bg-[var(--color-blue-lightest)]   text-[var(--color-blue)]">
+          <span className="min-w-0 truncate text-[11px]  rounded-full bg-[var(--color-blue-lightest)]   text-[var(--color-blue)]">
             {spoil.category?.name || "Category"}
           </span>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-[var(--color-gray-dark)] leading-relaxed line-clamp-3 ">
+        {/* Description — always 3 lines of space */}
+        <p className="min-h-[3lh] text-sm text-[var(--color-gray-dark)] leading-relaxed line-clamp-3 ">
           {spoil.description ||
             "Understanding Design Principles is a comprehensive Spoil that takes you through the foundational concepts..."}
         </p>
       </div>
 
-      {/* Image Preview */}
-      <div className="relative h-[270px] mx-4 mb-4 ">
-        <Image
-          src={spoil.cover_image_url}
-          alt={spoil.title}
-          fill
-          className="object-cover rounded-lg"
-        />
+      {/* Image Preview — the box stays even without a cover */}
+      <div className="relative h-[270px] mx-4 mb-4 mt-auto overflow-hidden rounded-lg bg-gray-100">
+        {spoil.cover_image_url && (
+          <Image
+            src={spoil.cover_image_url}
+            alt={spoil.title || "Spoil cover"}
+            fill
+            className="object-cover rounded-lg"
+          />
+        )}
       </div>
 
       {/* Bottom Bar */}
