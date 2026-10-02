@@ -38,6 +38,8 @@ const CreatePasswordStep = ({
           account.
         </p>
 
+        
+
         <Formik
           initialValues={{
             email: institutionEmail,
