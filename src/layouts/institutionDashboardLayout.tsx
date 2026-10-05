@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import SpoilertLogo from "@spt/assets/icons/Group(2).svg";
 import useClickOutside from "@spt/hooks/useClickOutside";
 import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
+import { useAuthStore } from "@spt/store/authStore";
 
 interface NavItem {
   label: string;
@@ -45,7 +46,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  /* Temporarily hidden from the sidebar — leaving only Dashboard and Lecturers visible.
+  /* Temporarily hidden from the sidebar — leaving only Dashboard, Lecturers and Profile visible.
   {
     label: "Spoylz Management",
     href: "/institution/spoylz-management",
@@ -83,6 +84,16 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   */
+  {
+    label: "Profile",
+    href: "/institution/profile",
+    icon: (active) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="8" r="3.5" stroke={iconStroke(active)} strokeWidth="1.8" />
+        <path d="M4.5 20c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke={iconStroke(active)} strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
 ];
 
 interface InstitutionDashboardLayoutProps {
@@ -92,9 +103,10 @@ interface InstitutionDashboardLayoutProps {
 
 const InstitutionDashboardLayout = ({
   children,
-  institutionName = "University of Lagos",
+  institutionName,
 }: InstitutionDashboardLayoutProps) => {
   const pathname = usePathname();
+  const storedName = useAuthStore((state) => state.user?.name);
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -133,6 +145,10 @@ const InstitutionDashboardLayout = ({
       return next;
     });
   };
+
+  // The persisted login only exists in the browser, so wait for mount before using
+  // it — otherwise the server and client renders disagree. Follows profile edits.
+  const displayName = (mounted && (storedName || institutionName)) || "";
 
   // Shared by the desktop sidebar and the mobile drawer; the drawer is never collapsed.
   const renderNavLinks = (isCollapsed: boolean) =>
@@ -224,7 +240,7 @@ const InstitutionDashboardLayout = ({
             </button>
             <div className="min-w-0">
               <h1 className="truncate text-lg font-semibold text-[#212529] sm:text-xl">
-                Welcome Back, {institutionName}
+                Welcome Back{displayName && `, ${displayName}`}
               </h1>
               <p className="truncate text-sm text-gray-400">
                 Here&rsquo;s a quick overview of Spoilert&rsquo;s latest activities

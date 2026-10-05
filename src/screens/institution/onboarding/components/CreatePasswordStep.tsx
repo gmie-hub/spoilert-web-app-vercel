@@ -34,8 +34,15 @@ const CreatePasswordStep = ({
           Create a Password
         </h1>
         <p className="mx-auto mt-2 max-w-[420px] text-center text-sm text-[#6B7280]">
-          Create your log in password to access the {institutionName} institution
-          account.
+          {institutionName ? (
+            <>
+              Create your log in password to access the{" "}
+              <span className="font-medium text-[#212529]">{institutionName}</span> institution
+              account.
+            </>
+          ) : (
+            "Create your log in password to access your institution account."
+          )}
         </p>
 
         

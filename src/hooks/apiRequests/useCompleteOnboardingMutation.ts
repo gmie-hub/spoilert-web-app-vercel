@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { ApiErrorResponse } from "@spt/types/error";
@@ -19,7 +20,13 @@ interface CompleteOnboardingResponse {
   message: string;
 }
 
+// Returned when the invite link was already used (or never existed) — the
+// institution has most likely onboarded already, so send them to log in.
+const INVALID_LINK_PATTERN = /invalid or already used onboarding link/i;
+
 export const useCompleteOnboardingMutation = () => {
+  const router = useRouter();
+
   const completeOnboarding = async (
     payload: Payload,
   ): Promise<CompleteOnboardingResponse> => {
@@ -55,12 +62,25 @@ export const useCompleteOnboardingMutation = () => {
       toast.success(response?.message || "Password created successfully 🎉");
       onSuccess?.();
     } catch (error: any) {
-      toast.error(
+      const message =
         error?.response?.data?.error ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Failed to complete onboarding",
-      );
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to complete onboarding";
+
+      const isUsedLink = INVALID_LINK_PATTERN.test(message);
+
+      // Toasts stack newest-on-top, so the hint goes first to sit under the error.
+      if (isUsedLink) {
+        toast(
+          "Already onboarded? Please log in. If you forgot your password, click \"Forgot Password?\" to reset it.",
+          { icon: "ℹ️", duration: 8000 },
+        );
+      }
+      toast.error(message);
+
+      // The Toaster lives in the root layout, so both toasts survive the redirect.
+      if (isUsedLink) router.replace("/institution/login");
     } finally {
       setSubmitting(false);
     }

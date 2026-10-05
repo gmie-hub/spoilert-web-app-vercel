@@ -66,5 +66,8 @@ export const useVerifyPhoneMutation = () => {
   return {
     isLoading: mutation.isPending,
     sendOtpHandler,
+    // Raw mutate for non-Formik callers that already know the phone number
+    // (e.g. the institution profile) and handle the toasts themselves.
+    sendOtp: mutation.mutateAsync,
   };
 };

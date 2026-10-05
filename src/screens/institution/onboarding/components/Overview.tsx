@@ -16,8 +16,9 @@ const Overview = ({
   steps: OnboardingStepInfo[];
   onContinue: () => void;
 }) => {
-  const activeIndex = steps.findIndex((step) => step.status === "active");
-  const progress = ((activeIndex + 1) / steps.length) * 100;
+  // Only finished steps count, so the bar never reads 100% while one is still open.
+  const doneCount = steps.filter((step) => step.status === "done").length;
+  const progress = (doneCount / steps.length) * 100;
 
   return (
     <main className="w-full bg-white">
@@ -25,7 +26,7 @@ const Overview = ({
         <h1 className="text-2xl font-semibold text-[#212529] sm:text-[28px]">
           Complete Your Institution Set Up
         </h1>
-        <p className="mt-1 text-sm text-[#6B7280]">{institutionName}</p>
+        {institutionName && <p className="mt-1 text-sm text-[#6B7280]">{institutionName}</p>}
 
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
           <div

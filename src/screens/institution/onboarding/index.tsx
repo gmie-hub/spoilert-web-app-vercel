@@ -8,16 +8,9 @@ import { SuccessModal } from "@spt/components";
 
 import CompletionStep from "./components/CompletionStep";
 import CreatePasswordStep from "./components/CreatePasswordStep";
-import OtpStep from "./components/OtpStep";
 import Overview, { type OnboardingStepInfo } from "./components/Overview";
 
-type OnboardingView =
-  | "overview"
-  | "create-password"
-  | "verify-phone"
-  | "complete";
-
-type SuccessModalKind = "password" | "phone" | null;
+type OnboardingView = "overview" | "create-password" | "complete";
 
 const INITIAL_STEPS: OnboardingStepInfo[] = [
   {
@@ -27,27 +20,21 @@ const INITIAL_STEPS: OnboardingStepInfo[] = [
   },
   {
     title: "Create Password",
-    description: "Create your log in password and verify your phone number",
+    description: "Create your log in password",
     status: "active",
   },
 ];
 
-const InstitutionAccountSetup = ({
-  institutionName = "University of Lagos",
-  institutionPhone = "09012345678",
-  institutionCountryCode = "234",
-}: {
-  institutionName?: string;
-  institutionPhone?: string;
-  institutionCountryCode?: string;
-}) => {
+const InstitutionAccountSetup = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
-  // Comes from the onboarding link, e.g. /onboarding?token=...&email=name%40domain.com
+  // These come from the onboarding link, e.g.
+  // /onboarding?token=...&email=name%40domain.com&institution_name=aunty+jummy+international
   const email = searchParams.get("email") || "";
+  const institutionName = searchParams.get("institution_name")?.trim() || "";
   const [view, setView] = useState<OnboardingView>("overview");
-  const [modal, setModal] = useState<SuccessModalKind>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
 
   const renderView = () => {
@@ -58,23 +45,13 @@ const InstitutionAccountSetup = ({
             institutionName={institutionName}
             institutionEmail={email}
             token={token}
-            onSuccess={() => setModal("password")}
-          />
-        );
-      case "verify-phone":
-        return (
-          <OtpStep
-            title="Verify Your Phone Number"
-            description={`We've sent a 6-digit code to ${institutionPhone}. Enter it below to verify your phone number.`}
-            countryCode={institutionCountryCode}
-            phoneNumber={institutionPhone.replace(/^0/, "")}
-            token={token}
-            onSubmit={() => setModal("phone")}
+            onSuccess={() => setShowPasswordModal(true)}
           />
         );
       case "complete":
         return (
           <CompletionStep
+            steps={steps}
             onLogin={() => router.push("/institution/login")}
             onBackHome={() => router.push("/")}
           />
@@ -95,24 +72,13 @@ const InstitutionAccountSetup = ({
     <>
       {renderView()}
 
-      {modal === "password" && (
+      {showPasswordModal && (
         <SuccessModal
           title="Password Created Successfully 🎉"
           description="You can now log in with your email and the password you just created"
-          onContinue={() => {
-            setModal(null);
-            setView("verify-phone");
-          }}
-        />
-      )}
-
-      {modal === "phone" && (
-        <SuccessModal
-          title="Phone Number Verified Successfully 🎉"
-          description="Your phone number has been verified. Your institution account set-up is complete."
           buttonLabel="Complete Account Set-Up"
           onContinue={() => {
-            setModal(null);
+            setShowPasswordModal(false);
             setSteps((prev) =>
               prev.map((step) =>
                 step.title === "Create Password" ? { ...step, status: "done" } : step,
