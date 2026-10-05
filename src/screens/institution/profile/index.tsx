@@ -144,7 +144,7 @@ const InstitutionProfile = () => {
       <div>
         <h1 className="text-2xl font-semibold text-[#212529]">Profile</h1>
         <p className="mt-1 text-sm text-gray-400">
-          Manage your institution&rsquo;s phone number and bank account verification
+          Manage your institution&rsquo;s details, phone number and bank account
         </p>
       </div>
 

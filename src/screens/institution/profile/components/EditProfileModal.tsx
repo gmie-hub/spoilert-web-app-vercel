@@ -90,13 +90,16 @@ const EditProfileModal = ({
     }
   };
 
+  const title = !phoneOnly ? "Edit Profile" : phoneNumber ? "Edit Phone Number" : "Add Phone Number";
+  const description = !phoneOnly
+    ? "Update your institution's details."
+    : phoneNumber
+      ? "Update your institution's phone number. You'll need to verify the new number after saving."
+      : "Add your institution's phone number. You'll need to verify it after saving.";
+
   return (
-    <ModalShell title={phoneOnly ? "Edit Phone Number" : "Edit Profile"} onClose={onClose}>
-      <p className="mt-2 text-sm text-[#6B7280]">
-        {phoneOnly
-          ? "Update your institution's phone number. You'll need to verify the new number after saving."
-          : "Update your institution's details."}
-      </p>
+    <ModalShell title={title} onClose={onClose}>
+      <p className="mt-2 text-sm text-[#6B7280]">{description}</p>
 
       <Formik<FormValues>
         initialValues={{ name, email, phoneNumber }}

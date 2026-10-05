@@ -103,7 +103,7 @@ interface InstitutionDashboardLayoutProps {
 
 const InstitutionDashboardLayout = ({
   children,
-  institutionName = "University of Lagos",
+  institutionName,
 }: InstitutionDashboardLayoutProps) => {
   const pathname = usePathname();
   const storedName = useAuthStore((state) => state.user?.name);
@@ -148,7 +148,7 @@ const InstitutionDashboardLayout = ({
 
   // The persisted login only exists in the browser, so wait for mount before using
   // it — otherwise the server and client renders disagree. Follows profile edits.
-  const displayName = mounted ? storedName || institutionName : "";
+  const displayName = (mounted && (storedName || institutionName)) || "";
 
   // Shared by the desktop sidebar and the mobile drawer; the drawer is never collapsed.
   const renderNavLinks = (isCollapsed: boolean) =>

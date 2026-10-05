@@ -25,16 +25,14 @@ const INITIAL_STEPS: OnboardingStepInfo[] = [
   },
 ];
 
-const InstitutionAccountSetup = ({
-  institutionName = "University of Lagos",
-}: {
-  institutionName?: string;
-}) => {
+const InstitutionAccountSetup = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
-  // Comes from the onboarding link, e.g. /onboarding?token=...&email=name%40domain.com
+  // These come from the onboarding link, e.g.
+  // /onboarding?token=...&email=name%40domain.com&institution_name=aunty+jummy+international
   const email = searchParams.get("email") || "";
+  const institutionName = searchParams.get("institution_name")?.trim() || "";
   const [view, setView] = useState<OnboardingView>("overview");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [steps, setSteps] = useState<OnboardingStepInfo[]>(INITIAL_STEPS);
