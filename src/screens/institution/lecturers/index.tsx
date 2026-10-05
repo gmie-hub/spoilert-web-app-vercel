@@ -11,12 +11,14 @@ import AddLecturerModal, { type LecturerFormValues } from "./components/AddLectu
 import EmptyState from "./components/EmptyState";
 import LecturersMetrics from "./components/LecturersMetrics";
 import LecturersTable from "./components/LecturersTable";
-import { type Lecturer } from "./constants";
+
+import type { InviteStatus } from "./types";
 
 const InstitutionLecturers = () => {
   const { lecturers, isLoading, isError, errorMessage } = useGetLecturersQuery();
   const { addLecturerHandler } = useAddLecturerMutation();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addedEmail, setAddedEmail] = useState<string | null>(null);
 
@@ -38,8 +40,16 @@ const InstitutionLecturers = () => {
     );
   });
 
-  const countByStatus = (status: Lecturer["inviteStatus"]) =>
-    lecturers.filter((lecturer) => lecturer.inviteStatus === status).length;
+  // The counts only mean something once the API returns every lecturer's
+  // status; until then they show "No data".
+  const hasStatuses = lecturers.every((lecturer) => lecturer.inviteStatus !== null);
+  const countByStatus = (status: InviteStatus) =>
+    hasStatuses ? lecturers.filter((lecturer) => lecturer.inviteStatus === status).length : null;
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -95,13 +105,13 @@ const InstitutionLecturers = () => {
                   { label: "Date Sent", type: "date" },
                 ]}
                 search={search}
-                onSearchChange={setSearch}
-                onReset={() => setSearch("")}
+                onSearchChange={handleSearchChange}
+                onReset={() => handleSearchChange("")}
               />
             </div>
 
             <div className="mt-5">
-              <LecturersTable lecturers={filteredLecturers} />
+              <LecturersTable lecturers={filteredLecturers} page={page} onPageChange={setPage} />
             </div>
           </div>
         </>

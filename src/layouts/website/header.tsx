@@ -18,9 +18,9 @@ import CommunityIcon from "@spt/assets/icons/messages-2.svg";
 import ProfileNavIcon from "@spt/assets/icons/profileNav.svg";
 import SearchIcon from "@spt/assets/icons/search-normal.svg";
 import UserImage from "@spt/assets/icons/user.svg";
-import Button from "@spt/components/button";
 import { useGetUserVerificationDetails } from "@spt/hooks/apiRequests/useGetUserVerificationDetailsQuery";
 import useClickOutside from "@spt/hooks/useClickOutside";
+import GuestActions from "@spt/layouts/website/GuestActions";
 import LoginPromptModal from "@spt/layouts/website/LoginPromptModal";
 import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
 import MobileMenu from "@spt/layouts/website/MobileMenu";
@@ -233,26 +233,7 @@ const Header = () => {
         </div>
 
         {/* RIGHT SIDE: AUTH BUTTONS - Hidden on mobile, shown on md+ */}
-        {hasHydrated && !authUser && (
-          <div className="hidden md:flex items-center gap-2 lg:gap-4">
-            <Button
-              variant="outline"
-              className="rounded-full px-4 md:px-6 lg:px-8 xl:px-14 text-sm"
-              onClick={() => router.push("/auth/signin")}
-            >
-              Login
-            </Button>
-
-            <Button
-              variant="default"
-              className="rounded-full px-4 md:px-5 lg:px-6 text-sm whitespace-nowrap"
-              onClick={() => router.push("/auth/signup")}
-            >
-              <span className="hidden sm:inline">Sign Up For Free</span>
-              <span className="sm:hidden">Sign Up</span>
-            </Button>
-          </div>
-        )}
+        {hasHydrated && !authUser && <GuestActions />}
 
         {hasHydrated && authUser && (
           <div className="flex min-w-0 items-center gap-2 sm:gap-3 md:gap-4">

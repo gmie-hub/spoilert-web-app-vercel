@@ -3,12 +3,23 @@
 import { useState } from "react";
 
 import { Pagination } from "@spt/components";
+import { useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 
 import RevenueSplitCard from "../../../../components/RevenueSplitCard";
 import { BookIcon } from "../../../components/icons";
+import TableStatusRow from "../../../components/TableStatusRow";
+import { PAGE_SIZE, formatNaira, pageCount, pageItems } from "../../../utils";
+import { formatSpoilAmount, pairEarningsByTitle } from "../../mappers";
+import SpoylzThumbnail from "../spoylz/SpoylzThumbnail";
 
-import { EARNINGS_SUMMARY, MOCK_EARNINGS_BREAKDOWN } from "./constants";
 import EarningsStatCard from "./EarningsStatCard";
+
+import type { Lecturer } from "../../../types";
+
+// No endpoint serves the gross revenue, the institution's cut or the agreed
+// split yet, so those show "No data" / "-" rather than made-up figures.
+const NOT_AVAILABLE = null;
 
 const SearchInput = ({
   value,
@@ -33,13 +44,23 @@ const SearchInput = ({
   </div>
 );
 
-const EarningsTab = () => {
+const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
   const [search, setSearch] = useState("");
   const [activePage, setActivePage] = useState(1);
 
-  const filtered = MOCK_EARNINGS_BREAKDOWN.filter((item) =>
-    item.title.toLowerCase().includes(search.trim().toLowerCase()),
-  );
+  const { earnings, isLoading, isError, errorMessage } = useGetEarningsBreakdownQuery(lecturer.userId);
+  const { spoils } = useGetLecturerSpoilsQuery(lecturer.userId);
+
+  const breakdown = earnings?.data ?? [];
+  const { spoilFor } = pairEarningsByTitle(spoils, breakdown);
+
+  const query = search.trim().toLowerCase();
+  const filtered = breakdown.filter((item) => item.spoil_name.toLowerCase().includes(query));
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setActivePage(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -53,31 +74,29 @@ const EarningsTab = () => {
           tone="blue"
           icon={<BookIcon color="#fff" />}
           label="Total Gross Revenue"
-          value={EARNINGS_SUMMARY.totalGrossRevenue}
+          value={NOT_AVAILABLE}
         />
         <EarningsStatCard
           tone="orange"
           icon={<BookIcon color="#fff" />}
           label="Total Lecturer Earnings"
-          value={EARNINGS_SUMMARY.totalLecturerEarnings}
+          value={formatNaira(earnings?.overview.total_earning)}
+          isLoading={isLoading}
         />
         <EarningsStatCard
           tone="purple"
           icon={<BookIcon color="#fff" />}
           label="Total Institution Earnings"
-          value={EARNINGS_SUMMARY.totalInstitutionEarnings}
+          value={NOT_AVAILABLE}
         />
       </div>
 
-      <RevenueSplitCard
-        lecturerPercent={EARNINGS_SUMMARY.lecturerSplitPercent}
-        institutionPercent={EARNINGS_SUMMARY.institutionSplitPercent}
-      />
+      <RevenueSplitCard lecturerPercent={NOT_AVAILABLE} institutionPercent={NOT_AVAILABLE} />
 
       <div className="space-y-5 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
         <h3 className="text-lg font-semibold text-[#212529]">Earnings Breakdown</h3>
 
-        <SearchInput value={search} onChange={setSearch} placeholder="Search for a Spoylz..." />
+        <SearchInput value={search} onChange={handleSearchChange} placeholder="Search for a Spoylz..." />
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse text-left text-sm">
@@ -93,30 +112,39 @@ const EarningsTab = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((item, index) => (
-                <tr key={item.id} className="border-b border-gray-50">
-                  <td className="py-4 pr-4 text-gray-500">{index + 1}</td>
-                  <td className="py-4 pr-4">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="h-9 w-9 shrink-0 rounded-lg"
-                        style={{ backgroundColor: item.thumbnailColor }}
-                      />
-                      <span className="text-[#212529]">{item.title}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 pr-4 text-[#212529]">{item.amount}</td>
-                  <td className="py-4 pr-4 text-[#212529]">{item.enrolledStudents}</td>
-                  <td className="py-4 pr-4 text-[#212529]">{item.grossRevenue}</td>
-                  <td className="py-4 pr-4 text-gray-400 line-through">{item.lecturerShare}</td>
-                  <td className="py-4 pr-4 text-[#212529]">{item.institutionShare}</td>
-                </tr>
-              ))}
+              {isLoading || isError || filtered.length === 0 ? (
+                <TableStatusRow
+                  colSpan={7}
+                  isLoading={isLoading}
+                  errorMessage={isError ? errorMessage : null}
+                  emptyMessage={query ? "No Spoylz match your search." : "No earnings recorded for this lecturer yet."}
+                />
+              ) : (
+                pageItems(filtered, activePage).map((item, index) => {
+                  const spoil = spoilFor(item);
+                  return (
+                    <tr key={`${item.spoil_name}-${index}`} className="border-b border-gray-50">
+                      <td className="py-4 pr-4 text-gray-500">{(activePage - 1) * PAGE_SIZE + index + 1}</td>
+                      <td className="py-4 pr-4">
+                        <div className="flex items-center gap-3">
+                          <SpoylzThumbnail src={item.cover_image} alt={item.spoil_name} />
+                          <span className="text-[#212529]">{item.spoil_name}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 pr-4 text-[#212529]">{spoil ? formatSpoilAmount(spoil) : "-"}</td>
+                      <td className="py-4 pr-4 text-[#212529]">{item.total_enrolled?.toLocaleString() ?? "-"}</td>
+                      <td className="py-4 pr-4 text-[#212529]">-</td>
+                      <td className="py-4 pr-4 text-gray-400 line-through">{formatNaira(item.total_amount) ?? "-"}</td>
+                      <td className="py-4 pr-4 text-[#212529]">-</td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
-        <Pagination activePage={activePage} onPageChange={setActivePage} />
+        <Pagination activePage={activePage} totalPages={pageCount(filtered.length)} onPageChange={setActivePage} />
       </div>
     </div>
   );

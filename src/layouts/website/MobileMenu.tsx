@@ -108,6 +108,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           </>
         )}
       </div>
+
+      {!authUser && !pathname?.startsWith("/institution") && (
+        <Link
+          href="/institution/login"
+          className="block text-center text-sm font-semibold text-blue underline underline-offset-4 hover:text-blue/80"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          Apply / Login as an Institution
+        </Link>
+      )}
     </div>
   );
 };

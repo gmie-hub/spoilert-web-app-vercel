@@ -108,7 +108,7 @@ const TransactionHistoryTable = ({
         </table>
       </div>
 
-      <Pagination activePage={activePage} onPageChange={setActivePage} />
+      <Pagination activePage={activePage} totalPages={1} onPageChange={setActivePage} />
     </div>
   );
 };
