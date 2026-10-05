@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 // import Image from "next/image";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 // import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
@@ -37,7 +37,7 @@ const formatNaira = (value: number) =>
 export default function MyLearningCertificatePage({
   spoilId,
 }: MyLearningCertificatePageProps) {
-  const router = useRouter();
+  // const router = useRouter();
   const { data: spoil } = useGetSpoilDetailsQuery(spoilId);
   const user = useAuthStore((state) => state.user);
 
@@ -167,14 +167,14 @@ export default function MyLearningCertificatePage({
     }
   };
 
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
+  // const handleBack = () => {
+  //   if (typeof window !== "undefined" && window.history.length > 1) {
+  //     router.back();
+  //     return;
+  //   }
 
-    router.push("/my-learnings?tab=completed");
-  };
+  //   router.push("/my-learnings?tab=completed");
+  // };
 
   const handleDownload = async () => {
     if (!certificateMarkup || typeof window === "undefined" || isPreparingPdf) {
