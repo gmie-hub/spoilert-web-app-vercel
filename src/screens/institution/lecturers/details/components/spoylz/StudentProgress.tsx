@@ -2,7 +2,12 @@ import type { ReactNode } from "react";
 
 import Badge from "./Badge";
 
-import type { EnrolledStudent } from "./constants";
+import type { EnrollmentStatus, StudentProgressDetails } from "./types";
+
+const StatusValue = ({ status }: { status: EnrollmentStatus | null }) =>
+  status ? <Badge label={status} /> : <p className="font-medium text-[#212529]">-</p>;
+
+const formatProgress = (progress: number | null) => (progress == null ? "-" : `${progress}%`);
 
 const Row2 = ({
   left,
@@ -14,11 +19,11 @@ const Row2 = ({
   <div className="grid grid-cols-2 gap-4 border-b border-gray-100 py-4">
     <div>
       <p className="text-sm text-gray-400">{left.label}</p>
-      <p className="mt-1 font-medium text-[#212529]">{left.value}</p>
+      <p className="mt-1 font-medium text-[#212529]">{left.value ?? "-"}</p>
     </div>
     <div>
       <p className="text-sm text-gray-400">{right.label}</p>
-      <p className="mt-1 font-medium text-[#212529]">{right.value}</p>
+      <p className="mt-1 font-medium text-[#212529]">{right.value ?? "-"}</p>
     </div>
   </div>
 );
@@ -26,7 +31,7 @@ const Row2 = ({
 const RowFull = ({ label, value }: { label: string; value: ReactNode }) => (
   <div className="border-b border-gray-100 py-4">
     <p className="text-sm text-gray-400">{label}</p>
-    <p className="mt-1 font-medium text-[#212529]">{value}</p>
+    <p className="mt-1 font-medium text-[#212529]">{value ?? "-"}</p>
   </div>
 );
 
@@ -36,7 +41,7 @@ const StudentProgress = ({
   onViewProfile,
   simplified = false,
 }: {
-  student: EnrolledStudent;
+  student: StudentProgressDetails;
   onBack: () => void;
   onViewProfile?: () => void;
   simplified?: boolean;
@@ -76,7 +81,7 @@ const StudentProgress = ({
           <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-3">
             <div>
               <p className="text-sm text-gray-400">Progress</p>
-              <p className="mt-1 font-medium text-[#212529]">{student.progress}%</p>
+              <p className="mt-1 font-medium text-[#212529]">{formatProgress(student.progress)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-400">Date Enrolled</p>
@@ -85,14 +90,14 @@ const StudentProgress = ({
             <div>
               <p className="text-sm text-gray-400">Status</p>
               <div className="mt-1">
-                <Badge label={student.status} />
+                <StatusValue status={student.status} />
               </div>
             </div>
           </div>
         ) : (
           <div className="mt-3">
             <Row2
-              left={{ label: "Progress", value: `${student.progress}%` }}
+              left={{ label: "Progress", value: formatProgress(student.progress) }}
               right={{ label: "Overall Modules", value: student.overallModules }}
             />
             <Row2
@@ -113,7 +118,7 @@ const StudentProgress = ({
               <div>
                 <p className="text-sm text-gray-400">Status</p>
                 <div className="mt-1">
-                  <Badge label={student.status} />
+                  <StatusValue status={student.status} />
                 </div>
               </div>
             </div>
@@ -125,14 +130,18 @@ const StudentProgress = ({
         <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
           <h3 className="text-lg font-semibold text-[#212529]">Progress Breakdown</h3>
           <div className="mt-3">
+            {student.moduleBreakdown.length === 0 && (
+              <p className="py-4 text-sm text-gray-400">No module data available.</p>
+            )}
             {student.moduleBreakdown.map((module, index) => (
-              <div key={module.title} className="border-b border-gray-100 py-4 last:border-0">
+              <div key={`${module.title}-${index}`} className="border-b border-gray-100 py-4 last:border-0">
                 <p className="text-sm text-gray-400">
-                  Module {index + 1} ({module.lessons} Lessons)
+                  Module {index + 1}
+                  {module.lessons != null && ` (${module.lessons} ${module.lessons === 1 ? "Lesson" : "Lessons"})`}
                 </p>
                 <p className="mt-1 font-medium text-[#212529]">{module.title}</p>
                 <div className="mt-2">
-                  <Badge label={module.status} />
+                  <StatusValue status={module.status} />
                 </div>
               </div>
             ))}

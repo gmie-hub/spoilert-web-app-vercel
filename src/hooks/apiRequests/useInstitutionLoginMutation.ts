@@ -24,7 +24,9 @@ interface LoginResponse {
   };
 }
 
-const BLOCKED_ROLES = ["admin", "super-admin"];
+// Only institution accounts may use the institution portal; learners, tutors
+// and admins are turned away before anything is stored.
+const INSTITUTION_ROLE = "institution";
 
 export const useInstitutionLoginMutation = () => {
   const router = useRouter();
@@ -51,16 +53,14 @@ export const useInstitutionLoginMutation = () => {
     try {
       const response = await mutation.mutateAsync(payload);
 
-      if (response.data) {
-        const { token, user } = response.data;
+      const user = response.data?.user;
 
-        if (BLOCKED_ROLES.includes(String(user?.role).toLowerCase())) {
-          toast.error("Admins can't log in here");
-          return;
-        }
-
-        useAuthStore.getState().setAuth({ user, token });
+      if (String(user?.role).toLowerCase() !== INSTITUTION_ROLE) {
+        toast.error("Only institution accounts can log in here.");
+        return;
       }
+
+      useAuthStore.getState().setAuth({ user, token: response.data.token });
 
       toast.success("Logged in successfully 🎉");
       router.push("/institution/dashboard");

@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import type { InviteStatus, Lecturer } from "@spt/screens/institution/lecturers/constants";
+import type { InviteStatus, Lecturer } from "@spt/screens/institution/lecturers/types";
+import { formatDate } from "@spt/screens/institution/lecturers/utils";
 import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
@@ -16,7 +17,7 @@ export interface ApiLecturer {
   faculty: string | null;
   department: string | null;
   position: string | null;
-  // Not returned by the API yet; every lecturer shows as Pending until it is.
+  // Not returned by the API yet; the status shows as "-" until it is.
   status?: string | null;
   created_at: string;
   updated_at: string;
@@ -29,44 +30,48 @@ export interface ApiLecturer {
     avatar: string | null;
     last_login: string | null;
     total_spoils_created: number | null;
+    // The bio sits on the tutor profile, as on the users /spoils returns.
+    profile?: { bio: string | null } | null;
   } | null;
+}
+
+interface LecturersPage {
+  current_page: number;
+  data: ApiLecturer[];
+  last_page: number;
+  per_page: number;
+  total: number;
 }
 
 interface LecturersResponse {
   message: string;
   status: boolean;
-  data: {
-    current_page: number;
-    data: ApiLecturer[];
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
+  data: LecturersPage;
 }
 
-const toInviteStatus = (value?: string | null): InviteStatus => {
+const toInviteStatus = (value?: string | null): InviteStatus | null => {
   switch (value?.toLowerCase()) {
     case "accepted":
     case "active":
       return "Accepted";
+    case "pending":
+      return "Pending";
     case "declined":
     case "rejected":
       return "Declined";
     default:
-      return "Pending";
+      return null;
   }
 };
 
-// Matches the DD-MM-YYYY format the table already uses.
-const formatDate = (value?: string | null) =>
-  value ? new Date(value).toLocaleDateString("en-GB").split("/").join("-") : "-";
-
 const toLecturer = (item: ApiLecturer): Lecturer => ({
   id: String(item.id),
+  userId: item.user_id,
   firstName: item.user?.first_name ?? "",
   lastName: item.user?.last_name ?? "",
   email: item.user?.email ?? "",
   phone: item.user?.phone_number ?? "",
+  avatar: item.user?.avatar ?? null,
   faculty: item.faculty ?? "",
   department: item.department ?? "",
   position: item.position ?? "",
@@ -74,26 +79,36 @@ const toLecturer = (item: ApiLecturer): Lecturer => ({
   inviteStatus: toInviteStatus(item.status),
   dateSent: formatDate(item.created_at),
   lastLogin: formatDate(item.user?.last_login),
-  metrics: {
-    totalRevenueGenerated: "₦0",
-    totalSpoylzCreated: item.user?.total_spoils_created ?? 0,
-    studentsEnrolled: 0,
-    institutionEarnings: "₦0",
-    lecturerEarnings: "₦0",
-  },
+  bio: item.user?.profile?.bio || null,
 });
+
+const fetchLecturersPage = async (page: number) =>
+  (await api.get<LecturersResponse>("/lecturers", { params: { page } })).data.data;
 
 const useGetLecturersQuery = () => {
   const { data, isLoading, isError, error } = useQuery<
-    LecturersResponse,
+    ApiLecturer[],
     AxiosError<ApiErrorResponse>
   >({
     queryKey: ["institution-lecturers"],
-    queryFn: async () => (await api.get("/lecturers")).data,
+    // The endpoint is paginated, so pull every page: search, the metrics and the
+    // details page (there's no GET /lecturers/{id}) all need the whole list.
+    queryFn: async () => {
+      const firstPage = await fetchLecturersPage(1);
+      const otherPages = await Promise.all(
+        Array.from({ length: Math.max(0, firstPage.last_page - 1) }, (_, index) =>
+          fetchLecturersPage(index + 2),
+        ),
+      );
+      return [firstPage, ...otherPages].flatMap((page) => page.data ?? []);
+    },
   });
 
+  const lecturers = (data ?? []).map(toLecturer);
+
   return {
-    lecturers: (data?.data?.data ?? []).map(toLecturer),
+    lecturers,
+    total: lecturers.length,
     isLoading,
     isError,
     errorMessage:

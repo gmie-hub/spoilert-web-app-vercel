@@ -17,12 +17,14 @@ export interface EnrolledLearner {
     id: number;
     first_name: string;
     last_name: string;
+    username?: string | null;
     avatar?: string | null;
   } | null;
   user?: {
     id: number;
     first_name: string;
     last_name: string;
+    username?: string | null;
     avatar?: string | null;
   } | null;
 }

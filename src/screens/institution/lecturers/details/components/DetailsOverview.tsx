@@ -2,16 +2,20 @@
 
 import { type ReactNode, useState } from "react";
 
+import Image from "next/image";
 import toast from "react-hot-toast";
 
 import { StatCard } from "@spt/components";
+import { useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 
 import { BookIcon, CoinIcon, NetworkIcon, PeopleIcon } from "../../components/icons";
 import StatusBadge from "../../components/StatusBadge";
+import { formatNaira } from "../../utils";
 
 import ResendInvitationModal from "./ResendInvitationModal";
 
-import type { Lecturer } from "../../constants";
+import type { Lecturer } from "../../types";
 
 const InfoIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -28,6 +32,10 @@ const RefreshIcon = () => (
   </svg>
 );
 
+// No endpoint serves a lecturer's gross revenue or the institution's cut yet, so
+// those show "No data" rather than made-up figures.
+const NOT_AVAILABLE = null;
+
 const FieldRow = ({
   left,
   right,
@@ -38,11 +46,11 @@ const FieldRow = ({
   <div className="grid grid-cols-1 gap-4 border-b border-gray-100 py-4 last:border-0 sm:grid-cols-2">
     <div>
       <p className="text-sm text-gray-400">{left.label}</p>
-      <p className="mt-1 font-medium text-[#212529]">{left.value}</p>
+      <p className="mt-1 font-medium text-[#212529]">{left.value || "-"}</p>
     </div>
     <div>
       <p className="text-sm text-gray-400">{right.label}</p>
-      <p className="mt-1 font-medium text-[#212529]">{right.value}</p>
+      <p className="mt-1 font-medium text-[#212529]">{right.value || "-"}</p>
     </div>
   </div>
 );
@@ -50,6 +58,14 @@ const FieldRow = ({
 const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
   const [showResendModal, setShowResendModal] = useState(false);
   const isPending = lecturer.inviteStatus === "Pending";
+
+  const spoils = useGetLecturerSpoilsQuery(lecturer.userId);
+  const earnings = useGetEarningsBreakdownQuery(lecturer.userId);
+
+  const studentsEnrolled = spoils.isError
+    ? null
+    : spoils.spoils.reduce((sum, spoil) => sum + (spoil.enrolled_users ?? 0), 0).toLocaleString();
+  const lecturerEarnings = formatNaira(earnings.earnings?.overview.total_earning);
 
   const handleConfirmResend = () => {
     setShowResendModal(false);
@@ -81,11 +97,20 @@ const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 lg:col-span-2">
-          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="8" r="4" fill="#D1D5DB" />
-              <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="#D1D5DB" />
-            </svg>
+          <div className="relative mb-2 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gray-100">
+            {lecturer.avatar ? (
+              <Image
+                src={lecturer.avatar}
+                alt={`${lecturer.firstName} ${lecturer.lastName}`.trim() || "Lecturer"}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" fill="#D1D5DB" />
+                <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="#D1D5DB" />
+              </svg>
+            )}
           </div>
 
           <FieldRow
@@ -121,31 +146,33 @@ const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
           <div className="mt-5 space-y-4">
             <StatCard
               label="Total Revenue Generated"
-              value={lecturer.metrics.totalRevenueGenerated}
+              value={NOT_AVAILABLE}
               icon={<CoinIcon color="#28A745" />}
               iconBg="bg-green-50"
             />
             <StatCard
               label="Total Spoylz Created"
-              value={String(lecturer.metrics.totalSpoylzCreated)}
+              value={lecturer.totalCourses.toLocaleString()}
               icon={<BookIcon color="#DA8543" />}
               iconBg="bg-orange-50"
             />
             <StatCard
               label="Students Enrolled"
-              value={String(lecturer.metrics.studentsEnrolled)}
+              value={studentsEnrolled}
+              isLoading={spoils.isLoading}
               icon={<NetworkIcon color="#DC3545" />}
               iconBg="bg-red-50"
             />
             <StatCard
               label="Institution Earnings"
-              value={lecturer.metrics.institutionEarnings}
+              value={NOT_AVAILABLE}
               icon={<NetworkIcon color="#B5179E" />}
               iconBg="bg-purple-50"
             />
             <StatCard
               label="Lecturer Earnings"
-              value={lecturer.metrics.lecturerEarnings}
+              value={lecturerEarnings}
+              isLoading={earnings.isLoading}
               icon={<PeopleIcon color="#0891B2" />}
               iconBg="bg-cyan-50"
             />

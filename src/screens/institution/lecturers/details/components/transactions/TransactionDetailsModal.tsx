@@ -4,7 +4,7 @@ import { type ReactNode, useState } from "react";
 
 import Badge from "../spoylz/Badge";
 
-import type { Transaction } from "./constants";
+import type { Transaction } from "./types";
 
 const CopyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -35,10 +35,6 @@ const TransactionDetailsModal = ({
       setTimeout(() => setCopied(false), 2000);
     });
   };
-
-  const isSpoylzPurchase = transaction.transactionType === "Spoylz Purchase";
-  const isWithdrawal = transaction.transactionType === "Withdrawal";
-  const isAirtimeOrData = transaction.transactionType === "Airtime" || transaction.transactionType === "Data";
 
   return (
     <div
@@ -82,7 +78,7 @@ const TransactionDetailsModal = ({
           <DetailRow label="Date & Time" value={`${transaction.date} | ${transaction.time}`} />
           <DetailRow label="Description" value={transaction.description} />
 
-          {isSpoylzPurchase && (
+          {transaction.kind === "purchase" && (
             <>
               <DetailRow label="Name of Student" value={transaction.studentName} />
               <DetailRow label="Spoylz Title" value={transaction.spoylzTitle} />
@@ -94,24 +90,19 @@ const TransactionDetailsModal = ({
             </>
           )}
 
-          {isWithdrawal && (
-            <>
-              <DetailRow label="Account Credited" value={transaction.accountCredited} />
-              <DetailRow label="Amount" value={transaction.amount} />
-            </>
+          {transaction.kind === "withdrawal" && (
+            <DetailRow label="Account Credited" value={transaction.accountCredited} />
           )}
 
-          {isAirtimeOrData && (
-            <>
-              <DetailRow label="Phone Number" value={transaction.phoneNumber} />
-              <DetailRow label="Network" value={transaction.network} />
-              <DetailRow label="Amount" value={transaction.amount} />
-            </>
-          )}
+          {transaction.kind !== "purchase" && <DetailRow label="Amount" value={transaction.amount} />}
 
           <div className="py-4">
             <p className="mb-2 text-sm text-gray-400">Status</p>
-            <Badge label={transaction.status} />
+            {transaction.status ? (
+              <Badge label={transaction.status} />
+            ) : (
+              <p className="text-sm font-medium text-[#212529]">-</p>
+            )}
           </div>
         </div>
       </div>

@@ -2,66 +2,64 @@
 
 import React, { useState } from "react";
 
-interface Series {
+export interface RevenueSeries {
   key: string;
   label: string;
   color: string;
+  /** Naira amounts for Jan–Dec. */
   values: number[];
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const SERIES: Series[] = [
-  {
-    key: "gross",
-    label: "Gross Revenue",
-    color: "#DA8543",
-    values: [120, 150, 145, 210, 195, 260, 250, 300, 290, 380, 360, 420],
-  },
-  {
-    key: "lecturer",
-    label: "Lecturer Earnings",
-    color: "#0891B2",
-    values: [60, 65, 70, 90, 95, 110, 115, 125, 120, 135, 140, 150],
-  },
-  {
-    key: "institution",
-    label: "Institution Earnings",
-    color: "#B5179E",
-    values: [25, 28, 30, 42, 45, 55, 58, 62, 60, 68, 70, 78],
-  },
-];
-
 const WIDTH = 1000;
 const HEIGHT = 300;
 const PADDING = { top: 16, right: 16, bottom: 28, left: 56 };
-const Y_MAX = 500;
-const Y_TICKS = [0, 100, 200, 300, 400, 500];
+const Y_STEPS = 5;
 
 const plotWidth = WIDTH - PADDING.left - PADDING.right;
 const plotHeight = HEIGHT - PADDING.top - PADDING.bottom;
 
 const xForIndex = (index: number) => PADDING.left + (index / (MONTHS.length - 1)) * plotWidth;
-const yForValue = (value: number) => PADDING.top + plotHeight - (value / Y_MAX) * plotHeight;
 
-const smoothPath = (values: number[]) => {
-  const points = values.map((value, index) => [xForIndex(index), yForValue(value)]);
-  if (points.length < 2) return "";
-
-  let d = `M ${points[0][0]},${points[0][1]}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const [x0, y0] = points[i];
-    const [x1, y1] = points[i + 1];
-    const midX = (x0 + x1) / 2;
-    d += ` C ${midX},${y0} ${midX},${y1} ${x1},${y1}`;
-  }
-  return d;
+// Rounds the axis top up to a 1/2/5 step so tick labels stay readable.
+const niceMax = (value: number) => {
+  if (value <= 0) return Y_STEPS;
+  const step = value / Y_STEPS;
+  const magnitude = 10 ** Math.floor(Math.log10(step));
+  const niceStep = ([1, 2, 5, 10].find((m) => m * magnitude >= step) ?? 10) * magnitude;
+  return niceStep * Y_STEPS;
 };
 
-const formatNaira = (thousands: number) => `₦${thousands >= 1000 ? `${thousands / 1000}m` : `${thousands}k`}`;
+const nairaFormatter = new Intl.NumberFormat("en-NG", {
+  style: "currency",
+  currency: "NGN",
+  notation: "compact",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 1,
+});
+const formatNaira = (value: number) => nairaFormatter.format(value);
 
-const RevenueTrendChart = () => {
+const RevenueTrendChart = ({ series }: { series: RevenueSeries[] }) => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  const yMax = niceMax(Math.max(0, ...series.flatMap((s) => s.values)));
+  const yTicks = Array.from({ length: Y_STEPS + 1 }, (_, i) => (yMax / Y_STEPS) * i);
+  const yForValue = (value: number) => PADDING.top + plotHeight - (value / yMax) * plotHeight;
+
+  const smoothPath = (values: number[]) => {
+    const points = values.map((value, index) => [xForIndex(index), yForValue(value)]);
+    if (points.length < 2) return "";
+
+    let d = `M ${points[0][0]},${points[0][1]}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const [x0, y0] = points[i];
+      const [x1, y1] = points[i + 1];
+      const midX = (x0 + x1) / 2;
+      d += ` C ${midX},${y0} ${midX},${y1} ${x1},${y1}`;
+    }
+    return d;
+  };
 
   const handleMove = (event: React.MouseEvent<SVGRectElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -74,7 +72,7 @@ const RevenueTrendChart = () => {
     <div>
       <div className="relative w-full overflow-x-auto">
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full min-w-[640px]" role="img" aria-label="Revenue trend by month">
-          {Y_TICKS.map((tick) => (
+          {yTicks.map((tick) => (
             <g key={tick}>
               <line
                 x1={PADDING.left}
@@ -103,12 +101,12 @@ const RevenueTrendChart = () => {
             </text>
           ))}
 
-          {SERIES.map((series) => (
+          {series.map((s) => (
             <path
-              key={series.key}
-              d={smoothPath(series.values)}
+              key={s.key}
+              d={smoothPath(s.values)}
               fill="none"
-              stroke={series.color}
+              stroke={s.color}
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -126,13 +124,13 @@ const RevenueTrendChart = () => {
                 strokeWidth={1}
                 strokeDasharray="3 3"
               />
-              {SERIES.map((series) => (
+              {series.map((s) => (
                 <circle
-                  key={series.key}
+                  key={s.key}
                   cx={xForIndex(hoverIndex)}
-                  cy={yForValue(series.values[hoverIndex])}
+                  cy={yForValue(s.values[hoverIndex] ?? 0)}
                   r={4}
-                  fill={series.color}
+                  fill={s.color}
                   stroke="#fff"
                   strokeWidth={1.5}
                 />
@@ -160,10 +158,10 @@ const RevenueTrendChart = () => {
             }}
           >
             <p className="mb-1 font-semibold text-[#212529]">{MONTHS[hoverIndex]}</p>
-            {SERIES.map((series) => (
-              <p key={series.key} className="flex items-center gap-1.5 text-gray-500">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: series.color }} />
-                {series.label}: {formatNaira(series.values[hoverIndex])}
+            {series.map((s) => (
+              <p key={s.key} className="flex items-center gap-1.5 text-gray-500">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                {s.label}: {formatNaira(s.values[hoverIndex] ?? 0)}
               </p>
             ))}
           </div>
@@ -171,10 +169,10 @@ const RevenueTrendChart = () => {
       </div>
 
       <div className="mt-4 flex flex-wrap justify-center gap-6">
-        {SERIES.map((series) => (
-          <span key={series.key} className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: series.color }} />
-            {series.label}
+        {series.map((s) => (
+          <span key={s.key} className="flex items-center gap-2 text-sm text-gray-600">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+            {s.label}
           </span>
         ))}
       </div>

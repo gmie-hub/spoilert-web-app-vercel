@@ -56,6 +56,9 @@ export interface PaymentsFilters {
   page?: number;
   per_page?: number;
   roleOverride?: "tutor" | "learner";
+  // Another tutor's payments (e.g. an institution viewing its lecturer's) in
+  // place of the logged-in user's.
+  tutor_id?: number | null;
 }
 
 const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
@@ -68,18 +71,20 @@ const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
 
 const extractPagination = (
   response?: PaymentsResponse
-): { current_page: number; last_page: number; total: number } => {
+): { current_page: number; last_page: number; total: number; per_page: number | null } => {
   if (!response || Array.isArray(response.data))
-    return { current_page: 1, last_page: 1, total: 0 };
+    return { current_page: 1, last_page: 1, total: 0, per_page: null };
   const d = response.data as {
     current_page?: number;
     last_page?: number;
     total?: number;
+    per_page?: number;
   };
   return {
     current_page: d?.current_page ?? 1,
     last_page: d?.last_page ?? 1,
     total: d?.total ?? 0,
+    per_page: d?.per_page ?? null,
   };
 };
 
@@ -90,7 +95,9 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
 
   const fetchPayments = async (): Promise<PaymentsResponse> => {
     const params = new URLSearchParams();
-    if (userId) {
+    if (filters.tutor_id) {
+      params.set("tutor_id", String(filters.tutor_id));
+    } else if (userId) {
       const useTutorParam =
         filters.roleOverride === "tutor"
           ? true
@@ -115,9 +122,9 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     PaymentsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["payments", userId, filters.roleOverride ?? (isTutor ? "tutor" : "learner"), filters.from_date, filters.to_date, filters.page, filters.per_page],
+    queryKey: ["payments", userId, filters.roleOverride ?? (isTutor ? "tutor" : "learner"), filters.tutor_id ?? null, filters.from_date, filters.to_date, filters.page, filters.per_page],
     queryFn: fetchPayments,
-    enabled: !!userId,
+    enabled: !!(filters.tutor_id || userId),
   });
 
   const errorMessage =

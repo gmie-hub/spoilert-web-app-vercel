@@ -4,19 +4,33 @@ import { useState } from "react";
 
 import { FilterBar, Pagination } from "@spt/components";
 
+import TableStatusRow from "../../../components/TableStatusRow";
 import Badge from "../spoylz/Badge";
 
-import type { Transaction } from "./constants";
+import type { Transaction } from "./types";
 
+// The API pages the transactions, so this table shows one page at a time and
+// its search only covers that page.
 const TransactionsTable = ({
   transactions,
+  isLoading,
+  errorMessage,
+  page,
+  totalPages,
+  firstRowNumber,
+  onPageChange,
   onViewMore,
 }: {
   transactions: Transaction[];
+  isLoading: boolean;
+  errorMessage: string | null;
+  page: number;
+  totalPages: number;
+  firstRowNumber: number;
+  onPageChange: (page: number) => void;
   onViewMore: (transaction: Transaction) => void;
 }) => {
   const [search, setSearch] = useState("");
-  const [activePage, setActivePage] = useState(1);
 
   const query = search.trim().toLowerCase();
   const filtered = transactions.filter(
@@ -49,34 +63,43 @@ const TransactionsTable = ({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((transaction, index) => (
-              <tr key={transaction.id} className="border-b border-gray-50">
-                <td className="py-4 pr-4 text-gray-500">{index + 1}</td>
-                <td className="py-4 pr-4 text-[#212529]">{transaction.transactionType}</td>
-                <td className="py-4 pr-4 text-gray-500">{transaction.transactionId}</td>
-                <td className="py-4 pr-4 text-[#212529]">{transaction.amount}</td>
-                <td className="py-4 pr-4 text-gray-500">
-                  {transaction.date} | {transaction.time}
-                </td>
-                <td className="py-4 pr-4">
-                  <Badge label={transaction.status} />
-                </td>
-                <td className="py-4 pr-4">
-                  <button
-                    type="button"
-                    onClick={() => onViewMore(transaction)}
-                    className="whitespace-nowrap rounded-lg border border-[var(--color-blue)] px-4 py-1.5 text-sm font-medium text-[var(--color-blue)]"
-                  >
-                    View More
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {isLoading || errorMessage || filtered.length === 0 ? (
+              <TableStatusRow
+                colSpan={7}
+                isLoading={isLoading}
+                errorMessage={errorMessage}
+                emptyMessage={query ? "No transactions match your search." : "No transactions for this lecturer yet."}
+              />
+            ) : (
+              filtered.map((transaction, index) => (
+                <tr key={transaction.id} className="border-b border-gray-50">
+                  <td className="py-4 pr-4 text-gray-500">{firstRowNumber + index}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{transaction.transactionType}</td>
+                  <td className="py-4 pr-4 text-gray-500">{transaction.transactionId}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{transaction.amount}</td>
+                  <td className="py-4 pr-4 text-gray-500">
+                    {transaction.date} | {transaction.time}
+                  </td>
+                  <td className="py-4 pr-4">
+                    {transaction.status ? <Badge label={transaction.status} /> : <span className="text-gray-400">-</span>}
+                  </td>
+                  <td className="py-4 pr-4">
+                    <button
+                      type="button"
+                      onClick={() => onViewMore(transaction)}
+                      className="whitespace-nowrap rounded-lg border border-[var(--color-blue)] px-4 py-1.5 text-sm font-medium text-[var(--color-blue)]"
+                    >
+                      View More
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      <Pagination activePage={activePage} onPageChange={setActivePage} />
+      <Pagination activePage={page} totalPages={totalPages} onPageChange={onPageChange} />
     </div>
   );
 };

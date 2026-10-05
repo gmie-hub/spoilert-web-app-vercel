@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import Badge from "./Badge";
 
-import type { SpoylzItem } from "./constants";
+import type { SpoylzItem } from "./types";
 
 const FieldCell = ({ label, value }: { label: string; value: ReactNode }) => (
   <div>
@@ -65,16 +65,16 @@ const SpoylzDetails = ({
       </FieldRow>
       <FieldRow>
         <FieldCell label="Pricing" value={item.pricing} />
-        <FieldCell label="Amount" value={item.detailAmount} />
-        <FieldCell label="Enrolled Students" value={item.enrolledStudents} />
+        <FieldCell label="Amount" value={item.amount} />
+        <FieldCell label="Enrolled Students" value={item.enrolledStudents.toLocaleString()} />
       </FieldRow>
       <FieldRow>
-        <FieldCell label="Amount Earned by Lecturer" value={item.detailEarnedByLecturer} />
-        <FieldCell label="Amount Earned by Institution" value={item.detailEarnedByInstitution} />
-        <FieldCell label="Modules" value={item.modules} />
+        <FieldCell label="Amount Earned by Lecturer" value={item.earnedByLecturer} />
+        <FieldCell label="Amount Earned by Institution" value={item.earnedByInstitution} />
+        <FieldCell label="Modules" value={item.modules ?? "-"} />
       </FieldRow>
       <FieldRow>
-        <FieldCell label="Lessons" value={item.lessons} />
+        <FieldCell label="Lessons" value={item.lessons ?? "-"} />
         <FieldCell label="Date created" value={item.dateCreated} />
         <FieldCell label="Status" value={<Badge label={item.status} />} />
       </FieldRow>
@@ -86,11 +86,15 @@ const SpoylzDetails = ({
 
       <div className="py-4">
         <p className="text-sm text-gray-400">What they will learn</p>
-        <ul className="mt-2 list-disc space-y-1.5 pl-5 font-medium text-[#212529]">
-          {item.whatTheyWillLearn.map((point, index) => (
-            <li key={`${point}-${index}`}>{point}</li>
-          ))}
-        </ul>
+        {item.whatTheyWillLearn.length > 0 ? (
+          <ul className="mt-2 list-disc space-y-1.5 pl-5 font-medium text-[#212529]">
+            {item.whatTheyWillLearn.map((point, index) => (
+              <li key={`${point}-${index}`}>{point}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 font-medium text-[#212529]">-</p>
+        )}
       </div>
     </div>
   </div>

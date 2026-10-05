@@ -2,6 +2,7 @@ import { StatCard } from "@spt/components";
 
 import { MailIcon, PeopleIcon } from "./icons";
 
+// A null count shows "No data".
 const LecturersMetrics = ({
   total,
   pending,
@@ -9,9 +10,9 @@ const LecturersMetrics = ({
   declined,
 }: {
   total: number;
-  pending: number;
-  accepted: number;
-  declined: number;
+  pending: number | null;
+  accepted: number | null;
+  declined: number | null;
 }) => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <StatCard
@@ -22,19 +23,19 @@ const LecturersMetrics = ({
     />
     <StatCard
       label="Pending Invitations"
-      value={pending.toLocaleString()}
+      value={pending?.toLocaleString()}
       icon={<MailIcon color="#0891B2" />}
       iconBg="bg-cyan-50"
     />
     <StatCard
       label="Accepted Invitations"
-      value={accepted.toLocaleString()}
+      value={accepted?.toLocaleString()}
       icon={<MailIcon color="#B5179E" variant="check" />}
       iconBg="bg-purple-50"
     />
     <StatCard
       label="Declined Invitations"
-      value={declined.toLocaleString()}
+      value={declined?.toLocaleString()}
       icon={<MailIcon color="#DC3545" variant="x" />}
       iconBg="bg-red-50"
     />

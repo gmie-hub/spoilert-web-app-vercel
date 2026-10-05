@@ -4,12 +4,15 @@ import { useState } from "react";
 
 import toast from "react-hot-toast";
 
-import { type EnrolledStudent, MOCK_ENROLLED_STUDENTS } from "../../../lecturers/details/components/spoylz/constants";
 import EnrolledStudentsTable from "../../../lecturers/details/components/spoylz/EnrolledStudentsTable";
 import StudentProgress from "../../../lecturers/details/components/spoylz/StudentProgress";
 
+import { MOCK_ENROLLED_STUDENTS } from "./enrolledStudentsConstants";
+
+import type { StudentProgressDetails } from "../../../lecturers/details/components/spoylz/types";
+
 const EnrolledStudentsTab = ({ simplified = false }: { simplified?: boolean }) => {
-  const [selectedStudent, setSelectedStudent] = useState<EnrolledStudent | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<StudentProgressDetails | null>(null);
 
   if (selectedStudent) {
     return (

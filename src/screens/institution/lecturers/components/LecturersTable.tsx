@@ -1,18 +1,26 @@
 "use client";
 
-import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 
 import { Pagination } from "@spt/components";
 
+import { PAGE_SIZE, pageCount, pageItems } from "../utils";
+
 import StatusBadge from "./StatusBadge";
+import TableStatusRow from "./TableStatusRow";
 
-import type { Lecturer } from "../constants";
+import type { Lecturer } from "../types";
 
-const LecturersTable = ({ lecturers }: { lecturers: Lecturer[] }) => {
+const LecturersTable = ({
+  lecturers,
+  page,
+  onPageChange,
+}: {
+  lecturers: Lecturer[];
+  page: number;
+  onPageChange: (page: number) => void;
+}) => {
   const router = useRouter();
-  const [activePage, setActivePage] = useState(1);
 
   return (
     <div>
@@ -32,35 +40,39 @@ const LecturersTable = ({ lecturers }: { lecturers: Lecturer[] }) => {
             </tr>
           </thead>
           <tbody>
-            {lecturers.map((lecturer, index) => (
-              <tr key={lecturer.id} className="border-b border-gray-50">
-                <td className="py-4 pr-4 text-gray-500">{index + 1}</td>
-                <td className="py-4 pr-4 text-[#212529]">{lecturer.firstName}</td>
-                <td className="py-4 pr-4 text-[#212529]">{lecturer.lastName}</td>
-                <td className="py-4 pr-4 text-gray-500">{lecturer.email}</td>
-                <td className="py-4 pr-4 text-[#212529]">{lecturer.department}</td>
-                <td className="py-4 pr-4 text-[#212529]">{lecturer.totalCourses}</td>
-                <td className="py-4 pr-4">
-                  <StatusBadge status={lecturer.inviteStatus} />
-                </td>
-                <td className="py-4 pr-4 text-gray-500">{lecturer.dateSent}</td>
-                <td className="py-4 pr-4">
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/institution/lecturers/${lecturer.id}`)}
-                    className="whitespace-nowrap rounded-lg border border-[var(--color-blue)] px-4 py-1.5 text-sm font-medium text-[var(--color-blue)]"
-                  >
-                    View More
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {lecturers.length === 0 ? (
+              <TableStatusRow colSpan={9} emptyMessage="No lecturers match your search." />
+            ) : (
+              pageItems(lecturers, page).map((lecturer, index) => (
+                <tr key={lecturer.id} className="border-b border-gray-50">
+                  <td className="py-4 pr-4 text-gray-500">{(page - 1) * PAGE_SIZE + index + 1}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{lecturer.firstName || "-"}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{lecturer.lastName || "-"}</td>
+                  <td className="py-4 pr-4 text-gray-500">{lecturer.email || "-"}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{lecturer.department || "-"}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{lecturer.totalCourses}</td>
+                  <td className="py-4 pr-4">
+                    <StatusBadge status={lecturer.inviteStatus} />
+                  </td>
+                  <td className="py-4 pr-4 text-gray-500">{lecturer.dateSent}</td>
+                  <td className="py-4 pr-4">
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/institution/lecturers/${lecturer.id}`)}
+                      className="whitespace-nowrap rounded-lg border border-[var(--color-blue)] px-4 py-1.5 text-sm font-medium text-[var(--color-blue)]"
+                    >
+                      View More
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="mt-6">
-        <Pagination activePage={activePage} onPageChange={setActivePage} />
+        <Pagination activePage={page} totalPages={pageCount(lecturers.length)} onPageChange={onPageChange} />
       </div>
     </div>
   );

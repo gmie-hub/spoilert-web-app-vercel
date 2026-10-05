@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import SpoilertLogo from "@spt/assets/icons/Group(2).svg";
 import useClickOutside from "@spt/hooks/useClickOutside";
@@ -35,6 +35,16 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    label: "Profile",
+    href: "/institution/profile",
+    icon: (active) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="8" r="3.5" stroke={iconStroke(active)} strokeWidth="1.8" />
+        <path d="M4.5 20c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke={iconStroke(active)} strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     label: "Lecturers",
     href: "/institution/lecturers",
     icon: (active) => (
@@ -46,7 +56,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  /* Temporarily hidden from the sidebar — leaving only Dashboard, Lecturers and Profile visible.
+  /* Temporarily hidden from the sidebar — leaving only Dashboard, Profile and Lecturers visible.
   {
     label: "Spoylz Management",
     href: "/institution/spoylz-management",
@@ -84,16 +94,6 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   */
-  {
-    label: "Profile",
-    href: "/institution/profile",
-    icon: (active) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="8" r="3.5" stroke={iconStroke(active)} strokeWidth="1.8" />
-        <path d="M4.5 20c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke={iconStroke(active)} strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    ),
-  },
 ];
 
 interface InstitutionDashboardLayoutProps {
@@ -106,7 +106,10 @@ const InstitutionDashboardLayout = ({
   institutionName,
 }: InstitutionDashboardLayoutProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   const storedName = useAuthStore((state) => state.user?.name);
+  const storedRole = useAuthStore((state) => state.user?.role);
+  const isInstitution = String(storedRole ?? "").toLowerCase() === "institution";
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -133,6 +136,13 @@ const InstitutionDashboardLayout = ({
       setMounted(true);
     }
   }, []);
+
+  // Only institution accounts get in: logged-out visitors and other roles (e.g. a
+  // learner signed in on the main site) go to the institution login. Checked
+  // after mount because the stored login only exists in the browser.
+  useEffect(() => {
+    if (mounted && !isInstitution) router.replace("/institution/login");
+  }, [mounted, isInstitution, router]);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -290,7 +300,9 @@ const InstitutionDashboardLayout = ({
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-8 sm:px-10">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-8 sm:px-10">
+          {mounted && isInstitution ? children : null}
+        </main>
       </div>
 
       {isMobileNavOpen && (
