@@ -10,6 +10,8 @@ import api from "@spt/utils/apiClient";
 import type { AxiosError } from "axios";
 
 interface UpdateProfilePayload {
+  // Institution accounts use `name` instead of first/last name.
+  name?: string;
   first_name?: string;
   last_name?: string;
   username?: string;

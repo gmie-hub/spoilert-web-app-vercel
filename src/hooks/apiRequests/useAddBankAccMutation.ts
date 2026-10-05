@@ -34,6 +34,8 @@ export const useAddBankAccountMutation = () => {
     mutationFn: addBankAccount,
   });
 
+  // Resolves to whether the account was saved, so callers can tell success
+  // from failure (the error itself is already toasted here).
   const addBankAccountHandler = async (
     account_number: string,
     bank_id: number,
@@ -41,6 +43,7 @@ export const useAddBankAccountMutation = () => {
     try {
       await mutation.mutateAsync({ account_number, bank_id });
       toast.success("Bank account added successfully 🏦");
+      return true;
     } catch (error: any) {
       toast.error(
         error?.response?.data?.error ||
@@ -48,6 +51,7 @@ export const useAddBankAccountMutation = () => {
           error?.message ||
           "Failed to add bank account",
       );
+      return false;
     }
   };
 

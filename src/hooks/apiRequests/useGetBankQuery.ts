@@ -42,7 +42,7 @@ export const useGetBanksQuery = (search?: string, page: number = 1, perPage: num
   const fetchBanks = async (): Promise<BankResponse> => {
     let endpoint = `banks/NG?page=${page}&per_page=${perPage}`;
     if (search && search.trim() !== "") {
-      endpoint += `&search=${search}`;
+      endpoint += `&search=${encodeURIComponent(search.trim())}`;
     }
     return (await api.get(endpoint))?.data;
   };

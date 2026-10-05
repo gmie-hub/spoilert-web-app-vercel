@@ -14,6 +14,7 @@ const DASHBOARD_PREFIXES = [
   "/institution/lecturers",
   "/institution/spoylz-management",
   "/institution/revenue",
+  "/institution/profile",
 ];
 
 interface InstitutionRouteChromeProps {

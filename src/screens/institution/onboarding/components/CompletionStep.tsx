@@ -6,23 +6,12 @@ import Button from "@spt/components/button";
 
 import { type OnboardingStepInfo, StepRow } from "./Overview";
 
-const COMPLETED_STEPS: OnboardingStepInfo[] = [
-  {
-    title: "Institution Profile",
-    description: "Basic information and representative details",
-    status: "done",
-  },
-  {
-    title: "Create Password",
-    description: "Create your log in password and verify your phone number",
-    status: "done",
-  },
-];
-
 const CompletionStep = ({
+  steps,
   onLogin,
   onBackHome,
 }: {
+  steps: OnboardingStepInfo[];
   onLogin: () => void;
   onBackHome: () => void;
 }) => (
@@ -39,7 +28,7 @@ const CompletionStep = ({
       </p>
 
       <div className="mt-6 space-y-3 text-left">
-        {COMPLETED_STEPS.map((step, index) => (
+        {steps.map((step, index) => (
           <StepRow key={step.title} step={step} index={index} />
         ))}
       </div>

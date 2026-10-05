@@ -3,9 +3,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { useField } from "formik";
-import Image from "next/image";
-
-import ArrowDownIcon from "@spt/assets/icons/arrow-down.svg";
 
 interface SelectOption {
   value: string;
@@ -48,6 +45,7 @@ const Select: FC<CustomSelectProps> = ({
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [pickedOption, setPickedOption] = useState<SelectOption | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -118,7 +116,11 @@ const Select: FC<CustomSelectProps> = ({
       )
     : options;
 
-  const selectedOption = options.find((opt) => opt.value === field.value);
+  // With server-side search the options are replaced as the user types, so the
+  // picked option can drop out of the list — fall back to it for the label.
+  const selectedOption =
+    options.find((opt) => opt.value === field.value) ??
+    (pickedOption?.value === field.value ? pickedOption : undefined);
 
   return (
     <div className="flex flex-col gap-1" ref={dropdownRef}>
@@ -167,21 +169,12 @@ const Select: FC<CustomSelectProps> = ({
             )}
 
             <div ref={listRef} onScroll={handleScroll} className="max-h-52 overflow-auto">
-              {/* Dropdown Icon */}
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
-                <Image
-                  src={ArrowDownIcon}
-                  alt="Dropdown arrow"
-                  width={16}
-                  height={16}
-                />
-              </span>
-
               {displayedOptions.length > 0
                 ? displayedOptions.map((option) => (
                     <div
                       key={option.value}
                       onClick={() => {
+                        setPickedOption(option);
                         helpers.setValue(option.value);
                         onChange?.(option.value);
                         setOpen(false);

@@ -16,8 +16,9 @@ const Overview = ({
   steps: OnboardingStepInfo[];
   onContinue: () => void;
 }) => {
-  const activeIndex = steps.findIndex((step) => step.status === "active");
-  const progress = ((activeIndex + 1) / steps.length) * 100;
+  // Only finished steps count, so the bar never reads 100% while one is still open.
+  const doneCount = steps.filter((step) => step.status === "done").length;
+  const progress = (doneCount / steps.length) * 100;
 
   return (
     <main className="w-full bg-white">
