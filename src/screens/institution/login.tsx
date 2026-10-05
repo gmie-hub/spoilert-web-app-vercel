@@ -17,7 +17,6 @@ import { validations } from "@spt/utils/validation";
 
 const REMEMBER_ME_KEY = "institutionRememberMeCredentials";
 
-console.log("chec if deplo");
 
 const childVariants = {
   hidden: { opacity: 0, y: 20 },
