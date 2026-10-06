@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { FiLock } from "react-icons/fi";
 
 import useJoinCommunityMutation from "@spt/hooks/apiRequests/useJoinCommunityMutation";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
 import type { CommunityCardItem } from "../communityTypes";
 
@@ -42,7 +43,7 @@ const CommunityCard = ({ community, variant, onClick }: CommunityCardProps) => {
     if (isLocked) {
       const spoilId = community?.spoil_id || "";
       if (spoilId) {
-        router.push(`/spoil-details/${spoilId}`);
+        router.push(getSpoilDetailsHref({ ...community.spoil, id: spoilId }));
       }
       return;
     }

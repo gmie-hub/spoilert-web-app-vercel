@@ -13,6 +13,7 @@ import UserIcon from "@spt/assets/icons/user.svg";
 import Button from "@spt/components/button";
 import { useGetAllSpoilsQuery } from "@spt/hooks/apiRequests/useGetAllSpoilsQuery";
 import { useAuthStore } from "@spt/store/authStore";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 import type { SpoilDatum } from "@spt/utils/spoils";
 
 const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
@@ -24,7 +25,7 @@ const FeaturedSpoilItem = ({ spoil }: { spoil: SpoilDatum }) => {
   return (
     <button
       type="button"
-      onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+      onClick={() => router.push(getSpoilDetailsHref(spoil))}
       className="flex w-full items-start gap-4 rounded-[24px] bg-white p-4 text-left shadow-[0_18px_40px_rgba(8,55,72,0.08)] ring-1 ring-[#E8F1F5] transition hover:-translate-y-0.5 hover:shadow-[0_22px_50px_rgba(8,55,72,0.12)]"
     >
       <div className="relative h-[112px] w-[120px] shrink-0 overflow-hidden rounded-[18px] bg-[#EAF2F5]">

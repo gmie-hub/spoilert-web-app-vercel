@@ -9,6 +9,7 @@ import ClockIcon from "@spt/assets/icons/clock.svg";
 import ProfileIcon from "@spt/assets/icons/profile-2user.svg";
 import Button from "@spt/components/button";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 interface SpoilOverviewProps {
@@ -100,7 +101,7 @@ export default function SpoilOverview({ spoilId }: SpoilOverviewProps) {
 
     
 
-    router.push(`/spoil-details/${spoil.id}`);
+    router.push(getSpoilDetailsHref(spoil));
   };
 
   return (

@@ -11,6 +11,7 @@ import HStack from "@spt/components/hstack";
 import WebsiteSection from "@spt/components/websiteSection";
 import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
 const InstitutionSpoils = () => {
   const router = useRouter();
@@ -52,10 +53,10 @@ const InstitutionSpoils = () => {
             className="bg-white rounded-xl shadow-lg overflow-hidden p-4 flex flex-col sm:flex-row items-start gap-4 cursor-pointer"
             role="button"
             tabIndex={0}
-            onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+            onClick={() => router.push(getSpoilDetailsHref(spoil))}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                router.push(`/spoil-details/${spoil.id}`);
+                router.push(getSpoilDetailsHref(spoil));
               }
             }}
           >

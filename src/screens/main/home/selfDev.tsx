@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import WebsiteSection from "@spt/components/websiteSection";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 // eslint-disable-next-line import/order
 import HStack from "@spt/components/hstack";
 
@@ -56,9 +57,9 @@ const SelfDev = () => {
                 role="button"
                 tabIndex={0}
                 className="cursor-pointer"
-                onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+                onClick={() => router.push(getSpoilDetailsHref(spoil))}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") router.push(`/spoil-details/${spoil.id}`);
+                  if (e.key === "Enter" || e.key === " ") router.push(getSpoilDetailsHref(spoil));
                 }}
               >
                 <SpoilCard spoil={spoil} index={index} />
@@ -74,9 +75,9 @@ const SelfDev = () => {
                 role="button"
                 tabIndex={0}
                 className="cursor-pointer"
-                onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+                onClick={() => router.push(getSpoilDetailsHref(spoil))}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") router.push(`/spoil-details/${spoil.id}`);
+                  if (e.key === "Enter" || e.key === " ") router.push(getSpoilDetailsHref(spoil));
                 }}
               >
                 <SpoilCard

@@ -24,6 +24,7 @@ import useCreateCommunityMutation from "@spt/hooks/apiRequests/useCreateCommunit
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
 import ShareLinkModal from "@spt/screens/main/home/spoilDetails/ShareLinkModal";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
 import Details from "../../../home/spoilDetails/details";
 import SponsorSpoilModal from "../../../home/spoilDetails/SponsorSpoilModal";
@@ -300,7 +301,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
       <ShareLinkModal
         open={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        url={`${typeof window !== "undefined" ? window.location.origin : ""}/spoil-details/${spoil.id}`}
+        url={`${typeof window !== "undefined" ? window.location.origin : ""}${getSpoilDetailsHref(spoil)}`}
       />
     </div>
   );

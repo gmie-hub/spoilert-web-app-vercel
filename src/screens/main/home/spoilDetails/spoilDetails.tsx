@@ -22,6 +22,7 @@ import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQu
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
 import HStack from "../../../../components/hstack";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
@@ -371,7 +372,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
         <ShareLinkModal
           open={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          url={`${typeof window !== "undefined" ? window.location.origin : ""}/spoil-details/${spoil.id}`}
+          url={`${typeof window !== "undefined" ? window.location.origin : ""}${getSpoilDetailsHref(spoil)}`}
         />
       </section>
     </section>

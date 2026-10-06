@@ -9,6 +9,7 @@ import SpoilCard from "@spt/components/spoilCard";
 import Stack from "@spt/components/stack";
 import WebsiteSection from "@spt/components/websiteSection";
 import { useGetInstitutionSpoilsQuery } from "@spt/hooks/apiRequests/useGetInstitutionSpoilsQuery";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
 
 const TrendingSpoil = () => {
@@ -46,10 +47,10 @@ const TrendingSpoil = () => {
                 key={spoil.id ?? index}
                 role="button"
                 tabIndex={0}
-                onClick={() => router.push(`/spoil-details/${spoil.id}`)}
+                onClick={() => router.push(getSpoilDetailsHref(spoil))}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ")
-                    router.push(`/spoil-details/${spoil.id}`);
+                    router.push(getSpoilDetailsHref(spoil));
                 }}
                 className="cursor-pointer"
               >
