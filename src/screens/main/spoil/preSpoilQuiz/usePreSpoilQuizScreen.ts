@@ -9,6 +9,7 @@ import { useGetQuizBySpoilId } from "@spt/hooks/apiRequests/useGetQuizBySpoilId"
 import { useGetQuizDetailsQuery } from "@spt/hooks/apiRequests/useGetQuizDetailsQuery";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import type { QuizDetailsData } from "@spt/types/quiz";
+import { getSpoilOverviewHref } from "@spt/utils/spoilRoutes";
 
 import { getSpoilQuizPageContent } from "./content";
 import {
@@ -213,7 +214,7 @@ export const usePreSpoilQuizScreen = ({
       return;
     }
 
-    router.push(`/spoil/${spoil.id}`);
+    router.push(getSpoilOverviewHref(spoil.id));
   };
 
   const hasCertificate = spoil.has_certificate === 1;

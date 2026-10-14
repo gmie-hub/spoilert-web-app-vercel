@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import ArrowLeftIcon from "@spt/assets/icons/arrow-left.svg";
+import { getSpoilOverviewHref } from "@spt/utils/spoilRoutes";
 
 export const Breadcrumbs = ({
   crumbLabel,
@@ -30,7 +31,7 @@ export const Breadcrumbs = ({
       Homepage
     </Link>
     <span>/</span>
-    <Link href={`/spoil/${spoilId}`} className="underline underline-offset-2">
+    <Link href={getSpoilOverviewHref(spoilId)} className="underline underline-offset-2">
       Spoil Overview
     </Link>
     <span>/</span>

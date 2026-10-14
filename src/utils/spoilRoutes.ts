@@ -20,3 +20,7 @@ interface SpoilLinkTarget {
  */
 export const getSpoilDetailsHref = ({ id, slug, title }: SpoilLinkTarget) =>
   `/spoil/${id}/${slug || slugify(title ?? "") || "details"}`;
+
+/** URL of the pre-start "Spoylz Overview" screen. Bare `/spoil/:id` goes to details. */
+export const getSpoilOverviewHref = (id: number | string) =>
+  `/spoil/${id}/overview`;

@@ -113,7 +113,7 @@ export default function SpoilChatsList() {
               ))}
             </div>
           ) : (
-            <EnrolledEmptyState onExplore={() => router.push("/")} />
+            <EnrolledEmptyState onExplore={() => router.push("/categories")} />
           )}
         </div>
       </div>

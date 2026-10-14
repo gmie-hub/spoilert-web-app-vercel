@@ -62,7 +62,11 @@ const TrendingSpoil = () => {
       </Stack>
 
       <div className="flex justify-center mt-10">
-        <Button variant="default" className="rounded-full px-6">
+        <Button
+          variant="default"
+          className="rounded-full px-6"
+          onClick={() => router.push("/categories")}
+        >
           Explore Spoylz
         </Button>
       </div>
