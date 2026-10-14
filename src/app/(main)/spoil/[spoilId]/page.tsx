@@ -1,15 +1,14 @@
-import SpoilOverview from "@spt/screens/main/spoil";
+import SpoilDetails from "@spt/screens/main/home/spoilDetails/spoilDetails";
 
-interface SpoilOverviewPageProps {
+interface SpoilPageProps {
   params: Promise<{
     spoilId: string;
   }>;
 }
 
-export default async function SpoilOverviewPage({
-  params,
-}: SpoilOverviewPageProps) {
+/** Bare `/spoil/:id` URL (shared by the mobile app) — shows the spoil's details page. */
+export default async function SpoilPage({ params }: SpoilPageProps) {
   const { spoilId } = await params;
 
-  return <SpoilOverview spoilId={spoilId} />;
+  return <SpoilDetails spoilId={spoilId} />;
 }

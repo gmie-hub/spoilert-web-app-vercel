@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import ArrowIcon from "@spt/assets/icons/arrow-right-icon.svg";
 import ThumbUp from "@spt/assets/icons/vuesax.svg";
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import Button from "./button";
@@ -21,7 +22,7 @@ interface Props {
 const PromotedSpoilCard: React.FC<Props> = ({ spoil, index = 0 }) => {
   const router = useRouter();
   const { toggleLike, isLoading: likeLoading } = useToggleSpoilLikeMutation();
-  const handleNavigate = () => router.push(`/spoil-details/${spoil.id}`);
+  const handleNavigate = () => router.push(getSpoilDetailsHref(spoil));
 
   return (
     <motion.div

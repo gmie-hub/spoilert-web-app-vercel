@@ -8,6 +8,7 @@ import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
 import ChatIcon from "@spt/assets/icons/chat.svg";
 import Button from "@spt/components/button";
 import useJoinCommunityMutation from "@spt/hooks/apiRequests/useJoinCommunityMutation";
+import { getSpoilOverviewHref } from "@spt/utils/spoilRoutes";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import { Breadcrumbs } from "./preSpoilQuiz/components/Breadcrumbs";
@@ -38,7 +39,7 @@ export const StartSpoilHeader = ({
       return;
     }
 
-    router.push(`/spoil/${spoilId}`);
+    router.push(getSpoilOverviewHref(spoilId));
   };
 
   const handleCommunityAction = async () => {

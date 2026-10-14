@@ -22,6 +22,7 @@ import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQu
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import { getSpoilDetailsHref, getSpoilOverviewHref } from "@spt/utils/spoilRoutes";
 
 import HStack from "../../../../components/hstack";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
@@ -98,7 +99,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const isFallbackHeroImage = !spoil.cover_image_url;
   const isFreeSpoil = spoil?.pricing?.toLowerCase() === "free";
   const price = formatPrice(spoil);
-  const spoilOverviewHref = `/spoil/${spoil.id}`;
+  const spoilOverviewHref = getSpoilOverviewHref(spoil.id);
   const hasProgress = Number(spoil?.percentage_completed ?? 0) > 0;
   const isEnrolled = Boolean(spoil?.is_enrolled);
   const shouldContinue = isEnrolled || hasProgress;
@@ -371,7 +372,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
         <ShareLinkModal
           open={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          url={`${typeof window !== "undefined" ? window.location.origin : ""}/spoil-details/${spoil.id}`}
+          url={`${typeof window !== "undefined" ? window.location.origin : ""}${getSpoilDetailsHref(spoil)}`}
         />
       </section>
     </section>

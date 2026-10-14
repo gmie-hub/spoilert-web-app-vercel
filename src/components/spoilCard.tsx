@@ -8,6 +8,7 @@ import BookedmarkIcon from "@spt/assets/icons/booked.svg";
 import BookmarkIcon from "@spt/assets/icons/fav.svg";
 import RatingIcon from "@spt/assets/icons/star.svg";
 import useAddBookmarkMutation from "@spt/hooks/apiRequests/useAddBookmarkMutation";
+import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 import { SpoilDatum } from "@spt/utils/spoils";
 
 import HStack from "./hstack";
@@ -27,7 +28,7 @@ const SpoilCard: React.FC<SpoilCardProps> = ({
   index = 0,
   className = "",
 }) => {
-  const spoilHref = `/spoil-details/${spoil.id}`;
+  const spoilHref = getSpoilDetailsHref(spoil);
   const { addBookmark, isLoading: isBookmarking } = useAddBookmarkMutation();
 
   const handleBookmark = async (e: React.MouseEvent) => {

@@ -63,7 +63,7 @@ export default function MyLearningPage() {
           {!isLoading && !isError && items.length === 0 ? (
             <MyLearningEmptyState
               tab={activeTab}
-              onExplore={() => router.push("/")}
+              onExplore={() => router.push("/categories")}
             />
           ) : null}
         </div>

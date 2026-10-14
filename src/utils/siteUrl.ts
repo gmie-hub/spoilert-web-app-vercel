@@ -5,7 +5,9 @@
  * Priority:
  *  1. NEXT_PUBLIC_SITE_URL  — set this in Vercel for your custom domain.
  *  2. VERCEL_PROJECT_PRODUCTION_URL — provided automatically by Vercel.
- *  3. http://localhost:3000 — local dev fallback.
+ *  3. https://thespoilert.com — any other production build (e.g. PM2), so
+ *     canonical tags and the sitemap never point Google at localhost.
+ *  4. http://localhost:4000 — local dev fallback.
  */
 export const getSiteUrl = (): string => {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
@@ -14,5 +16,7 @@ export const getSiteUrl = (): string => {
   const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
   if (vercel) return `https://${vercel}`;
 
-  return "http://localhost:3000";
+  if (process.env.NODE_ENV === "production") return "https://thespoilert.com";
+
+  return "http://localhost:4000";
 };
