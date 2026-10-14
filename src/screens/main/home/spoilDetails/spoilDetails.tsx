@@ -117,12 +117,14 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
         : 0;
   const certificateFee = Number(spoil.certificate_fee) || 0;
 
-  // initialize payment: hits /spoils/learner/buy and returns the gateway data
+  // initialize payment: hits /spoils/learner/buy and returns the gateway data.
+  // Without a successMessage (paid spoils) no success toast is shown, since the
+  // user hasn't actually paid yet.
   const initiateBuySpoil = async (successMessage?: string) => {
     const response = await buySpoilHandler(
       spoil.id,
       "FLUTTERWAVE",
-      successMessage ? { successMessage } : undefined,
+      successMessage ? { successMessage } : { showSuccessToast: false },
     );
 
     if (response) {

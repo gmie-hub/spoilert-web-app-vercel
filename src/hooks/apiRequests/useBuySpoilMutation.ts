@@ -36,19 +36,23 @@ const useBuySpoilMutation = () => {
   const buySpoilHandler = async (
     spoil_id: number | string,
     gateway: "FLUTTERWAVE" | string = "FLUTTERWAVE",
-    options?: { successMessage?: string },
+    options?: { successMessage?: string; showSuccessToast?: boolean },
   ) => {
     try {
       const response = await mutation.mutateAsync({ spoil_id, gateway });
 
+      // Paid spoils pass `showSuccessToast: false`: the call only initializes
+      // payment, so the backend's "Spoil bought successfully" would be misleading.
       // When a caller supplies `successMessage` we show exactly that and ignore
       // the backend message (e.g. free spoils show "Spoil enrolled successfully"
       // instead of the payment-oriented copy the API returns).
-      toast.success(
-        options?.successMessage ||
-          response?.message ||
-          "Payment initialized successfully",
-      );
+      if (options?.showSuccessToast !== false) {
+        toast.success(
+          options?.successMessage ||
+            response?.message ||
+            "Payment initialized successfully",
+        );
+      }
 
       return response;
     } catch (error: any) {
