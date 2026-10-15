@@ -3,6 +3,7 @@ const TONE_STYLES: Record<string, string> = {
   Completed: "bg-green-50 text-green-600",
   Successful: "bg-green-50 text-green-600",
   Unpublished: "bg-red-50 text-red-600",
+  Disabled: "bg-red-50 text-red-600",
   Failed: "bg-red-50 text-red-600",
   Ongoing: "bg-yellow-50 text-yellow-600",
   Pending: "bg-yellow-50 text-yellow-600",

@@ -176,7 +176,13 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
     // response can be displayed inside the modal
     setPaymentData(null);
     setIsPaymentModalOpen(true);
-    await initiateBuySpoil();
+    const response = await initiateBuySpoil();
+
+    // the error toast already explains the failure; don't leave the modal
+    // stuck on its loading skeletons
+    if (!response) {
+      setIsPaymentModalOpen(false);
+    }
   };
 
   return (
@@ -355,6 +361,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
           onMakePayment={handleGoToGateway}
           isMakingPayment={isBuyingSpoil}
           paymentData={paymentData}
+          chargesBreakdown={spoil.charges_breakdown}
           onRedeemSuccess={handleRedeemSuccess}
         />
 

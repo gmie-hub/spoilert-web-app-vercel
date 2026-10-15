@@ -67,7 +67,7 @@ const ENROLLMENT_STATUSES: Record<string, EnrollmentStatus> = {
 
 // Falls back to the completion percentage when there's no status; null when
 // there's neither.
-const toEnrollmentStatus = (
+export const toEnrollmentStatus = (
   status?: string | null,
   percentage?: number | null,
 ): EnrollmentStatus | null => {

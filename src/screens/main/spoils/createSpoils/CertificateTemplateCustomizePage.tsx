@@ -13,6 +13,7 @@ import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplate
 import useUpdateSpoilTemplateMutation from "@spt/hooks/apiRequests/useUpdateSpoilTemplateMutation";
 import { useAuthStore } from "@spt/store/authStore";
 import useCreateSpoilStore from "@spt/store/createSpoilStore";
+import { CERTIFICATE_TEMPLATE_FIELDS } from "@spt/utils/certificateTemplate";
 
 import CertificateCustomizationWorkspace from "./components/CertificateCustomizationWorkspace";
 import CertificateSaveSuccessModal from "./components/CertificateSaveSuccessModal";
@@ -20,12 +21,6 @@ import {
   extractEmbeddedCertificateAssets,
   serializeCertificateMarkup,
 } from "./components/certificateTemplateEditing";
-
-const CERTIFICATE_TEMPLATE_FIELDS = [
-  { name: "Title", type: "string" },
-  { name: "Recipient Name", type: "string" },
-  { name: "Body", type: "string" },
-] as const;
 
 export default function CertificateTemplateCustomizePage() {
   const router = useRouter();

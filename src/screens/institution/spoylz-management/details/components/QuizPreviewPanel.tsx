@@ -2,7 +2,20 @@
 
 import { useState } from "react";
 
-import { MOCK_QUIZ_QUESTIONS, QUIZ_SECTION_CONFIG, type QuizSection } from "./quizConstants";
+import { useGetQuizDetailsQuery } from "@spt/hooks/apiRequests/useGetQuizDetailsQuery";
+import type { QuizDetailsData } from "@spt/types/quiz";
+
+import { FILL_IN_THE_BLANK, MULTIPLE_CHOICE, parseQuizOptions } from "../../mappers";
+
+import EditIconButton from "./EditIconButton";
+import EditQuestionModal, { type QuizQuestion } from "./modals/EditQuestionModal";
+import EditQuizModal from "./modals/EditQuizModal";
+
+const DEFAULT_INTROS: Record<string, string> = {
+  pre: "Learners take this quiz before they start the Spoylz, to show what they already know.",
+  post: "Learners take this quiz after they finish the Spoylz, to test what they have learned.",
+  module: "Learners take this quiz at the end of the module, to check what they have just learned.",
+};
 
 const ClipboardIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -42,76 +55,105 @@ const PlayQuizBadge = () => (
   </div>
 );
 
-const QuizIntro = ({ section, onStart }: { section: QuizSection; onStart: () => void }) => {
-  const config = QUIZ_SECTION_CONFIG[section];
+const QuizIntro = ({
+  quiz,
+  onStart,
+  onEdit,
+}: {
+  quiz: QuizDetailsData;
+  onStart: () => void;
+  onEdit: () => void;
+}) => {
+  const questions = quiz.questions ?? [];
+  const multipleChoice = questions.filter((question) => question.type === MULTIPLE_CHOICE).length;
+  const fillInBlank = questions.filter((question) => question.type === FILL_IN_THE_BLANK).length;
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center sm:p-8">
       <PlayQuizBadge />
 
-      <p className="mx-auto mt-5 max-w-xl text-sm text-gray-600">{config.intro}</p>
+      <h3 className="mt-5 text-lg font-semibold text-[#212529]">{quiz.title}</h3>
+      <p className="mx-auto mt-2 max-w-xl text-sm text-gray-600">
+        {quiz.description || DEFAULT_INTROS[quiz.type] || DEFAULT_INTROS.module}
+      </p>
 
       <div className="mx-auto mt-5 max-w-xs space-y-3 text-left">
         <div className="flex items-center gap-2.5 text-sm text-[#212529]">
           <ClipboardIcon />
-          {config.totalQuestions} Questions
+          {questions.length} Questions
         </div>
         <div className="flex items-center gap-2.5 text-sm text-[#212529]">
           <ClipboardIcon />
-          {config.multipleChoice} Multiple choice
+          {multipleChoice} Multiple choice
         </div>
         <div className="flex items-center gap-2.5 text-sm text-[#212529]">
           <ClipboardIcon />
-          {config.fillInBlank} Fill in the blank
+          {fillInBlank} Fill in the blank
         </div>
         <div className="flex items-center gap-2.5 text-sm text-[#212529]">
           <ClockIcon />
-          {config.minutes} Minutes
+          {quiz.time_limit ?? "-"} Minutes
         </div>
       </div>
 
-      <p className="mx-auto mt-5 max-w-xl text-sm text-gray-600">
-        You must score at least <span className="font-semibold text-[#212529]">{config.passScore}%</span> to
-        complete this Spoylz and receive your certificate.
-      </p>
+      {quiz.pass_mark != null && (
+        <p className="mx-auto mt-5 max-w-xl text-sm text-gray-600">
+          Learners must score at least <span className="font-semibold text-[#212529]">{quiz.pass_mark}%</span> to
+          pass this quiz.
+        </p>
+      )}
 
-      <button
-        type="button"
-        onClick={onStart}
-        className="mx-auto mt-6 block w-full max-w-md rounded-xl bg-[var(--color-blue)] py-3.5 text-sm font-semibold text-white"
-      >
-        View Quiz
-      </button>
+      <div className="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="flex-1 rounded-xl border border-[var(--color-blue)] py-3.5 text-sm font-semibold text-[var(--color-blue)]"
+        >
+          Edit Quiz
+        </button>
+        <button
+          type="button"
+          onClick={onStart}
+          disabled={questions.length === 0}
+          className="flex-1 rounded-xl bg-[var(--color-blue)] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          {questions.length === 0 ? "No Questions Yet" : "View Quiz"}
+        </button>
+      </div>
     </div>
   );
 };
 
-const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => void }) => {
-  const config = QUIZ_SECTION_CONFIG[section];
-  const questions = MOCK_QUIZ_QUESTIONS.slice(0, config.totalQuestions);
+const QuizRunner = ({ quiz, onExit }: { quiz: QuizDetailsData; onExit: () => void }) => {
+  const questions = quiz.questions ?? [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [furthestVisited, setFurthestVisited] = useState(0);
+  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
 
-  const question = questions[currentIndex];
-  const isFirst = currentIndex === 0;
-  const isLast = currentIndex === questions.length - 1;
+  const index = Math.min(currentIndex, questions.length - 1);
+  const question = questions[index];
+  const isFirst = index === 0;
+  const isLast = index === questions.length - 1;
+  const options = parseQuizOptions(question?.options);
 
-  const goTo = (index: number) => {
-    setCurrentIndex(index);
-    setFurthestVisited((prev) => Math.max(prev, index));
+  const goTo = (next: number) => {
+    setCurrentIndex(next);
+    setFurthestVisited((prev) => Math.max(prev, next));
   };
+
+  if (!question) return null;
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
       <div className="flex flex-wrap gap-2">
-        {questions.map((_, index) => {
-          const isCurrent = index === currentIndex;
-          const isVisited = index <= furthestVisited;
+        {questions.map((item, position) => {
+          const isCurrent = position === index;
+          const isVisited = position <= furthestVisited;
           return (
             <button
-              key={index}
+              key={item.id}
               type="button"
-              onClick={() => goTo(index)}
+              onClick={() => goTo(position)}
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold ${
                 isCurrent
                   ? "bg-[var(--color-blue)] text-white"
@@ -120,7 +162,7 @@ const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => v
                     : "bg-[var(--color-blue-lightest)] text-[var(--color-blue-light)]"
               }`}
             >
-              {index + 1}
+              {position + 1}
             </button>
           );
         })}
@@ -128,12 +170,15 @@ const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => v
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-500">
-          Question <span className="font-semibold text-[#212529]">{currentIndex + 1}</span> of{" "}
+          Question <span className="font-semibold text-[#212529]">{index + 1}</span> of{" "}
           <span className="font-semibold text-[#212529]">{questions.length}</span>
         </p>
-        <div className="flex items-center gap-1.5 text-sm font-medium text-[#212529]">
-          <ClockIcon color="var(--color-yellow)" />
-          00:{String(config.minutes).padStart(2, "0")}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-[#212529]">
+            <ClockIcon color="var(--color-yellow)" />
+            {quiz.time_limit ?? "-"} min
+          </div>
+          <EditIconButton label="Edit question" onClick={() => setEditingQuestion(question)} />
         </div>
       </div>
 
@@ -141,15 +186,15 @@ const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => v
         {question.question}
       </div>
 
-      {question.type === "multiple-choice" ? (
+      {question.type === MULTIPLE_CHOICE ? (
         <div className="mt-4 space-y-3">
-          {question.options.map((option) => {
-            const isCorrect = option === question.correctAnswer;
+          {options.map((option, position) => {
+            const isCorrect = option === question.answer;
             return (
               <div
-                key={option}
-                className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm ${
-                  isCorrect ? "border-[var(--color-green)] text-[#212529]" : "border-gray-200 text-[#212529]"
+                key={`${option}-${position}`}
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm text-[#212529] ${
+                  isCorrect ? "border-[var(--color-green)]" : "border-gray-200"
                 }`}
               >
                 {isCorrect ? (
@@ -167,7 +212,7 @@ const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => v
           <p className="mb-2 text-sm text-gray-400">Answer</p>
           <textarea
             readOnly
-            value={question.correctAnswer}
+            value={question.answer ?? ""}
             rows={3}
             className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-[#212529] outline-none"
           />
@@ -178,7 +223,7 @@ const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => v
         {!isFirst && (
           <button
             type="button"
-            onClick={() => goTo(currentIndex - 1)}
+            onClick={() => goTo(index - 1)}
             className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-medium text-[#212529]"
           >
             Previous
@@ -186,24 +231,53 @@ const QuizRunner = ({ section, onExit }: { section: QuizSection; onExit: () => v
         )}
         <button
           type="button"
-          onClick={() => (isLast ? onExit() : goTo(currentIndex + 1))}
+          onClick={() => (isLast ? onExit() : goTo(index + 1))}
           className="flex-1 rounded-xl bg-[var(--color-blue)] py-3 text-sm font-semibold text-white"
         >
           {isLast ? "Finish Preview" : "Next"}
         </button>
       </div>
+
+      {editingQuestion && (
+        <EditQuestionModal question={editingQuestion} onClose={() => setEditingQuestion(null)} />
+      )}
     </div>
   );
 };
 
-const QuizPreviewPanel = ({ section }: { section: QuizSection }) => {
+const QuizPreviewPanel = ({ quizId }: { quizId: number }) => {
   const [started, setStarted] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const {
+    quizDetailsData: quiz,
+    isQuizDetailsLoading,
+    isQuizDetailsError,
+    quizDetailsErrorMessage,
+  } = useGetQuizDetailsQuery(quizId);
 
-  if (!started) {
-    return <QuizIntro section={section} onStart={() => setStarted(true)} />;
+  if (isQuizDetailsLoading) {
+    return <div className="h-[420px] animate-pulse rounded-2xl bg-[#F3F4F6]" />;
   }
 
-  return <QuizRunner section={section} onExit={() => setStarted(false)} />;
+  if (isQuizDetailsError || !quiz) {
+    return (
+      <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-red-600 sm:p-8">
+        {quizDetailsErrorMessage}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {started && (quiz.questions ?? []).length > 0 ? (
+        <QuizRunner quiz={quiz} onExit={() => setStarted(false)} />
+      ) : (
+        <QuizIntro quiz={quiz} onStart={() => setStarted(true)} onEdit={() => setIsEditOpen(true)} />
+      )}
+
+      {isEditOpen && <EditQuizModal quiz={quiz} onClose={() => setIsEditOpen(false)} />}
+    </>
+  );
 };
 
 export default QuizPreviewPanel;

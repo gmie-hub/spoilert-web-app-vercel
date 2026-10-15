@@ -104,6 +104,7 @@ export interface SpoilDetailsData {
   module_spoil_quiz: Prespoilquiz;
   related_spoils: Relatedspoil[];
   display_amount: number;
+  charges_breakdown?: ChargesBreakdown | null;
   average_rating: number;
   ratings_count: number;
   enrolled_users: number;
@@ -117,6 +118,14 @@ export interface SpoilDetailsData {
   quizzes: Quiz[];
   community: Community | null;
   is_bookmarked:boolean;
+}
+export interface ChargesBreakdown {
+  net_amount: number;
+  tax_amount: number;
+  admin_charge: number;
+  certificate_fee: number;
+  tutor_amount: number;
+  total_amount: number;
 }
 export interface Community {
   id: number;

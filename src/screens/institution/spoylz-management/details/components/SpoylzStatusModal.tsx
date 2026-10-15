@@ -24,10 +24,12 @@ export type SpoylzStatusAction = "disable" | "enable";
 
 const SpoylzStatusModal = ({
   action,
+  isLoading = false,
   onClose,
   onConfirm,
 }: {
   action: SpoylzStatusAction;
+  isLoading?: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }) => {
@@ -36,7 +38,7 @@ const SpoylzStatusModal = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+      onClick={isLoading ? undefined : onClose}
     >
       <div
         className="w-full max-w-[480px] rounded-2xl bg-white p-8 text-center shadow-[0_18px_50px_rgba(15,23,42,0.15)]"
@@ -59,6 +61,7 @@ const SpoylzStatusModal = ({
           <button
             type="button"
             onClick={onClose}
+            disabled={isLoading}
             className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-medium text-[#212529]"
           >
             Cancel
@@ -66,11 +69,18 @@ const SpoylzStatusModal = ({
           <button
             type="button"
             onClick={onConfirm}
-            className={`flex-1 rounded-xl py-3 text-sm font-medium text-white ${
+            disabled={isLoading}
+            className={`flex-1 rounded-xl py-3 text-sm font-medium text-white disabled:opacity-70 ${
               isDisable ? "bg-[var(--color-red)]" : "bg-[var(--color-green)]"
             }`}
           >
-            {isDisable ? "Yes, Disable" : "Yes, Enable"}
+            {isLoading
+              ? isDisable
+                ? "Disabling..."
+                : "Enabling..."
+              : isDisable
+                ? "Yes, Disable"
+                : "Yes, Enable"}
           </button>
         </div>
       </div>

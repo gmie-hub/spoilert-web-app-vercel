@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import Button from "@spt/components/button";
 import Modal from "@spt/components/modal";
 import useRedeemSponsorshipMutation from "@spt/hooks/apiRequests/useRedeemSponsorshipMutation";
+import type { ChargesBreakdown } from "@spt/utils/spoils";
 
 export interface RedeemedSpoil {
   id: number;
@@ -25,6 +26,8 @@ interface BuySpoilPaymentModalProps {
   isMakingPayment?: boolean;
   // response data returned by the buy-spoil endpoint
   paymentData?: any;
+  // fee breakdown from the spoil details endpoint, shown before paymentData arrives
+  chargesBreakdown?: ChargesBreakdown | null;
   // fired when a sponsorship code is redeemed successfully
   onRedeemSuccess?: (spoil: RedeemedSpoil) => void;
 }
@@ -35,6 +38,13 @@ const formatNaira = (value: number) => {
     maximumFractionDigits: 2,
   })}`;
 };
+
+const AmountSkeleton = ({ className = "h-5 w-24" }: { className?: string }) => (
+  <span
+    aria-hidden
+    className={`inline-block animate-pulse rounded bg-gray-100 align-middle ${className}`}
+  />
+);
 
 const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
   open,
@@ -47,6 +57,7 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
   onMakePayment,
   isMakingPayment = false,
   paymentData,
+  chargesBreakdown,
   onRedeemSuccess,
 }) => {
   const [discountCode, setDiscountCode] = useState("");
@@ -79,15 +90,21 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
   const paymentLink = payment?.payment_link;
   const paymentReference = payment?.reference ?? payment?.tx_ref;
   const isGatewayReady = Boolean(paymentLink);
+  // the spoil's charges_breakdown lets the real amounts render immediately;
+  // without it, amounts stay as skeletons until the buy endpoint responds so
+  // the user never sees the prop-based estimate flip to the backend's figures
+  const isSummaryReady = Boolean(paymentData || chargesBreakdown);
 
-  // prefer the fees returned by the endpoint; fall back to prop-based calc
-  const charges = payment?.charges;
+  // prefer the fees returned by the buy endpoint, then the spoil's
+  // charges_breakdown; fall back to prop-based calc
+  const charges = payment?.charges ?? chargesBreakdown;
   const costFeeValue = Number(charges?.net_amount ?? costFee);
   const adminChargesValue = Number(charges?.admin_charge ?? adminCharges);
   const certificateFeeValue = Number(charges?.certificate_fee ?? certificateFee);
   const vatAmount = Number(charges?.tax_amount ?? costFee * vatRate);
   const total = Number(
     payment?.amount ??
+      charges?.total_amount ??
       costFeeValue + adminChargesValue + certificateFeeValue + vatAmount - discount,
   );
   const vatPercentLabel = costFeeValue
@@ -104,22 +121,34 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
           <p className="text-[#4B5563]">Cost Fee</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(costFeeValue)}</p>
+          <p className="font-semibold text-[#1F2937]">
+            {isSummaryReady ? formatNaira(costFeeValue) : <AmountSkeleton />}
+          </p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
           <p className="text-[#4B5563]">Admin charges</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(adminChargesValue)}</p>
+          <p className="font-semibold text-[#1F2937]">
+            {isSummaryReady ? formatNaira(adminChargesValue) : <AmountSkeleton />}
+          </p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
           <p className="text-[#4B5563]">Certificate Fee</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(certificateFeeValue)}</p>
+          <p className="font-semibold text-[#1F2937]">
+            {isSummaryReady ? formatNaira(certificateFeeValue) : <AmountSkeleton />}
+          </p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
-          <p className="text-[#4B5563]">V.A.T ({vatPercentLabel}%)</p>
-          <p className="font-semibold text-[#1F2937]">{formatNaira(vatAmount)}</p>
+          <p className="text-[#4B5563]">
+            V.A.T (
+            {isSummaryReady ? `${vatPercentLabel}%` : <AmountSkeleton className="h-4 w-8" />}
+            )
+          </p>
+          <p className="font-semibold text-[#1F2937]">
+            {isSummaryReady ? formatNaira(vatAmount) : <AmountSkeleton />}
+          </p>
         </div>
 
         <div className="flex items-center justify-between border-b border-[#E7E7E7] pb-3">
@@ -150,7 +179,9 @@ const BuySpoilPaymentModal: React.FC<BuySpoilPaymentModalProps> = ({
 
         <div className="flex items-center justify-between border-t border-[#E7E7E7] pt-4">
           <p className="text-lg text-[#374151]">Total</p>
-          <p className="text-2xl font-bold text-[#111827]">{formatNaira(total)}</p>
+          <p className="text-2xl font-bold text-[#111827]">
+            {isSummaryReady ? formatNaira(total) : <AmountSkeleton className="h-8 w-32" />}
+          </p>
         </div>
 
         {paymentReference && (
