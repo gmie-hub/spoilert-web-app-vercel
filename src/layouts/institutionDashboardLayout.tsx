@@ -56,7 +56,6 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  /* Temporarily hidden from the sidebar — leaving only Dashboard, Profile and Lecturers visible.
   {
     label: "Spoylz Management",
     href: "/institution/spoylz-management",
@@ -77,6 +76,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  /* Temporarily hidden from the sidebar.
   {
     label: "Revenue",
     href: "/institution/revenue",

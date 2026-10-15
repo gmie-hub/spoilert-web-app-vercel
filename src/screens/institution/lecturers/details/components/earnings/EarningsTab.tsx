@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Pagination } from "@spt/components";
-import { useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import useGetLecturerEarningsBreakdownQuery from "@spt/hooks/apiRequests/useGetLecturerEarningsBreakdownQuery";
 import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 
 import RevenueSplitCard from "../../../../components/RevenueSplitCard";
@@ -48,7 +48,7 @@ const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
   const [search, setSearch] = useState("");
   const [activePage, setActivePage] = useState(1);
 
-  const { earnings, isLoading, isError, errorMessage } = useGetEarningsBreakdownQuery(lecturer.userId);
+  const { earnings, isLoading, isError, errorMessage } = useGetLecturerEarningsBreakdownQuery(lecturer.id);
   const { spoils } = useGetLecturerSpoilsQuery(lecturer.userId);
 
   const breakdown = earnings?.data ?? [];

@@ -2,7 +2,21 @@
 
 import { useState } from "react";
 
-import { MOCK_COURSE_OUTLINE, OUTLINE_LESSON_DETAIL, type OutlineLesson } from "./outlineConstants";
+import LessonContentViewer from "@spt/screens/main/spoil/LessonContentViewer";
+import {
+  type SpoilLesson,
+  type SpoilModule,
+  getLessonTypeLabel,
+  splitLearningOutcomes,
+} from "@spt/screens/main/spoil/startSpoilUtils";
+import { containsHtml, htmlToPlainText } from "@spt/utils/richText";
+import type { SpoilDetailsData } from "@spt/utils/spoils";
+
+import { NOT_AVAILABLE, getFullName } from "../../mappers";
+
+import EditIconButton from "./EditIconButton";
+import EditLessonModal from "./modals/EditLessonModal";
+import EditModuleModal from "./modals/EditModuleModal";
 
 const HamburgerIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -22,30 +36,10 @@ const ChevronToggleIcon = ({ expanded }: { expanded: boolean }) => (
   </svg>
 );
 
-const ChevronRightIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M9 6l6 6-6 6" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const PlayCircleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <circle cx="12" cy="12" r="9.3" stroke="var(--color-blue)" strokeWidth="1.5" />
     <path d="M10 8.5l6 3.5-6 3.5v-7Z" fill="var(--color-blue)" />
-  </svg>
-);
-
-const QuizIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="12" r="9.3" stroke="var(--color-yellow)" strokeWidth="1.5" />
-    <path
-      d="M9.7 9.6a2.3 2.3 0 1 1 3.4 2c-.7.4-1.1.8-1.1 1.6"
-      stroke="var(--color-yellow)"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="12" cy="16.2" r="0.15" fill="var(--color-yellow)" stroke="var(--color-yellow)" strokeWidth="1.2" />
   </svg>
 );
 
@@ -62,12 +56,23 @@ const Avatar = () => (
   </span>
 );
 
-const SpoylzOutlineTab = () => {
+const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
+  const modules = spoil.modules ?? [];
   const [contentHidden, setContentHidden] = useState(false);
-  const [expandedModuleIds, setExpandedModuleIds] = useState<Set<string>>(new Set([MOCK_COURSE_OUTLINE[0].id]));
-  const [selectedLesson, setSelectedLesson] = useState<OutlineLesson>(MOCK_COURSE_OUTLINE[0].lessons[0]);
+  const [expandedModuleIds, setExpandedModuleIds] = useState<Set<number>>(
+    () => new Set(modules[0] ? [modules[0].id] : []),
+  );
+  const [selectedLessonId, setSelectedLessonId] = useState<number | null>(modules[0]?.lessons?.[0]?.id ?? null);
+  const [editingModule, setEditingModule] = useState<SpoilModule | null>(null);
+  const [editingLesson, setEditingLesson] = useState<SpoilLesson | null>(null);
 
-  const toggleModule = (moduleId: string) => {
+  // Looked up from the latest data so an edit shows as soon as the Spoylz refetches.
+  const selectedLesson =
+    modules.flatMap((module) => module.lessons ?? []).find((lesson) => lesson.id === selectedLessonId) ?? null;
+  const lessonContent = selectedLesson?.content ?? "";
+  const learnings = splitLearningOutcomes(spoil.what_to_learn);
+
+  const toggleModule = (moduleId: number) => {
     setExpandedModuleIds((prev) => {
       const next = new Set(prev);
       if (next.has(moduleId)) next.delete(moduleId);
@@ -75,6 +80,14 @@ const SpoylzOutlineTab = () => {
       return next;
     });
   };
+
+  if (modules.length === 0) {
+    return (
+      <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-gray-400 sm:p-8">
+        No modules have been added to this Spoylz yet.
+      </div>
+    );
+  }
 
   return (
     <div className={`grid grid-cols-1 gap-6 ${contentHidden ? "lg:grid-cols-[56px_1fr]" : "lg:grid-cols-[340px_1fr]"}`}>
@@ -99,45 +112,56 @@ const SpoylzOutlineTab = () => {
           </div>
 
           <div className="space-y-3">
-            {MOCK_COURSE_OUTLINE.map((module) => {
+            {modules.map((module, index) => {
               const expanded = expandedModuleIds.has(module.id);
+              const lessons = module.lessons ?? [];
+
               return (
                 <div key={module.id} className="rounded-xl border border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => toggleModule(module.id)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-                  >
-                    <div>
-                      <p className="text-xs text-gray-400">{module.moduleLabel}</p>
-                      <p className="mt-0.5 font-semibold text-[#212529]">{module.title}</p>
-                    </div>
-                    <ChevronToggleIcon expanded={expanded} />
-                  </button>
+                  <div className="flex items-center gap-1 py-1 pl-4 pr-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleModule(module.id)}
+                      className="flex min-w-0 flex-1 items-center justify-between gap-3 py-2 text-left"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-400">Module {index + 1}</p>
+                        <p className="mt-0.5 font-semibold text-[#212529]">{module.title}</p>
+                      </div>
+                      <ChevronToggleIcon expanded={expanded} />
+                    </button>
+                    <EditIconButton label={`Edit module ${index + 1}`} onClick={() => setEditingModule(module)} />
+                  </div>
 
                   {expanded && (
                     <div className="border-t border-gray-100">
-                      {module.lessons.map((lesson) => {
-                        const active = lesson.id === selectedLesson.id;
-                        return (
-                          <button
-                            key={lesson.id}
-                            type="button"
-                            onClick={() => setSelectedLesson(lesson)}
-                            className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm ${
-                              active ? "bg-[var(--color-blue-lightest)]" : ""
-                            }`}
-                          >
-                            {lesson.type === "quiz" ? <QuizIcon /> : <PlayCircleIcon />}
-                            <span
-                              className={`flex-1 ${active ? "font-medium text-[var(--color-blue)]" : "text-[#212529]"}`}
+                      {lessons.length === 0 ? (
+                        <p className="px-4 py-3 text-sm text-gray-400">No lessons in this module yet.</p>
+                      ) : (
+                        lessons.map((lesson) => {
+                          const active = lesson.id === selectedLessonId;
+                          return (
+                            <div
+                              key={lesson.id}
+                              className={`flex items-center gap-1 pr-2 ${active ? "bg-[var(--color-blue-lightest)]" : ""}`}
                             >
-                              {lesson.title}
-                            </span>
-                            <ChevronRightIcon />
-                          </button>
-                        );
-                      })}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedLessonId(lesson.id)}
+                                className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left text-sm"
+                              >
+                                <PlayCircleIcon />
+                                <span
+                                  className={`flex-1 ${active ? "font-medium text-[var(--color-blue)]" : "text-[#212529]"}`}
+                                >
+                                  {lesson.title}
+                                </span>
+                              </button>
+                              <EditIconButton label="Edit lesson" onClick={() => setEditingLesson(lesson)} />
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   )}
                 </div>
@@ -147,45 +171,66 @@ const SpoylzOutlineTab = () => {
         </div>
       )}
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#1b2a4a] via-[#2d1b4a] to-[#4a1b3a]">
-          <button
-            type="button"
-            aria-label="Play preview"
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M9 7l9 5-9 5V7Z" fill="#212529" />
-            </svg>
-          </button>
+      <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
+        {selectedLesson?.content_url && (
+          <div className="relative mb-6 aspect-video min-h-[240px] w-full overflow-hidden rounded-xl bg-black">
+            <LessonContentViewer lesson={selectedLesson} />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-xl font-semibold text-[#212529]">{selectedLesson?.title ?? "Select a lesson"}</h2>
+          {selectedLesson && (
+            <span className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-[#212529]">
+              {getLessonTypeLabel(selectedLesson)}
+            </span>
+          )}
         </div>
 
-        <h2 className="mt-6 text-xl font-semibold text-[#212529]">{selectedLesson.title}</h2>
-        <p className="mt-4 text-sm text-gray-400">Overview</p>
+        {htmlToPlainText(lessonContent) &&
+          (containsHtml(lessonContent) ? (
+            <div
+              className="mt-4 text-sm leading-relaxed text-gray-600 [&_a]:text-[var(--color-blue)] [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+              dangerouslySetInnerHTML={{ __html: lessonContent }}
+            />
+          ) : (
+            <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-gray-600">{lessonContent}</p>
+          ))}
+
+        <p className="mt-6 text-sm text-gray-400">Overview</p>
 
         <span className="mt-2 inline-flex items-center rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-[#212529]">
-          {OUTLINE_LESSON_DETAIL.category}
+          {spoil.category?.name || "General"}
         </span>
 
         <div className="mt-3 flex items-center gap-3">
           <Avatar />
           <span className="font-medium text-[var(--color-blue)] underline underline-offset-2">
-            {OUTLINE_LESSON_DETAIL.lecturerName}
+            {getFullName(spoil.tutor)}
           </span>
         </div>
 
-        <p className="mt-4 text-sm leading-relaxed text-gray-500">{OUTLINE_LESSON_DETAIL.description}</p>
+        <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-gray-500">
+          {spoil.description || NOT_AVAILABLE}
+        </p>
 
         <h3 className="mt-6 font-semibold text-[#212529]">What you will learn</h3>
-        <ul className="mt-3 space-y-3">
-          {OUTLINE_LESSON_DETAIL.whatYouWillLearn.map((point) => (
-            <li key={point} className="flex items-start gap-3 text-sm text-gray-600">
-              <DiamondBullet />
-              {point}
-            </li>
-          ))}
-        </ul>
+        {learnings.length > 0 ? (
+          <ul className="mt-3 space-y-3">
+            {learnings.map((point, index) => (
+              <li key={`${point}-${index}`} className="flex items-start gap-3 text-sm text-gray-600">
+                <DiamondBullet />
+                {point}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-gray-600">{NOT_AVAILABLE}</p>
+        )}
       </div>
+
+      {editingModule && <EditModuleModal module={editingModule} onClose={() => setEditingModule(null)} />}
+      {editingLesson && <EditLessonModal lesson={editingLesson} onClose={() => setEditingLesson(null)} />}
     </div>
   );
 };

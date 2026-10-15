@@ -117,12 +117,14 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
         : 0;
   const certificateFee = Number(spoil.certificate_fee) || 0;
 
-  // initialize payment: hits /spoils/learner/buy and returns the gateway data
+  // initialize payment: hits /spoils/learner/buy and returns the gateway data.
+  // Without a successMessage (paid spoils) no success toast is shown, since the
+  // user hasn't actually paid yet.
   const initiateBuySpoil = async (successMessage?: string) => {
     const response = await buySpoilHandler(
       spoil.id,
       "FLUTTERWAVE",
-      successMessage ? { successMessage } : undefined,
+      successMessage ? { successMessage } : { showSuccessToast: false },
     );
 
     if (response) {
@@ -174,7 +176,13 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
     // response can be displayed inside the modal
     setPaymentData(null);
     setIsPaymentModalOpen(true);
-    await initiateBuySpoil();
+    const response = await initiateBuySpoil();
+
+    // the error toast already explains the failure; don't leave the modal
+    // stuck on its loading skeletons
+    if (!response) {
+      setIsPaymentModalOpen(false);
+    }
   };
 
   return (
@@ -353,6 +361,7 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
           onMakePayment={handleGoToGateway}
           isMakingPayment={isBuyingSpoil}
           paymentData={paymentData}
+          chargesBreakdown={spoil.charges_breakdown}
           onRedeemSuccess={handleRedeemSuccess}
         />
 
