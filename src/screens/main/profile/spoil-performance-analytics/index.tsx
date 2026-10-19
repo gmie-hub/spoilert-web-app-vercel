@@ -1,8 +1,15 @@
 "use client";
 
+import Link from "next/link";
+
 import { useGetSpoilPerformanceQuery } from "@spt/hooks/apiRequests/useGetSpoilPerformanceQuery";
 
 type Segment = { value: number; color: string };
+
+// Pages the chart cards open. The analytics data has no Spoylz ids, so the
+// learner cards open My Spoylz, where each Spoylz lists its enrolled learners.
+const MY_SPOYLZ_HREF = "/profile/my-spoils";
+const EARNINGS_BREAKDOWN_HREF = "/profile/earnings-breakdown";
 
 const COURSE_COLORS = [
   "#1E3A8A",
@@ -95,12 +102,14 @@ function Legend({
 
 function ChartSection({
   title,
+  href,
   courses,
   values,
   colors,
   formatter,
 }: {
   title: string;
+  href: string;
   courses: string[];
   values: number[];
   colors: string[];
@@ -109,13 +118,16 @@ function ChartSection({
   const segments: Segment[] = values.map((value, i) => ({ value, color: colors[i] }));
 
   return (
-    <div className="flex flex-col border border-[#EFEFEF]  rounded-[8px] px-4 py-6">
+    <Link
+      href={href}
+      className="flex flex-col border border-[#EFEFEF]  rounded-[8px] px-4 py-6 cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B5368]/30"
+    >
       <h3 className="text-[18px] font-semibold text-[#212529]">{title}</h3>
       <div className="mt-4">
         <DonutChart segments={segments} />
       </div>
       <Legend courses={courses} values={values} colors={colors} formatter={formatter} />
-    </div>
+    </Link>
   );
 }
 
@@ -159,12 +171,14 @@ export default function SpoilPerformanceAnalyticsPage() {
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
         <ChartSection
           title="Learners Enrolled"
+          href={MY_SPOYLZ_HREF}
           courses={enrolled.map((s) => s.title)}
           values={enrolled.map((s) => s.total)}
           colors={COURSE_COLORS}
         />
         <ChartSection
           title="Revenue Generated"
+          href={EARNINGS_BREAKDOWN_HREF}
           courses={revenue.map((s) => s.title)}
           values={revenue.map((s) => s.total)}
           colors={COURSE_COLORS}
@@ -172,12 +186,14 @@ export default function SpoilPerformanceAnalyticsPage() {
         />
         <ChartSection
           title="Completed Learners"
+          href={MY_SPOYLZ_HREF}
           courses={completed.map((s) => s.title)}
           values={completed.map((s) => s.total)}
           colors={COURSE_COLORS}
         />
         <ChartSection
           title="Ongoing Learners"
+          href={MY_SPOYLZ_HREF}
           courses={ongoing.map((s) => s.title)}
           values={ongoing.map((s) => s.total)}
           colors={COURSE_COLORS}
@@ -187,6 +203,7 @@ export default function SpoilPerformanceAnalyticsPage() {
       <div className="sm:w-1/2 sm:pr-4">
         <ChartSection
           title="Not Started"
+          href={MY_SPOYLZ_HREF}
           courses={notStarted.map((s) => s.title)}
           values={notStarted.map((s) => s.total)}
           colors={NOT_STARTED_COLORS}

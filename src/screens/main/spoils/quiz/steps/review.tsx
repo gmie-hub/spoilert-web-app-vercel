@@ -18,6 +18,7 @@ import type { QuizOverviewDraft, QuizQuestion } from "../types";
 interface ReviewProps {
   overview: QuizOverviewDraft;
   questions: QuizQuestion[];
+  quizType?: string;
   onEditOverview: () => void;
   onEditQuestions: () => void;
   onPublish?: () => Promise<void> | void;
@@ -26,6 +27,7 @@ interface ReviewProps {
 const Review: FC<ReviewProps> = ({
   overview,
   questions,
+  quizType,
   onEditOverview,
   onEditQuestions,
   onPublish,
@@ -78,7 +80,7 @@ const Review: FC<ReviewProps> = ({
                   {overview.timeLimit ? `${overview.timeLimit} Minutes` : "-"}
                 </p>
               </div>
-              {overview.passmark !== undefined && (
+              {quizType !== "pre" && overview.passmark !== undefined && (
                 <div>
                   <p className="text-sm text-[#999B9D]">Passmark</p>
                   <p className="mt-2 text-lg text-black">

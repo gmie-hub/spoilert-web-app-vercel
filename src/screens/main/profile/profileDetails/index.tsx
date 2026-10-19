@@ -26,6 +26,7 @@ const ProfileDetailsSection = () => {
   const profileData = {
     firstName: user?.first_name || "",
     lastName: user?.last_name || "",
+    displayName: user?.display_name || "",
     username: user?.username || "",
     email: user?.email || "",
     countryCode: user?.country_code
@@ -95,6 +96,12 @@ const ProfileDetailsSection = () => {
             value={profileData.username || "—"}
           />
         </div>
+
+        <ProfileLabelValue
+          label="Display Name"
+          value={profileData.displayName || "No display name added yet."}
+          containerClassName="border-t border-[#EFEFEF] pt-6"
+        />
 
         <ProfileLabelValue
           label="Email Address"

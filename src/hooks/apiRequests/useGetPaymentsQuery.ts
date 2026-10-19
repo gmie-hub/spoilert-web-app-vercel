@@ -53,6 +53,8 @@ interface PaymentsResponse {
 export interface PaymentsFilters {
   from_date?: string;
   to_date?: string;
+  // Only the payments for this spoil.
+  spoil_id?: number | null;
   page?: number;
   per_page?: number;
   roleOverride?: "tutor" | "learner";
@@ -112,6 +114,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     }
     if (filters.from_date) params.set("from_date", filters.from_date);
     if (filters.to_date) params.set("to_date", filters.to_date);
+    if (filters.spoil_id) params.set("spoil_id", String(filters.spoil_id));
     if (filters.page) params.set("page", String(filters.page));
     if (filters.per_page) params.set("per_page", String(filters.per_page));
     const query = params.toString();
@@ -122,7 +125,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     PaymentsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["payments", userId, filters.roleOverride ?? (isTutor ? "tutor" : "learner"), filters.tutor_id ?? null, filters.from_date, filters.to_date, filters.page, filters.per_page],
+    queryKey: ["payments", userId, filters.roleOverride ?? (isTutor ? "tutor" : "learner"), filters.tutor_id ?? null, filters.from_date, filters.to_date, filters.spoil_id ?? null, filters.page, filters.per_page],
     queryFn: fetchPayments,
     enabled: !!(filters.tutor_id || userId),
   });

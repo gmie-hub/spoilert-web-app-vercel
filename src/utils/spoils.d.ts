@@ -219,6 +219,7 @@ interface Tutor {
   id: number;
   first_name: string;
   last_name: string;
+  display_name?: string | null;
   email: string;
   country: string;
   avatar: string;

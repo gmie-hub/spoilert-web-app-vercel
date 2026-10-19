@@ -143,6 +143,7 @@ const EditProfileForm = ({
   const initialValues: ProfileDetailsFormValues = {
     firstName: initialData.firstName,
     lastName: initialData.lastName,
+    displayName: initialData.displayName,
     username: initialData.username,
     email: initialData.email,
     countryCode: initialData.countryCode,
@@ -159,6 +160,7 @@ const EditProfileForm = ({
       await updateProfileHandler({
         first_name: values.firstName,
         last_name: values.lastName,
+        display_name: values.displayName.trim(),
         username: values.username,
         phone_number: values.phoneNumber,
         country_code: values.countryCode.replace("+", ""),
@@ -210,6 +212,19 @@ const EditProfileForm = ({
                 label="Last Name"
                 placeholder="Enter last name"
               />
+            </div>
+
+            {/* Display Name */}
+            <div className="space-y-1">
+              <Input
+                name="displayName"
+                label="Display Name"
+                placeholder="Enter display name"
+              />
+              <p className="text-xs text-gray-500">
+                Shown to others instead of your first and last name. Leave it
+                blank to use your full name.
+              </p>
             </div>
 
             {/* Username & Email */}

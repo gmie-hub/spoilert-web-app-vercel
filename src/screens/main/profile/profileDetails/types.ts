@@ -1,6 +1,7 @@
 export interface ProfileDetailsFormValues {
   firstName: string;
   lastName: string;
+  displayName: string;
   username: string;
   email: string;
   countryCode: string;
@@ -12,6 +13,7 @@ export interface ProfileDetailsFormValues {
 export interface ProfileDetailsData {
   firstName: string;
   lastName: string;
+  displayName: string;
   username: string;
   email: string;
   countryCode: string;

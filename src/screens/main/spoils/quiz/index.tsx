@@ -155,6 +155,7 @@ const SpoilQuiz = () => {
           <Review
             overview={overview}
             questions={questions}
+            quizType={quizType}
             onEditOverview={() => goToStep(0)}
             onEditQuestions={() => goToStep(1)}
             onPublish={async () => {
@@ -176,13 +177,15 @@ const SpoilQuiz = () => {
 
                 // Every quiz type carries a pass mark. Include both the
                 // camelCase and snake_case keys the payload builders read.
+                // Pre-Spoylz quizzes have no pass mark field, so they carry 0.
+                const passmark = quizType === "pre" ? "0" : overview.passmark;
                 quizPayload.overview = {
                   ...quizPayload.overview,
-                  passmark: overview.passmark,
-                  pass_mark: overview.passmark,
+                  passmark,
+                  pass_mark: passmark,
                 };
-                quizPayload.passmark = overview.passmark;
-                quizPayload.pass_mark = overview.passmark;
+                quizPayload.passmark = passmark;
+                quizPayload.pass_mark = passmark;
 
                 if (quizType === "pre" || quizType === "post") {
                   // save full quiz (overview + questions) inside basics

@@ -112,11 +112,14 @@ export const createQuizAndQuestions = async (
 
   // The overview form stores the pass mark as `passmark`; drafts and server
   // payloads use `pass_mark`. Accept either and always send `pass_mark`.
+  // Pre-Spoylz quizzes have no pass mark field, but the API still expects one.
   const passMark =
-    quiz.overview?.passmark ??
-    quiz.overview?.pass_mark ??
-    quiz.passmark ??
-    quiz.pass_mark;
+    opts.type === "pre"
+      ? "0"
+      : quiz.overview?.passmark ??
+        quiz.overview?.pass_mark ??
+        quiz.passmark ??
+        quiz.pass_mark;
   if (passMark !== undefined && passMark !== null && passMark !== "") {
     fd.append("pass_mark", String(passMark));
   }
@@ -240,7 +243,9 @@ export const updateQuizAndQuestions = async (
   fd.append("no_of_questions", noOfQuestions);
 
   if (overview?.timeLimit) fd.append("time_limit", String(overview.timeLimit));
-  const passMark = overview?.passmark ?? overview?.pass_mark;
+  // Pre-Spoylz quizzes have no pass mark field, but the API still expects one.
+  const passMark =
+    opts.type === "pre" ? "0" : overview?.passmark ?? overview?.pass_mark;
   if (passMark !== undefined && passMark !== "" && passMark !== null) {
     fd.append("pass_mark", String(passMark));
   }
