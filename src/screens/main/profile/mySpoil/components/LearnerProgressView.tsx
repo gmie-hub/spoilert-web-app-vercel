@@ -249,7 +249,7 @@ const LearnerProgressView: React.FC<LearnerProgressViewProps> = ({
                       className={`py-4 ${index < modules.length - 1 ? "border-b border-[#E9EEF2]" : ""}`}
                     >
                       <p className="text-xs text-[#8A98A3] mb-1">
-                        Module {index + 1}{lessonCount > 0 ? ` (${lessonCount} Lessons)` : ""}
+                        Module {index + 1}{lessonCount > 0 ? ` (${lessonCount} ${lessonCount === 1 ? "Lesson" : "Lessons"})` : ""}
                       </p>
                       <p className="text-sm font-medium text-[#20262D] mb-2">{mod.title}</p>
                       <span

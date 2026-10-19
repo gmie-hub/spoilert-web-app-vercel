@@ -4,8 +4,10 @@ import React from "react";
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import SpoilertLogo from "@spt/assets/icons/Group(2).svg";
 import StarIcon from "@spt/assets/icons/star.svg";
 import AuthImage from "@spt/assets/images/image.png";
 import { Card } from "@spt/components";
@@ -70,6 +72,20 @@ const InstitutionAuthLayout = ({ children }: InstitutionAuthLayoutProps) => {
                 {description}
               </p>
             </div>
+
+            {/* The emblem is the panel's own teal, so it sits on a white tile. */}
+            <Link
+              href="/"
+              aria-label="Go to home page"
+              className="absolute left-10 top-10 flex items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 xl:left-14 xl:top-12"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <Image src={SpoilertLogo} alt="" width={32} height={24} />
+              </span>
+              <span className="text-[20px] font-semibold tracking-[-0.01em] text-white">
+                Spoilert
+              </span>
+            </Link>
           </div>
         </div>
 

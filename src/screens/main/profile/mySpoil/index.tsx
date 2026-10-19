@@ -13,7 +13,6 @@ import { ErrorState } from "../../home/spoilDetails/spoilDetails";
 import { LoadingState } from "../../spoil/preSpoilQuiz/components/LoadingState";
 import { mySpoilsTabOptions } from "../profileData";
 
-import MySpoilDetailView from "./components/MySpoilDetailView";
 import MySpoilsCard from "./components/mySpoilsCard";
 import MySpoilsSearchBar from "./components/mySpoilsSearchBar";
 import RepublishSpoilModal from "./components/RepublishSpoilModal";
@@ -33,7 +32,6 @@ const MySpoilsSection = ({
 }: MySpoilsSectionProps) => {
   const [activeTab, setActiveTab] = useState<MySpoilTabId>(initialTab);
   const [searchValue, setSearchValue] = useState("");
-  const [selectedSpoil, setSelectedSpoil] = useState<SpoilDatum | null>(null);
   const [republishSpoil_, setRepublishSpoil] = useState<SpoilDatum | null>(null);
   const [successSpoil, setSuccessSpoil] = useState<SpoilDatum | null>(null);
   const user = useAuthStore((state) => state.user);
@@ -114,16 +112,6 @@ const MySpoilsSection = ({
 
   const router = useRouter();
 
-  // Show detail view when a spoil is selected
-  if (selectedSpoil) {
-    return (
-      <MySpoilDetailView
-        spoilId={selectedSpoil.id}
-        onBack={() => setSelectedSpoil(null)}
-      />
-    );
-  }
-
   if (isLoading) {
     return <LoadingState />;
   }
@@ -175,7 +163,7 @@ const MySpoilsSection = ({
                 spoil={spoil}
                 activeTab={activeTab}
                 onRepublish={handleRepublishClick}
-                onCardClick={setSelectedSpoil}
+                onCardClick={(spoil) => router.push(`/profile/my-spoils/${spoil.id}`)}
               />
             ))}
           </div>

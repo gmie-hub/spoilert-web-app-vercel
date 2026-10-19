@@ -8,13 +8,20 @@ import CreatedIcon from "@spt/assets/icons/scicon.svg";
 import TotalIcon from "@spt/assets/icons/totalIcons.svg";
 import walleticon from "@spt/assets/icons/wallet-3.svg";
 import { type EarningSpoil, useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
+import { pairEarningsByTitle } from "@spt/screens/institution/lecturers/details/mappers";
 import { useAuthStore } from "@spt/store/authStore";
 
 const cardLinkClass =
   "cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B5368]/30";
 
-function SpoilEarningCard({ spoil }: { spoil: EarningSpoil }) {
-  const spoilId = spoil.spoil_id ?? spoil.id;
+function SpoilEarningCard({
+  spoil,
+  spoilId,
+}: {
+  spoil: EarningSpoil;
+  spoilId?: number | null;
+}) {
   const card = (
     <div className="flex h-full items-stretch gap-3 rounded-xl border-1 border-[#2222220D] bg-white p-4 shadow-sm">
       <div className="relative h-[100px] w-[100px] flex-shrink-0 overflow-hidden rounded-[16px] bg-gray-100">
@@ -59,6 +66,9 @@ function SpoilEarningCard({ spoil }: { spoil: EarningSpoil }) {
 export default function EarningsBreakdownPage() {
   const user = useAuthStore((state) => state.user);
   const { earnings, isLoading, isError, errorMessage } = useGetEarningsBreakdownQuery(user?.id);
+  // The earnings don't carry Spoylz ids, so each card is matched to one of the
+  // tutor's Spoylz by its title (when unique) to open that Spoylz's payments.
+  const { spoils: mySpoils } = useGetLecturerSpoilsQuery(user?.id);
 
   if (isLoading) {
     return (
@@ -74,6 +84,7 @@ export default function EarningsBreakdownPage() {
 
 
   const spoils = earnings?.data ?? [];
+  const { spoilFor } = pairEarningsByTitle(mySpoils, spoils);
 
   return (
     <div className="flex flex-col gap-6">
@@ -130,7 +141,11 @@ export default function EarningsBreakdownPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {spoils.map((spoil, i) => (
-              <SpoilEarningCard key={spoil.spoil_name + i} spoil={spoil} />
+              <SpoilEarningCard
+                key={spoil.spoil_name + i}
+                spoil={spoil}
+                spoilId={spoil.spoil_id ?? spoil.id ?? spoilFor(spoil)?.id}
+              />
             ))}
           </div>
         )}

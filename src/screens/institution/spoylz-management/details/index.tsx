@@ -22,7 +22,7 @@ import SpoylzStatusModal, { type SpoylzStatusAction } from "./components/SpoylzS
 const TABS = [
   "Spoylz Overview",
   "Spoylz Outline",
-  "Spoylz Quiz & Leaderboard",
+  "Spoylz Quiz",
   "Spoylz Reviews",
   "Enrolled Students",
   "Spoylz Metrics",
@@ -41,7 +41,7 @@ const SpoylzManagementDetails = ({ id }: { id: string }) => {
   const isDisabled = isSpoylzDisabled(spoil?.is_active);
   const isSimple = spoil?.type?.toLowerCase() === "simple";
   // Simple Spoylz don't have a quiz component, so the tab is hidden for them.
-  const visibleTabs = TABS.filter((tab) => tab !== "Spoylz Quiz & Leaderboard" || !isSimple);
+  const visibleTabs = TABS.filter((tab) => tab !== "Spoylz Quiz" || !isSimple);
   const currentTab = visibleTabs.includes(activeTab) ? activeTab : "Spoylz Overview";
 
   const handleConfirmStatusChange = async () => {
@@ -159,7 +159,7 @@ const SpoylzManagementDetails = ({ id }: { id: string }) => {
             <SpoylzOverviewTab spoil={spoil} lecturer={findLecturer(lecturers, spoil.tutor_id)} />
           )}
           {currentTab === "Spoylz Outline" && <SpoylzOutlineTab spoil={spoil} />}
-          {currentTab === "Spoylz Quiz & Leaderboard" && <SpoylzQuizLeaderboardTab spoil={spoil} />}
+          {currentTab === "Spoylz Quiz" && <SpoylzQuizLeaderboardTab spoil={spoil} />}
           {currentTab === "Spoylz Reviews" && <SpoylzReviewsTab spoilId={spoil.id} />}
           {currentTab === "Enrolled Students" && <EnrolledStudentsTab spoilId={spoil.id} simplified={isSimple} />}
           {currentTab === "Spoylz Metrics" && <SpoylzMetricsTab spoil={spoil} />}

@@ -2,9 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import type { LearnerSpoilProgress } from "@spt/hooks/apiRequests/useGetLearnerSpoilProgressQuery";
 import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
-import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import type { AxiosError } from "axios";
 
@@ -48,46 +48,61 @@ export interface LearnerProgressData {
   modules?: LearnerProgressModule[];
 }
 
-const MODULE_STATUSES: NonNullable<LearnerProgressModule["status"]>[] = [
+const STATUSES: NonNullable<LearnerProgressData["status"]>[] = [
   "completed",
   "ongoing",
   "not_started",
 ];
 
-// GET /spoils/{id}?user_id= returns the spoil as that learner sees it, with
-// their progress on it.
+/** One of the statuses the progress page shows, or undefined. */
+const toStatus = (value?: string | null) =>
+  STATUSES.find((status) => status === value?.toLowerCase());
+
+// The API can name the current module and lesson by id; show the title then.
+const titleOf = (
+  items: { id: number; title: string }[],
+  value?: number | string | null,
+) => {
+  if (value == null || value === "") return null;
+  return items.find((item) => String(item.id) === String(value))?.title ?? String(value);
+};
+
+// GET /spoils/{id}?user_id= returns the spoil as that learner sees it.
 interface LearnerSpoilResponse {
   message: string;
   status: boolean;
-  data?: SpoilDetailsData | null;
+  data?: LearnerSpoilProgress | null;
 }
 
-// The spoil's own `status` and `created_at` aren't the learner's, so their
-// status comes from their progress and the date from their enrollment record.
-const toLearnerProgress = (spoil: SpoilDetailsData): LearnerProgressData => {
-  const percentage = Number(spoil.percentage_completed ?? 0);
-  const enrollment = spoil.learner_spoil as { created_at?: string | null } | null;
+// The learner's progress, enrollment date and status are on their enrollment
+// (`learner_spoil`), not on the spoil's own `status` / `created_at`.
+const toLearnerProgress = (spoil: LearnerSpoilProgress): LearnerProgressData => {
+  const enrollment = spoil.learner_spoil;
+  const percentage = Number(enrollment?.progress_percentage ?? 0);
+  const modules = spoil.modules ?? [];
 
   return {
     percentage_completed: percentage,
-    total_modules: spoil.modules_no,
-    total_modules_completed: spoil.total_modules_completed,
-    total_modules_pending: spoil.total_modules_pending,
-    current_module: spoil.current_module,
-    current_lesson: spoil.current_lesson,
+    total_modules: spoil.modules_no ?? modules.length,
+    total_modules_completed: spoil.total_modules_completed ?? undefined,
+    total_modules_pending: spoil.total_modules_pending ?? undefined,
+    current_module: titleOf(modules, spoil.current_module),
+    current_lesson: titleOf(
+      modules.flatMap((module) => module.lessons ?? []),
+      spoil.current_lesson,
+    ),
     pre_spoil_quiz_score: spoil.pre_spoil_quiz?.highest_score ?? null,
     post_spoil_quiz_score: spoil.post_spoil_quiz?.highest_score ?? null,
-    date_enrolled: enrollment?.created_at ?? null,
+    date_enrolled: enrollment?.date_enrolled ?? null,
     status:
-      percentage >= 100 ? "completed" : percentage > 0 ? "ongoing" : "not_started",
-    modules: spoil.modules?.map((module) => ({
+      toStatus(enrollment?.status) ??
+      (percentage >= 100 ? "completed" : percentage > 0 ? "ongoing" : "not_started"),
+    modules: modules.map((module) => ({
       id: module.id,
       title: module.title,
       lessons_count: module.lessons?.length,
-      status: MODULE_STATUSES.find(
-        (value) => value === module.status?.toLowerCase(),
-      ),
-      percentage_completed: Number(module.percentage_completed ?? 0),
+      status: toStatus(module.status),
+      percentage_completed: module.percentage_completed ?? 0,
     })),
   };
 };

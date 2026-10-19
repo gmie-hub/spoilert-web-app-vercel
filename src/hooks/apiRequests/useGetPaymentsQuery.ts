@@ -53,7 +53,7 @@ interface PaymentsResponse {
 export interface PaymentsFilters {
   from_date?: string;
   to_date?: string;
-  // Only the payments for this spoil.
+  // One spoil's payments (GET /payments?spoil_id=), in place of the user's own.
   spoil_id?: number | null;
   page?: number;
   per_page?: number;
@@ -97,7 +97,9 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
 
   const fetchPayments = async (): Promise<PaymentsResponse> => {
     const params = new URLSearchParams();
-    if (filters.tutor_id) {
+    if (filters.spoil_id) {
+      params.set("spoil_id", String(filters.spoil_id));
+    } else if (filters.tutor_id) {
       params.set("tutor_id", String(filters.tutor_id));
     } else if (userId) {
       const useTutorParam =
@@ -114,7 +116,6 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     }
     if (filters.from_date) params.set("from_date", filters.from_date);
     if (filters.to_date) params.set("to_date", filters.to_date);
-    if (filters.spoil_id) params.set("spoil_id", String(filters.spoil_id));
     if (filters.page) params.set("page", String(filters.page));
     if (filters.per_page) params.set("per_page", String(filters.per_page));
     const query = params.toString();
