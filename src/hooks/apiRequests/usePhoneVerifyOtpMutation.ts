@@ -17,6 +17,8 @@ interface VerifyOtpPayload {
 // Response interface (adjust if your API returns more data)
 interface VerifyOtpResponse {
   message: string;
+  status?: boolean;
+  error?: string;
   // Add other response fields if needed, e.g., token, user info
 }
 
@@ -27,7 +29,7 @@ export const useVerifyOtpMutation = (authToken?: string) => {
   const verifyOtp = async (
     payload: VerifyOtpPayload,
   ): Promise<VerifyOtpResponse> => {
-    return (
+    const data: VerifyOtpResponse = (
       await api.post(
         "users/phone/verify-otp",
         payload,
@@ -36,6 +38,14 @@ export const useVerifyOtpMutation = (authToken?: string) => {
           : undefined,
       )
     ).data;
+
+    // A wrong or expired code can come back as `status: false`, so treat it as
+    // a failure even when the HTTP status is 2xx.
+    if (data?.status === false) {
+      throw new Error(data.error || data.message || "Invalid or expired OTP.");
+    }
+
+    return data;
   };
 
   const mutation = useMutation<
@@ -47,10 +57,11 @@ export const useVerifyOtpMutation = (authToken?: string) => {
     mutationFn: verifyOtp,
   });
 
+  // Resolves to whether the code was accepted, so callers only move on when it was.
   const verifyOtpHandler = async (
     values: FormikValues,
     { setSubmitting }: any,
-  ) => {
+  ): Promise<boolean> => {
     const payload: VerifyOtpPayload = {
       code: values.code, // ensure your Formik field is named "otpCode"
     };
@@ -58,6 +69,7 @@ export const useVerifyOtpMutation = (authToken?: string) => {
     try {
       const response = await mutation.mutateAsync(payload);
       toast.success(response.message || "OTP verified successfully ✅");
+      return true;
     } catch (error: any) {
       toast.error(
         error?.response?.data?.error ||
@@ -65,6 +77,7 @@ export const useVerifyOtpMutation = (authToken?: string) => {
           error?.message ||
           "Failed to verify OTP",
       );
+      return false;
     } finally {
       setSubmitting(false);
     }
@@ -73,8 +86,7 @@ export const useVerifyOtpMutation = (authToken?: string) => {
   return {
     verifyOtpHandler,
     // Raw mutate for non-Formik callers (e.g. custom digit-box OTP inputs)
-    // that need to know whether verification actually succeeded before
-    // advancing, rather than the handler above which always resolves.
+    // that handle the toasts themselves; it rejects on an invalid code.
     verifyOtp: mutation.mutateAsync,
     isLoading: mutation.isPending,
   };

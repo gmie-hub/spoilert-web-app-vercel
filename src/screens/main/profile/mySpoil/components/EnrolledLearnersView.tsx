@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useDeferredValue, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FiArrowLeft, FiChevronRight, FiRotateCcw, FiSearch } from "react-icons/fi";
 
 import CalendarIcon from "@spt/assets/icons/calendar.svg";
@@ -30,14 +30,10 @@ const statusStyle: Record<string, string> = {
   not_started: "bg-[#F3F4F6] text-[#6B7280]",
 };
 
-const DUMMY_LEARNERS: EnrolledLearner[] = [
-  { id: 1, status: "completed", created_at: "2024-11-10", learner: { id: 1, first_name: "Amara", last_name: "Okafor" } },
-  { id: 2, status: "ongoing", created_at: "2024-12-01", learner: { id: 2, first_name: "Chidi", last_name: "Nwosu" } },
-  { id: 3, status: "not_started", created_at: "2025-01-15", learner: { id: 3, first_name: "Fatima", last_name: "Bello" } },
-  { id: 4, status: "ongoing", created_at: "2025-02-03", learner: { id: 4, first_name: "Emeka", last_name: "Adeyemi" } },
-  { id: 5, status: "completed", created_at: "2025-03-20", learner: { id: 5, first_name: "Ngozi", last_name: "Eze" } },
-  { id: 6, status: "not_started", created_at: "2025-04-05", learner: { id: 6, first_name: "Tunde", last_name: "Akinola" } },
-];
+type StatusFilter = NonNullable<EnrolledLearner["status"]> | "all";
+
+const getStatusFilter = (value: string | null): StatusFilter =>
+  value === "ongoing" || value === "completed" || value === "not_started" ? value : "all";
 
 const getLearnerName = (learner: EnrolledLearner) => {
   const person = learner.learner ?? learner.user;
@@ -61,16 +57,45 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
   onSelectLearner,
 }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Starts from ?status=, so links (e.g. from Spoylz Performance Analytics)
+  // can open the list already filtered.
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() =>
+    getStatusFilter(searchParams.get("status")),
+  );
   const deferredSearch = useDeferredValue(search);
 
-  const { learners, isLoading } = useGetEnrolledLearnersQuery(spoilId);
+  // Keeps ?status= in step with the filter so a refresh or Back keeps it. The
+  // native history call updates the URL without refetching the page.
+  const changeStatusFilter = (status: StatusFilter) => {
+    setStatusFilter(status);
+    const params = new URLSearchParams(searchParams.toString());
+    if (status === "all") params.delete("status");
+    else params.set("status", status);
+    const query = params.toString();
+    window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
+  };
 
-  const displayLearners = !isLoading && learners.length === 0 ? DUMMY_LEARNERS : learners;
+  // Search once typing pauses, rather than calling the API on every keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
+  const { learners, isLoading, isError, errorMessage } = useGetEnrolledLearnersQuery(
+    spoilId,
+    true,
+    { status: statusFilter === "all" ? undefined : statusFilter, search: debouncedSearch },
+  );
+
+  const hasFilters = statusFilter !== "all" || search.trim() !== "";
+
+  // The API applies the same filters; repeating them here keeps the list right
+  // while a new filter is still loading.
   const filtered = useMemo(() => {
-    let list = displayLearners;
+    let list = learners;
 
     if (statusFilter !== "all") {
       list = list.filter((l) => (l.status ?? "ongoing") === statusFilter);
@@ -82,7 +107,7 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
     }
 
     return list;
-  }, [displayLearners, statusFilter, deferredSearch]);
+  }, [learners, statusFilter, deferredSearch]);
 
   return (
     <div className="w-full  min-h-screen bg-white">
@@ -150,7 +175,7 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => changeStatusFilter(e.target.value as StatusFilter)}
               className="text-sm text-[#5F6B76] border border-[#E9EEF2] rounded-lg px-3 py-1.5 outline-none bg-white cursor-pointer"
             >
               <option value="all">Status</option>
@@ -169,7 +194,7 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
 
             <button
               type="button"
-              onClick={() => { setSearch(""); setStatusFilter("all"); }}
+              onClick={() => { setSearch(""); changeStatusFilter("all"); }}
               className="flex items-center gap-1.5 text-sm text-[#0B5368] hover:opacity-75"
             >
               <FiRotateCcw size={14} />
@@ -188,10 +213,20 @@ const EnrolledLearnersView: React.FC<EnrolledLearnersViewProps> = ({
               />
             ))}
           </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <p className="text-sm text-red-600">{errorMessage}</p>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center text-[#8A98A3]">
-            <p className="text-base font-medium">No learners found</p>
-            <p className="text-sm mt-1">Try adjusting your search or filters.</p>
+            <p className="text-base font-medium">
+              {hasFilters ? "No learners found" : "No learners yet"}
+            </p>
+            <p className="text-sm mt-1">
+              {hasFilters
+                ? "Try adjusting your search or filters."
+                : "Learners who enroll on this Spoylz will show up here."}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

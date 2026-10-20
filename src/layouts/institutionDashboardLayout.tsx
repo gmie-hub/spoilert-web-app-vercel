@@ -116,6 +116,8 @@ const InstitutionDashboardLayout = ({
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // Set on logout, which goes to the home page rather than the institution login.
+  const isLoggingOutRef = useRef(false);
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
   useEffect(() => {
@@ -139,9 +141,12 @@ const InstitutionDashboardLayout = ({
 
   // Only institution accounts get in: logged-out visitors and other roles (e.g. a
   // learner signed in on the main site) go to the institution login. Checked
-  // after mount because the stored login only exists in the browser.
+  // after mount because the stored login only exists in the browser. Skipped
+  // while logging out, or it would override the logout's redirect to home.
   useEffect(() => {
-    if (mounted && !isInstitution) router.replace("/institution/login");
+    if (mounted && !isInstitution && !isLoggingOutRef.current) {
+      router.replace("/institution/login");
+    }
   }, [mounted, isInstitution, router]);
 
   const toggleCollapsed = () => {
@@ -339,7 +344,10 @@ const InstitutionDashboardLayout = ({
       <LogoutConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setIsLogoutConfirmOpen(false)}
-        redirectTo="/institution/login"
+        redirectTo="/"
+        onLogout={() => {
+          isLoggingOutRef.current = true;
+        }}
       />
     </div>
   );

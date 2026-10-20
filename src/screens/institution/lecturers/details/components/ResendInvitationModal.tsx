@@ -23,10 +23,12 @@ const QuestionBubbleIcon = () => (
 
 const ResendInvitationModal = ({
   email,
+  isLoading = false,
   onClose,
   onConfirm,
 }: {
   email: string;
+  isLoading?: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }) => (
@@ -59,9 +61,10 @@ const ResendInvitationModal = ({
         <button
           type="button"
           onClick={onConfirm}
-          className="flex-1 rounded-xl bg-[var(--color-blue)] py-3 text-sm font-medium text-white"
+          disabled={isLoading}
+          className="flex-1 rounded-xl bg-[var(--color-blue)] py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Yes, Resend Invitation
+          {isLoading ? "Resending..." : "Yes, Resend Invitation"}
         </button>
       </div>
     </div>

@@ -8,12 +8,16 @@ interface LogoutConfirmModalProps {
   open: boolean;
   onClose: () => void;
   redirectTo?: string;
+  // Runs just before the session is cleared, e.g. so a page's login guard
+  // doesn't redirect elsewhere while the logout navigation is under way.
+  onLogout?: () => void;
 }
 
 const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
   open,
   onClose,
   redirectTo = "/",
+  onLogout,
 }) => {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
@@ -40,6 +44,7 @@ const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
             onClick={() => {
               onClose();
+              onLogout?.();
               logout();
               router.push(redirectTo);
             }}

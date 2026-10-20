@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Image from "next/image";
 
 import type { SpoilLesson } from "./startSpoilUtils";
@@ -25,6 +27,75 @@ const getFileKind = (lesson: SpoilLesson): FileKind => {
   if (["doc", "docx", "ppt", "pptx", "xls", "xlsx"].includes(ext)) return "office";
 
   return "other";
+};
+
+// How long to wait for a document before offering a retry.
+const LOAD_TIMEOUT_MS = 20000;
+
+/**
+ * Shows a "please wait" state until the embedded viewer loads, and a retry if
+ * it hasn't loaded after LOAD_TIMEOUT_MS. The frame stays mounted meanwhile,
+ * so a slow document still appears as soon as it arrives.
+ */
+const DocumentFrame = ({ src, title }: { src: string; title: string }) => {
+  const [status, setStatus] = useState<"loading" | "loaded" | "slow">("loading");
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (status !== "loading") return;
+    const timer = setTimeout(() => setStatus("slow"), LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [status, attempt]);
+
+  const handleRetry = () => {
+    setAttempt((value) => value + 1);
+    setStatus("loading");
+  };
+
+  return (
+    <>
+      <iframe
+        key={attempt}
+        src={src}
+        title={title}
+        onLoad={() => setStatus("loaded")}
+        className="absolute inset-0 h-full w-full bg-white"
+      />
+
+      {status !== "loaded" && (
+        <div
+          role="status"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white px-6 text-center"
+        >
+          {status === "loading" ? (
+            <>
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0B5368] border-t-transparent" />
+              <p className="text-sm font-semibold text-[#212529]">
+                Please wait, your document is loading&hellip;
+              </p>
+              <p className="text-xs text-[#6B7280]">This may take a few seconds.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-[#212529]">
+                This document is taking longer than usual to load.
+              </p>
+              <p className="text-xs text-[#6B7280]">
+                Please check your internet connection and try again.
+              </p>
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="mt-1 rounded-full bg-[#013B4D] px-5 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                Try again
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
 };
 
 interface LessonContentViewerProps {
@@ -68,13 +139,12 @@ const LessonContentViewer = ({ lesson }: LessonContentViewerProps) => {
   }
 
   if (kind === "pdf") {
-    return (
-      <iframe
-        src={url}
-        title={title}
-        className="absolute inset-0 h-full w-full bg-white"
-      />
-    );
+    // Hides the browser PDF viewer's toolbar (download, print) and thumbnail
+    // pane. Chrome and Edge honour these; Firefox's viewer ignores them.
+    const viewerUrl = `${url.split("#")[0]}#toolbar=0&navpanes=0`;
+
+    // Keyed by URL so switching lessons starts the loading state afresh.
+    return <DocumentFrame key={viewerUrl} src={viewerUrl} title={title} />;
   }
 
   if (kind === "office") {
@@ -82,13 +152,7 @@ const LessonContentViewer = ({ lesson }: LessonContentViewerProps) => {
       url,
     )}`;
 
-    return (
-      <iframe
-        src={viewerUrl}
-        title={title}
-        className="absolute inset-0 h-full w-full bg-white"
-      />
-    );
+    return <DocumentFrame key={viewerUrl} src={viewerUrl} title={title} />;
   }
 
   return (

@@ -91,6 +91,7 @@ function ChartSection({
   items,
   series,
   isCurrency,
+  className = "",
 }: {
   title: string;
   href: string;
@@ -100,6 +101,7 @@ function ChartSection({
   items: PerformanceItem[];
   series: Series[];
   isCurrency?: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
@@ -164,7 +166,7 @@ function ChartSection({
     // keyboard users.
     <div
       onClick={() => router.push(href)}
-      className="flex h-full cursor-pointer flex-col rounded-[8px] border border-[#EFEFEF] px-4 py-6 transition-shadow hover:shadow-md"
+      className={`flex cursor-pointer flex-col rounded-[8px] border border-[#EFEFEF] px-4 py-6 transition-shadow hover:shadow-md ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-[18px] font-semibold text-[#212529]">{title}</h3>

@@ -17,8 +17,6 @@ export interface ApiLecturer {
   faculty: string | null;
   department: string | null;
   position: string | null;
-  // Not returned by the API yet; the status shows as "-" until it is.
-  status?: string | null;
   created_at: string;
   updated_at: string;
   user: {
@@ -29,6 +27,8 @@ export interface ApiLecturer {
     phone_number: string | null;
     avatar: string | null;
     last_login: string | null;
+    // 0 until the lecturer accepts the invitation and sets their own password.
+    is_password_changed: number | null;
     total_spoils_created: number | null;
     // The bio sits on the tutor profile, as on the users /spoils returns.
     profile?: { bio: string | null } | null;
@@ -49,19 +49,12 @@ interface LecturersResponse {
   data: LecturersPage;
 }
 
-const toInviteStatus = (value?: string | null): InviteStatus | null => {
-  switch (value?.toLowerCase()) {
-    case "accepted":
-    case "active":
-      return "Accepted";
-    case "pending":
-      return "Pending";
-    case "declined":
-    case "rejected":
-      return "Declined";
-    default:
-      return null;
-  }
+// A lecturer accepts the invitation by setting their own password, so until
+// they've changed it the invitation is still pending. The API has no way to
+// say an invitation was declined.
+const toInviteStatus = (user: ApiLecturer["user"]): InviteStatus | null => {
+  if (user?.is_password_changed == null) return null;
+  return user.is_password_changed ? "Accepted" : "Pending";
 };
 
 const toLecturer = (item: ApiLecturer): Lecturer => ({
@@ -76,7 +69,7 @@ const toLecturer = (item: ApiLecturer): Lecturer => ({
   department: item.department ?? "",
   position: item.position ?? "",
   totalCourses: item.user?.total_spoils_created ?? 0,
-  inviteStatus: toInviteStatus(item.status),
+  inviteStatus: toInviteStatus(item.user),
   dateSent: formatDate(item.created_at),
   lastLogin: formatDate(item.user?.last_login),
   bio: item.user?.profile?.bio || null,
