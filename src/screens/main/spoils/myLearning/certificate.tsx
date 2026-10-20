@@ -14,6 +14,7 @@ import useCompleteSpoilMutation, {
 } from "@spt/hooks/apiRequests/useCompleteSpoilMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useGetSpoilTemplateQuery from "@spt/hooks/apiRequests/useGetSpoilTemplateQuery";
+import useProfileDetailsQuery from "@spt/hooks/apiRequests/useProfileDetailsQuery";
 import CertificateTemplatePreview from "@spt/screens/main/spoils/createSpoils/components/CertificateTemplatePreview";
 import { useAuthStore } from "@spt/store/authStore";
 
@@ -40,6 +41,10 @@ export default function MyLearningCertificatePage({
   // const router = useRouter();
   const { data: spoil } = useGetSpoilDetailsQuery(spoilId);
   const user = useAuthStore((state) => state.user);
+  // The learner's current profile, so a display name set after signing in is
+  // printed; the signed-in user stands in until it loads.
+  const { data: profile } = useProfileDetailsQuery();
+  const learner = profile?.data ?? user;
 
   // This page is display-only and must never mark the spoil complete again —
   // but the cert id / QR verification link only come back from the
@@ -102,11 +107,16 @@ export default function MyLearningCertificatePage({
     ? `${spoil.title} certificate`
     : "Certificate";
 
-  const learnerName = buildFullName(user?.first_name, user?.last_name);
+  // A display name, when set, is printed instead of the first and last name.
+  const learnerName = buildFullName(
+    learner?.first_name,
+    learner?.last_name,
+    learner?.display_name,
+  );
   const tutorName = buildFullName(
     spoil?.tutor?.first_name,
     spoil?.tutor?.last_name,
-    (spoil?.tutor as { display_name?: string | null } | undefined)?.display_name,
+    spoil?.tutor?.display_name,
   );
 
   // The QR verification link is the single source of truth for the

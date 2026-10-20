@@ -7,6 +7,9 @@ import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
 export interface EarningSpoil {
+  // The Spoylz's id (read from `spoil_id`, else `id`) opens its payments.
+  spoil_id?: number | null;
+  id?: number;
   spoil_name: string;
   cover_image: string | null;
   total_enrolled: number;

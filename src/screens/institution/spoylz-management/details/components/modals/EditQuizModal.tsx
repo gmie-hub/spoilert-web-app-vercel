@@ -30,8 +30,12 @@ const validationSchema = Yup.object({
   pass_mark: wholeNumber("Passmark", 0, 100),
 });
 
+// Pre-Spoylz quizzes have no pass mark (0 is sent to the API instead).
+const preQuizValidationSchema = validationSchema.omit(["pass_mark"]);
+
 const EditQuizModal = ({ quiz, onClose }: { quiz: QuizDetailsData; onClose: () => void }) => {
   const queryClient = useQueryClient();
+  const isPreQuiz = quiz.type === "pre";
 
   return (
     <ModalShell title="Edit Quiz" onClose={onClose}>
@@ -43,7 +47,7 @@ const EditQuizModal = ({ quiz, onClose }: { quiz: QuizDetailsData; onClose: () =
           time_limit: quiz.time_limit != null ? String(quiz.time_limit) : "",
           pass_mark: quiz.pass_mark != null ? String(quiz.pass_mark) : "",
         }}
-        validationSchema={validationSchema}
+        validationSchema={isPreQuiz ? preQuizValidationSchema : validationSchema}
         onSubmit={async (values) => {
           try {
             // POST /quiz/{id} with _method=patch. The quiz keeps its type, spoil
@@ -75,7 +79,9 @@ const EditQuizModal = ({ quiz, onClose }: { quiz: QuizDetailsData; onClose: () =
             <Textarea name="description" label="Description" placeholder="Test your knowledge of the basics" rows={3} />
             <Input name="no_of_questions" label="Number of Questions" placeholder="10" numericOnly />
             <Input name="time_limit" label="Time Limit (Minutes)" placeholder="50" numericOnly />
-            <Input name="pass_mark" label="Passmark (%)" placeholder="50" numericOnly />
+            {!isPreQuiz && (
+              <Input name="pass_mark" label="Passmark (%)" placeholder="50" numericOnly />
+            )}
             <ModalActions onCancel={onClose} isSubmitting={isSubmitting} />
           </Form>
         )}

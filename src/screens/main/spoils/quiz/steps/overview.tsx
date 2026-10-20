@@ -67,6 +67,9 @@ const validationSchema = Yup.object({
     .required("Pass mark is required"),
 });
 
+// Pre-Spoylz quizzes have no pass mark (0 is sent to the API instead).
+const preQuizValidationSchema = validationSchema.omit(["passmark"]);
+
 const Overview: FC<OverviewProps> = ({
   initialValues,
   onSaveAndNext,
@@ -127,7 +130,9 @@ const Overview: FC<OverviewProps> = ({
       <Formik<QuizOverviewDraft>
         initialValues={derivedInitial}
         enableReinitialize
-        validationSchema={validationSchema}
+        validationSchema={
+          quizType === "pre" ? preQuizValidationSchema : validationSchema
+        }
         validateOnBlur
         validateOnChange
         onSubmit={(values) => {
@@ -261,13 +266,15 @@ const Overview: FC<OverviewProps> = ({
               numericOnly
             />
 
-            <Input
-              name="passmark"
-              label="Pass Mark (%)"
-              placeholder="Enter pass mark (e.g. 50 or 49.5)"
-              numericOnly
-              allowDecimal
-            />
+            {quizType !== "pre" && (
+              <Input
+                name="passmark"
+                label="Pass Mark (%)"
+                placeholder="Enter pass mark (e.g. 50 or 49.5)"
+                numericOnly
+                allowDecimal
+              />
+            )}
 
             <Button
               type="submit"

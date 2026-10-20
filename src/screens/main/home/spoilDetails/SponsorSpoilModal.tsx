@@ -7,6 +7,8 @@ import Modal from "@spt/components/modal";
 import useCreateSponsorshipMutation from "@spt/hooks/apiRequests/useCreateSponsorshipMutation";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
+import { getTutorName } from "./spoilDetails.helpers";
+
 interface SponsorSpoilModalProps {
   open: boolean;
   onClose: () => void;
@@ -34,9 +36,7 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
 
   const showQuantityError = touched && !quantity;
 
-  const tutorName =
-    `${spoil.tutor?.first_name ?? ""} ${spoil.tutor?.last_name ?? ""}`.trim() ||
-    "Unknown tutor";
+  const tutorName = getTutorName(spoil);
 
   const costPerLearner =
     typeof spoil.display_amount === "number"

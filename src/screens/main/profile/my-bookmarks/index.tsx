@@ -37,6 +37,7 @@ export default function MyBookmarksPage() {
                 <BookmarkCard
                   key={bookmark.id}
                   spoilId={spoil?.id ?? bookmark.spoil_id}
+                  slug={spoil?.slug}
                   title={spoil?.title}
                   image={spoil?.cover_image_url}
                   author={author}

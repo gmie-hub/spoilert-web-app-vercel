@@ -14,6 +14,7 @@ interface UpdateProfilePayload {
   name?: string;
   first_name?: string;
   last_name?: string;
+  display_name?: string;
   username?: string;
   phone_number?: string;
   country_code?: string;

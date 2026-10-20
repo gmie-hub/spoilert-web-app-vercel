@@ -7,6 +7,9 @@ import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
 export interface PerformanceItem {
+  // The Spoylz's id (read from `spoil_id`, else `id`) opens its My Spoylz page.
+  spoil_id?: number | null;
+  id?: number;
   title: string;
   total: number;
 }

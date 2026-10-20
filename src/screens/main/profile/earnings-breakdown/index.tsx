@@ -1,17 +1,29 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import ProfileIcon from "@spt/assets/icons/profile-2user.svg";
 import CreatedIcon from "@spt/assets/icons/scicon.svg";
 import TotalIcon from "@spt/assets/icons/totalIcons.svg";
 import walleticon from "@spt/assets/icons/wallet-3.svg";
 import { type EarningSpoil, useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
+import { pairEarningsByTitle } from "@spt/screens/institution/lecturers/details/mappers";
 import { useAuthStore } from "@spt/store/authStore";
 
-function SpoilEarningCard({ spoil }: { spoil: EarningSpoil }) {
-  return (
-    <div className="flex items-stretch gap-3 rounded-xl border-1 border-[#2222220D] bg-white p-4 shadow-sm">
+const cardLinkClass =
+  "cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B5368]/30";
+
+function SpoilEarningCard({
+  spoil,
+  spoilId,
+}: {
+  spoil: EarningSpoil;
+  spoilId?: number | null;
+}) {
+  const card = (
+    <div className="flex h-full items-stretch gap-3 rounded-xl border-1 border-[#2222220D] bg-white p-4 shadow-sm">
       <div className="relative h-[100px] w-[100px] flex-shrink-0 overflow-hidden rounded-[16px] bg-gray-100">
         {spoil.cover_image && (
           <Image
@@ -37,11 +49,26 @@ function SpoilEarningCard({ spoil }: { spoil: EarningSpoil }) {
       </div>
     </div>
   );
+
+  // Opens the payments behind this Spoylz's earnings.
+  return spoilId ? (
+    <Link
+      href={`/profile/earnings-breakdown/details?spoilId=${spoilId}`}
+      className={`block h-full rounded-xl ${cardLinkClass}`}
+    >
+      {card}
+    </Link>
+  ) : (
+    card
+  );
 }
 
 export default function EarningsBreakdownPage() {
   const user = useAuthStore((state) => state.user);
   const { earnings, isLoading, isError, errorMessage } = useGetEarningsBreakdownQuery(user?.id);
+  // The earnings don't carry Spoylz ids, so each card is matched to one of the
+  // tutor's Spoylz by its title (when unique) to open that Spoylz's payments.
+  const { spoils: mySpoils } = useGetLecturerSpoilsQuery(user?.id);
 
   if (isLoading) {
     return (
@@ -57,6 +84,7 @@ export default function EarningsBreakdownPage() {
 
 
   const spoils = earnings?.data ?? [];
+  const { spoilFor } = pairEarningsByTitle(mySpoils, spoils);
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,8 +100,11 @@ export default function EarningsBreakdownPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* Total Earnings */}
-        <div className="flex flex-col gap-3 rounded-xl border border-[#A5D1DE] bg-[#E3F5FA] px-5 py-5">
+        {/* Total Earnings — the payments behind it are under Tutor Transactions */}
+        <Link
+          href="/profile/transaction-history"
+          className={`flex flex-col gap-3 rounded-xl border border-[#A5D1DE] bg-[#E3F5FA] px-5 py-5 ${cardLinkClass}`}
+        >
           <div className="flex items-center gap-2">
             <Image src={TotalIcon} alt="wallet icon" className="h-10 w-10" />
             <p className="text-[14px] font-medium text-[#495057]">Total Earnings</p>
@@ -81,10 +112,13 @@ export default function EarningsBreakdownPage() {
           <p className="text-[18px] font-semibold text-[#212529]">
             ₦{parseFloat(earnings?.overview?.total_earning ?? "0").toLocaleString()}
           </p>
-        </div>
+        </Link>
 
         {/* Spoils Created */}
-        <div className="flex flex-col gap-3 rounded-xl border border-[#F9D0B0] bg-[#FEF0E7] px-5 py-5">
+        <Link
+          href="/profile/my-spoils"
+          className={`flex flex-col gap-3 rounded-xl border border-[#F9D0B0] bg-[#FEF0E7] px-5 py-5 ${cardLinkClass}`}
+        >
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#F97316]">
               <Image src={CreatedIcon} alt="created icon" className="h-10 w-10 text-white" />
@@ -94,7 +128,7 @@ export default function EarningsBreakdownPage() {
           <p className="text-[18px] font-semibold text-[#212529]">
             {earnings?.overview?.spoils_created ?? 0}
           </p>
-        </div>
+        </Link>
       </div>
 
       {/* Spoils Earnings Breakdown List */}
@@ -107,7 +141,11 @@ export default function EarningsBreakdownPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {spoils.map((spoil, i) => (
-              <SpoilEarningCard key={spoil.spoil_name + i} spoil={spoil} />
+              <SpoilEarningCard
+                key={spoil.spoil_name + i}
+                spoil={spoil}
+                spoilId={spoil.spoil_id ?? spoil.id ?? spoilFor(spoil)?.id}
+              />
             ))}
           </div>
         )}

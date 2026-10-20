@@ -26,6 +26,14 @@ import { mapToCard, mapToProfile } from "./mappers";
 
 import type { CommunityCardItem, CommunityProfile } from "./communityTypes";
 
+// `?tab=joined` / `?tab=created` (e.g. from the Spoylz Stats cards) opens that
+// My Communities sub-tab, overriding the remembered tab.
+const getTutorTabFromUrl = (): TutorTab | null => {
+  if (typeof window === "undefined") return null;
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return tab === "joined" || tab === "created" ? tab : null;
+};
+
 const CommunityPage = () => {
   // const user = useAuthStore((state) => state.user); // Unused
   const isTutor = true;
@@ -33,6 +41,7 @@ const CommunityPage = () => {
   const [activePrimaryTab, setActivePrimaryTab] = useState<PrimaryTab>(() => {
     try {
       if (typeof window === "undefined") return "explore" as PrimaryTab;
+      if (getTutorTabFromUrl()) return "myCommunities";
       const key = `community:activePrimaryTab:${window.location.pathname}`;
       const raw = localStorage.getItem(key);
       if (raw === "explore" || raw === "myCommunities") return raw as PrimaryTab;
@@ -44,6 +53,8 @@ const CommunityPage = () => {
   const [activeTutorTab, setActiveTutorTab] = useState<TutorTab>(() => {
     try {
       if (typeof window === "undefined") return "joined" as TutorTab;
+      const tabFromUrl = getTutorTabFromUrl();
+      if (tabFromUrl) return tabFromUrl;
       const key = `community:activeTutorTab:${window.location.pathname}`;
       const raw = localStorage.getItem(key);
       if (raw === "joined" || raw === "created") return raw as TutorTab;
@@ -52,6 +63,14 @@ const CommunityPage = () => {
     }
     return "joined" as TutorTab;
   });
+
+  // Drop `?tab=` once applied so a later refresh restores the remembered tab
+  // instead of jumping back to the one in the link.
+  useEffect(() => {
+    if (getTutorTabFromUrl()) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   // persist tutor tab selection so refresh keeps the same sub-tab
   useEffect(() => {

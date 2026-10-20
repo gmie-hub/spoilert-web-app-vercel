@@ -229,7 +229,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             Sponsor Spoylz
             <FiArrowRight size={14} />
           </button>
-          {spoil?.enrolled_users === 0 && (
+          {(spoil?.enrolled_users ?? 0) > 0 && (
             <button
               type="button"
               onClick={() => router.push(`/my-spoils/${spoilId}/enrolled-learners`)}
