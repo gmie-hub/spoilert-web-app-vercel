@@ -1,4 +1,5 @@
 import type { UserNotification } from "@spt/hooks/apiRequests/useGetNotificationsQuery";
+import { CHAT_ENABLED } from "@spt/utils/chat/enabled";
 
 /**
  * Notifications arrive with a `route` that comes from one of two places:
@@ -89,11 +90,7 @@ const toPath = (value: string) => {
   }
 };
 
-/**
- * Turn a notification into a path this app can navigate to, or `null` when
- * there is nothing meaningful to open (callers hide their link in that case).
- */
-export const resolveNotificationRoute = (
+const resolveRoute = (
   notification: Pick<UserNotification, "route" | "section" | "meta">,
 ): string | null => {
   const raw = notification.route?.trim();
@@ -127,6 +124,19 @@ export const resolveNotificationRoute = (
     : undefined;
 
   return sectionMatch ?? null;
+};
+
+/**
+ * Turn a notification into a path this app can navigate to, or `null` when
+ * there is nothing meaningful to open (callers hide their link in that case).
+ */
+export const resolveNotificationRoute = (
+  notification: Pick<UserNotification, "route" | "section" | "meta">,
+): string | null => {
+  const path = resolveRoute(notification);
+  // With chat switched off, chat notifications have nothing to open.
+  if (!CHAT_ENABLED && path && /^\/messages(\/|\?|$)/.test(path)) return null;
+  return path;
 };
 
 export default resolveNotificationRoute;

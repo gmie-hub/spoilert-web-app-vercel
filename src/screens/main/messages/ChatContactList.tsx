@@ -105,7 +105,7 @@ export function ChatContactList({
         </label>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-contain">
         {isLoading &&
           [0, 1, 2, 3].map((row) => (
             <div key={row} className="flex items-center gap-3 px-5 py-3.5 border-b border-[#F1F4F7]">

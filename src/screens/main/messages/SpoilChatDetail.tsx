@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
@@ -34,22 +34,6 @@ export default function SpoilChatDetail({ spoilId }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showChat, setShowChat] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
-
-  /* Measure this element's top so we can fill exactly the remaining viewport height */
-  const outerRef = useRef<HTMLDivElement>(null);
-  const [outerHeight, setOuterHeight] = useState<number>(0);
-
-  useEffect(() => {
-    const measure = () => {
-      if (outerRef.current) {
-        const top = outerRef.current.getBoundingClientRect().top;
-        setOuterHeight(Math.max(window.innerHeight - top, 300));
-      }
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
 
   const { people, contacts, isLoading, error } = useSpoilChatContacts(
     spoilId,
@@ -103,17 +87,18 @@ export default function SpoilChatDetail({ spoilId }: Props) {
 
   return (
     /*
-     * outerRef measures this div's top position so we can fill exactly
-     * the remaining viewport below the sticky site header.
-     * overflow-hidden + flex-col lets the panels control their own scroll.
+     * Exactly the window below the sticky site header (which publishes its
+     * live height as --site-header-height), so the page itself never scrolls
+     * and the chat header stays pinned; only the lists and the thread scroll.
+     * dvh follows mobile browser bars as they show and hide.
      */
     <div
-      ref={outerRef}
       className="flex flex-col bg-white overflow-hidden"
-      style={{ height: outerHeight > 0 ? outerHeight : "auto" }}
+      style={{ height: "calc(100dvh - var(--site-header-height, 64px))" }}
     >
-      {/* Back button — shrink-0, never participates in scrolling */}
-      <div className="lg:px-[100px] px-4 pt-5 pb-3 shrink-0">
+      {/* Back button. On phones an open chat has its own back arrow, so this
+          row makes way for the chat. */}
+      <div className={`lg:px-[100px] px-4 pt-5 pb-3 shrink-0 ${showChat ? "hidden md:block" : ""}`}>
         <button
           type="button"
           onClick={handleBack}
@@ -124,7 +109,11 @@ export default function SpoilChatDetail({ spoilId }: Props) {
         </button>
       </div>
 
-      <div className="max-w-[960px] w-full mx-auto px-5 pb-5 flex flex-col flex-1 min-h-0">
+      <div
+        className={`max-w-[960px] w-full mx-auto flex flex-col flex-1 min-h-0 ${
+          showChat ? "md:px-5 md:pb-5" : "px-3 pb-3 sm:px-5 sm:pb-5"
+        }`}
+      >
         <div className="flex gap-3 flex-1 min-h-0">
           <ChatContactList
             contacts={filteredContacts}
@@ -145,7 +134,7 @@ export default function SpoilChatDetail({ spoilId }: Props) {
           {/* Right panel: header and composer stay put, the thread scrolls between them. */}
           <div
             className={`
-              flex-1 min-h-0 border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white
+              flex-1 min-w-0 min-h-0 md:border md:border-[#E9EEF2] md:rounded-2xl flex-col overflow-hidden bg-white
               ${showChat ? "flex" : "hidden md:flex"}
             `}
           >

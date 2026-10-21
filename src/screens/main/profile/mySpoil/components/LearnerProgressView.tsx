@@ -10,6 +10,7 @@ import type { EnrolledLearner } from "@spt/hooks/apiRequests/useGetEnrolledLearn
 import useGetLearnerProgressQuery, {
   type LearnerProgressData,
 } from "@spt/hooks/apiRequests/useGetLearnerProgressQuery";
+import { CHAT_ENABLED } from "@spt/utils/chat/enabled";
 
 import { LoadingState } from "../../../spoil/preSpoilQuiz/components/LoadingState";
 
@@ -153,16 +154,18 @@ const LearnerProgressView: React.FC<LearnerProgressViewProps> = ({
               </span>
             )}    
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              router.push(`/my-spoils/${spoilId}/enrolled-learners/${learner.id}/chat`)
-            }
-            className="flex items-center gap-2 border border-[#C4D8E0] rounded-xl px-5 py-2.5 text-sm font-medium text-[#20262D] hover:bg-[#F0F8FB] transition-colors"
-          >
-            <FiMessageSquare size={16} className="text-[#0B5368]" />
-            Send A Message
-          </button>
+          {CHAT_ENABLED && (
+            <button
+              type="button"
+              onClick={() =>
+                router.push(`/my-spoils/${spoilId}/enrolled-learners/${learner.id}/chat`)
+              }
+              className="flex items-center gap-2 border border-[#C4D8E0] rounded-xl px-5 py-2.5 text-sm font-medium text-[#20262D] hover:bg-[#F0F8FB] transition-colors"
+            >
+              <FiMessageSquare size={16} className="text-[#0B5368]" />
+              Send A Message
+            </button>
+          )}
         </div>
 
         {/* Two-panel layout */}

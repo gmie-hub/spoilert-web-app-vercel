@@ -46,7 +46,8 @@ export function MessageContent({ msg }: { msg: ChatMessage }) {
   }
 
   if (msg.type === "text") {
-    return <span className="whitespace-pre-wrap break-words">{msg.text}</span>;
+    // "anywhere" lets a long link or word wrap instead of widening the screen.
+    return <span className="whitespace-pre-wrap [overflow-wrap:anywhere]">{msg.text}</span>;
   }
 
   if (!msg.mediaUrl) return <MediaPlaceholder msg={msg} />;

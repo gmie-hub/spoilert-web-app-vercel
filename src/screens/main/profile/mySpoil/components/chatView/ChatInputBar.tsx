@@ -146,7 +146,8 @@ export function ChatInputBar({
             theme={Theme.LIGHT}
             lazyLoadEmojis
             height={380}
-            width={300}
+            // Never wider than a small phone screen.
+            width="min(300px, calc(100vw - 24px))"
           />
         </div>
       )}
