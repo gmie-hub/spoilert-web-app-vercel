@@ -1,5 +1,6 @@
 "use client";
 
+import type { EnrolledLearnersFilters } from "@spt/hooks/apiRequests/useGetEnrolledLearnersQuery";
 import { useGetSpoilPerformanceQuery } from "@spt/hooks/apiRequests/useGetSpoilPerformanceQuery";
 
 import { assignSeries } from "./chartData";
@@ -7,12 +8,17 @@ import ChartSection from "./ChartSection";
 
 // Pages the chart cards open as a whole.
 const MY_SPOYLZ_HREF = "/profile/my-spoils";
-const EARNINGS_BREAKDOWN_HREF = "/profile/earnings-breakdown";
+const TRANSACTION_HISTORY_HREF = "/profile/transaction-history";
 
-// A Spoylz in the Learners Enrolled chart opens the list of its learners; in
-// the other charts it opens its My Spoylz page.
-const enrolledLearnersHref = (spoilId: number) =>
-  `/my-spoils/${spoilId}/enrolled-learners`;
+// A Spoylz in one of the learner charts opens the list of its learners,
+// filtered to that chart's status.
+const enrolledLearnersHref =
+  (status?: EnrolledLearnersFilters["status"]) => (spoilId: number) =>
+    `/my-spoils/${spoilId}/enrolled-learners${status ? `?status=${status}` : ""}`;
+
+// A Spoylz in Revenue Generated opens its earnings breakdown.
+const earningsDetailsHref = (spoilId: number) =>
+  `/profile/earnings-breakdown/details?spoilId=${spoilId}`;
 
 export default function SpoilPerformanceAnalyticsPage() {
   const { performance, isLoading, isError, errorMessage } = useGetSpoilPerformanceQuery();
@@ -43,47 +49,61 @@ export default function SpoilPerformanceAnalyticsPage() {
     <div className="flex flex-col gap-8">
       <h2 className="text-[18px] font-semibold text-[#212529]">Spoylz Performance Analytics</h2>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <ChartSection
-          title="Learners Enrolled"
-          href={MY_SPOYLZ_HREF}
-          linkLabel="My Spoylz"
-          itemHref={enrolledLearnersHref}
-          items={performance.learners_enrolled}
-          series={series}
-        />
-        <ChartSection
-          title="Revenue Generated"
-          href={EARNINGS_BREAKDOWN_HREF}
-          linkLabel="Earnings"
-          items={performance.revenue_generated}
-          series={series}
-          isCurrency
-        />
-        <ChartSection
-          title="Completed Learners"
-          href={MY_SPOYLZ_HREF}
-          linkLabel="My Spoylz"
-          items={performance.completed_learners}
-          series={series}
-        />
-        <ChartSection
-          title="Ongoing Learners"
-          href={MY_SPOYLZ_HREF}
-          linkLabel="My Spoylz"
-          items={performance.ongoing_learners}
-          series={series}
-        />
-      </div>
+      {/* Two independent columns, so opening "Show all" on a card only pushes
+          down the cards under it. On phones the columns dissolve into one list
+          and `order` keeps the cards in reading order. */}
+      <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
+        <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:gap-8">
+          <ChartSection
+            title="Learners Enrolled"
+            href={MY_SPOYLZ_HREF}
+            linkLabel="My Spoylz"
+            itemHref={enrolledLearnersHref()}
+            items={performance.learners_enrolled}
+            series={series}
+            className="order-1 sm:order-none"
+          />
+          <ChartSection
+            title="Completed Learners"
+            href={MY_SPOYLZ_HREF}
+            linkLabel="My Spoylz"
+            itemHref={enrolledLearnersHref("completed")}
+            items={performance.completed_learners}
+            series={series}
+            className="order-3 sm:order-none"
+          />
+          <ChartSection
+            title="Not Started"
+            href={MY_SPOYLZ_HREF}
+            linkLabel="My Spoylz"
+            itemHref={enrolledLearnersHref("not_started")}
+            items={performance.not_started_learners}
+            series={series}
+            className="order-5 sm:order-none"
+          />
+        </div>
 
-      <div className="sm:w-1/2 sm:pr-4">
-        <ChartSection
-          title="Not Started"
-          href={MY_SPOYLZ_HREF}
-          linkLabel="My Spoylz"
-          items={performance.not_started_learners}
-          series={series}
-        />
+        <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:gap-8">
+          <ChartSection
+            title="Revenue Generated"
+            href={TRANSACTION_HISTORY_HREF}
+            linkLabel="Earnings"
+            itemHref={earningsDetailsHref}
+            items={performance.revenue_generated}
+            series={series}
+            isCurrency
+            className="order-2 sm:order-none"
+          />
+          <ChartSection
+            title="Ongoing Learners"
+            href={MY_SPOYLZ_HREF}
+            linkLabel="My Spoylz"
+            itemHref={enrolledLearnersHref("ongoing")}
+            items={performance.ongoing_learners}
+            series={series}
+            className="order-4 sm:order-none"
+          />
+        </div>
       </div>
     </div>
   );

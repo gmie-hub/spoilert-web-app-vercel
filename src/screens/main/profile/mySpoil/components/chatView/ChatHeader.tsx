@@ -1,29 +1,42 @@
-import Image from "next/image";
+import type { ReactNode } from "react";
+
+import { ChatAvatar } from "./ChatAvatar";
+import { PresenceLabel } from "./PresenceLabel";
 
 interface Props {
+  userId: string;
   name: string;
   avatar: string | null;
+  online: boolean;
+  lastSeen: Date | null;
+  activity?: "typing" | "recording" | null;
+  /** Shown before the avatar, e.g. a back button on small screens. */
+  leading?: ReactNode;
+  /** Shown at the far end, e.g. a menu. */
+  actions?: ReactNode;
 }
 
-export function ChatHeader({ name, avatar }: Props) {
+export function ChatHeader({
+  userId,
+  name,
+  avatar,
+  online,
+  lastSeen,
+  activity,
+  leading,
+  actions,
+}: Props) {
   return (
-    <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E9EEF2] shrink-0">
-      <div className="relative w-11 h-11 rounded-full overflow-hidden bg-[#E8EEF2] shrink-0">
-        {avatar ? (
-          <Image src={avatar} alt={name} fill className="object-cover" />
-        ) : (
-          <span className="w-full h-full flex items-center justify-center text-sm font-semibold text-[#0B5368]">
-            {name[0] ?? "?"}
-          </span>
-        )}
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-[#20262D]">{name}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
-          <span className="text-xs text-[#8A98A3]">Online</span>
+    <div className="sticky top-0 z-10 bg-white flex items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 border-b border-[#E9EEF2] shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        {leading}
+        <ChatAvatar userId={userId} name={name} avatar={avatar} size={44} online={online} />
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-[#20262D] truncate">{name}</p>
+          <PresenceLabel online={online} lastSeen={lastSeen} activity={activity} />
         </div>
       </div>
+      {actions}
     </div>
   );
 }

@@ -8,9 +8,6 @@ import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import QuizPreviewPanel from "./QuizPreviewPanel";
 
-const LEADERBOARD = "leaderboard";
-type Section = number | typeof LEADERBOARD;
-
 // Pre-Spoylz first, then each module's quiz in module order, then Post-Spoylz.
 const quizOrder = (quiz: QuizDatum, moduleIds: number[]) => {
   if (quiz.type === "pre") return -1;
@@ -39,26 +36,15 @@ const ChevronRightIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-// No endpoint serves quiz rankings yet.
-const LeaderboardPanel = () => (
-  <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-    <h3 className="text-lg font-semibold text-[#212529]">Leaderboard</h3>
-    <p className="mt-2 text-sm text-gray-400">No leaderboard is available for this Spoylz yet.</p>
-  </div>
-);
-
 const SpoylzQuizLeaderboardTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
-  const [activeSection, setActiveSection] = useState<Section | null>(null);
+  const [activeSection, setActiveSection] = useState<number | null>(null);
   const { quizData, isQuizLoading, isError, quizErrorMessage } = useGetQuizBySpoilId(spoil.id);
 
   const moduleIds = (spoil.modules ?? []).map((module) => module.id);
   const quizzes = [...(quizData ?? [])].sort((a, b) => quizOrder(a, moduleIds) - quizOrder(b, moduleIds));
-  const currentSection = activeSection ?? quizzes[0]?.id ?? LEADERBOARD;
+  const currentSection = activeSection ?? quizzes[0]?.id;
 
-  const sections: { id: Section; label: string }[] = [
-    ...quizzes.map((quiz) => ({ id: quiz.id, label: getQuizLabel(quiz, moduleIds) })),
-    { id: LEADERBOARD, label: "Leaderboard" },
-  ];
+  const sections = quizzes.map((quiz) => ({ id: quiz.id, label: getQuizLabel(quiz, moduleIds) }));
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
@@ -95,11 +81,7 @@ const SpoylzQuizLeaderboardTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
         )}
       </div>
 
-      {currentSection === LEADERBOARD ? (
-        <LeaderboardPanel />
-      ) : (
-        <QuizPreviewPanel key={currentSection} quizId={currentSection} />
-      )}
+      {currentSection !== undefined && <QuizPreviewPanel key={currentSection} quizId={currentSection} />}
     </div>
   );
 };

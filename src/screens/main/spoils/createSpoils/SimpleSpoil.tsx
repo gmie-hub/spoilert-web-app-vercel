@@ -125,12 +125,15 @@ const SimpleSpoil = () => {
         const lesson = spoilData?.modules?.[0]?.lessons?.[0];
         if (lesson?.id) {
           const isText = basicsData.lessonType === "text";
+          // Keep the original concrete type (pdf/video/...) for file lessons;
+          // the update endpoint uses it to decide between content and file. A
+          // text lesson switched to a file becomes "file", or it would go up
+          // as text without its new file.
+          const fileType = lesson.type && lesson.type !== "text" ? lesson.type : "file";
           await updateLessonHandler({
             lessonId: lesson.id,
             title: lesson.title,
-            // Keep the original concrete type (pdf/video/...) for file lessons;
-            // the update endpoint uses it to decide between content and file.
-            type: isText ? "text" : (lesson.type ?? "file"),
+            type: isText ? "text" : fileType,
             content: isText ? basicsData.lessonContent : undefined,
             file:
               !isText && basicsData.lessonFile instanceof File

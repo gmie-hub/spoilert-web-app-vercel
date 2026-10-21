@@ -3,11 +3,11 @@
 import { type ReactNode, useState } from "react";
 
 import Image from "next/image";
-import toast from "react-hot-toast";
 
 import { StatCard } from "@spt/components";
 import { useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
 import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
+import useResendInvitationMutation from "@spt/hooks/apiRequests/useResendInvitationMutation";
 
 import { BookIcon, CoinIcon, NetworkIcon, PeopleIcon } from "../../components/icons";
 import StatusBadge from "../../components/StatusBadge";
@@ -36,7 +36,7 @@ const RefreshIcon = () => (
 // those show "No data" rather than made-up figures.
 const NOT_AVAILABLE = null;
 
-const FieldRow = ({
+export const FieldRow = ({
   left,
   right,
 }: {
@@ -61,15 +61,17 @@ const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
 
   const spoils = useGetLecturerSpoilsQuery(lecturer.userId);
   const earnings = useGetEarningsBreakdownQuery(lecturer.userId);
+  const { resendInvitationHandler, isLoading: isResending } = useResendInvitationMutation();
 
   const studentsEnrolled = spoils.isError
     ? null
     : spoils.spoils.reduce((sum, spoil) => sum + (spoil.enrolled_users ?? 0), 0).toLocaleString();
   const lecturerEarnings = formatNaira(earnings.earnings?.overview.total_earning);
 
-  const handleConfirmResend = () => {
-    setShowResendModal(false);
-    toast.success("Invitation resent successfully");
+  // On failure the modal stays open with the error toast so they can retry.
+  const handleConfirmResend = async () => {
+    const resent = await resendInvitationHandler(lecturer.email);
+    if (resent) setShowResendModal(false);
   };
 
   return (
@@ -183,6 +185,7 @@ const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
       {showResendModal && (
         <ResendInvitationModal
           email={lecturer.email}
+          isLoading={isResending}
           onClose={() => setShowResendModal(false)}
           onConfirm={handleConfirmResend}
         />

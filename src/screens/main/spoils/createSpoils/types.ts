@@ -25,6 +25,8 @@ export interface BasicsFormData {
   // optional scheduled premiere fields
   scheduledDate?: string;
   scheduledTime?: string;
+  // whether learners may download the lesson files (`is_downloadable`)
+  isDownloadable?: boolean;
   // draft flag: 1 = draft, 0 = published
   is_draft?: number | boolean;
   is_active?: number | boolean;

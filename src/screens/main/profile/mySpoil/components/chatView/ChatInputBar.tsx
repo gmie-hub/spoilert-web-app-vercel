@@ -2,13 +2,10 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
-import { FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
+import { FiCheck, FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
 
 import { AttachmentMenu } from "./AttachmentMenu";
 import { RecordingBar } from "./RecordingBar";
-import { getTime } from "./types";
-
-import type { ChatMessage } from "./types";
 
 interface Props {
   inputText: string;
@@ -20,8 +17,17 @@ interface Props {
   slideOffset: number;
   onCancelRecording: () => void;
   onMicStart: (clientX: number) => void;
-  onAddMessage: (msg: ChatMessage) => void;
-  onScrollToEnd: () => void;
+  onSendFile: (file: File, picked: "media" | "document") => void;
+  /** While the chat is still opening, or can't be used. */
+  disabled?: boolean;
+  /** Shown above the input, e.g. the message being replied to or edited. */
+  banner?: React.ReactNode;
+  /** Editing a sent message: no attachments or voice notes, Enter saves. */
+  editing?: boolean;
+  /** Esc in the input, e.g. to cancel a reply or edit. */
+  onEscape?: () => void;
+  /** Focuses the input whenever this changes to a new value. */
+  focusKey?: string | null;
 }
 
 export function ChatInputBar({
@@ -34,8 +40,12 @@ export function ChatInputBar({
   slideOffset,
   onCancelRecording,
   onMicStart,
-  onAddMessage,
-  onScrollToEnd,
+  onSendFile,
+  disabled = false,
+  banner,
+  editing = false,
+  onEscape,
+  focusKey,
 }: Props) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -44,6 +54,10 @@ export function ChatInputBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (focusKey) inputRef.current?.focus();
+  }, [focusKey]);
 
   useEffect(() => {
     if (!showAttachMenu) return;
@@ -85,28 +99,22 @@ export function ChatInputBar({
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "image" | "document",
+    picked: "media" | "document",
   ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    if (type === "image") {
-      onAddMessage({ id: Date.now(), type: "image", imageUrl: url, fileName: file.name, fromMe: true, time: getTime() });
-    } else {
-      const kb = file.size / 1024;
-      const fileSize = kb < 1024 ? `${kb.toFixed(1)} KB` : `${(kb / 1024).toFixed(1)} MB`;
-      onAddMessage({ id: Date.now(), type: "document", fileUrl: url, fileName: file.name, fileSize, fromMe: true, time: getTime() });
-    }
+    Array.from(e.target.files ?? []).forEach((file) => onSendFile(file, picked));
     e.target.value = "";
     setShowAttachMenu(false);
-    onScrollToEnd();
   };
 
   return (
-    <div className="px-3 py-2.5 sm:px-4 sm:py-3 border-t border-[#E9EEF2] shrink-0 relative">
+    <div
+      className={`px-3 py-2.5 sm:px-4 sm:py-3 border-t border-[#E9EEF2] shrink-0 relative ${disabled ? "opacity-60 pointer-events-none" : ""}`}
+      aria-disabled={disabled}
+    >
       <input
         ref={fileInputRef}
         type="file"
+        multiple
         accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip"
         className="hidden"
         onChange={(e) => handleFileChange(e, "document")}
@@ -114,9 +122,10 @@ export function ChatInputBar({
       <input
         ref={imageInputRef}
         type="file"
+        multiple
         accept="image/*,video/*"
         className="hidden"
-        onChange={(e) => handleFileChange(e, "image")}
+        onChange={(e) => handleFileChange(e, "media")}
       />
 
       {showAttachMenu && (
@@ -137,10 +146,13 @@ export function ChatInputBar({
             theme={Theme.LIGHT}
             lazyLoadEmojis
             height={380}
-            width={300}
+            // Never wider than a small phone screen.
+            width="min(300px, calc(100vw - 24px))"
           />
         </div>
       )}
+
+      {banner}
 
       {isRecording ? (
         <RecordingBar
@@ -165,36 +177,45 @@ export function ChatInputBar({
             type="text"
             placeholder="Send a message..."
             value={inputText}
+            disabled={disabled}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") onSendText();
+              // Not while an IME is composing, or Enter would send half a word.
+              if (e.key === "Enter" && !e.nativeEvent.isComposing) onSendText();
+              if (e.key === "Escape") onEscape?.();
             }}
             className="flex-1 min-w-0 text-sm outline-none bg-transparent placeholder:text-[#8A98A3] text-[#20262D]"
           />
 
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAttachMenu((prev) => !prev);
-              }}
-              className={`transition-colors ${showAttachMenu ? "text-[#0B5368]" : "text-[#8A98A3] hover:text-[#20262D]"}`}
-            >
-              <FiPaperclip size={18} />
-            </button>
+            {!editing && (
+              <button
+                type="button"
+                aria-label="Attach a file"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAttachMenu((prev) => !prev);
+                }}
+                className={`transition-colors ${showAttachMenu ? "text-[#0B5368]" : "text-[#8A98A3] hover:text-[#20262D]"}`}
+              >
+                <FiPaperclip size={18} />
+              </button>
+            )}
 
-            {inputText.trim() ? (
+            {inputText.trim() || editing ? (
               <button
                 type="button"
                 onClick={onSendText}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors shrink-0"
+                disabled={!inputText.trim()}
+                aria-label={editing ? "Save changes" : "Send message"}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors shrink-0 disabled:opacity-50"
               >
-                <FiSend size={13} />
+                {editing ? <FiCheck size={15} /> : <FiSend size={13} />}
               </button>
             ) : (
               <button
                 type="button"
+                aria-label="Hold to record a voice note"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   onMicStart(e.clientX);

@@ -161,6 +161,13 @@ const SpoilBasicsSection: FC<SpoilBasicsSectionProps> = ({
             value={basics?.learningOutcome || "N/A"}
           />
 
+          <hr className="border-gray-200" />
+
+          <InfoItem
+            label="Lesson Downloads"
+            value={basics?.isDownloadable ? "Allowed" : "Not allowed"}
+          />
+
           {selectedType === "simple" && (
             <>
               <hr className="border-gray-200" />

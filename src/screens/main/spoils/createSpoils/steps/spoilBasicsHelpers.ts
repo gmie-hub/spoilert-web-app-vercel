@@ -74,6 +74,7 @@ export const mapSpoilDataToForm = (
     learningOutcome: spoilData.what_to_learn ?? "",
     scheduledDate: getDatePart(spoilData.premiere_at),
     scheduledTime: getTimePart(spoilData.premiere_at),
+    isDownloadable: Number(spoilData.is_downloadable) === 1,
     is_draft: spoilData.is_draft ? 1 : 0,
     type:
       spoilData.type === "simple" || spoilData.type === "advanced"

@@ -79,6 +79,22 @@ amount: yup
     selectedType === "simple"
       ? yup.string().trim().required("Select a lesson type")
       : yup.string().trim().nullable(),
+  // A simple Spoylz's file lesson needs its file: a new upload, or on edit the
+  // one already saved (its URL).
+  lessonFile:
+    selectedType === "simple"
+      ? yup.mixed().when("lessonType", (lessonTypeValue, schema) =>
+          lessonTypeValue?.[0] === "file"
+            ? schema.test(
+                "required",
+                "Upload a file for this lesson",
+                (value) =>
+                  value instanceof File ||
+                  (typeof value === "string" && value.trim() !== ""),
+              )
+            : schema.nullable(),
+        )
+      : yup.mixed().nullable(),
   });
 
   

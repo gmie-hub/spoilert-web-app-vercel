@@ -3,9 +3,10 @@
 interface Props {
   onClose: () => void;
   onConfirm: () => void;
+  isLoading?: boolean;
 }
 
-export function ClearChatModal({ onClose, onConfirm }: Props) {
+export function ClearChatModal({ onClose, onConfirm, isLoading = false }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
@@ -50,16 +51,19 @@ export function ClearChatModal({ onClose, onConfirm }: Props) {
           <h2 className="text-[17px] font-bold text-[#20262D] leading-snug mb-2">
             Are You Sure You Want to Clear This Chat? 🎉
           </h2>
-          <p className="text-sm text-[#8A98A3]">This action cannot be undone</p>
+          <p className="text-sm text-[#8A98A3]">
+            This action cannot be undone. Messages are only removed for you.
+          </p>
         </div>
 
         <div className="px-8 pb-8 flex flex-col gap-3">
           <button
             type="button"
             onClick={onConfirm}
-            className="w-full py-3.5 rounded-xl bg-[#0B5368] text-white font-semibold text-sm hover:bg-[#094558] transition-colors"
+            disabled={isLoading}
+            className="w-full py-3.5 rounded-xl bg-[#0B5368] text-white font-semibold text-sm hover:bg-[#094558] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Clear Chat
+            {isLoading ? "Clearing..." : "Clear Chat"}
           </button>
           <button
             type="button"

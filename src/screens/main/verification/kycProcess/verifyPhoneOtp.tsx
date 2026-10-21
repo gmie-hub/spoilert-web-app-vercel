@@ -175,11 +175,9 @@ const VerifyPhoneOtp = ({ onNext }: VerifyPhoneOtpProps) => {
               </>
             }
             onSubmit={async (code, actions) => {
-              await verifyOtpHandler(
-                { code },
-                actions
-              );
-              onNext(); // Call onNext after successful verification
+              const verified = await verifyOtpHandler({ code }, actions);
+              // On an invalid or expired code, stay here with the error toast.
+              if (verified) onNext();
             }}
           />
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -13,12 +13,12 @@ import Button from "@spt/components/button";
 import SuccessState from "@spt/components/successState";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useReportMutation from "@spt/hooks/apiRequests/useReportMutation";
-import { ChatInputBar } from "@spt/screens/main/profile/mySpoil/components/chatView/ChatInputBar";
-import { EmptyState } from "@spt/screens/main/profile/mySpoil/components/chatView/EmptyState";
-import { MessageBubble } from "@spt/screens/main/profile/mySpoil/components/chatView/MessageBubble";
-import { getTime } from "@spt/screens/main/profile/mySpoil/components/chatView/types";
-import type { ChatMessage } from "@spt/screens/main/profile/mySpoil/components/chatView/types";
-import { useRecording } from "@spt/screens/main/profile/mySpoil/components/chatView/useRecording";
+import useChatConversation from "@spt/hooks/chat/useChatConversation";
+import useChatUser, { useChatParticipant } from "@spt/hooks/chat/useChatUser";
+import {
+  ChatFooterNotice,
+  ChatPanel,
+} from "@spt/screens/main/profile/mySpoil/components/chatView/ChatPanel";
 import { LoadingState } from "@spt/screens/main/spoil/preSpoilQuiz/components/LoadingState";
 
 import { ClearChatModal } from "./chatWithTutor/ClearChatModal";
@@ -37,11 +37,6 @@ interface Props {
 export default function ChatWithTutor({ spoilId }: Props) {
   const router = useRouter();
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputText, setInputText] = useState("");
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
-
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -49,30 +44,21 @@ export default function ChatWithTutor({ spoilId }: Props) {
   const [selectedReason, setSelectedReason] = useState("");
   const [reportDesc, setReportDesc] = useState("");
   const [clearChatStep, setClearChatStep] = useState<ClearChatStep>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
   const { data: spoil, isLoading, refetch } = useGetSpoilDetailsQuery(spoilId);
   const { reportHandler, isLoading: isReporting } = useReportMutation();
 
-  const scrollToEnd = useCallback(() => {
-    setTimeout(() => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-      }
-    }, 0);
-  }, []);
+  // The same 1-on-1 conversation the tutor sees under Messages, on web or mobile.
+  const { me } = useChatUser();
+  const tutorParticipant = useChatParticipant(spoil?.tutor);
+  const chat = useChatConversation(me, tutorParticipant);
 
-  const addMessage = useCallback((msg: ChatMessage) => {
-    setMessages((prev) => [...prev, msg]);
-  }, []);
-
-  const { isRecording, recordingDuration, recordingCancelled, slideOffset, startRecording, stopRecording } =
-    useRecording(addMessage, scrollToEnd);
-
-  const sendTextMessage = () => {
-    if (!inputText.trim()) return;
-    addMessage({ id: Date.now(), type: "text", text: inputText.trim(), fromMe: true, time: getTime() });
-    setInputText("");
-    scrollToEnd();
+  const confirmClearChat = async () => {
+    setIsClearing(true);
+    const cleared = await chat.clearChat();
+    setIsClearing(false);
+    setClearChatStep(cleared ? "success" : null);
   };
 
   useEffect(() => {
@@ -97,6 +83,21 @@ export default function ChatWithTutor({ spoilId }: Props) {
   const expertiseList = tutor?.profile?.expertise ?? [];
   const expertise = expertiseList.length > 0 ? expertiseList.join(", ") : null;
   const relatedSpoils: RelatedSpoilItem[] = spoil.related_spoils ?? [];
+
+  let footerNotice = null;
+  if (!me) {
+    footerNotice = <ChatFooterNotice>Sign in to message this tutor.</ChatFooterNotice>;
+  } else if (chat.isSelf) {
+    footerNotice = (
+      <ChatFooterNotice>
+        This is your own Spoylz. Your learners&apos; messages are in{" "}
+        <Link href={`/messages/${spoilId}`} className="font-semibold text-[#0B5368] underline">
+          Messages
+        </Link>
+        .
+      </ChatFooterNotice>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-[#FAFAFA] px-4 py-8 sm:px-6 lg:px-20">
@@ -149,29 +150,15 @@ export default function ChatWithTutor({ spoilId }: Props) {
             onFollowSuccess={refetch}
           />
 
-          {/* Right: Chat panel */}
-          <div className="flex-1 w-full border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white min-h-[calc(100svh-180px)] sm:min-h-[560px] lg:min-h-[calc(100vh-220px)]">
-
-            {/* Chat header */}
-            <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 border-b border-[#E9EEF2] shrink-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="relative w-11 h-11 rounded-full overflow-hidden bg-[#E8EEF2] flex items-center justify-center shrink-0">
-                  {tutorAvatar ? (
-                    <Image src={tutorAvatar} alt={tutorName} fill className="object-cover" />
-                  ) : (
-                    <span className="text-sm font-semibold text-[#0B5368]">{tutorInitial}</span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-[#20262D] truncate">{tutorName}</p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-[#22C55E] shrink-0" />
-                    <span className="text-xs text-[#8A98A3]">Online</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 3-dot menu */}
+          {/* Right: Chat panel — fixed height so the thread scrolls and the composer stays in view */}
+          <div className="flex-1 w-full border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white h-[calc(100svh-180px)] min-h-[460px] sm:h-[600px] lg:h-[calc(100vh-220px)]">
+            {tutorParticipant && (
+              <ChatPanel
+                key={tutorParticipant.id}
+                chat={chat}
+                other={tutorParticipant}
+                footerNotice={footerNotice}
+                headerActions={
               <div className="relative shrink-0" ref={menuRef}>
                 <button
                   type="button"
@@ -214,36 +201,9 @@ export default function ChatWithTutor({ spoilId }: Props) {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Messages */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
-              {messages.length === 0 ? (
-                <EmptyState name={tutorName} />
-              ) : (
-                <div className="space-y-5">
-                  {messages.map((msg) => (
-                    <MessageBubble key={msg.id} msg={msg} learnerInitial={tutorInitial} />
-                  ))}
-                  <div ref={endRef} />
-                </div>
-              )}
-            </div>
-
-            {/* Input bar */}
-            <ChatInputBar
-              inputText={inputText}
-              onInputChange={setInputText}
-              onSendText={sendTextMessage}
-              isRecording={isRecording}
-              recordingDuration={recordingDuration}
-              recordingCancelled={recordingCancelled}
-              slideOffset={slideOffset}
-              onCancelRecording={() => stopRecording(false)}
-              onMicStart={(clientX) => void startRecording(clientX)}
-              onAddMessage={addMessage}
-              onScrollToEnd={scrollToEnd}
-            />
+                }
+              />
+            )}
           </div>
         </div>
       </div>
@@ -252,7 +212,8 @@ export default function ChatWithTutor({ spoilId }: Props) {
       {clearChatStep === "confirm" && (
         <ClearChatModal
           onClose={() => setClearChatStep(null)}
-          onConfirm={() => { setMessages([]); setClearChatStep("success"); }}
+          onConfirm={() => void confirmClearChat()}
+          isLoading={isClearing}
         />
       )}
       {clearChatStep === "success" && (

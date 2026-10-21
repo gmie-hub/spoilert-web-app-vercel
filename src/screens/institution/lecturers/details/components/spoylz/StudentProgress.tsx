@@ -37,11 +37,14 @@ const RowFull = ({ label, value }: { label: string; value: ReactNode }) => (
 
 const StudentProgress = ({
   student,
+  subtitle = student.name,
   onBack,
   onViewProfile,
   simplified = false,
 }: {
   student: StudentProgressDetails;
+  // Shown above "Progress Details" when there's no profile button.
+  subtitle?: string;
   onBack: () => void;
   onViewProfile?: () => void;
   simplified?: boolean;
@@ -70,7 +73,7 @@ const StudentProgress = ({
       )}
     </div>
 
-    {!onViewProfile && <p className="mt-4 text-gray-500">{student.name}</p>}
+    {!onViewProfile && <p className="mt-4 text-gray-500">{subtitle}</p>}
     <h2 className={`${onViewProfile ? "mt-4" : "mt-1"} text-xl font-semibold text-[#212529]`}>Progress Details</h2>
 
     <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">

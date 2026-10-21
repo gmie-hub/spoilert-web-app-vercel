@@ -2,46 +2,24 @@
 
 import { FiSearch } from "react-icons/fi";
 
-import { getInitials } from "./chatData";
+import { ChatAvatar } from "@spt/screens/main/profile/mySpoil/components/chatView/ChatAvatar";
 
 import type { ChatTab, Contact } from "./chatData";
-
-export function Avatar({
-  contact,
-  size = 40,
-}: {
-  contact: Contact;
-  size?: number;
-}) {
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <div
-        className="w-full h-full rounded-full flex items-center justify-center text-white text-xs font-semibold"
-        style={{ backgroundColor: contact.avatarBg }}
-      >
-        {getInitials(contact.name)}
-      </div>
-      {contact.online && (
-        <span
-          className="absolute bottom-0 right-0 rounded-full bg-[#22C55E] border-2 border-white"
-          style={{ width: 11, height: 11 }}
-        />
-      )}
-    </div>
-  );
-}
 
 interface Props {
   contacts: Contact[];
   allContactsCount: number;
-  selectedContactId: number;
+  selectedContactId: string | null;
   chatTab: ChatTab;
   searchQuery: string;
   unreadCount: number;
   showChat: boolean;
+  isLoading?: boolean;
+  /** Shown when nothing matches, e.g. why the list is empty. */
+  emptyMessage: string;
   onTabChange: (tab: ChatTab) => void;
   onSearchChange: (q: string) => void;
-  onContactSelect: (id: number) => void;
+  onContactSelect: (id: string) => void;
   onNewChat: () => void;
 }
 
@@ -53,6 +31,8 @@ export function ChatContactList({
   searchQuery,
   unreadCount,
   showChat,
+  isLoading = false,
+  emptyMessage,
   onTabChange,
   onSearchChange,
   onContactSelect,
@@ -125,45 +105,75 @@ export function ChatContactList({
         </label>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {contacts.map((contact) => {
-          const isSelected = selectedContactId === contact.id;
-          return (
-            <button
-              key={contact.id}
-              type="button"
-              onClick={() => onContactSelect(contact.id)}
-              className={`w-full flex items-center gap-3 px-5 py-3.5 text-left border-b border-[#F1F4F7] last:border-0 transition-colors cursor-pointer ${
-                isSelected ? "bg-[#EBF5F9]" : "hover:bg-[#F8FAFB]"
-              }`}
-            >
-              <Avatar contact={contact} size={42} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-[3px]">
-                  <p className="text-[13px] font-semibold text-[#20262D] truncate">
-                    {contact.name}
-                  </p>
-                  <span className="text-[11px] text-[#8A98A3] shrink-0">
-                    {contact.time}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] text-[#8A98A3] truncate flex-1 leading-relaxed">
-                    {contact.fromMe && (
-                      <span className="text-[#8A98A3]">✓✓ </span>
-                    )}
-                    {contact.lastMessage}
-                  </p>
-                  {contact.unread > 0 && (
-                    <span className="min-w-[20px] h-5 rounded-full bg-[#0B5368] text-white text-[10px] font-bold flex items-center justify-center px-1 shrink-0">
-                      {contact.unread}
-                    </span>
-                  )}
-                </div>
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        {isLoading &&
+          [0, 1, 2, 3].map((row) => (
+            <div key={row} className="flex items-center gap-3 px-5 py-3.5 border-b border-[#F1F4F7]">
+              <div className="w-[42px] h-[42px] rounded-full bg-gray-200 animate-pulse shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-1/2 rounded bg-gray-200 animate-pulse" />
+                <div className="h-3 w-3/4 rounded bg-gray-100 animate-pulse" />
               </div>
-            </button>
-          );
-        })}
+            </div>
+          ))}
+
+        {!isLoading && contacts.length === 0 && (
+          <p className="text-sm text-[#8A98A3] text-center px-6 py-10 leading-relaxed">
+            {emptyMessage}
+          </p>
+        )}
+
+        {!isLoading &&
+          contacts.map((contact) => {
+            const isSelected = selectedContactId === contact.id;
+            return (
+              <button
+                key={contact.id}
+                type="button"
+                onClick={() => onContactSelect(contact.id)}
+                className={`w-full flex items-center gap-3 px-5 py-3.5 text-left border-b border-[#F1F4F7] last:border-0 transition-colors cursor-pointer ${
+                  isSelected ? "bg-[#EBF5F9]" : "hover:bg-[#F8FAFB]"
+                }`}
+              >
+                <ChatAvatar
+                  userId={contact.id}
+                  name={contact.name}
+                  avatar={contact.avatar}
+                  size={42}
+                  online={contact.online}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-[3px]">
+                    <p className="text-[13px] font-semibold text-[#20262D] truncate">
+                      {contact.name}
+                    </p>
+                    <span
+                      className={`text-[11px] shrink-0 ${contact.unread > 0 ? "text-[#0B5368] font-semibold" : "text-[#8A98A3]"}`}
+                    >
+                      {contact.time}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <p
+                      className={`text-[12px] truncate flex-1 leading-relaxed ${contact.unread > 0 ? "text-[#20262D] font-medium" : "text-[#8A98A3]"}`}
+                    >
+                      {contact.fromMe && (
+                        <span className={contact.seen ? "text-[#0B5368]" : "text-[#8A98A3]"}>
+                          {contact.seen ? "✓✓ " : "✓ "}
+                        </span>
+                      )}
+                      {contact.lastMessage}
+                    </p>
+                    {contact.unread > 0 && (
+                      <span className="min-w-[20px] h-5 rounded-full bg-[#0B5368] text-white text-[10px] font-bold flex items-center justify-center px-1 shrink-0">
+                        {contact.unread > 99 ? "99+" : contact.unread}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
       </div>
     </div>
   );

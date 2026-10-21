@@ -1,86 +1,43 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-
 import { useRouter } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
 
-import useGetEnrolledLearnersQuery, {
-  type EnrolledLearner,
-} from "@spt/hooks/apiRequests/useGetEnrolledLearnersQuery";
+import useGetEnrolledLearnersQuery from "@spt/hooks/apiRequests/useGetEnrolledLearnersQuery";
+import useChatConversation from "@spt/hooks/chat/useChatConversation";
+import useChatUser, { useChatParticipant } from "@spt/hooks/chat/useChatUser";
 import { LoadingState } from "@spt/screens/main/spoil/preSpoilQuiz/components/LoadingState";
 
-import { ChatHeader } from "./chatView/ChatHeader";
-import { ChatInputBar } from "./chatView/ChatInputBar";
-import { EmptyState } from "./chatView/EmptyState";
-import { MessageBubble } from "./chatView/MessageBubble";
-import { getTime } from "./chatView/types";
-import { useRecording } from "./chatView/useRecording";
-
-import type { ChatMessage } from "./chatView/types";
-
-const DUMMY_LEARNERS: EnrolledLearner[] = [
-  { id: 1, status: "completed", created_at: "2024-11-10", learner: { id: 1, first_name: "Amara", last_name: "Okafor" } },
-  { id: 2, status: "ongoing", created_at: "2024-12-01", learner: { id: 2, first_name: "Chidi", last_name: "Nwosu" } },
-  { id: 3, status: "not_started", created_at: "2025-01-15", learner: { id: 3, first_name: "Fatima", last_name: "Bello" } },
-  { id: 4, status: "ongoing", created_at: "2025-02-03", learner: { id: 4, first_name: "Emeka", last_name: "Adeyemi" } },
-  { id: 5, status: "completed", created_at: "2025-03-20", learner: { id: 5, first_name: "Ngozi", last_name: "Eze" } },
-  { id: 6, status: "not_started", created_at: "2025-04-05", learner: { id: 6, first_name: "Tunde", last_name: "Akinola" } },
-];
-
-const getLearnerName = (learner: EnrolledLearner) => {
-  const person = learner.learner ?? learner.user;
-  if (!person) return "Unknown Learner";
-  return `${person.first_name ?? ""} ${person.last_name ?? ""}`.trim() || "Unknown Learner";
-};
-
-const getLearnerAvatar = (learner: EnrolledLearner) =>
-  learner.learner?.avatar ?? learner.user?.avatar ?? null;
+import { ChatFooterNotice, ChatPanel } from "./chatView/ChatPanel";
 
 interface Props {
   spoilId: number;
   enrollmentId: number;
 }
 
+// A tutor's 1-on-1 chat with one learner enrolled on their spoil — the same
+// conversation the learner sees from "Chat With Tutor" on web or mobile.
 export default function ChatView({ spoilId, enrollmentId }: Props) {
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputText, setInputText] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
+  const { me } = useChatUser();
+  const { learners, isLoading, isError, errorMessage } = useGetEnrolledLearnersQuery(spoilId);
 
-  const scrollToEnd = useCallback(() => {
-    setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-  }, []);
-
-  const addMessage = useCallback((msg: ChatMessage) => {
-    setMessages((prev) => [...prev, msg]);
-  }, []);
-
-  const { isRecording, recordingDuration, recordingCancelled, slideOffset, startRecording, stopRecording } =
-    useRecording(addMessage, scrollToEnd);
-
-  const { learners, isLoading } = useGetEnrolledLearnersQuery(spoilId);
+  const enrollment = learners.find((item) => item.id === enrollmentId);
+  const person =
+    enrollment?.learner ??
+    enrollment?.user ??
+    (enrollment?.user_id ? { id: enrollment.user_id } : null);
+  const learner = useChatParticipant(person);
+  const chat = useChatConversation(me, learner);
 
   if (isLoading) return <LoadingState />;
 
-  const source = learners.length > 0 ? learners : DUMMY_LEARNERS;
-  const learner =
-    source.find((l) => l.id === enrollmentId) ??
-    source[0] ??
-    ({ id: enrollmentId, status: "ongoing", learner: { id: enrollmentId, first_name: "Sample", last_name: "Learner" } } satisfies EnrolledLearner);
-
-  const name = getLearnerName(learner);
-  const avatar = getLearnerAvatar(learner);
-
-  const sendTextMessage = () => {
-    if (!inputText.trim()) return;
-    addMessage({ id: Date.now(), type: "text", text: inputText.trim(), fromMe: true, time: getTime() });
-    setInputText("");
-    scrollToEnd();
-  };
-
   const enrolledLearnersHref = `/my-spoils/${spoilId}/enrolled-learners`;
   const progressHref = `${enrolledLearnersHref}/${enrollmentId}`;
+
+  let footerNotice = null;
+  if (!me) footerNotice = <ChatFooterNotice>Sign in to send messages.</ChatFooterNotice>;
+  else if (chat.isSelf) footerNotice = <ChatFooterNotice>You can&apos;t message yourself.</ChatFooterNotice>;
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -115,40 +72,33 @@ export default function ChatView({ spoilId, enrollmentId }: Props) {
 
         {/* Chat card */}
         <div className="px-4 sm:px-6 py-6">
-          <div
-            className="w-full border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white"
-            style={{ minHeight: "calc(100vh - 140px)" }}
-          >
-            <ChatHeader name={name} avatar={avatar} />
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-5 py-6">
-              {messages.length === 0 ? (
-                <EmptyState name={name} />
-              ) : (
-                <div className="space-y-5">
-                  {messages.map((msg) => (
-                    <MessageBubble key={msg.id} msg={msg} learnerInitial={name[0] ?? "?"} />
-                  ))}
-                  <div ref={endRef} />
-                </div>
-              )}
+          {learner ? (
+            <div className="w-full h-[calc(100svh-160px)] min-h-[460px] border border-[#E9EEF2] rounded-2xl flex flex-col overflow-hidden bg-white">
+              <ChatPanel
+                key={learner.id}
+                chat={chat}
+                other={learner}
+                footerNotice={footerNotice}
+                messagesClassName="px-5 py-6"
+              />
             </div>
-
-            <ChatInputBar
-              inputText={inputText}
-              onInputChange={setInputText}
-              onSendText={sendTextMessage}
-              isRecording={isRecording}
-              recordingDuration={recordingDuration}
-              recordingCancelled={recordingCancelled}
-              slideOffset={slideOffset}
-              onCancelRecording={() => stopRecording(false)}
-              onMicStart={(clientX) => void startRecording(clientX)}
-              onAddMessage={addMessage}
-              onScrollToEnd={scrollToEnd}
-            />
-          </div>
+          ) : (
+            <div className="w-full border border-[#E9EEF2] rounded-2xl bg-white px-6 py-16 text-center">
+              <p className="text-base font-semibold text-[#20262D]">
+                {isError ? "Couldn't load this learner" : "Learner not found"}
+              </p>
+              <p className="text-sm text-[#8A98A3] mt-2">
+                {isError ? errorMessage : "They may no longer be enrolled on this Spoylz."}
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push(enrolledLearnersHref)}
+                className="mt-6 bg-[#0B5368] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a4a5a] transition-colors"
+              >
+                Back to Enrolled Learners
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
