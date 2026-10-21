@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@spt/store/authStore";
 import api from "@spt/utils/apiClient";
 
-export const useGetLearnerOverviewQuery = () => {
+// The signed-in user's totals, or another learner's when given their id.
+export const useGetLearnerOverviewQuery = (learnerId?: number | string) => {
   const user = useAuthStore((state) => state.user);
-  const userId = user?.id;
+  const userId = learnerId ?? user?.id;
 
   const query = useQuery({
     queryKey: ["learner-overview", userId],

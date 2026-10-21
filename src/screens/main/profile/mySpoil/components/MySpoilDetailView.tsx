@@ -23,6 +23,7 @@ import StarIcon from "@spt/assets/icons/star.svg";
 import useCreateCommunityMutation from "@spt/hooks/apiRequests/useCreateCommunityMutation";
 import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQuery";
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
+import useSpoilUnreadCount from "@spt/hooks/chat/useSpoilUnreadCount";
 import ShareLinkModal from "@spt/screens/main/home/spoilDetails/ShareLinkModal";
 import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
@@ -47,6 +48,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
   const { createCommunityHandler, isLoading: isCreatingCommunity } =
     useCreateCommunityMutation();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const unreadMessages = useSpoilUnreadCount(spoilId);
 
   if (isLoading) {
     return <LoadingState />;
@@ -94,9 +96,11 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
             className="cursor-pointer relative p-1.5 rounded-full hover:bg-[#F3F7F9] transition-colors"
           >
             <Image src={MessagesIcon} alt="Messages" width={22} height={22} />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-semibold">
-              1
-            </span>
+            {unreadMessages > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-0.5 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-semibold">
+                {unreadMessages > 99 ? "99+" : unreadMessages}
+              </span>
+            )}
           </button>
 
           {spoil?.community === null && (

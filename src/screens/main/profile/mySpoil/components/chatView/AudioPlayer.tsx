@@ -15,36 +15,50 @@ interface Props {
 export function AudioPlayer({ url, duration = 0, fromMe }: Props) {
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  // Recordings carry their length; fall back to the file's own metadata.
+  const [length, setLength] = useState(duration);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const toggle = () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
     if (playing) {
-      audioRef.current.pause();
+      audio.pause();
       setPlaying(false);
     } else {
-      void audioRef.current.play();
-      setPlaying(true);
+      audio.play().then(
+        () => setPlaying(true),
+        () => setPlaying(false),
+      );
     }
   };
+
+  const progress = length > 0 ? Math.min(elapsed / length, 1) : 0;
+  const played = fromMe ? "bg-[#0B5368]" : "bg-[#5B6A75]";
+  const unplayed = fromMe ? "bg-[#0B5368]/40" : "bg-[#8A98A3]/50";
 
   return (
     <div className="flex items-center gap-2.5 min-w-[180px] max-w-[240px]">
       <audio
         ref={audioRef}
         src={url}
+        preload="metadata"
+        onLoadedMetadata={() => {
+          const seconds = audioRef.current?.duration;
+          if (!duration && seconds && Number.isFinite(seconds)) setLength(Math.round(seconds));
+        }}
+        onPause={() => setPlaying(false)}
         onEnded={() => {
           setPlaying(false);
           setElapsed(0);
         }}
-        onTimeUpdate={() =>
-          setElapsed(Math.floor(audioRef.current?.currentTime ?? 0))
-        }
+        onTimeUpdate={() => setElapsed(audioRef.current?.currentTime ?? 0)}
       />
       <button
         type="button"
         onClick={toggle}
-        className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 ${fromMe ? "bg-[#0B5368]" : "bg-[#8A98A3]"}`}
+        aria-label={playing ? "Pause voice note" : "Play voice note"}
+        className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 cursor-pointer ${fromMe ? "bg-[#0B5368]" : "bg-[#8A98A3]"}`}
       >
         {playing ? <FiPause size={14} /> : <FiPlay size={14} />}
       </button>
@@ -53,13 +67,13 @@ export function AudioPlayer({ url, duration = 0, fromMe }: Props) {
           {WAVEFORM.map((h, i) => (
             <div
               key={i}
-              className={`w-0.5 rounded-full ${fromMe ? "bg-[#0B5368]/60" : "bg-[#8A98A3]/60"}`}
+              className={`w-0.5 rounded-full ${i / WAVEFORM.length < progress ? played : unplayed}`}
               style={{ height: `${h}px` }}
             />
           ))}
         </div>
         <span className="text-[10px] text-[#8A98A3]">
-          {formatDuration(playing ? elapsed : duration)}
+          {formatDuration(playing || elapsed > 0 ? elapsed : length)}
         </span>
       </div>
     </div>

@@ -36,7 +36,7 @@ const RefreshIcon = () => (
 // those show "No data" rather than made-up figures.
 const NOT_AVAILABLE = null;
 
-const FieldRow = ({
+export const FieldRow = ({
   left,
   right,
 }: {

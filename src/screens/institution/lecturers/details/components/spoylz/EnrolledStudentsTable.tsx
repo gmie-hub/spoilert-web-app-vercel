@@ -13,7 +13,7 @@ import Badge from "./Badge";
 
 import type { EnrolledStudent } from "./types";
 
-const Avatar = ({ src, alt }: { src?: string | null; alt: string }) => (
+export const Avatar = ({ src, alt }: { src?: string | null; alt: string }) => (
   <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100">
     {src ? (
       <Image src={src} alt={alt} fill sizes="32px" className="object-cover" />

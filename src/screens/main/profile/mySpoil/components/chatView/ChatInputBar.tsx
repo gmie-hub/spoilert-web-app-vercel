@@ -6,9 +6,6 @@ import { FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
 
 import { AttachmentMenu } from "./AttachmentMenu";
 import { RecordingBar } from "./RecordingBar";
-import { getTime } from "./types";
-
-import type { ChatMessage } from "./types";
 
 interface Props {
   inputText: string;
@@ -20,8 +17,9 @@ interface Props {
   slideOffset: number;
   onCancelRecording: () => void;
   onMicStart: (clientX: number) => void;
-  onAddMessage: (msg: ChatMessage) => void;
-  onScrollToEnd: () => void;
+  onSendFile: (file: File, picked: "media" | "document") => void;
+  /** While the chat is still opening, or can't be used. */
+  disabled?: boolean;
 }
 
 export function ChatInputBar({
@@ -34,8 +32,8 @@ export function ChatInputBar({
   slideOffset,
   onCancelRecording,
   onMicStart,
-  onAddMessage,
-  onScrollToEnd,
+  onSendFile,
+  disabled = false,
 }: Props) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -85,28 +83,22 @@ export function ChatInputBar({
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "image" | "document",
+    picked: "media" | "document",
   ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    if (type === "image") {
-      onAddMessage({ id: Date.now(), type: "image", imageUrl: url, fileName: file.name, fromMe: true, time: getTime() });
-    } else {
-      const kb = file.size / 1024;
-      const fileSize = kb < 1024 ? `${kb.toFixed(1)} KB` : `${(kb / 1024).toFixed(1)} MB`;
-      onAddMessage({ id: Date.now(), type: "document", fileUrl: url, fileName: file.name, fileSize, fromMe: true, time: getTime() });
-    }
+    Array.from(e.target.files ?? []).forEach((file) => onSendFile(file, picked));
     e.target.value = "";
     setShowAttachMenu(false);
-    onScrollToEnd();
   };
 
   return (
-    <div className="px-3 py-2.5 sm:px-4 sm:py-3 border-t border-[#E9EEF2] shrink-0 relative">
+    <div
+      className={`px-3 py-2.5 sm:px-4 sm:py-3 border-t border-[#E9EEF2] shrink-0 relative ${disabled ? "opacity-60 pointer-events-none" : ""}`}
+      aria-disabled={disabled}
+    >
       <input
         ref={fileInputRef}
         type="file"
+        multiple
         accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip"
         className="hidden"
         onChange={(e) => handleFileChange(e, "document")}
@@ -114,9 +106,10 @@ export function ChatInputBar({
       <input
         ref={imageInputRef}
         type="file"
+        multiple
         accept="image/*,video/*"
         className="hidden"
-        onChange={(e) => handleFileChange(e, "image")}
+        onChange={(e) => handleFileChange(e, "media")}
       />
 
       {showAttachMenu && (
@@ -165,9 +158,11 @@ export function ChatInputBar({
             type="text"
             placeholder="Send a message..."
             value={inputText}
+            disabled={disabled}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") onSendText();
+              // Not while an IME is composing, or Enter would send half a word.
+              if (e.key === "Enter" && !e.nativeEvent.isComposing) onSendText();
             }}
             className="flex-1 min-w-0 text-sm outline-none bg-transparent placeholder:text-[#8A98A3] text-[#20262D]"
           />

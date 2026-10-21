@@ -29,8 +29,25 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number];
 
-const SpoylzManagementDetails = ({ id }: { id: string }) => {
-  const [activeTab, setActiveTab] = useState<Tab>("Spoylz Overview");
+// "Enrolled Students" -> "enrolled-students", as the ?tab= link names it.
+const toTabSlug = (tab: Tab) => tab.toLowerCase().replace(/\s+/g, "-");
+
+const SpoylzManagementDetails = ({
+  id,
+  initialTab,
+  returningLearnerId,
+}: {
+  id: string;
+  // ?tab= and ?learner= — set when coming back from a learner's profile, to
+  // reopen their progress under Enrolled Students.
+  initialTab?: string;
+  returningLearnerId?: string;
+}) => {
+  const [activeTab, setActiveTab] = useState<Tab>(
+    () => TABS.find((tab) => toTabSlug(tab) === initialTab) ?? "Spoylz Overview",
+  );
+  // Only reopened once: leaving the tab drops it.
+  const [reopenLearnerId, setReopenLearnerId] = useState(returningLearnerId);
   const [statusModalAction, setStatusModalAction] = useState<SpoylzStatusAction | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -133,7 +150,10 @@ const SpoylzManagementDetails = ({ id }: { id: string }) => {
               <button
                 key={tab}
                 type="button"
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setReopenLearnerId(undefined);
+                }}
                 className={`shrink-0 whitespace-nowrap border-b-2 pb-3 text-sm font-medium ${
                   currentTab === tab
                     ? "border-[var(--color-blue)] text-[var(--color-blue)]"
@@ -161,7 +181,9 @@ const SpoylzManagementDetails = ({ id }: { id: string }) => {
           {currentTab === "Spoylz Outline" && <SpoylzOutlineTab spoil={spoil} />}
           {currentTab === "Spoylz Quiz" && <SpoylzQuizLeaderboardTab spoil={spoil} />}
           {currentTab === "Spoylz Reviews" && <SpoylzReviewsTab spoilId={spoil.id} />}
-          {currentTab === "Enrolled Students" && <EnrolledStudentsTab spoilId={spoil.id} simplified={isSimple} />}
+          {currentTab === "Enrolled Students" && (
+            <EnrolledStudentsTab spoilId={spoil.id} simplified={isSimple} returningLearnerId={reopenLearnerId} />
+          )}
           {currentTab === "Spoylz Metrics" && <SpoylzMetricsTab spoil={spoil} />}
         </>
       )}

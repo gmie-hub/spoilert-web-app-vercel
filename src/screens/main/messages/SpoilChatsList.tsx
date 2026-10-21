@@ -1,127 +1,178 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FiArrowLeft, FiChevronRight } from "react-icons/fi";
+import { FiArrowLeft } from "react-icons/fi";
 
-interface SpoilChat {
-  id: number;
-  title: string;
-  newMessages: number;
-  imgSeed: number;
-}
+import useGetLearnerEnrollmentsQuery from "@spt/hooks/apiRequests/useGetLearnerEnrollmentsQuery";
+import useGetTutorSpoilChatsQuery from "@spt/hooks/apiRequests/useGetTutorSpoilChatsQuery";
+import useChatUser, { toChatParticipant } from "@spt/hooks/chat/useChatUser";
+import useMyConversations from "@spt/hooks/chat/useMyConversations";
 
-const DUMMY_SPOILS_CREATED: SpoilChat[] = [
-  { id: 1, title: "Basic Design principles", newMessages: 5, imgSeed: 20 },
-  { id: 2, title: "Basic Design principles", newMessages: 5, imgSeed: 42 },
-  { id: 3, title: "Basic Design principles", newMessages: 5, imgSeed: 65 },
-  { id: 4, title: "Basic Design principles", newMessages: 5, imgSeed: 88 },
-  { id: 5, title: "Basic Design principles", newMessages: 5, imgSeed: 110 },
-  { id: 6, title: "Basic Design principles", newMessages: 5, imgSeed: 133 },
-  { id: 7, title: "Basic Design principles", newMessages: 5, imgSeed: 156 },
-];
+import { SpoilChatRow, SpoilChatRowSkeleton } from "./SpoilChatRow";
 
 type Tab = "created" | "enrolled";
 
+const newMessagesLabel = (count: number) => `${count} new message${count === 1 ? "" : "s"}`;
+
+// "Spoylz Chats", as on mobile: tutors see the Spoylz they created (opening
+// one lists its learners' chats) and the ones they're enrolled on; learners
+// only the ones they're enrolled on (opening one chats with its tutor).
 export default function SpoilChatsList() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>("created");
+  const { me, isTutor } = useChatUser();
+  const [chosenTab, setChosenTab] = useState<Tab>("created");
+  const activeTab: Tab = isTutor ? chosenTab : "enrolled";
+
+  const { unreadFrom } = useMyConversations(me?.id);
+  const created = useGetTutorSpoilChatsQuery(isTutor);
+  const enrolled = useGetLearnerEnrollmentsQuery(me?.id ?? "");
+
+  let content: ReactNode;
+  if (activeTab === "created") {
+    if (created.isLoading) content = <ListSkeleton />;
+    else if (created.isError) content = <ListError message={created.errorMessage} />;
+    else if (created.spoils.length === 0)
+      content = (
+        <EmptyState
+          title="You Haven't Created Any Spoylz Yet"
+          description="Create a Spoylz and your learners' chats will show up here"
+          cta="Create A Spoylz"
+          onCta={() => router.push("/create-spoils")}
+        />
+      );
+    else
+      content = created.spoils.map((spoil) => {
+        const learners = spoil.learners ?? [];
+        const unread = learners.reduce((sum, learner) => sum + unreadFrom(learner.id), 0);
+        const enrolledCount = learners.length || spoil.enrolled_users || 0;
+        return (
+          <SpoilChatRow
+            key={spoil.id}
+            title={spoil.title}
+            coverImageUrl={spoil.cover_image_url}
+            unread={unread}
+            subtitle={
+              unread > 0
+                ? newMessagesLabel(unread)
+                : `${enrolledCount} learner${enrolledCount === 1 ? "" : "s"} enrolled`
+            }
+            onClick={() => router.push(`/messages/${spoil.id}`)}
+          />
+        );
+      });
+  } else {
+    const spoils = enrolled.enrollments
+      .map((enrollment) => enrollment.spoil)
+      .filter((spoil, index, all): spoil is NonNullable<typeof spoil> =>
+        Boolean(spoil) && all.findIndex((other) => other?.id === spoil?.id) === index,
+      );
+    if (enrolled.isLoading) content = <ListSkeleton />;
+    else if (enrolled.isError) content = <ListError message={enrolled.errorMessage} />;
+    else if (spoils.length === 0)
+      content = (
+        <EmptyState
+          title="You Are Not Enrolled to Any Spoylz! 👀"
+          description="Enroll in a Spoylz, start learning and access your chats here"
+          cta="Explore Spoylz"
+          onCta={() => router.push("/categories")}
+        />
+      );
+    else
+      content = spoils.map((spoil) => {
+        const tutor = spoil.tutor?.id != null ? toChatParticipant({ ...spoil.tutor, id: spoil.tutor.id }) : null;
+        const unread = tutor ? unreadFrom(tutor.id) : 0;
+        return (
+          <SpoilChatRow
+            key={spoil.id}
+            title={spoil.title ?? "Untitled Spoylz"}
+            coverImageUrl={spoil.cover_image_url}
+            unread={unread}
+            subtitle={
+              unread > 0
+                ? newMessagesLabel(unread)
+                : tutor
+                  ? `Tutor: ${tutor.name}`
+                  : "Chat with your tutor"
+            }
+            onClick={() => router.push(`/spoil/${spoil.id}/chat-tutor`)}
+          />
+        );
+      });
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <div className="lg:px-[100px]  px-4 pt-6 pb-5 ">
-             {/* Back button */}
+        {/* Back button */}
         <button
           type="button"
           onClick={() => router.push("/")}
           className="flex items-center gap-1.5 text-sm text-[#20262D] hover:opacity-70 transition-opacity mb-10"
         >
           <FiArrowLeft size={15} />
-          Backs
+          Back
         </button>
       </div>
-      
-      <div className="max-w-[960px] w-full mx-auto px-5 pt-6 pb-5 flex flex-col flex-1">
-   
-      </div>
+
+      <div className="max-w-[960px] w-full mx-auto px-5 pt-6 pb-5 flex flex-col flex-1"></div>
       <div className="max-w-[680px] mx-auto px-6 pt-6 pb-16">
         {/* Title */}
-        <h1 className="text-[22px] font-bold text-[#20262D] mb-5">
-          Spoylz Chats
-        </h1>
+        <h1 className="text-[22px] font-bold text-[#20262D] mb-5">Spoylz Chats</h1>
 
-        {/* Tabs */}
-        <div className="flex border-b border-[#E9EEF2]">
-          {(["created", "enrolled"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`relative flex-1 text-center py-3 text-sm font-medium transition-colors cursor-pointer ${
-                activeTab === tab
-                  ? "text-[#0B5368]"
-                  : "text-[#8A98A3] hover:text-[#20262D]"
-              }`}
-            >
-              {tab === "created" ? "Spoils Created" : "Spoils Enrolled"}
-              {activeTab === tab && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#0B5368]" />
-              )}
-            </button>
-          ))}
-        </div>
+        {/* Tabs — only tutors have Spoylz of their own */}
+        {isTutor && (
+          <div className="flex border-b border-[#E9EEF2]">
+            {(["created", "enrolled"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setChosenTab(tab)}
+                className={`relative flex-1 text-center py-3 text-sm font-medium transition-colors cursor-pointer ${
+                  activeTab === tab ? "text-[#0B5368]" : "text-[#8A98A3] hover:text-[#20262D]"
+                }`}
+              >
+                {tab === "created" ? "Spoils Created" : "Spoils Enrolled"}
+                {activeTab === tab && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#0B5368]" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Content */}
-        <div className="mt-2">
-          {activeTab === "created" ? (
-            <div>
-              {DUMMY_SPOILS_CREATED.map((spoil) => (
-                <button
-                  key={spoil.id}
-                  type="button"
-                  onClick={() => router.push(`/messages/${spoil.id}`)}
-                  className="w-full flex items-center gap-4 py-4 hover:bg-gray-50 transition-colors text-left border-b border-[#F1F4F7] last:border-0 cursor-pointer"
-                >
-                  {/* Thumbnail */}
-                  <div className="relative w-[60px] h-[60px] rounded-xl overflow-hidden shrink-0 bg-gray-200">
-                    <Image
-                      src={`https://picsum.photos/seed/${spoil.imgSeed}/60/60`}
-                      alt={spoil.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-
-                  {/* Text */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#20262D]">
-                      {spoil.title}
-                    </p>
-                    <p className="text-xs text-[#8A98A3] mt-1">
-                      {spoil.newMessages} new messages
-                    </p>
-                  </div>
-
-                  {/* Chevron */}
-                  <FiChevronRight
-                    size={18}
-                    className="text-[#C4C4C4] shrink-0"
-                  />
-                </button>
-              ))}
-            </div>
-          ) : (
-            <EnrolledEmptyState onExplore={() => router.push("/categories")} />
-          )}
-        </div>
+        <div className="mt-2">{content}</div>
       </div>
     </div>
   );
 }
 
-function EnrolledEmptyState({ onExplore }: { onExplore: () => void }) {
+function ListSkeleton() {
+  return (
+    <div>
+      {[0, 1, 2].map((row) => (
+        <SpoilChatRowSkeleton key={row} />
+      ))}
+    </div>
+  );
+}
+
+function ListError({ message }: { message: string }) {
+  return <p className="text-sm text-red-500 text-center py-16">{message}</p>;
+}
+
+function EmptyState({
+  title,
+  description,
+  cta,
+  onCta,
+}: {
+  title: string;
+  description: string;
+  cta: string;
+  onCta: () => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center pt-16 pb-10 gap-6 text-center px-4">
       {/* Illustration */}
@@ -145,21 +196,17 @@ function EnrolledEmptyState({ onExplore }: { onExplore: () => void }) {
 
       {/* Text */}
       <div className="flex flex-col gap-2">
-        <p className="font-bold text-[#20262D] text-base">
-          You Are Not Enrolled to Any Spoylz! 👀
-        </p>
-        <p className="text-sm text-[#8A98A3] leading-relaxed max-w-[300px] mx-auto">
-          Enroll in a Spoylz, start learning and access your chats here
-        </p>
+        <p className="font-bold text-[#20262D] text-base">{title}</p>
+        <p className="text-sm text-[#8A98A3] leading-relaxed max-w-[300px] mx-auto">{description}</p>
       </div>
 
       {/* CTA */}
       <button
         type="button"
-        onClick={onExplore}
+        onClick={onCta}
         className="w-full max-w-[340px] bg-[#0B5368] text-white py-4 rounded-2xl font-semibold text-sm hover:bg-[#0a4a5a] transition-colors"
       >
-        Explore Spoylz
+        {cta}
       </button>
     </div>
   );

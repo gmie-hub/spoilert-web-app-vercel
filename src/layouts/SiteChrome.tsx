@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { usePathname } from "next/navigation";
 
+import ChatPresence from "@spt/layouts/ChatPresence";
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
 
@@ -23,6 +24,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <ChatPresence />
       <Header />
       {children}
       <Footer />

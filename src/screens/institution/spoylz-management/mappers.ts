@@ -42,7 +42,7 @@ export const parseQuizOptions = (raw: unknown): string[] => {
   }
 };
 
-const toNumber = (value?: number | string | null) => {
+export const toNumber = (value?: number | string | null) => {
   if (value == null || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
