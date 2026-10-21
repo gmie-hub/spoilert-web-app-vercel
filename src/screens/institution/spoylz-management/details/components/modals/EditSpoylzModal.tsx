@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Form, Formik } from "formik";
+import { Field, Form, Formik } from "formik";
 import Image from "next/image";
 import * as Yup from "yup";
 
@@ -32,6 +32,7 @@ interface EditSpoylzValues {
   amount: string;
   description: string;
   what_to_learn: string;
+  is_downloadable: boolean;
 }
 
 const validationSchema = Yup.object({
@@ -112,6 +113,7 @@ const EditSpoylzModal = ({ spoil, onClose }: { spoil: SpoilDetailsData; onClose:
     amount: spoil.amount != null ? String(spoil.amount) : "",
     description: spoil.description ?? "",
     what_to_learn: spoil.what_to_learn ?? "",
+    is_downloadable: Number(spoil.is_downloadable) === 1,
   };
 
   const coverSrc = coverPreview ?? spoil.cover_image_url;
@@ -136,6 +138,7 @@ const EditSpoylzModal = ({ spoil, onClose }: { spoil: SpoilDetailsData; onClose:
                 amount: values.pricing === "free" ? "0" : values.amount,
                 description: values.description.trim(),
                 learningOutcome: values.what_to_learn.trim(),
+                isDownloadable: values.is_downloadable,
                 coverImage,
               },
               helpers,
@@ -211,6 +214,26 @@ const EditSpoylzModal = ({ spoil, onClose }: { spoil: SpoilDetailsData; onClose:
                   rows={4}
                 />
               </div>
+
+              <label
+                htmlFor="is_downloadable"
+                className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-[#FBFBFB] px-4 py-3 md:col-span-2"
+              >
+                <Field
+                  id="is_downloadable"
+                  type="checkbox"
+                  name="is_downloadable"
+                  className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[var(--color-blue)]"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-700">
+                    Allow learners to download lessons
+                  </span>
+                  <span className="mt-0.5 block text-xs text-gray-500">
+                    Learners can save this Spoylz&apos;s lesson files to their device while learning.
+                  </span>
+                </span>
+              </label>
             </div>
 
             <ModalActions onCancel={onClose} isSubmitting={isSubmitting} />

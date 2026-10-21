@@ -89,6 +89,8 @@ export interface SpoilDetailsData {
   expires_at: string;
   is_institution: number;
   has_certificate: number;
+  // Whether learners may download the lesson files; sent as a boolean.
+  is_downloadable?: boolean | number;
   certificate_fee: string;
   deleted_at: null;
   created_at: string;

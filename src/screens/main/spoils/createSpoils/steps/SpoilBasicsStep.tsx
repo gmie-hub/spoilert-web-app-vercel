@@ -3,7 +3,7 @@
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 
-import { Form, Formik, useFormikContext } from "formik";
+import { Field, Form, Formik, useFormikContext } from "formik";
 
 import Button from "@spt/components/button";
 import Input from "@spt/components/input";
@@ -154,9 +154,10 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
       </p>
 
       <Formik<BasicsFormData>
-        // Ensure lessonType is always a tracked field so its required error can
-        // surface on submit, even if the persisted draft predates this field.
-        initialValues={{ lessonType: "", ...data }}
+        // Ensure lessonType and lessonFile are always tracked fields so their
+        // required errors can surface on submit, even if the persisted draft
+        // predates them.
+        initialValues={{ lessonType: "", lessonFile: null, ...data }}
         enableReinitialize
         validationSchema={makeBasicsValidationSchema(selectedType)}
         validateOnChange={true}
@@ -360,6 +361,26 @@ const SpoilBasicsStep: FC<SpoilBasicsStepProps> = ({
                   )}
                 </div>
               )}
+
+            <label
+              htmlFor="isDownloadable"
+              className="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-[#FBFBFB] px-4 py-3"
+            >
+              <Field
+                id="isDownloadable"
+                type="checkbox"
+                name="isDownloadable"
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[var(--color-blue)]"
+              />
+              <span>
+                <span className="block text-sm font-medium text-gray-700">
+                  Allow learners to download lessons
+                </span>
+                <span className="mt-0.5 block text-xs text-gray-500">
+                  Learners can save this Spoylz&apos;s lesson files to their device while learning.
+                </span>
+              </span>
+            </label>
 
             <div className="flex flex-wrap gap-4">
               <Button

@@ -100,6 +100,9 @@ const DocumentFrame = ({ src, title }: { src: string; title: string }) => {
 
 interface LessonContentViewerProps {
   lesson: SpoilLesson;
+  // When the Spoylz allows downloads, the browser's own video and PDF
+  // download controls stay available.
+  isDownloadable?: boolean;
 }
 
 /**
@@ -108,7 +111,7 @@ interface LessonContentViewerProps {
  * render through the Microsoft Office online viewer; anything else falls
  * back to a link to open the file directly.
  */
-const LessonContentViewer = ({ lesson }: LessonContentViewerProps) => {
+const LessonContentViewer = ({ lesson, isDownloadable = false }: LessonContentViewerProps) => {
   const url = lesson.content_url ?? "";
   const title = lesson.title || "Lesson content";
   const kind = getFileKind(lesson);
@@ -130,7 +133,7 @@ const LessonContentViewer = ({ lesson }: LessonContentViewerProps) => {
       <video
         src={url}
         controls
-        controlsList="nodownload"
+        controlsList={isDownloadable ? undefined : "nodownload"}
         className="absolute inset-0 h-full w-full bg-black"
       >
         Your browser does not support embedded video.
@@ -139,9 +142,10 @@ const LessonContentViewer = ({ lesson }: LessonContentViewerProps) => {
   }
 
   if (kind === "pdf") {
-    // Hides the browser PDF viewer's toolbar (download, print) and thumbnail
-    // pane. Chrome and Edge honour these; Firefox's viewer ignores them.
-    const viewerUrl = `${url.split("#")[0]}#toolbar=0&navpanes=0`;
+    // Unless the Spoylz allows downloads, hide the browser PDF viewer's toolbar
+    // (download, print) and thumbnail pane. Chrome and Edge honour these;
+    // Firefox's viewer ignores them.
+    const viewerUrl = isDownloadable ? url : `${url.split("#")[0]}#toolbar=0&navpanes=0`;
 
     // Keyed by URL so switching lessons starts the loading state afresh.
     return <DocumentFrame key={viewerUrl} src={viewerUrl} title={title} />;

@@ -91,6 +91,7 @@ export const useCreateSpoilMutation = () => {
         formData.append("lessons_no", String(basics.lessonCount));
 
       formData.append("has_certificate", hasCertificate ? "1" : "0");
+      formData.append("is_downloadable", basics.isDownloadable ? "1" : "0");
 
       // If a scheduled premiere was set, include it as `premiere_at` in ISO format
       if (basics.scheduledDate) {

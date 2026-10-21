@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { FiPlay } from "react-icons/fi";
+import { FiDownload, FiPlay } from "react-icons/fi";
 
 import PolygonIcon from "@spt/assets/icons/Polygon 1.svg";
 import Button from "@spt/components/button";
@@ -48,6 +48,9 @@ export const StartSpoilContentPanel = ({
   const tutorName = getTutorName(spoil);
   const spoilDescription = spoil?.description?.trim() || "";
   const canOpenContent = Boolean(activeLesson?.content_url);
+  // The tutor decides whether learners may keep the lesson files.
+  const isDownloadable = Number(spoil?.is_downloadable) === 1;
+  const downloadUrl = isDownloadable ? activeLesson?.content_url : null;
   // The play overlay only makes sense for video lessons; other file types
   // (pdf, image, etc.) still open by clicking the hero.
   const isVideoLesson = activeLesson?.type === "video";
@@ -65,7 +68,7 @@ export const StartSpoilContentPanel = ({
       {isContentOpen && activeLesson?.content_url ? (
         <div className="relative overflow-hidden rounded-[24px] bg-black">
           <div className="relative aspect-[16/9] min-h-[240px] w-full">
-            <LessonContentViewer lesson={activeLesson} />
+            <LessonContentViewer lesson={activeLesson} isDownloadable={isDownloadable} />
           </div>
 
           <button
@@ -113,13 +116,30 @@ export const StartSpoilContentPanel = ({
 
       <div className="mt-7">
         <div>
-          <h1 className="text-[28px] font-semibold leading-tight text-[#212529]">
-            {activeLesson?.title || spoil.current_lesson || spoil.title}
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-[28px] font-semibold leading-tight text-[#212529]">
+                {activeLesson?.title || spoil.current_lesson || spoil.title}
+              </h1>
 
-          <p className="mt-2 text-sm text-[#7C8792]">
-            {completedLessonsCount}/{totalLessons} lessons completed
-          </p>
+              <p className="mt-2 text-sm text-[#7C8792]">
+                {completedLessonsCount}/{totalLessons} lessons completed
+              </p>
+            </div>
+
+            {downloadUrl && (
+              <a
+                href={downloadUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex shrink-0 items-center gap-2 rounded-[14px] border border-[#D6E3E8] bg-white px-4 py-3 text-sm font-medium text-[#0C4A5C] hover:bg-[#F4F7F9]"
+              >
+                <FiDownload size={16} aria-hidden="true" />
+                Download Lesson
+              </a>
+            )}
+          </div>
 
           {hasLessonContent &&
             (containsHtml(lessonContent) ? (

@@ -101,6 +101,11 @@ export const useUpdateSpoilMutation = () => {
         );
       }
 
+      // Whether learners may download the lesson files.
+      if (values.isDownloadable != null) {
+        formData.append("is_downloadable", values.isDownloadable ? "1" : "0");
+      }
+
       if (values.type === "simple") {
         if (values.lessonType) formData.append("lesson_type", values.lessonType);
         if (values.lessonContent) formData.append("lesson_content", values.lessonContent);
