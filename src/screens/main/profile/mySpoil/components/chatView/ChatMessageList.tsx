@@ -1,16 +1,19 @@
 "use client";
 
-import { Fragment, type ReactNode, useEffect, useLayoutEffect, useRef } from "react";
+import { Fragment, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import toast from "react-hot-toast";
 import { FiLoader } from "react-icons/fi";
 
 import { formatDayLabel, isSameDay } from "@spt/utils/chat/format";
 
 import { MessageBubble } from "./MessageBubble";
+import { messageElementId } from "./types";
 
+import type { MessageMenuActions } from "./MessageMenu";
 import type { ChatMessage } from "./types";
 
-interface Props {
+interface Props extends MessageMenuActions {
   messages: ChatMessage[];
   other: { id: string; name: string; avatar?: string | null };
   isLoading: boolean;
@@ -54,12 +57,33 @@ export function ChatMessageList({
   empty,
   onRetry,
   onDismiss,
+  onReply,
+  onEdit,
+  onDelete,
   className = "px-3 py-3 sm:px-5 sm:py-4",
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
   const previousRef = useRef<{ first?: string; last?: string; height: number }>({ height: 0 });
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightedId) return;
+    const timer = setTimeout(() => setHighlightedId(null), 1600);
+    return () => clearTimeout(timer);
+  }, [highlightedId]);
+
+  /** From a reply's quote to the message it quotes. */
+  const jumpToMessage = (messageId: string) => {
+    const target = document.getElementById(messageElementId(messageId));
+    if (!target) {
+      toast(hasMore ? "Load earlier messages to see that one." : "That message is no longer here.");
+      return;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightedId(messageId);
+  };
 
   const handleScroll = () => {
     const el = containerRef.current;
@@ -129,7 +153,17 @@ export function ChatMessageList({
             {(index === 0 || !isSameDay(messages[index - 1].sentAt, msg.sentAt)) && (
               <DaySeparator date={msg.sentAt} />
             )}
-            <MessageBubble msg={msg} other={other} onRetry={onRetry} onDismiss={onDismiss} />
+            <MessageBubble
+              msg={msg}
+              other={other}
+              onRetry={onRetry}
+              onDismiss={onDismiss}
+              onReply={onReply}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onQuoteClick={jumpToMessage}
+              highlighted={highlightedId === msg.id}
+            />
           </Fragment>
         ))}
       </div>

@@ -80,4 +80,6 @@ export interface OutgoingMessage {
   duration?: number;
   fileName?: string;
   fileSize?: number;
+  /** The message this one answers. */
+  replyTo?: ReplyDoc;
 }

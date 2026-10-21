@@ -12,10 +12,12 @@ import {
   sendChatMessage,
   subscribeToMessages,
 } from "@spt/utils/chat/chatService";
-import type { ChatParticipant, MessageDoc } from "@spt/utils/chat/types";
+import type { ChatParticipant, MessageDoc, ReplyDoc } from "@spt/utils/chat/types";
 import { isFirebaseConfigured } from "@spt/utils/firebaseConfig";
 
+import useChatActivity from "./useChatActivity";
 import useMediaUploads, { type MediaKind } from "./useMediaUploads";
+import useMessageActions from "./useMessageActions";
 
 const PAGE_SIZE = 50;
 // Mobile's ChatUtils.isValidMessageText ceiling.
@@ -45,7 +47,12 @@ const toChatMessage = (message: MessageDoc, meId: string, otherId: string): Chat
   // Mobile's "delete for everyone" keeps the document and swaps the text.
   isDeleted: Boolean(message.isDeleted || message.text?.includes("This message was deleted")),
   replyTo: message.replyTo
-    ? { senderName: message.replyTo.senderName, text: message.replyTo.text }
+    ? {
+        messageId: message.replyTo.messageId,
+        senderName: message.replyTo.senderName,
+        text: message.replyTo.text,
+        fromMe: message.replyTo.senderId === meId,
+      }
     : null,
 });
 
@@ -176,8 +183,20 @@ export default function useChatConversation(me: ChatParticipant | null, other: C
     [docs, meId, otherId, pendingMessages],
   );
 
+  const { replyFor, editMessage, deleteForMe, deleteForEveryone } = useMessageActions(
+    conversationId,
+    meId,
+    docs,
+  );
+  const { otherActivity, notifyTyping, stopTyping, setRecording } = useChatActivity(
+    conversationId,
+    meId,
+    otherId,
+  );
+
+  /** Send text, optionally as a reply to `replyToId`. */
   const sendText = useCallback(
-    (text: string) => {
+    (text: string, replyToId?: string | null) => {
       const { me: sender, other: recipient } = peopleRef.current;
       const trimmed = text.trim();
       if (!trimmed || !conversationId || !sender || !recipient) return false;
@@ -185,19 +204,20 @@ export default function useChatConversation(me: ChatParticipant | null, other: C
         toast.error(`Messages can be up to ${MAX_TEXT_LENGTH} characters.`);
         return false;
       }
+      stopTyping();
       sendChatMessage({
         conversationId,
         sender,
         recipientId: recipient.id,
-        message: { type: "text", text: trimmed },
+        message: { type: "text", text: trimmed, replyTo: replyFor(replyToId) },
       }).catch(() => toast.error("Message not sent. Check your connection and try again."));
       return true;
     },
-    [conversationId],
+    [conversationId, replyFor, stopTyping],
   );
 
   const sendMedia = useCallback(
-    (file: Blob, kind: MediaKind, fileName: string, duration?: number) => {
+    (file: Blob, kind: MediaKind, fileName: string, duration?: number, replyTo?: ReplyDoc) => {
       const { me: sender, other: recipient } = peopleRef.current;
       if (!conversationId || !sender || !recipient) return;
       void sendUpload({
@@ -208,6 +228,7 @@ export default function useChatConversation(me: ChatParticipant | null, other: C
         file,
         fileName,
         duration,
+        replyTo,
       });
     },
     [conversationId, sendUpload],
@@ -215,7 +236,7 @@ export default function useChatConversation(me: ChatParticipant | null, other: C
 
   /** A file from the paperclip menu: photos/videos keep their kind, the rest are documents. */
   const sendFile = useCallback(
-    (file: File, picked: "media" | "document") => {
+    (file: File, picked: "media" | "document", replyToId?: string | null) => {
       const kind: MediaKind =
         picked === "document"
           ? "document"
@@ -224,20 +245,21 @@ export default function useChatConversation(me: ChatParticipant | null, other: C
             : file.type.startsWith("image/")
               ? "image"
               : "document";
-      sendMedia(file, kind, file.name, undefined);
+      sendMedia(file, kind, file.name, undefined, replyFor(replyToId));
     },
-    [sendMedia],
+    [sendMedia, replyFor],
   );
 
   const sendAudio = useCallback(
-    (recording: Blob, durationSeconds: number) =>
+    (recording: Blob, durationSeconds: number, replyToId?: string | null) =>
       sendMedia(
         recording,
         "audio",
         `voice_${Date.now()}.${audioExtension(recording.type)}`,
         Math.max(1, Math.round(durationSeconds)),
+        replyFor(replyToId),
       ),
-    [sendMedia],
+    [sendMedia, replyFor],
   );
 
   const clearChat = useCallback(async () => {
@@ -271,5 +293,13 @@ export default function useChatConversation(me: ChatParticipant | null, other: C
     retryUpload: retry,
     dismissUpload: dismiss,
     clearChat,
+    editMessage,
+    deleteForMe,
+    deleteForEveryone,
+    /** "typing" or "recording" while the other person is, else null. */
+    otherActivity,
+    notifyTyping,
+    stopTyping,
+    setRecording,
   };
 }

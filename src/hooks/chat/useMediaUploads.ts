@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import type { ChatMessage } from "@spt/screens/main/profile/mySpoil/components/chatView/types";
 import { newMessageId, sendChatMessage, uploadChatMedia } from "@spt/utils/chat/chatService";
 import { formatFileSize } from "@spt/utils/chat/format";
-import type { ChatMessageKind, ChatParticipant } from "@spt/utils/chat/types";
+import type { ChatMessageKind, ChatParticipant, ReplyDoc } from "@spt/utils/chat/types";
 
 export type MediaKind = Exclude<ChatMessageKind, "text">;
 
@@ -35,6 +35,7 @@ interface PendingUpload {
   file: Blob;
   fileName: string;
   duration?: number;
+  replyTo?: ReplyDoc;
   previewUrl: string;
   progress: number;
   failed: boolean;
@@ -49,6 +50,7 @@ export interface UploadRequest {
   file: Blob;
   fileName: string;
   duration?: number;
+  replyTo?: ReplyDoc;
 }
 
 /** Length in whole seconds of a video, read from its metadata. */
@@ -107,6 +109,7 @@ export default function useMediaUploads(conversationId: string | null, delivered
             fileName: item.fileName,
             fileSize: item.file.size,
             duration: item.duration,
+            replyTo: item.replyTo,
           },
         });
       } catch {
@@ -189,6 +192,14 @@ export default function useMediaUploads(conversationId: string | null, delivered
           sentAt: item.sentAt,
           status: item.failed ? "failed" : "sending",
           uploadProgress: item.progress,
+          replyTo: item.replyTo
+            ? {
+                messageId: item.replyTo.messageId,
+                senderName: item.replyTo.senderName,
+                text: item.replyTo.text,
+                fromMe: item.replyTo.senderId === item.sender.id,
+              }
+            : null,
         })),
     [pending, conversationId, deliveredIds],
   );

@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
-import { FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
+import { FiCheck, FiMic, FiPaperclip, FiSend, FiSmile } from "react-icons/fi";
 
 import { AttachmentMenu } from "./AttachmentMenu";
 import { RecordingBar } from "./RecordingBar";
@@ -20,6 +20,14 @@ interface Props {
   onSendFile: (file: File, picked: "media" | "document") => void;
   /** While the chat is still opening, or can't be used. */
   disabled?: boolean;
+  /** Shown above the input, e.g. the message being replied to or edited. */
+  banner?: React.ReactNode;
+  /** Editing a sent message: no attachments or voice notes, Enter saves. */
+  editing?: boolean;
+  /** Esc in the input, e.g. to cancel a reply or edit. */
+  onEscape?: () => void;
+  /** Focuses the input whenever this changes to a new value. */
+  focusKey?: string | null;
 }
 
 export function ChatInputBar({
@@ -34,6 +42,10 @@ export function ChatInputBar({
   onMicStart,
   onSendFile,
   disabled = false,
+  banner,
+  editing = false,
+  onEscape,
+  focusKey,
 }: Props) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -42,6 +54,10 @@ export function ChatInputBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (focusKey) inputRef.current?.focus();
+  }, [focusKey]);
 
   useEffect(() => {
     if (!showAttachMenu) return;
@@ -135,6 +151,8 @@ export function ChatInputBar({
         </div>
       )}
 
+      {banner}
+
       {isRecording ? (
         <RecordingBar
           duration={recordingDuration}
@@ -163,33 +181,40 @@ export function ChatInputBar({
             onKeyDown={(e) => {
               // Not while an IME is composing, or Enter would send half a word.
               if (e.key === "Enter" && !e.nativeEvent.isComposing) onSendText();
+              if (e.key === "Escape") onEscape?.();
             }}
             className="flex-1 min-w-0 text-sm outline-none bg-transparent placeholder:text-[#8A98A3] text-[#20262D]"
           />
 
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAttachMenu((prev) => !prev);
-              }}
-              className={`transition-colors ${showAttachMenu ? "text-[#0B5368]" : "text-[#8A98A3] hover:text-[#20262D]"}`}
-            >
-              <FiPaperclip size={18} />
-            </button>
+            {!editing && (
+              <button
+                type="button"
+                aria-label="Attach a file"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAttachMenu((prev) => !prev);
+                }}
+                className={`transition-colors ${showAttachMenu ? "text-[#0B5368]" : "text-[#8A98A3] hover:text-[#20262D]"}`}
+              >
+                <FiPaperclip size={18} />
+              </button>
+            )}
 
-            {inputText.trim() ? (
+            {inputText.trim() || editing ? (
               <button
                 type="button"
                 onClick={onSendText}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors shrink-0"
+                disabled={!inputText.trim()}
+                aria-label={editing ? "Save changes" : "Send message"}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0B5368] flex items-center justify-center text-white hover:bg-[#0a4a5a] transition-colors shrink-0 disabled:opacity-50"
               >
-                <FiSend size={13} />
+                {editing ? <FiCheck size={15} /> : <FiSend size={13} />}
               </button>
             ) : (
               <button
                 type="button"
+                aria-label="Hold to record a voice note"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   onMicStart(e.clientX);

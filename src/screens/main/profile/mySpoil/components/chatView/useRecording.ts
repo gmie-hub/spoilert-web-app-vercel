@@ -36,6 +36,11 @@ export function useRecording(onRecorded: (recording: Blob, durationSeconds: numb
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Latest callback, so stopRecording stays stable while the caller re-renders.
+  const onRecordedRef = useRef(onRecorded);
+  useEffect(() => {
+    onRecordedRef.current = onRecorded;
+  }, [onRecorded]);
 
   const stopRecording = useCallback(
     (send: boolean) => {
@@ -62,12 +67,12 @@ export function useRecording(onRecorded: (recording: Blob, durationSeconds: numb
         const recording = new Blob(audioChunksRef.current, {
           type: recorder.mimeType || "audio/webm",
         });
-        if (recording.size > 0) onRecorded(recording, seconds);
+        if (recording.size > 0) onRecordedRef.current(recording, seconds);
       };
       if (recorder.state !== "inactive") recorder.stop();
       else recorder.onstop?.(new Event("stop"));
     },
-    [onRecorded],
+    [],
   );
 
   const startRecording = useCallback(async (clientX: number) => {

@@ -154,6 +154,7 @@ export async function sendChatMessage({
       duration: message.duration,
       fileName: message.fileName,
       fileSize: message.fileSize,
+      replyTo: message.replyTo,
     }).filter(([, value]) => value !== undefined),
   );
 

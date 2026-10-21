@@ -1,3 +1,4 @@
+import { EDIT_WINDOW_MS } from "@spt/utils/chat/rules";
 import type { ChatMessageKind } from "@spt/utils/chat/types";
 
 export type MessageType = ChatMessageKind;
@@ -21,10 +22,22 @@ export interface ChatMessage {
   status: MessageDeliveryStatus;
   isEdited?: boolean;
   isDeleted?: boolean;
-  replyTo?: { senderName: string; text: string } | null;
+  /** The message this one answers; `fromMe` when that was mine. */
+  replyTo?: { messageId: string; senderName: string; text: string; fromMe: boolean } | null;
   /** 0–1 while one of my files is uploading. */
   uploadProgress?: number;
 }
+
+/** Same rule as mobile: my own text messages, up to 90 minutes old. */
+export const canEditMessage = (msg: ChatMessage) =>
+  msg.fromMe &&
+  msg.type === "text" &&
+  !msg.isDeleted &&
+  Boolean(msg.text) &&
+  Date.now() - msg.sentAt.getTime() <= EDIT_WINDOW_MS;
+
+/** DOM id of a message, for jumping to it from a reply. */
+export const messageElementId = (id: string) => `chat-msg-${id}`;
 
 export const WAVEFORM = [4, 8, 14, 6, 16, 10, 4, 12, 8, 6, 14, 16, 5, 10, 8, 13, 6, 12, 4, 10];
 
