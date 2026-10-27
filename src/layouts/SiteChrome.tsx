@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import ChatPresence from "@spt/layouts/ChatPresence";
 import Footer from "@spt/layouts/footer/footer";
 import Header from "@spt/layouts/website/header";
+import { CHAT_ENABLED } from "@spt/utils/chat/enabled";
 
 // The certificate deep link (/my-learnings/certificate/...) is a mobile → web
 // hand-off that should render as a standalone page — no site header/footer.
@@ -14,6 +15,11 @@ import Header from "@spt/layouts/website/header";
 // covered. Every other route keeps the normal chrome.
 const isBareRoute = (pathname: string | null) =>
   !!pathname && /^\/my-learnings\/certificate(\/|$)/.test(pathname);
+
+// The chat screen fills the window below the header, like a messaging app; a
+// footer underneath would let the page scroll and slide the chat out of view.
+const isFullScreenRoute = (pathname: string | null) =>
+  !!pathname && /^\/messages\/[^/]+\/?$/.test(pathname);
 
 export default function SiteChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -24,10 +30,10 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <ChatPresence />
+      {CHAT_ENABLED && <ChatPresence />}
       <Header />
       {children}
-      <Footer />
+      {!isFullScreenRoute(pathname) && <Footer />}
     </>
   );
 }

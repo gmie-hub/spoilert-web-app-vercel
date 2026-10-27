@@ -9,6 +9,7 @@ import Modal from "@spt/components/modal";
 import useGetUserCommunityDetailQuery from "@spt/hooks/apiRequests/useGetUserCommunityDetailQuery";
 import useUpdateCommunityUserMutation from "@spt/hooks/apiRequests/useUpdateCommunityUserMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import { CHAT_ENABLED } from "@spt/utils/chat/enabled";
 
 type MembersListProps = {
   communityId?: string;
@@ -122,16 +123,18 @@ const MembersList = ({ communityId, tutorId, onClose }: MembersListProps) => {
 
                 {openMenuFor === (m.id || m.user_id || m.email) ? (
                   <div className="absolute right-0 z-10 mt-2 w-40 rounded-md border bg-white shadow-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOpenMenuFor(null);
-                        router.push(`/chat?user_id=${m.id || m.user_id}`);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                    >
-                      Chat
-                    </button>
+                    {CHAT_ENABLED && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpenMenuFor(null);
+                          router.push(`/chat?user_id=${m.id || m.user_id}`);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      >
+                        Chat
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {

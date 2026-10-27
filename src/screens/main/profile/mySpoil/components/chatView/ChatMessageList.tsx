@@ -171,7 +171,7 @@ export function ChatMessageList({
   }
 
   return (
-    <div ref={containerRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto ${className}`}>
+    <div ref={containerRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overscroll-contain ${className}`}>
       <div ref={contentRef} className="min-h-full">
         {body}
       </div>

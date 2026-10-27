@@ -69,7 +69,9 @@ export function MessageBubble({
         <MessageMenu msg={msg} onReply={onReply} onEdit={onEdit} onDelete={onDelete} />
       )}
 
-      <div className={`max-w-[75%] sm:max-w-[65%] flex flex-col ${msg.fromMe ? "items-end" : "items-start"}`}>
+      <div
+        className={`min-w-0 max-w-[78%] sm:max-w-[65%] flex flex-col ${msg.fromMe ? "items-end" : "items-start"}`}
+      >
         {reply && (
           <button
             type="button"
@@ -81,7 +83,7 @@ export function MessageBubble({
             <span className="block font-semibold text-[#0B5368]">
               {reply.fromMe ? "You" : reply.senderName}
             </span>
-            <span className="block text-[#5F6368] line-clamp-2 break-words">{reply.text}</span>
+            <span className="block text-[#5F6368] line-clamp-2 [overflow-wrap:anywhere]">{reply.text}</span>
           </button>
         )}
 
@@ -125,7 +127,8 @@ export function MessageBubble({
       )}
 
       {msg.fromMe && (
-        <div className="w-8 h-8 rounded-full bg-[#E8EEF2] shrink-0 flex items-center justify-center text-[10px] font-semibold text-[#0B5368]">
+        // Dropped on phones to leave the bubble more room.
+        <div className="hidden sm:flex w-8 h-8 rounded-full bg-[#E8EEF2] shrink-0 items-center justify-center text-[10px] font-semibold text-[#0B5368]">
           Me
         </div>
       )}

@@ -27,7 +27,7 @@ export function ChatHeader({
   actions,
 }: Props) {
   return (
-    <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 border-b border-[#E9EEF2] shrink-0">
+    <div className="sticky top-0 z-10 bg-white flex items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 border-b border-[#E9EEF2] shrink-0">
       <div className="flex items-center gap-3 min-w-0">
         {leading}
         <ChatAvatar userId={userId} name={name} avatar={avatar} size={44} online={online} />

@@ -8,6 +8,7 @@ import ArrowRightIcon from "@spt/assets/icons/arrow-right.svg";
 import ChatIcon from "@spt/assets/icons/chat.svg";
 import Button from "@spt/components/button";
 import useJoinCommunityMutation from "@spt/hooks/apiRequests/useJoinCommunityMutation";
+import { CHAT_ENABLED } from "@spt/utils/chat/enabled";
 import { getSpoilOverviewHref } from "@spt/utils/spoilRoutes";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
@@ -66,14 +67,16 @@ export const StartSpoilHeader = ({
       <Breadcrumbs crumbLabel="Start Spoil" onBack={handleBack} spoilId={spoilId} />
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button
-          variant="outline"
-          className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D]"
-          iconLeft={<Image src={ChatIcon} alt="" width={20} height={20} />}
-          onClick={() => router.push(`/spoil/${spoilId}/chat-tutor`)}
-        >
-          Chat Tutor
-        </Button>
+        {CHAT_ENABLED && (
+          <Button
+            variant="outline"
+            className="gap-2 rounded-[14px] border-[#A9C2CB] px-5 py-3 text-[#013B4D]"
+            iconLeft={<Image src={ChatIcon} alt="" width={20} height={20} />}
+            onClick={() => router.push(`/spoil/${spoilId}/chat-tutor`)}
+          >
+            Chat Tutor
+          </Button>
+        )}
 
         {community && (
           <Button
