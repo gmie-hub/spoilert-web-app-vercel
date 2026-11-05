@@ -22,6 +22,7 @@ import useGetSpoilDetailsQuery from "@spt/hooks/apiRequests/useGetSpoilDetailsQu
 import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation";
 import useToggleSpoilLikeMutation from "@spt/hooks/apiRequests/useToggleSpoilLikeMutation";
 import { useAuthStore } from "@spt/store/authStore";
+import { getSpoilEditHref, resetSpoilEditorDraft } from "@spt/utils/spoilEditor";
 import { getSpoilDetailsHref, getSpoilOverviewHref } from "@spt/utils/spoilRoutes";
 
 import HStack from "../../../../components/hstack";
@@ -104,11 +105,10 @@ const SpoilDetails: React.FC<SpoilDetailsProps> = ({ spoilId }) => {
   const isEnrolled = Boolean(spoil?.is_enrolled);
   const shouldContinue = isEnrolled || hasProgress;
   const isOwner = Boolean(user?.id && spoil.tutor_id === user.id);
-  const editSpoilHref =
-    spoil.type === "simple"
-      ? `/create-spoils/simple-spoil?spoilId=${spoil.id}`
-      : `/create-spoils/advance-spoil?spoilId=${spoil.id}`;
-  const handleEditSpoil = () => router.push(editSpoilHref);
+  const handleEditSpoil = () => {
+    resetSpoilEditorDraft();
+    router.push(getSpoilEditHref(spoil));
+  };
   const spoilAmount =
     typeof spoil.display_amount === "number"
       ? spoil.display_amount

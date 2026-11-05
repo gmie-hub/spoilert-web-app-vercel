@@ -19,6 +19,8 @@ export interface ApiLecturer {
   position: string | null;
   created_at: string;
   updated_at: string;
+  // False until the lecturer accepts the invitation and finishes onboarding.
+  completed_onboarding: boolean | null;
   user: {
     id: number;
     email: string;
@@ -27,8 +29,6 @@ export interface ApiLecturer {
     phone_number: string | null;
     avatar: string | null;
     last_login: string | null;
-    // 0 until the lecturer accepts the invitation and sets their own password.
-    is_password_changed: number | null;
     total_spoils_created: number | null;
     // The bio sits on the tutor profile, as on the users /spoils returns.
     profile?: { bio: string | null } | null;
@@ -49,12 +49,12 @@ interface LecturersResponse {
   data: LecturersPage;
 }
 
-// A lecturer accepts the invitation by setting their own password, so until
-// they've changed it the invitation is still pending. The API has no way to
-// say an invitation was declined.
-const toInviteStatus = (user: ApiLecturer["user"]): InviteStatus | null => {
-  if (user?.is_password_changed == null) return null;
-  return user.is_password_changed ? "Accepted" : "Pending";
+// The invitation is pending until the lecturer completes onboarding. Without a
+// user there's no email to resend it to, so no status is shown. The API has no
+// way to say an invitation was declined.
+const toInviteStatus = (item: ApiLecturer): InviteStatus | null => {
+  if (!item.user || item.completed_onboarding == null) return null;
+  return item.completed_onboarding ? "Accepted" : "Pending";
 };
 
 const toLecturer = (item: ApiLecturer): Lecturer => ({
@@ -69,7 +69,7 @@ const toLecturer = (item: ApiLecturer): Lecturer => ({
   department: item.department ?? "",
   position: item.position ?? "",
   totalCourses: item.user?.total_spoils_created ?? 0,
-  inviteStatus: toInviteStatus(item.user),
+  inviteStatus: toInviteStatus(item),
   dateSent: formatDate(item.created_at),
   lastLogin: formatDate(item.user?.last_login),
   bio: item.user?.profile?.bio || null,
@@ -85,7 +85,7 @@ const useGetLecturersQuery = () => {
   >({
     queryKey: ["institution-lecturers"],
     // The endpoint is paginated, so pull every page: search, the metrics and the
-    // details page (there's no GET /lecturers/{id}) all need the whole list.
+    // details page all need the whole list.
     queryFn: async () => {
       const firstPage = await fetchLecturersPage(1);
       const otherPages = await Promise.all(

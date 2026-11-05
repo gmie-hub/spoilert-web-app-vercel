@@ -128,7 +128,7 @@ const PAYMENT_TYPES: Record<string, { label: string; kind: TransactionKind }> = 
   promotion: { label: "Spoylz Promotion", kind: "other" },
 };
 
-const PAYMENT_STATUSES: Record<string, string> = {
+export const PAYMENT_STATUSES: Record<string, string> = {
   success: "Successful",
   successful: "Successful",
   paid: "Successful",

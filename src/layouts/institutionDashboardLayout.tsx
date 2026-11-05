@@ -76,7 +76,6 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  /* Temporarily hidden from the sidebar.
   {
     label: "Revenue",
     href: "/institution/revenue",
@@ -93,7 +92,6 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  */
 ];
 
 interface InstitutionDashboardLayoutProps {

@@ -3,14 +3,18 @@
 import { useState } from "react";
 
 import { StatCard } from "@spt/components";
+import useGetPaymentsQuery from "@spt/hooks/apiRequests/useGetPaymentsQuery";
 
 import RevenueSplitCard from "../components/RevenueSplitCard";
 import { RevenueIcon } from "../dashboard/components/icons";
 
-import { MOCK_REVENUE_TRANSACTIONS, REVENUE_STATS, type RevenueTransaction } from "./components/constants";
+import { REVENUE_STATS, type RevenueTransaction } from "./components/constants";
 import { TransactionsIcon } from "./components/icons";
 import TransactionDetailsModal from "./components/TransactionDetailsModal";
 import TransactionHistoryTable from "./components/TransactionHistoryTable";
+import { toRevenueTransaction } from "./mappers";
+
+const TRANSACTIONS_PER_PAGE = 15;
 
 const STATS = [
   {
@@ -53,6 +57,14 @@ const STATS = [
 
 const InstitutionRevenue = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<RevenueTransaction | null>(null);
+  const [page, setPage] = useState(1);
+
+  // GET /payments?page=&per_page= — the API scopes it to the logged-in institution.
+  const { payments, pagination, isLoading, isError, errorMessage } = useGetPaymentsQuery({
+    withoutUserFilter: true,
+    page,
+    per_page: TRANSACTIONS_PER_PAGE,
+  });
 
   return (
     <div className="w-full space-y-4">
@@ -63,14 +75,22 @@ const InstitutionRevenue = () => {
         institutionPercent={REVENUE_STATS.institutionSplitPercent}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      {/* auto-rows-fr keeps every card the same height even when a long label wraps. */}
+      <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {STATS.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
 
       <TransactionHistoryTable
-        transactions={MOCK_REVENUE_TRANSACTIONS}
+        transactions={payments.map(toRevenueTransaction)}
+        isLoading={isLoading}
+        errorMessage={isError ? errorMessage : null}
+        page={page}
+        // Keeps the current page listed while the next one loads.
+        totalPages={Math.max(page, pagination.last_page)}
+        firstRowNumber={(page - 1) * (pagination.per_page ?? TRANSACTIONS_PER_PAGE) + 1}
+        onPageChange={setPage}
         onViewMore={setSelectedTransaction}
       />
 

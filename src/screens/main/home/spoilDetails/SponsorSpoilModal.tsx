@@ -6,6 +6,7 @@ import Button from "@spt/components/button";
 import Modal from "@spt/components/modal";
 import useCreateSponsorshipMutation from "@spt/hooks/apiRequests/useCreateSponsorshipMutation";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
+import { rememberSponsorshipPayment } from "@spt/utils/sponsorshipPayments";
 
 import { getTutorName } from "./spoilDetails.helpers";
 
@@ -62,7 +63,11 @@ const SponsorSpoilModal: FC<SponsorSpoilModalProps> = ({
     }
     const result = await createSponsorship(spoil.id, quantity);
     if (result) {
-      const paymentLink = result.data?.payment?.payment_link;
+      const payment = result.data?.payment;
+      const paymentLink = payment?.payment_link;
+      // lets /payment/verification show the sponsorship success state
+      // instead of the purchase one when the gateway redirects back
+      rememberSponsorshipPayment(payment?.reference);
       if (paymentLink) {
         window.open(paymentLink, "_blank", "noopener,noreferrer");
       }

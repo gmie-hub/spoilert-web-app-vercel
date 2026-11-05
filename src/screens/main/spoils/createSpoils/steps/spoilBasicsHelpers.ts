@@ -46,12 +46,19 @@ const getTimePart = (value?: string | null) => {
 const mapLessonTypeForSimple = (lessonType?: string | null) =>
   lessonType === "text" ? "text" : "file";
 
+// Keep the lesson's server type ("file" / "text", or legacy "pdf" / "video")
+// so the edit lesson modal can pre-select it. Anything unknown is an upload.
 const mapLessonTypeForOutline = (lessonType?: string | null) => {
-  if (lessonType === "text" || lessonType === "pdf" || lessonType === "video") {
+  if (
+    lessonType === "text" ||
+    lessonType === "file" ||
+    lessonType === "pdf" ||
+    lessonType === "video"
+  ) {
     return lessonType;
   }
 
-  return "video";
+  return "file";
 };
 
 export const mapSpoilDataToForm = (

@@ -14,6 +14,7 @@ import {
 
 import EditIcon from "@spt/assets/icons/border-edit.svg";
 import MoreIcon from "@spt/assets/icons/more.svg";
+import { getSpoilEditHref, resetSpoilEditorDraft } from "@spt/utils/spoilEditor";
 import type { SpoilDatum } from "@spt/utils/spoils";
 
 import {
@@ -50,14 +51,10 @@ const MySpoilsCard = ({
   const priceLabel = formatSpoilPrice(spoil);
   const isDraftCard = activeTab === "drafts";
   const scheduledLabel = formatScheduledSpoilDate(spoil.premiere_at);
-  const editSpoilHref =
-    spoil.type === "simple"
-      ? `/create-spoils/simple-spoil?spoilId=${spoil.id}`
-      : `/create-spoils/advance-spoil?spoilId=${spoil.id}`;
-
   const handleEditSpoil = () => {
     setIsMenuOpen(false);
-    router.push(editSpoilHref);
+    resetSpoilEditorDraft();
+    router.push(getSpoilEditHref(spoil));
   };
 
   useEffect(() => {

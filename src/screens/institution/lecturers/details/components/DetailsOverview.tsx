@@ -5,7 +5,7 @@ import { type ReactNode, useState } from "react";
 import Image from "next/image";
 
 import { StatCard } from "@spt/components";
-import { useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
+import useGetLecturerEarningsOverviewQuery from "@spt/hooks/apiRequests/useGetLecturerEarningsOverviewQuery";
 import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 import useResendInvitationMutation from "@spt/hooks/apiRequests/useResendInvitationMutation";
 
@@ -32,10 +32,6 @@ const RefreshIcon = () => (
   </svg>
 );
 
-// No endpoint serves a lecturer's gross revenue or the institution's cut yet, so
-// those show "No data" rather than made-up figures.
-const NOT_AVAILABLE = null;
-
 export const FieldRow = ({
   left,
   right,
@@ -60,13 +56,14 @@ const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
   const isPending = lecturer.inviteStatus === "Pending";
 
   const spoils = useGetLecturerSpoilsQuery(lecturer.userId);
-  const earnings = useGetEarningsBreakdownQuery(lecturer.userId);
+  const { overview, isLoading: isOverviewLoading } = useGetLecturerEarningsOverviewQuery(lecturer.id);
   const { resendInvitationHandler, isLoading: isResending } = useResendInvitationMutation();
 
-  const studentsEnrolled = spoils.isError
-    ? null
-    : spoils.spoils.reduce((sum, spoil) => sum + (spoil.enrolled_users ?? 0), 0).toLocaleString();
-  const lecturerEarnings = formatNaira(earnings.earnings?.overview.total_earning);
+  // The lecturer record and their spoils fill in any count the overview leaves out.
+  const spoylzCreated = overview.totalSpoils ?? lecturer.totalCourses;
+  const studentsEnrolled =
+    overview.totalStudents ??
+    (spoils.isError ? null : spoils.spoils.reduce((sum, spoil) => sum + (spoil.enrolled_users ?? 0), 0));
 
   // On failure the modal stays open with the error toast so they can retry.
   const handleConfirmResend = async () => {
@@ -148,33 +145,36 @@ const DetailsOverview = ({ lecturer }: { lecturer: Lecturer }) => {
           <div className="mt-5 space-y-4">
             <StatCard
               label="Total Revenue Generated"
-              value={NOT_AVAILABLE}
+              value={formatNaira(overview.totalRevenue)}
+              isLoading={isOverviewLoading}
               icon={<CoinIcon color="#28A745" />}
               iconBg="bg-green-50"
             />
             <StatCard
               label="Total Spoylz Created"
-              value={lecturer.totalCourses.toLocaleString()}
+              value={spoylzCreated.toLocaleString()}
+              isLoading={isOverviewLoading}
               icon={<BookIcon color="#DA8543" />}
               iconBg="bg-orange-50"
             />
             <StatCard
               label="Students Enrolled"
-              value={studentsEnrolled}
-              isLoading={spoils.isLoading}
+              value={studentsEnrolled?.toLocaleString()}
+              isLoading={isOverviewLoading || spoils.isLoading}
               icon={<NetworkIcon color="#DC3545" />}
               iconBg="bg-red-50"
             />
             <StatCard
               label="Institution Earnings"
-              value={NOT_AVAILABLE}
+              value={formatNaira(overview.institutionEarnings)}
+              isLoading={isOverviewLoading}
               icon={<NetworkIcon color="#B5179E" />}
               iconBg="bg-purple-50"
             />
             <StatCard
               label="Lecturer Earnings"
-              value={lecturerEarnings}
-              isLoading={earnings.isLoading}
+              value={formatNaira(overview.lecturerEarnings)}
+              isLoading={isOverviewLoading}
               icon={<PeopleIcon color="#0891B2" />}
               iconBg="bg-cyan-50"
             />

@@ -26,11 +26,13 @@ import useShareSpoilMutation from "@spt/hooks/apiRequests/useShareSpoilMutation"
 import useSpoilUnreadCount from "@spt/hooks/chat/useSpoilUnreadCount";
 import ShareLinkModal from "@spt/screens/main/home/spoilDetails/ShareLinkModal";
 import { CHAT_ENABLED } from "@spt/utils/chat/enabled";
+import { getSpoilEditHref, resetSpoilEditorDraft } from "@spt/utils/spoilEditor";
 import { getSpoilDetailsHref } from "@spt/utils/spoilRoutes";
 
 import Details from "../../../home/spoilDetails/details";
 import SponsorSpoilModal from "../../../home/spoilDetails/SponsorSpoilModal";
-import { LoadingState } from "../../../spoil/preSpoilQuiz/components/LoadingState";
+
+import MySpoilDetailSkeleton from "./MySpoilDetailSkeleton";
 
 interface MySpoilDetailViewProps {
   spoilId: number;
@@ -72,7 +74,7 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   if (isLoading) {
-    return <LoadingState />;
+    return <MySpoilDetailSkeleton />;
   }
 
   if (!spoil) {
@@ -92,10 +94,13 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
   const amountEarned =
     (spoil.display_amount ?? 0) * (spoil.enrolled_users ?? 0);
 
-  const editHref =
-    spoil.type === "simple"
-      ? `/create-spoils/simple-spoil?spoilId=${spoil.id}`
-      : `/create-spoils/advance-spoil?spoilId=${spoil.id}`;
+  // status 1 = published; only a published spoil can be unpublished.
+  const isPublished = Number(spoil.status) === 1;
+
+  const handleEditSpoil = () => {
+    resetSpoilEditorDraft();
+    router.push(getSpoilEditHref(spoil));
+  };
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -147,19 +152,21 @@ const MySpoilDetailView: React.FC<MySpoilDetailViewProps> = ({
         <div className="flex items-center gap-3 flex-wrap">
           <button
             type="button"
-            onClick={() => router.push(editHref)}
+            onClick={handleEditSpoil}
             className="flex items-center gap-2 bg-[#0B5368] text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-[#09485A] transition-colors"
           >
             <Image src={EditIcon} alt="edit" width={16} height={16} />
             Edit Spoylz
           </button>
-          <button
-            type="button"
-            className="flex items-center gap-2 border border-red-500 text-red-500 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-red-50 transition-colors"
-          >
-            <FiTrash2 size={14} />
-            Unpublish Spoylz
-          </button>
+          {isPublished && (
+            <button
+              type="button"
+              className="flex items-center gap-2 border border-red-500 text-red-500 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-red-50 transition-colors"
+            >
+              <FiTrash2 size={14} />
+              Unpublish Spoylz
+            </button>
+          )}
         </div>
 
         {/* Institution */}

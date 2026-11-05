@@ -99,7 +99,9 @@ export const useOutlineManager = (
       initialValues: lesson
         ? {
             title: lesson.title,
-            type: lesson.type,
+            // The modal only offers "file" / "text", so any upload type
+            // (file, pdf, video) pre-selects "File".
+            type: lesson.type === "text" ? "text" : "file",
             content: lesson.type === "text" ? lesson.content : "",
             // Keep the existing upload (a stored URL string) so the edit modal
             // can show its name + remove control instead of an empty field.

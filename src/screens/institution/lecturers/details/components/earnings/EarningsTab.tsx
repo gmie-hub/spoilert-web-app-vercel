@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Pagination } from "@spt/components";
+import useGetLecturerDetailsQuery from "@spt/hooks/apiRequests/useGetLecturerDetailsQuery";
 import useGetLecturerEarningsBreakdownQuery from "@spt/hooks/apiRequests/useGetLecturerEarningsBreakdownQuery";
 import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 
@@ -16,10 +17,6 @@ import SpoylzThumbnail from "../spoylz/SpoylzThumbnail";
 import EarningsStatCard from "./EarningsStatCard";
 
 import type { Lecturer } from "../../../types";
-
-// No endpoint serves the gross revenue, the institution's cut or the agreed
-// split yet, so those show "No data" / "-" rather than made-up figures.
-const NOT_AVAILABLE = null;
 
 const SearchInput = ({
   value,
@@ -49,6 +46,7 @@ const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
   const [activePage, setActivePage] = useState(1);
 
   const { earnings, isLoading, isError, errorMessage } = useGetLecturerEarningsBreakdownQuery(lecturer.id);
+  const { overview, split, isLoading: isDetailsLoading } = useGetLecturerDetailsQuery(lecturer.id);
   const { spoils } = useGetLecturerSpoilsQuery(lecturer.userId);
 
   const breakdown = earnings?.data ?? [];
@@ -74,24 +72,26 @@ const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
           tone="blue"
           icon={<BookIcon color="#fff" />}
           label="Total Gross Revenue"
-          value={NOT_AVAILABLE}
+          value={formatNaira(overview.totalRevenue)}
+          isLoading={isDetailsLoading}
         />
         <EarningsStatCard
           tone="orange"
           icon={<BookIcon color="#fff" />}
           label="Total Lecturer Earnings"
-          value={formatNaira(earnings?.overview.total_earning)}
-          isLoading={isLoading}
+          value={formatNaira(overview.lecturerEarnings ?? earnings?.overview.total_earning)}
+          isLoading={isDetailsLoading || isLoading}
         />
         <EarningsStatCard
           tone="purple"
           icon={<BookIcon color="#fff" />}
           label="Total Institution Earnings"
-          value={NOT_AVAILABLE}
+          value={formatNaira(overview.institutionEarnings)}
+          isLoading={isDetailsLoading}
         />
       </div>
 
-      <RevenueSplitCard lecturerPercent={NOT_AVAILABLE} institutionPercent={NOT_AVAILABLE} />
+      <RevenueSplitCard lecturerPercent={split.lecturerPercent} institutionPercent={split.institutionPercent} />
 
       <div className="space-y-5 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
         <h3 className="text-lg font-semibold text-[#212529]">Earnings Breakdown</h3>

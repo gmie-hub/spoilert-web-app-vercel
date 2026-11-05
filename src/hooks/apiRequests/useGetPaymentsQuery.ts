@@ -61,6 +61,9 @@ export interface PaymentsFilters {
   // Another tutor's payments (e.g. an institution viewing its lecturer's) in
   // place of the logged-in user's.
   tutor_id?: number | null;
+  // Send no user_id / tutor_id at all and let the API scope the list to the
+  // logged-in account (e.g. an institution's revenue transactions).
+  withoutUserFilter?: boolean;
 }
 
 const extractPayments = (response?: PaymentsResponse): PaymentDatum[] => {
@@ -101,7 +104,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
       params.set("spoil_id", String(filters.spoil_id));
     } else if (filters.tutor_id) {
       params.set("tutor_id", String(filters.tutor_id));
-    } else if (userId) {
+    } else if (userId && !filters.withoutUserFilter) {
       const useTutorParam =
         filters.roleOverride === "tutor"
           ? true
@@ -126,7 +129,7 @@ export const useGetPaymentsQuery = (filters: PaymentsFilters = {}) => {
     PaymentsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["payments", userId, filters.roleOverride ?? (isTutor ? "tutor" : "learner"), filters.tutor_id ?? null, filters.from_date, filters.to_date, filters.spoil_id ?? null, filters.page, filters.per_page],
+    queryKey: ["payments", userId, filters.withoutUserFilter ? "all" : (filters.roleOverride ?? (isTutor ? "tutor" : "learner")), filters.tutor_id ?? null, filters.from_date, filters.to_date, filters.spoil_id ?? null, filters.page, filters.per_page],
     queryFn: fetchPayments,
     enabled: !!(filters.tutor_id || userId),
   });
