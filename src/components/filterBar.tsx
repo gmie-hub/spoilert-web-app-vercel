@@ -30,7 +30,8 @@ const FilterBar = ({
   onReset: () => void;
 }) => (
   <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 p-3">
-    <div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+    {/* Full-width row on phones so the 220px minimum can't push past the screen edge. */}
+    <div className="flex min-w-full flex-1 items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 sm:min-w-[220px]">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="11" cy="11" r="7" stroke="#9CA3AF" strokeWidth="1.8" />
         <path d="M20 20l-3.5-3.5" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />

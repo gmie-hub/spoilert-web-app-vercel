@@ -11,7 +11,6 @@ import useToggleSpoilStatusMutation from "@spt/hooks/apiRequests/useToggleSpoilS
 import { findLecturer, isSpoylzDisabled } from "../mappers";
 
 import EnrolledStudentsTab from "./components/EnrolledStudentsTab";
-import EditSpoylzModal from "./components/modals/EditSpoylzModal";
 import SpoylzMetricsTab from "./components/SpoylzMetricsTab";
 import SpoylzOutlineTab from "./components/SpoylzOutlineTab";
 import SpoylzOverviewTab from "./components/SpoylzOverviewTab";
@@ -49,7 +48,6 @@ const SpoylzManagementDetails = ({
   // Only reopened once: leaving the tab drops it.
   const [reopenLearnerId, setReopenLearnerId] = useState(returningLearnerId);
   const [statusModalAction, setStatusModalAction] = useState<SpoylzStatusAction | null>(null);
-  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const { data: spoil, isLoading, isError, errorMessage } = useGetSpoilDetailsQuery(id);
   const { lecturers } = useGetLecturersQuery();
@@ -92,24 +90,9 @@ const SpoylzManagementDetails = ({
       <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold text-[#212529]">Spoylz Details</h1>
+          {/* Institutions can enable or disable a Spoylz but not edit it — only its lecturer can. */}
           {spoil && (
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(true)}
-                className="flex items-center gap-2 rounded-lg border border-[var(--color-blue)] px-4 py-2 text-sm font-medium text-[var(--color-blue)]"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"
-                    stroke="var(--color-blue)"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M13.5 8.5l3 3" stroke="var(--color-blue)" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-                Edit Spoylz
-              </button>
               {isDisabled ? (
                 <button
                   type="button"
@@ -196,8 +179,6 @@ const SpoylzManagementDetails = ({
           onConfirm={handleConfirmStatusChange}
         />
       )}
-
-      {isEditOpen && spoil && <EditSpoylzModal spoil={spoil} onClose={() => setIsEditOpen(false)} />}
     </div>
   );
 };

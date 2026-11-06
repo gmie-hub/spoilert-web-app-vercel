@@ -20,7 +20,12 @@ export interface LecturerSpoil {
   what_to_learn: string | null;
   // 1 published, 0 unpublished.
   status: number;
+  // 0 when the institution disabled it.
+  is_active?: number | string | null;
   enrolled_users: number | null;
+  // Totals earned from this spoil so far.
+  lecturer_amount?: number | string | null;
+  institution_amount?: number | string | null;
   created_at: string;
   category: { id: number; name: string } | null;
 }

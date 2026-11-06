@@ -3,23 +3,19 @@
 import { useState } from "react";
 
 import { Pagination } from "@spt/components";
+import useGetLecturerDetailsQuery from "@spt/hooks/apiRequests/useGetLecturerDetailsQuery";
 import useGetLecturerEarningsBreakdownQuery from "@spt/hooks/apiRequests/useGetLecturerEarningsBreakdownQuery";
-import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 
 import RevenueSplitCard from "../../../../components/RevenueSplitCard";
 import { BookIcon } from "../../../components/icons";
 import TableStatusRow from "../../../components/TableStatusRow";
 import { PAGE_SIZE, formatNaira, pageCount, pageItems } from "../../../utils";
-import { formatSpoilAmount, pairEarningsByTitle } from "../../mappers";
+import { formatSpoilAmount, grossRevenue } from "../../mappers";
 import SpoylzThumbnail from "../spoylz/SpoylzThumbnail";
 
 import EarningsStatCard from "./EarningsStatCard";
 
 import type { Lecturer } from "../../../types";
-
-// No endpoint serves the gross revenue, the institution's cut or the agreed
-// split yet, so those show "No data" / "-" rather than made-up figures.
-const NOT_AVAILABLE = null;
 
 const SearchInput = ({
   value,
@@ -48,14 +44,16 @@ const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
   const [search, setSearch] = useState("");
   const [activePage, setActivePage] = useState(1);
 
-  const { earnings, isLoading, isError, errorMessage } = useGetLecturerEarningsBreakdownQuery(lecturer.id);
-  const { spoils } = useGetLecturerSpoilsQuery(lecturer.userId);
+  const { spoils, isLoading, isError, errorMessage } = useGetLecturerEarningsBreakdownQuery(lecturer.id);
+  const { overview, split, isLoading: isDetailsLoading } = useGetLecturerDetailsQuery(lecturer.id);
 
-  const breakdown = earnings?.data ?? [];
-  const { spoilFor } = pairEarningsByTitle(spoils, breakdown);
+  // Used when the lecturer's details don't carry their total.
+  const lecturerTotal = spoils.length
+    ? spoils.reduce((sum, spoil) => sum + (Number(spoil.lecturer_amount) || 0), 0)
+    : null;
 
   const query = search.trim().toLowerCase();
-  const filtered = breakdown.filter((item) => item.spoil_name.toLowerCase().includes(query));
+  const filtered = spoils.filter((spoil) => (spoil.title ?? "").toLowerCase().includes(query));
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -74,24 +72,26 @@ const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
           tone="blue"
           icon={<BookIcon color="#fff" />}
           label="Total Gross Revenue"
-          value={NOT_AVAILABLE}
+          value={formatNaira(overview.totalRevenue)}
+          isLoading={isDetailsLoading}
         />
         <EarningsStatCard
           tone="orange"
           icon={<BookIcon color="#fff" />}
           label="Total Lecturer Earnings"
-          value={formatNaira(earnings?.overview.total_earning)}
-          isLoading={isLoading}
+          value={formatNaira(overview.lecturerEarnings ?? lecturerTotal)}
+          isLoading={isDetailsLoading || isLoading}
         />
         <EarningsStatCard
           tone="purple"
           icon={<BookIcon color="#fff" />}
           label="Total Institution Earnings"
-          value={NOT_AVAILABLE}
+          value={formatNaira(overview.institutionEarnings)}
+          isLoading={isDetailsLoading}
         />
       </div>
 
-      <RevenueSplitCard lecturerPercent={NOT_AVAILABLE} institutionPercent={NOT_AVAILABLE} />
+      <RevenueSplitCard lecturerPercent={split.lecturerPercent} institutionPercent={split.institutionPercent} />
 
       <div className="space-y-5 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
         <h3 className="text-lg font-semibold text-[#212529]">Earnings Breakdown</h3>
@@ -120,25 +120,22 @@ const EarningsTab = ({ lecturer }: { lecturer: Lecturer }) => {
                   emptyMessage={query ? "No Spoylz match your search." : "No earnings recorded for this lecturer yet."}
                 />
               ) : (
-                pageItems(filtered, activePage).map((item, index) => {
-                  const spoil = spoilFor(item);
-                  return (
-                    <tr key={`${item.spoil_name}-${index}`} className="border-b border-gray-50">
-                      <td className="py-4 pr-4 text-gray-500">{(activePage - 1) * PAGE_SIZE + index + 1}</td>
-                      <td className="py-4 pr-4">
-                        <div className="flex items-center gap-3">
-                          <SpoylzThumbnail src={item.cover_image} alt={item.spoil_name} />
-                          <span className="text-[#212529]">{item.spoil_name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 pr-4 text-[#212529]">{spoil ? formatSpoilAmount(spoil) : "-"}</td>
-                      <td className="py-4 pr-4 text-[#212529]">{item.total_enrolled?.toLocaleString() ?? "-"}</td>
-                      <td className="py-4 pr-4 text-[#212529]">-</td>
-                      <td className="py-4 pr-4 text-gray-400 line-through">{formatNaira(item.total_amount) ?? "-"}</td>
-                      <td className="py-4 pr-4 text-[#212529]">-</td>
-                    </tr>
-                  );
-                })
+                pageItems(filtered, activePage).map((spoil, index) => (
+                  <tr key={spoil.id} className="border-b border-gray-50">
+                    <td className="py-4 pr-4 text-gray-500">{(activePage - 1) * PAGE_SIZE + index + 1}</td>
+                    <td className="py-4 pr-4">
+                      <div className="flex items-center gap-3">
+                        <SpoylzThumbnail src={spoil.cover_image_url || null} alt={spoil.title ?? ""} />
+                        <span className="text-[#212529]">{spoil.title || "-"}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 pr-4 text-[#212529]">{formatSpoilAmount(spoil)}</td>
+                    <td className="py-4 pr-4 text-[#212529]">{spoil.enrolled_users?.toLocaleString() ?? "-"}</td>
+                    <td className="py-4 pr-4 text-[#212529]">{formatNaira(grossRevenue(spoil)) ?? "-"}</td>
+                    <td className="py-4 pr-4 text-gray-400 line-through">{formatNaira(spoil.lecturer_amount) ?? "-"}</td>
+                    <td className="py-4 pr-4 text-[#212529]">{formatNaira(spoil.institution_amount) ?? "-"}</td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>

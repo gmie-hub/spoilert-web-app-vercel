@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 
-import Button from "@spt/components/button";
-
-// Frame shared by the Spoylz edit modals, styled like the Add Lecturer modal.
+// Frame for the Spoylz details modals, styled like the Add Lecturer modal.
 const ModalShell = ({
   title,
   description,
@@ -39,27 +37,6 @@ const ModalShell = ({
 
       <div className="mt-6">{children}</div>
     </div>
-  </div>
-);
-
-export const ModalActions = ({
-  onCancel,
-  isSubmitting,
-  submitLabel = "Save Changes",
-  submittingLabel = "Saving...",
-}: {
-  onCancel: () => void;
-  isSubmitting: boolean;
-  submitLabel?: string;
-  submittingLabel?: string;
-}) => (
-  <div className="flex gap-4 pt-2">
-    <Button type="button" variant="blueOutline" className="flex-1" onClick={onCancel} disabled={isSubmitting}>
-      Cancel
-    </Button>
-    <Button type="submit" className="flex-1" disabled={isSubmitting}>
-      {isSubmitting ? submittingLabel : submitLabel}
-    </Button>
   </div>
 );
 

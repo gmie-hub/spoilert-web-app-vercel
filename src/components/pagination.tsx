@@ -30,12 +30,13 @@ const Pagination = ({
         type="button"
         disabled={activePage <= 1}
         onClick={() => onPageChange(Math.max(1, activePage - 1))}
-        className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 disabled:opacity-40"
+        aria-label="Previous page"
+        className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 disabled:opacity-40 sm:px-4"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M15 6l-6 6 6 6" stroke="#4B5563" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        Previous
+        <span className="hidden sm:inline">Previous</span>
       </button>
 
       <div className="flex items-center gap-2">
@@ -63,9 +64,10 @@ const Pagination = ({
         type="button"
         disabled={activePage >= lastPage}
         onClick={() => onPageChange(Math.min(lastPage, activePage + 1))}
-        className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 disabled:opacity-40"
+        aria-label="Next page"
+        className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 disabled:opacity-40 sm:px-4"
       >
-        Next
+        <span className="hidden sm:inline">Next</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M9 6l6 6-6 6" stroke="#4B5563" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -9,6 +9,21 @@ import SuccessIcon from "@spt/assets/icons/done-task-1lwcuCqx7L.svg";
 import { Card } from "@spt/components";
 import SuccessState from "@spt/components/successState";
 import useVerifyPaymentQuery from "@spt/hooks/apiRequests/useVerifyPaymentQuery";
+import { isSponsorshipPayment } from "@spt/utils/sponsorshipPayments";
+
+const PURCHASE_SUCCESS = {
+  description:
+    "You've successfully paid for the Spoylz. You can now start learning and access all available content.",
+  buttonLabel: "Go to Spoylz",
+  href: "/my-learnings",
+};
+
+const SPONSORSHIP_SUCCESS = {
+  description:
+    "You've successfully sponsored the Spoylz. Your unique codes are ready in My Sponsorships — share them with the learners you're sponsoring.",
+  buttonLabel: "View Sponsorship",
+  href: "/profile/my-sponsorships",
+};
 
 const PaymentVerificationScreen = () => {
   const router = useRouter();
@@ -20,6 +35,13 @@ const PaymentVerificationScreen = () => {
     tx_ref,
     transaction_id,
   });
+
+  // localStorage is read in an effect so the server render and the first
+  // client render match
+  const [isSponsorship, setIsSponsorship] = useState(false);
+  useEffect(() => {
+    setIsSponsorship(isSponsorshipPayment(tx_ref));
+  }, [tx_ref]);
 
   if (!tx_ref || !transaction_id) {
     return (
@@ -65,9 +87,7 @@ const PaymentVerificationScreen = () => {
           iconWidth={140}
           iconHeight={140}
           title="Payment Successful 🎉"
-          description="You've successfully paid for the Spoylz. You can now start learning and access all available content."
-          buttonLabel="Go to Spoylz"
-          href="/my-learnings"
+          {...(isSponsorship ? SPONSORSHIP_SUCCESS : PURCHASE_SUCCESS)}
         />
       </PaymentResultShell>
     );

@@ -71,8 +71,6 @@ const InstitutionLecturers = () => {
             <div className="mt-5">
               <LecturersMetrics
                 total={lecturers.length}
-                pending={countByStatus("Pending")}
-                accepted={countByStatus("Accepted")}
                 declined={countByStatus("Declined")}
               />
             </div>

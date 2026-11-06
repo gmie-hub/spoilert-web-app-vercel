@@ -1,4 +1,4 @@
-export type SpoylzStatus = "Active" | "Unpublished";
+export type SpoylzStatus = "Active" | "Unpublished" | "Disabled";
 export type EnrollmentStatus = "Ongoing" | "Completed" | "Not Started";
 
 // Text fields hold "-" when the API has nothing for them.

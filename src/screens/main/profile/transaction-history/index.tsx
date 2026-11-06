@@ -9,7 +9,7 @@ import useGetPaymentsQuery from "@spt/hooks/apiRequests/useGetPaymentsQuery";
 import { Pagination } from "./Pagination";
 import { TransactionModal } from "./TransactionModal";
 import { TransactionRow } from "./TransactionRow";
-import { dummyTransactions, mapPaymentToTransaction } from "./types";
+import { mapPaymentToTransaction } from "./types";
 
 import type { Transaction, ViewType } from "./types";
 
@@ -25,7 +25,7 @@ export default function TransactionHistoryPage() {
   const [viewType, setViewType] = useState<ViewType>("tutor");
   const [page, setPage] = useState(1);
 
-  const { payments, pagination, isLoading } = useGetPaymentsQuery({
+  const { payments, pagination, isLoading, isError, errorMessage } = useGetPaymentsQuery({
     page,
     per_page: PER_PAGE,
     roleOverride: viewType,
@@ -34,9 +34,7 @@ export default function TransactionHistoryPage() {
   // Reset to page 1 when switching view
   useEffect(() => { setPage(1); }, [viewType]);
 
-  const transactions = payments.length > 0
-    ? payments.map(mapPaymentToTransaction)
-    : isLoading ? [] : dummyTransactions;
+  const transactions = payments.map(mapPaymentToTransaction);
 
   return (
     <>
@@ -65,6 +63,10 @@ export default function TransactionHistoryPage() {
             <div className="flex justify-center py-12">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#0B5368] border-t-transparent" />
             </div>
+          ) : isError ? (
+            <p className="py-12 text-center text-[14px] text-[#EF4444]">{errorMessage}</p>
+          ) : transactions.length === 0 ? (
+            <p className="py-12 text-center text-[14px] text-[#9CA3AF]">You have no transactions yet.</p>
           ) : (
             <div className="divide-y divide-[#EEF3F6]">
               {transactions.map((tx) => (

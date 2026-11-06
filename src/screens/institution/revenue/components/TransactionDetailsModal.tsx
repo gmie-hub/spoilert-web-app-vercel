@@ -21,7 +21,7 @@ const FieldCell = ({ label, value }: { label: string; value: ReactNode }) => (
 );
 
 const FieldRow = ({ children }: { children: ReactNode }) => (
-  <div className="grid grid-cols-2 gap-4 border-b border-gray-100 py-4 last:border-0">{children}</div>
+  <div className="grid grid-cols-1 gap-4 border-b border-gray-100 py-4 last:border-0 sm:grid-cols-2">{children}</div>
 );
 
 const TransactionDetailsModal = ({
@@ -40,13 +40,15 @@ const TransactionDetailsModal = ({
     });
   };
 
+  // m-auto on the panel (not items-center on the overlay) so a panel taller than
+  // a short phone screen scrolls from its top instead of being cut off.
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex overflow-y-auto bg-black/40 p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[520px] rounded-2xl bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.15)] sm:p-8"
+        className="m-auto w-full max-w-[520px] rounded-2xl bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.15)] sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
@@ -65,7 +67,7 @@ const TransactionDetailsModal = ({
 
         <div className="mt-6 rounded-xl border border-gray-100 px-4">
           <div className="border-b border-gray-100 py-4">
-            <span className="text-sm text-gray-400">
+            <span className="break-all text-sm text-gray-400">
               Transaction ID: <span className="font-semibold text-[#212529]">{transaction.transactionId}</span>
             </span>
             <button
@@ -97,7 +99,11 @@ const TransactionDetailsModal = ({
 
           <div className="py-4">
             <p className="mb-2 text-sm text-gray-400">Status</p>
-            <Badge label={transaction.status} />
+            {transaction.status ? (
+              <Badge label={transaction.status} />
+            ) : (
+              <p className="font-medium text-[#212529]">-</p>
+            )}
           </div>
         </div>
       </div>

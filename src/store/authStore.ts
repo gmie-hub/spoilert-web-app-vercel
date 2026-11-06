@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { SPONSORSHIP_PAYMENTS_KEY } from "@spt/utils/sponsorshipPayments";
+
 // localStorage key the auth state is persisted under. Shared so the axios
 // interceptor and the certificate deep-link bootstrap read/write the exact same
 // entry instead of duplicating the magic string.
@@ -67,6 +69,7 @@ export const useAuthStore = create<AuthState>()(
             "phoneNumber",
             "selectedCountry",
             "advanced-spoil-draft",
+            SPONSORSHIP_PAYMENTS_KEY,
             AUTH_STORAGE_KEY,
           ];
           keysToRemove.forEach((k) => localStorage.removeItem(k));

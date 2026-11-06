@@ -3,14 +3,19 @@
 import { useState } from "react";
 
 import { StatCard } from "@spt/components";
+import useGetPaymentsQuery from "@spt/hooks/apiRequests/useGetPaymentsQuery";
+import useInstitutionId from "@spt/hooks/useInstitutionId";
 
 import RevenueSplitCard from "../components/RevenueSplitCard";
 import { RevenueIcon } from "../dashboard/components/icons";
 
-import { MOCK_REVENUE_TRANSACTIONS, REVENUE_STATS, type RevenueTransaction } from "./components/constants";
+import { REVENUE_STATS, type RevenueTransaction } from "./components/constants";
 import { TransactionsIcon } from "./components/icons";
 import TransactionDetailsModal from "./components/TransactionDetailsModal";
 import TransactionHistoryTable from "./components/TransactionHistoryTable";
+import { toRevenueTransaction } from "./mappers";
+
+const TRANSACTIONS_PER_PAGE = 15;
 
 const STATS = [
   {
@@ -53,6 +58,20 @@ const STATS = [
 
 const InstitutionRevenue = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<RevenueTransaction | null>(null);
+  const [page, setPage] = useState(1);
+
+  const { institutionId, isResolved } = useInstitutionId();
+
+  // GET /payments?page=&per_page=&institution_id= — no user filter; the
+  // institution's id scopes the list, and is left out if it can't be found.
+  const { payments, pagination, isLoading, isError, errorMessage } = useGetPaymentsQuery({
+    withoutUserFilter: true,
+    institution_id: institutionId,
+    // Waits for the institution's id so the list isn't fetched twice.
+    enabled: isResolved,
+    page,
+    per_page: TRANSACTIONS_PER_PAGE,
+  });
 
   return (
     <div className="w-full space-y-4">
@@ -63,14 +82,23 @@ const InstitutionRevenue = () => {
         institutionPercent={REVENUE_STATS.institutionSplitPercent}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      {/* auto-rows-fr keeps every card the same height even when a long label wraps. */}
+      <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {STATS.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
 
       <TransactionHistoryTable
-        transactions={MOCK_REVENUE_TRANSACTIONS}
+        transactions={payments.map(toRevenueTransaction)}
+        // Still loading while the institution's id is being looked up.
+        isLoading={isLoading || !isResolved}
+        errorMessage={isError ? errorMessage : null}
+        page={page}
+        // Keeps the current page listed while the next one loads.
+        totalPages={Math.max(page, pagination.last_page)}
+        firstRowNumber={(page - 1) * (pagination.per_page ?? TRANSACTIONS_PER_PAGE) + 1}
+        onPageChange={setPage}
         onViewMore={setSelectedTransaction}
       />
 

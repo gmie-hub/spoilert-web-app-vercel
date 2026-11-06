@@ -11,6 +11,7 @@ import type {
   EnrolledStudent,
   EnrollmentStatus,
   SpoylzItem,
+  SpoylzStatus,
   StudentProgressDetails,
 } from "./components/spoylz/types";
 import type { Transaction, TransactionKind } from "./components/transactions/types";
@@ -20,6 +21,13 @@ const NOT_AVAILABLE = "-";
 
 export const formatSpoilAmount = (spoil: LecturerSpoil) =>
   spoil.pricing?.toLowerCase() === "free" ? "Free" : (formatNaira(spoil.amount) ?? NOT_AVAILABLE);
+
+// Everything a spoil has made: the lecturer's and the institution's shares
+// together. Null when neither share is known.
+export const grossRevenue = (spoil: LecturerSpoil) =>
+  spoil.lecturer_amount == null && spoil.institution_amount == null
+    ? null
+    : (Number(spoil.lecturer_amount) || 0) + (Number(spoil.institution_amount) || 0);
 
 // The earnings breakdown names each spoil but doesn't give its id, so its rows
 // are paired with spoils by title, and only where the title is unique on both
@@ -32,25 +40,28 @@ export const pairEarningsByTitle = (spoils: LecturerSpoil[], earnings: EarningSp
   const isUnique = (title: string) => spoilTitles.get(title) === 1 && earningTitles.get(title) === 1;
 
   return {
-    earningFor: (spoil: LecturerSpoil) =>
-      isUnique(spoil.title) ? (earnings.find((earning) => earning.spoil_name === spoil.title) ?? null) : null,
     spoilFor: (earning: EarningSpoil) =>
       isUnique(earning.spoil_name) ? (spoils.find((spoil) => spoil.title === earning.spoil_name) ?? null) : null,
   };
 };
 
-export const toSpoylzItem = (spoil: LecturerSpoil, earning: EarningSpoil | null): SpoylzItem => ({
+const toSpoylzStatus = (spoil: LecturerSpoil): SpoylzStatus => {
+  // is_active 0 means the institution disabled it, whatever its published state.
+  if (String(spoil.is_active) === "0") return "Disabled";
+  return spoil.status === 1 ? "Active" : "Unpublished";
+};
+
+export const toSpoylzItem = (spoil: LecturerSpoil): SpoylzItem => ({
   id: String(spoil.id),
   title: spoil.title,
   coverImage: spoil.cover_image_url || null,
   pricing: spoil.pricing ? humanize(spoil.pricing) : NOT_AVAILABLE,
   amount: formatSpoilAmount(spoil),
   enrolledStudents: spoil.enrolled_users ?? 0,
-  earnedByLecturer: formatNaira(earning?.total_amount) ?? NOT_AVAILABLE,
-  // No endpoint serves the institution's cut yet.
-  earnedByInstitution: NOT_AVAILABLE,
+  earnedByLecturer: formatNaira(spoil.lecturer_amount) ?? NOT_AVAILABLE,
+  earnedByInstitution: formatNaira(spoil.institution_amount) ?? NOT_AVAILABLE,
   dateCreated: formatDate(spoil.created_at),
-  status: spoil.status === 1 ? "Active" : "Unpublished",
+  status: toSpoylzStatus(spoil),
   category: spoil.category?.name || NOT_AVAILABLE,
   courseCode: spoil.course_code || NOT_AVAILABLE,
   modules: spoil.modules_no,
@@ -128,7 +139,7 @@ const PAYMENT_TYPES: Record<string, { label: string; kind: TransactionKind }> = 
   promotion: { label: "Spoylz Promotion", kind: "other" },
 };
 
-const PAYMENT_STATUSES: Record<string, string> = {
+export const PAYMENT_STATUSES: Record<string, string> = {
   success: "Successful",
   successful: "Successful",
   paid: "Successful",

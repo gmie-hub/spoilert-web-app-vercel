@@ -16,7 +16,7 @@ const RevenueSplitCard = ({
     {lecturerPercent == null || institutionPercent == null ? (
       <p className="mt-4 text-sm font-medium text-gray-300">No data</p>
     ) : (
-      <div className="mt-4 flex items-center gap-3 text-sm">
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         <span className="font-semibold text-[#212529]">Lecturers ({lecturerPercent}%)</span>
         <span className="text-gray-300">|</span>
         <span className="font-semibold text-[#212529]">Institution ({institutionPercent}%)</span>

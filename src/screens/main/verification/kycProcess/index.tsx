@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Stack from "@mui/material/Stack";
 
@@ -23,8 +23,10 @@ import VerifyPhoneOtp from "./verifyPhoneOtp";
 const KYCProcess = () => {
   const authUser = useAuthStore((state) => state.user);
   const verificationStatus = authUser?.verification_status;
-  const { userVerificationDetails } = useGetUserVerificationDetails(authUser?.id || 0);
- 
+  const { userVerificationDetails, isLoading: isLoadingVerification } =
+    useGetUserVerificationDetails(authUser?.id || 0);
+  const phoneVerified = Boolean(authUser?.phone_verified_at);
+
   // All hooks must be called before any return
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
@@ -32,6 +34,7 @@ const KYCProcess = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showBankSuccess, setShowBankSuccess] = useState(false);
   const [forceRetry, setForceRetry] = useState(false);
+  const hasResumed = useRef(false);
 
   // Mark all steps as complete when verificationStatus is 0 or 1
   useEffect(() => {
@@ -39,6 +42,32 @@ const KYCProcess = () => {
       setActiveStep(steps.length);
     }
   }, [verificationStatus]);
+
+  // Country and phone are already done for a phone-verified user, so skip
+  // straight to Verify Identity instead of starting the flow over.
+  const resumeAtVerifyIdentity = () => {
+    // The identity step and its upload pick NIN vs ID from the country chosen
+    // on the skipped first step, so fall back to the profile's country.
+    try {
+      if (!localStorage.getItem("selectedCountry") && authUser?.country) {
+        localStorage.setItem("selectedCountry", authUser.country);
+      }
+    } catch {
+      // ignore if localStorage is unavailable
+    }
+    setForceRetry(false);
+    setActiveStep(VERIFY_IDENTITY_STEP);
+  };
+
+  useEffect(() => {
+    if (hasResumed.current || !phoneVerified || isLoadingVerification) return;
+    hasResumed.current = true;
+    // Any existing record has its own screen: in progress / approved show
+    // their status, and rejected shows the reason first (retry resumes here).
+    if (userVerificationDetails?.data?.[0]?.status !== undefined) return;
+    resumeAtVerifyIdentity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phoneVerified, isLoadingVerification, userVerificationDetails]);
 
   const goToNextStep = () => {
     setActiveStep((prev) => prev + 1);
@@ -82,7 +111,16 @@ const KYCProcess = () => {
     // and is still on the initial step. If they've started the flow (activeStep>0)
     // or triggered a retry, let the stepper UI render the appropriate step.
     if (verificationStatus === 2 && !forceRetry && activeStep === 0)
-      return <KYCRejected userVerificationDetails={userVerificationDetails} onRetry={() => { setActiveStep(0); setForceRetry(true);  }} />;
+      return (
+        <KYCRejected
+          userVerificationDetails={userVerificationDetails}
+          onRetry={
+            phoneVerified
+              ? resumeAtVerifyIdentity
+              : () => { setActiveStep(0); setForceRetry(true); }
+          }
+        />
+      );
 
     switch (activeStep + 1) {
       case 1:
@@ -141,3 +179,5 @@ const steps = [
   "Verify Identity (NIN for Nigerians & government issued ID for other countries)",
   "Add Bank Account",
 ];
+
+const VERIFY_IDENTITY_STEP = 2;
