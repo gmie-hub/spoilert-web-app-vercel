@@ -26,6 +26,7 @@ import LogoutConfirmModal from "@spt/layouts/website/LogoutConfirmModal";
 import MobileMenu from "@spt/layouts/website/MobileMenu";
 import NotificationBell from "@spt/layouts/website/NotificationBell";
 import { useAuthStore } from "@spt/store/authStore";
+import { INSTITUTION_HOME, isInstitutionRole } from "@spt/utils/institutionAccess";
 
 type NavLink = {
   icon: string | any;
@@ -75,9 +76,9 @@ const Header = () => {
 
   const authUser = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
-  const isInstitution = String(authUser?.role).toLowerCase() === "institution";
+  const isInstitution = isInstitutionRole(authUser?.role);
   const accountLink = isInstitution
-    ? { name: "Dashboard", href: "/institution/dashboard" }
+    ? { name: "Dashboard", href: INSTITUTION_HOME }
     : { name: "Profile", href: "/profile/profile-details" };
   const displayName = isInstitution
     ? authUser?.name ?? ""
@@ -110,22 +111,27 @@ const Header = () => {
   }, [verificationStatus, authVerificationStatus, authUserId, authUser, setAuth]);
 
 
-  const createSpoilHref =
-    userVerificationDetails?.data?.[0]?.status === 1
-      ? "/create-spoils"
-      // : authUser?.kyc_verified_at === null
-      : "/create-spoils/kyc-process"
-      // : "/create-spoils";
+  const createSpoilHref = "/create-spoils/kyc-process"
+    // userVerificationDetails?.data?.[0]?.status === 1
+    //   ? "/create-spoils"
+    //   // : authUser?.kyc_verified_at === null
+    //   : "/create-spoils/kyc-process"
+    //   // : "/create-spoils";
 
-  const navLinks: NavLink[] = [
-    { icon: Home, name: "Home", href: "/" },
-    { icon: Learnings, name: "My Learnings", href: "/my-learnings", requiresAuth: true },
-    { icon: CreateSpoilIcon, name: "Create spoylz", href: createSpoilHref, requiresAuth: true },
-    { icon: CommunityIcon, name: "Community", href: "/community", requiresAuth: true },
-    ...(authUser
-      ? [{ icon: ProfileNavIcon, ...accountLink }]
-      : []),
-  ];
+  // Institutions only get their dashboard — Home, My Learnings, Create Spoylz
+  // and Community are learner/creator areas.
+  const navLinks: NavLink[] = isInstitution
+    ? [{ icon: ProfileNavIcon, ...accountLink }]
+    : [
+        { icon: Home, name: "Home", href: "/" },
+        { icon: Learnings, name: "My Learnings", href: "/my-learnings", requiresAuth: true },
+        { icon: CreateSpoilIcon, name: "Create spoylz", href: createSpoilHref, requiresAuth: true },
+        { icon: CommunityIcon, name: "Community", href: "/community", requiresAuth: true },
+        ...(authUser
+          ? [{ icon: ProfileNavIcon, ...accountLink }]
+          : []),
+      ];
+  const logoHref = isInstitution ? INSTITUTION_HOME : "/";
 
   // Intercept clicks on protected links while logged out: block navigation
   // and surface a login prompt instead. We only block once we're sure the
@@ -152,7 +158,7 @@ const Header = () => {
         {/* LEFT SIDE: LOGO + NAV LINKS */}
         <div className="flex items-center gap-4 md:gap-6 lg:gap-8">
           {/* LOGO */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href={logoHref} className="flex items-center gap-2 shrink-0">
             <Image
               src={Logo}
               alt="Logo"
@@ -274,7 +280,7 @@ const Header = () => {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <Link
-                    href={isInstitution ? "/institution/dashboard" : "/profile"}
+                    href={isInstitution ? INSTITUTION_HOME : "/profile"}
                     className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"
                     onClick={() => setIsDropdownOpen(false)}
                   >

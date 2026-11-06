@@ -7,10 +7,6 @@ import type { QuizDetailsData } from "@spt/types/quiz";
 
 import { FILL_IN_THE_BLANK, MULTIPLE_CHOICE, parseQuizOptions } from "../../mappers";
 
-import EditIconButton from "./EditIconButton";
-import EditQuestionModal, { type QuizQuestion } from "./modals/EditQuestionModal";
-import EditQuizModal from "./modals/EditQuizModal";
-
 const DEFAULT_INTROS: Record<string, string> = {
   pre: "Learners take this quiz before they start the Spoylz, to show what they already know.",
   post: "Learners take this quiz after they finish the Spoylz, to test what they have learned.",
@@ -55,15 +51,7 @@ const PlayQuizBadge = () => (
   </div>
 );
 
-const QuizIntro = ({
-  quiz,
-  onStart,
-  onEdit,
-}: {
-  quiz: QuizDetailsData;
-  onStart: () => void;
-  onEdit: () => void;
-}) => {
+const QuizIntro = ({ quiz, onStart }: { quiz: QuizDetailsData; onStart: () => void }) => {
   const questions = quiz.questions ?? [];
   const multipleChoice = questions.filter((question) => question.type === MULTIPLE_CHOICE).length;
   const fillInBlank = questions.filter((question) => question.type === FILL_IN_THE_BLANK).length;
@@ -103,19 +91,12 @@ const QuizIntro = ({
         </p>
       )}
 
-      <div className="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={onEdit}
-          className="flex-1 rounded-xl border border-[var(--color-blue)] py-3.5 text-sm font-semibold text-[var(--color-blue)]"
-        >
-          Edit Quiz
-        </button>
+      <div className="mx-auto mt-6 max-w-md">
         <button
           type="button"
           onClick={onStart}
           disabled={questions.length === 0}
-          className="flex-1 rounded-xl bg-[var(--color-blue)] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="w-full rounded-xl bg-[var(--color-blue)] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
         >
           {questions.length === 0 ? "No Questions Yet" : "View Quiz"}
         </button>
@@ -128,7 +109,6 @@ const QuizRunner = ({ quiz, onExit }: { quiz: QuizDetailsData; onExit: () => voi
   const questions = quiz.questions ?? [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [furthestVisited, setFurthestVisited] = useState(0);
-  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
 
   const index = Math.min(currentIndex, questions.length - 1);
   const question = questions[index];
@@ -173,12 +153,9 @@ const QuizRunner = ({ quiz, onExit }: { quiz: QuizDetailsData; onExit: () => voi
           Question <span className="font-semibold text-[#212529]">{index + 1}</span> of{" "}
           <span className="font-semibold text-[#212529]">{questions.length}</span>
         </p>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-[#212529]">
-            <ClockIcon color="var(--color-yellow)" />
-            {quiz.time_limit ?? "-"} min
-          </div>
-          <EditIconButton label="Edit question" onClick={() => setEditingQuestion(question)} />
+        <div className="flex items-center gap-1.5 text-sm font-medium text-[#212529]">
+          <ClockIcon color="var(--color-yellow)" />
+          {quiz.time_limit ?? "-"} min
         </div>
       </div>
 
@@ -237,17 +214,13 @@ const QuizRunner = ({ quiz, onExit }: { quiz: QuizDetailsData; onExit: () => voi
           {isLast ? "Finish Preview" : "Next"}
         </button>
       </div>
-
-      {editingQuestion && (
-        <EditQuestionModal question={editingQuestion} onClose={() => setEditingQuestion(null)} />
-      )}
     </div>
   );
 };
 
+// Read-only preview: institutions can look through a quiz but not edit it.
 const QuizPreviewPanel = ({ quizId }: { quizId: number }) => {
   const [started, setStarted] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const {
     quizDetailsData: quiz,
     isQuizDetailsLoading,
@@ -267,16 +240,10 @@ const QuizPreviewPanel = ({ quizId }: { quizId: number }) => {
     );
   }
 
-  return (
-    <>
-      {started && (quiz.questions ?? []).length > 0 ? (
-        <QuizRunner quiz={quiz} onExit={() => setStarted(false)} />
-      ) : (
-        <QuizIntro quiz={quiz} onStart={() => setStarted(true)} onEdit={() => setIsEditOpen(true)} />
-      )}
-
-      {isEditOpen && <EditQuizModal quiz={quiz} onClose={() => setIsEditOpen(false)} />}
-    </>
+  return started && (quiz.questions ?? []).length > 0 ? (
+    <QuizRunner quiz={quiz} onExit={() => setStarted(false)} />
+  ) : (
+    <QuizIntro quiz={quiz} onStart={() => setStarted(true)} />
   );
 };
 

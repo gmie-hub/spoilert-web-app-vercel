@@ -4,13 +4,11 @@ import { useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import toast from "react-hot-toast";
 
 import EditIcon from "@spt/assets/icons/edit-2profile.svg";
 import { SuccessModal } from "@spt/components";
 import Button from "@spt/components/button";
 import useProfileDetailsQuery from "@spt/hooks/apiRequests/useProfileDetailsQuery";
-import { useVerifyPhoneMutation } from "@spt/hooks/apiRequests/useVerifyPhoneMutation";
 import { useAuthStore } from "@spt/store/authStore";
 
 import AddBankAccountModal from "./components/AddBankAccountModal";
@@ -18,6 +16,7 @@ import EditProfileModal from "./components/EditProfileModal";
 import { BankIcon, PencilIcon, PhoneIcon } from "./components/icons";
 import PhoneOtpModal from "./components/PhoneOtpModal";
 import VerificationCard from "./components/VerificationCard";
+import { toCountryCode, toOtpPhoneNumber, useInstitutionPhone } from "./useInstitutionPhone";
 
 import type { BankDetails } from "./components/AddBankAccountForm";
 import type { ProfileChanges } from "./components/EditProfileModal";
@@ -47,7 +46,8 @@ const InstitutionProfile = () => {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const { data, isLoading } = useProfileDetailsQuery();
-  const { sendOtp, isLoading: isSendingOtp } = useVerifyPhoneMutation();
+  const { applyProfileChanges, markPhoneVerified, sendPhoneOtp, isSendingOtp } =
+    useInstitutionPhone();
 
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
@@ -58,10 +58,9 @@ const InstitutionProfile = () => {
   // Fresh profile data wins; the logged-in user covers the time it's unavailable.
   const profile = data?.data ?? user;
   const institutionName = profile?.name || "Your Institution";
-  const countryCode = String(profile?.country_code || "234").replace("+", "");
-  // Stored as typed at sign-up (e.g. 09012345678); shown and sent for OTP without the 0.
+  const countryCode = toCountryCode(profile?.country_code);
   const rawPhoneNumber = String(profile?.phone_number || "");
-  const phoneNumber = rawPhoneNumber.replace(/^0/, "");
+  const phoneNumber = toOtpPhoneNumber(rawPhoneNumber);
   const phoneVerifiedAt = profile?.phone_verified_at;
 
   const savedBank = profile?.bank_accounts?.[0];
@@ -73,46 +72,8 @@ const InstitutionProfile = () => {
       }
     : addedBank;
 
-  // Show a change straight away — in the cached profile and the logged-in user
-  // (which feeds the dashboard header) — while the profile refetch confirms it.
-  const applyProfileChanges = (changes: ProfileChanges & { phone_verified_at?: string }) => {
-    queryClient.setQueriesData({ queryKey: ["user-profile"] }, (old: any) =>
-      old?.data ? { ...old, data: { ...old.data, ...changes } } : old,
-    );
-
-    const { user: currentUser, token } = useAuthStore.getState();
-    if (currentUser && token) {
-      useAuthStore.getState().setAuth({ user: { ...currentUser, ...changes }, token });
-    }
-  };
-
-  const markPhoneVerified = () => {
-    applyProfileChanges({ phone_verified_at: new Date().toISOString() });
-    queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-  };
-
   const handleVerifyPhone = async () => {
-    if (isSendingOtp) return;
-
-    try {
-      const response = await sendOtp({ country_code: countryCode, phone_number: phoneNumber });
-      toast.success(response?.message || "OTP sent successfully 📲");
-      setShowOtpModal(true);
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to send OTP";
-
-      // The backend already has this number down as verified — just sync the UI.
-      if (message === "Phone already verified.") {
-        toast.success(message);
-        markPhoneVerified();
-        return;
-      }
-      toast.error(message);
-    }
+    if (await sendPhoneOtp(countryCode, phoneNumber)) setShowOtpModal(true);
   };
 
   const phoneFooter = phoneVerifiedAt ? (

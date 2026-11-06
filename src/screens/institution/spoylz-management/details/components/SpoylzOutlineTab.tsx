@@ -2,27 +2,12 @@
 
 import { useState } from "react";
 
-import { useQueryClient } from "@tanstack/react-query";
-
-import DeleteConfirmationModal from "@spt/components/deleteConfirmationModal";
-import useDeleteLesson from "@spt/hooks/apiRequests/useDeleteLesson";
 import LessonContentViewer from "@spt/screens/main/spoil/LessonContentViewer";
-import {
-  type SpoilLesson,
-  type SpoilModule,
-  getLessonTypeLabel,
-  splitLearningOutcomes,
-} from "@spt/screens/main/spoil/startSpoilUtils";
+import { getLessonTypeLabel, splitLearningOutcomes } from "@spt/screens/main/spoil/startSpoilUtils";
 import { containsHtml, htmlToPlainText } from "@spt/utils/richText";
 import type { SpoilDetailsData } from "@spt/utils/spoils";
 
 import { NOT_AVAILABLE, getFullName } from "../../mappers";
-
-import DeleteIconButton from "./DeleteIconButton";
-import EditIconButton from "./EditIconButton";
-import AddLessonModal from "./modals/AddLessonModal";
-import EditLessonModal from "./modals/EditLessonModal";
-import EditModuleModal from "./modals/EditModuleModal";
 
 const HamburgerIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -62,38 +47,15 @@ const Avatar = () => (
   </span>
 );
 
+// Read-only: institutions view a Spoylz's outline but can't edit it.
 const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
-  const queryClient = useQueryClient();
   const modules = spoil.modules ?? [];
   const [contentHidden, setContentHidden] = useState(false);
   const [expandedModuleIds, setExpandedModuleIds] = useState<Set<number>>(
     () => new Set(modules[0] ? [modules[0].id] : []),
   );
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(modules[0]?.lessons?.[0]?.id ?? null);
-  const [editingModule, setEditingModule] = useState<SpoilModule | null>(null);
-  const [editingLesson, setEditingLesson] = useState<SpoilLesson | null>(null);
-  const [addingLessonModuleId, setAddingLessonModuleId] = useState<number | null>(null);
-  const [deletingLesson, setDeletingLesson] = useState<SpoilLesson | null>(null);
-  const { deleteLessonHandler, isLoading: isDeletingLesson } = useDeleteLesson();
 
-  // A simple Spoylz is a single lesson, so lessons can only be edited there,
-  // not added or removed.
-  const isSimple = spoil.type?.toLowerCase() === "simple";
-
-  const handleDeleteLesson = async () => {
-    if (!deletingLesson) return;
-
-    try {
-      await deleteLessonHandler(deletingLesson.id);
-      queryClient.invalidateQueries({ queryKey: ["spoil-details"] });
-      if (deletingLesson.id === selectedLessonId) setSelectedLessonId(null);
-      setDeletingLesson(null);
-    } catch {
-      // deleteLessonHandler has already shown the error.
-    }
-  };
-
-  // Looked up from the latest data so an edit shows as soon as the Spoylz refetches.
   const selectedLesson =
     modules.flatMap((module) => module.lessons ?? []).find((lesson) => lesson.id === selectedLessonId) ?? null;
   const lessonContent = selectedLesson?.content ?? "";
@@ -145,7 +107,7 @@ const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
 
               return (
                 <div key={module.id} className="rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-1 py-1 pl-4 pr-2">
+                  <div className="flex items-center gap-1 py-1 pl-4 pr-4">
                     <button
                       type="button"
                       onClick={() => toggleModule(module.id)}
@@ -157,7 +119,6 @@ const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
                       </div>
                       <ChevronToggleIcon expanded={expanded} />
                     </button>
-                    <EditIconButton label={`Edit module ${index + 1}`} onClick={() => setEditingModule(module)} />
                   </div>
 
                   {expanded && (
@@ -170,12 +131,12 @@ const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
                           return (
                             <div
                               key={lesson.id}
-                              className={`flex items-center gap-1 pr-2 ${active ? "bg-[var(--color-blue-lightest)]" : ""}`}
+                              className={active ? "bg-[var(--color-blue-lightest)]" : ""}
                             >
                               <button
                                 type="button"
                                 onClick={() => setSelectedLessonId(lesson.id)}
-                                className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left text-sm"
+                                className="flex w-full min-w-0 items-center gap-3 px-4 py-3 text-left text-sm"
                               >
                                 <PlayCircleIcon />
                                 <span
@@ -184,26 +145,9 @@ const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
                                   {lesson.title}
                                 </span>
                               </button>
-                              <EditIconButton label="Edit lesson" onClick={() => setEditingLesson(lesson)} />
-                              {!isSimple && (
-                                <DeleteIconButton label="Delete lesson" onClick={() => setDeletingLesson(lesson)} />
-                              )}
                             </div>
                           );
                         })
-                      )}
-
-                      {!isSimple && (
-                        <button
-                          type="button"
-                          onClick={() => setAddingLessonModuleId(module.id)}
-                          className="m-3 inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-blue)] px-3 py-1.5 text-sm font-medium text-[var(--color-blue)] hover:bg-[var(--color-blue-lightest)]"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          </svg>
-                          Add Lesson
-                        </button>
                       )}
                     </div>
                   )}
@@ -271,20 +215,6 @@ const SpoylzOutlineTab = ({ spoil }: { spoil: SpoilDetailsData }) => {
           <p className="mt-3 text-sm text-gray-600">{NOT_AVAILABLE}</p>
         )}
       </div>
-
-      {editingModule && <EditModuleModal module={editingModule} onClose={() => setEditingModule(null)} />}
-      {editingLesson && <EditLessonModal lesson={editingLesson} onClose={() => setEditingLesson(null)} />}
-      {addingLessonModuleId !== null && (
-        <AddLessonModal moduleId={addingLessonModuleId} onClose={() => setAddingLessonModuleId(null)} />
-      )}
-
-      <DeleteConfirmationModal
-        open={Boolean(deletingLesson)}
-        itemName="This Lesson"
-        isLoading={isDeletingLesson}
-        onConfirm={handleDeleteLesson}
-        onCancel={() => setDeletingLesson(null)}
-      />
     </div>
   );
 };

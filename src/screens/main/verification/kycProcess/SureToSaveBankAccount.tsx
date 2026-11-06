@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 import SuccessIcon from "@spt/assets/icons/question-chat-svgrepo-com 1.svg";
 import SuccessState from "@spt/components/successState";
 import { useAddBankAccountMutation } from "@spt/hooks/apiRequests/useAddBankAccMutation";
-import BankAccAddedSucessful from "@spt/screens/main/verification/kycProcess/bankAccAddedSucessful";
 
 interface BankDetails {
   accountNumber: string;
@@ -27,7 +26,6 @@ const SureToSaveBankAccount = ({
     useAddBankAccountMutation();
 
   const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
-  const [saved, setSaved] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("bankDetails");
@@ -36,29 +34,23 @@ const SureToSaveBankAccount = ({
     }
   }, []);
 
+  // Only moves on once POST banks/add succeeds; the parent then shows the
+  // "Bank Account Added" screen. A failure is already toasted by the hook.
   const handleSaveBank = async () => {
-    if (!bankDetails) return;
-
-    try {
-      await addBankAccountHandler(
-        bankDetails.accountNumber,
-        bankDetails.bankId,
-      );
-
-      localStorage.removeItem("bankDetails");
-      setSaved(true);
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to save bank account",
-      );
+    if (!bankDetails) {
+      toast.error("Bank details not found. Please go back and verify your account again.");
+      return;
     }
-  };
 
-  if (saved) {
-    return <BankAccAddedSucessful onShowKYCInProgress={onShowKYCInProgress} />;
-  }
+    const added = await addBankAccountHandler(
+      bankDetails.accountNumber,
+      bankDetails.bankId,
+    );
+    if (!added) return;
+
+    localStorage.removeItem("bankDetails");
+    onShowKYCInProgress();
+  };
 
   return (
     <div className="w-full flex justify-start">
