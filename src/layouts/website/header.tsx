@@ -111,12 +111,12 @@ const Header = () => {
   }, [verificationStatus, authVerificationStatus, authUserId, authUser, setAuth]);
 
 
-  const createSpoilHref = "/create-spoils/kyc-process"
-    // userVerificationDetails?.data?.[0]?.status === 1
-    //   ? "/create-spoils"
-    //   // : authUser?.kyc_verified_at === null
-    //   : "/create-spoils/kyc-process"
-    //   // : "/create-spoils";
+  const createSpoilHref =
+    userVerificationDetails?.data?.[0]?.status === 1
+      ? "/create-spoils"
+      // : authUser?.kyc_verified_at === null
+      : "/create-spoils/kyc-process"
+      // : "/create-spoils";
 
   // Institutions only get their dashboard — Home, My Learnings, Create Spoylz
   // and Community are learner/creator areas.

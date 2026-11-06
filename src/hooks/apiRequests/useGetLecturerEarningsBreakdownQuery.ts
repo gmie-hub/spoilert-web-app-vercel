@@ -6,47 +6,48 @@ import { AxiosError } from "axios";
 import type { ApiErrorResponse } from "@spt/types/error";
 import api from "@spt/utils/apiClient";
 
-import type { EarningSpoil, EarningsBreakdownData, EarningsOverview } from "./useGetEarningsBreakdownQuery";
+import type { LecturerSpoil } from "./useGetLecturerSpoilsQuery";
+
+interface BreakdownPage {
+  current_page: number;
+  last_page: number;
+  data: LecturerSpoil[];
+}
 
 interface LecturerEarningsBreakdownResponse {
   status?: boolean;
   message?: string;
-  // { overview, data: [...] }, or the rows on their own.
-  data?: { overview?: EarningsOverview; data?: EarningSpoil[] } | EarningSpoil[];
+  data?: BreakdownPage;
 }
 
-// One lecturer's earnings per Spoylz, as the institution sees them. Keyed by the
-// lecturer record's id (the one in /institution/lecturers/{id}), not their user id.
+const fetchBreakdownPage = async (lecturerId: number | string, page: number) =>
+  (
+    await api.get<LecturerEarningsBreakdownResponse>("/lecturers/earnings/breakdown", {
+      params: { lecturer_id: lecturerId, page },
+    })
+  ).data.data;
+
+// One lecturer's Spoylz, each with what it has earned the lecturer and the
+// institution. Keyed by the lecturer record's id (the one in
+// /institution/lecturers/{id}), not their user id. Every page is fetched, as
+// the table searches and pages through the rows itself.
 const useGetLecturerEarningsBreakdownQuery = (lecturerId?: number | string | null) => {
-  const { data, isLoading, error, isError } = useQuery<
-    LecturerEarningsBreakdownResponse,
-    AxiosError<ApiErrorResponse>
-  >({
+  const { data, isLoading, error, isError } = useQuery<LecturerSpoil[], AxiosError<ApiErrorResponse>>({
     queryKey: ["lecturer-earnings-breakdown", lecturerId],
-    queryFn: async () =>
-      (await api.get("/lecturers/earnings/breakdown", { params: { lecturer_id: lecturerId } })).data,
+    queryFn: async () => {
+      const firstPage = await fetchBreakdownPage(lecturerId as number | string, 1);
+      const otherPages = await Promise.all(
+        Array.from({ length: Math.max(0, (firstPage?.last_page ?? 1) - 1) }, (_, index) =>
+          fetchBreakdownPage(lecturerId as number | string, index + 2),
+        ),
+      );
+      return [firstPage, ...otherPages].flatMap((page) => page?.data ?? []);
+    },
     enabled: Boolean(lecturerId),
   });
 
-  const inner = data?.data;
-  const earnings: EarningsBreakdownData | null = inner
-    ? Array.isArray(inner)
-      ? {
-          // No overview came with the rows, so the total is their sum.
-          overview: {
-            total_earning: String(inner.reduce((sum, row) => sum + (Number(row.total_amount) || 0), 0)),
-            spoils_created: inner.length,
-          },
-          data: inner,
-        }
-      : {
-          overview: inner.overview ?? { total_earning: "0", spoils_created: 0 },
-          data: Array.isArray(inner.data) ? inner.data : [],
-        }
-    : null;
-
   return {
-    earnings,
+    spoils: data ?? [],
     isLoading,
     isError,
     errorMessage:

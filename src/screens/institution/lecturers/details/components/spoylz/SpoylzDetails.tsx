@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import Link from "next/link";
+
 import Badge from "./Badge";
 
 import type { SpoylzItem } from "./types";
@@ -48,12 +50,12 @@ const SpoylzDetails = ({
         >
           View Enrolled Students
         </button>
-        <button
-          type="button"
+        <Link
+          href={`/institution/spoylz-management/${item.id}`}
           className="rounded-lg border border-[var(--color-blue)] px-4 py-2 text-sm font-medium text-[var(--color-blue)]"
         >
           View Full Spoylz Details
-        </button>
+        </Link>
       </div>
     </div>
 

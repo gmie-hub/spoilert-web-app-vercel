@@ -56,12 +56,13 @@ export const pickCount = (source: Record<string, unknown>, keys: string[]): numb
   return null;
 };
 
-// Overview / revenue / stats bags get merged so both `total_lecturers` and
-// `revenue.today` resolve without callers knowing the nesting.
+// Overview / revenue / stats / metrics bags get merged so both `total_lecturers`
+// and `revenue.today` (or a lecturer's `metrics.lecturer_earnings`) resolve
+// without callers knowing the nesting.
 export const flattenOverview = (payload: unknown): Record<string, unknown> => {
   if (!isRecord(payload)) return {};
 
-  const nested = ["overview", "revenue", "stats", "totals", "counts", "earnings"]
+  const nested = ["overview", "revenue", "stats", "totals", "counts", "earnings", "metrics"]
     .map((key) => payload[key])
     .filter(isRecord);
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { StatCard } from "@spt/components";
 import useGetPaymentsQuery from "@spt/hooks/apiRequests/useGetPaymentsQuery";
+import useInstitutionId from "@spt/hooks/useInstitutionId";
 
 import RevenueSplitCard from "../components/RevenueSplitCard";
 import { RevenueIcon } from "../dashboard/components/icons";
@@ -59,9 +60,15 @@ const InstitutionRevenue = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<RevenueTransaction | null>(null);
   const [page, setPage] = useState(1);
 
-  // GET /payments?page=&per_page= — the API scopes it to the logged-in institution.
+  const { institutionId, isResolved } = useInstitutionId();
+
+  // GET /payments?page=&per_page=&institution_id= — no user filter; the
+  // institution's id scopes the list, and is left out if it can't be found.
   const { payments, pagination, isLoading, isError, errorMessage } = useGetPaymentsQuery({
     withoutUserFilter: true,
+    institution_id: institutionId,
+    // Waits for the institution's id so the list isn't fetched twice.
+    enabled: isResolved,
     page,
     per_page: TRANSACTIONS_PER_PAGE,
   });
@@ -84,7 +91,8 @@ const InstitutionRevenue = () => {
 
       <TransactionHistoryTable
         transactions={payments.map(toRevenueTransaction)}
-        isLoading={isLoading}
+        // Still loading while the institution's id is being looked up.
+        isLoading={isLoading || !isResolved}
         errorMessage={isError ? errorMessage : null}
         page={page}
         // Keeps the current page listed while the next one loads.

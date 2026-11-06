@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import useInstitutionId from "@spt/hooks/useInstitutionId";
 import type { InviteStatus, Lecturer } from "@spt/screens/institution/lecturers/types";
 import { formatDate } from "@spt/screens/institution/lecturers/utils";
 import type { ApiErrorResponse } from "@spt/types/error";
@@ -75,26 +76,42 @@ const toLecturer = (item: ApiLecturer): Lecturer => ({
   bio: item.user?.profile?.bio || null,
 });
 
-const fetchLecturersPage = async (page: number) =>
-  (await api.get<LecturersResponse>("/lecturers", { params: { page } })).data.data;
+// Every page is pulled anyway, so a large page keeps the request count down.
+const LECTURERS_PER_PAGE = 100;
+
+const fetchLecturersPage = async (page: number, institutionId: number | null) =>
+  (
+    await api.get<LecturersResponse>("/lecturers", {
+      params: {
+        page,
+        per_page: LECTURERS_PER_PAGE,
+        // Left out when the institution's id can't be found, so the list still loads.
+        ...(institutionId != null && { institution_id: institutionId }),
+      },
+    })
+  ).data.data;
 
 const useGetLecturersQuery = () => {
+  const { institutionId, isResolved } = useInstitutionId();
+
   const { data, isLoading, isError, error } = useQuery<
     ApiLecturer[],
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: ["institution-lecturers"],
+    queryKey: ["institution-lecturers", institutionId, LECTURERS_PER_PAGE],
     // The endpoint is paginated, so pull every page: search, the metrics and the
     // details page all need the whole list.
     queryFn: async () => {
-      const firstPage = await fetchLecturersPage(1);
+      const firstPage = await fetchLecturersPage(1, institutionId);
       const otherPages = await Promise.all(
         Array.from({ length: Math.max(0, firstPage.last_page - 1) }, (_, index) =>
-          fetchLecturersPage(index + 2),
+          fetchLecturersPage(index + 2, institutionId),
         ),
       );
       return [firstPage, ...otherPages].flatMap((page) => page.data ?? []);
     },
+    // Waits for the institution's id so the list isn't fetched twice.
+    enabled: isResolved,
   });
 
   const lecturers = (data ?? []).map(toLecturer);
@@ -102,7 +119,8 @@ const useGetLecturersQuery = () => {
   return {
     lecturers,
     total: lecturers.length,
-    isLoading,
+    // Still loading while the institution's id is being looked up.
+    isLoading: isLoading || !isResolved,
     isError,
     errorMessage:
       error?.response?.data?.error ||

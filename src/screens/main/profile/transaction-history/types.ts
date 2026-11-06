@@ -27,12 +27,6 @@ export interface Transaction {
   learnerName?: string;
 }
 
-export const dummyTransactions: Transaction[] = [
-  { id: "1", type: "withdrawal", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677900", dateTime: "Nov 20, 2023 | 8:00pm", fullDescription: "You made a withdrawal", rawAmount: "₦18,375.00", accountCredited: "2102925627 (Access Bank)- Ogunsola Omorinsola", status: "successful" },
-  { id: "3", type: "purchase", label: "Spoil Purchase", description: "Description", amount: "+₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677902", dateTime: "Nov 22, 2023 | 2:00pm", fullDescription: "You purchased a Spoil", rawAmount: "₦15,000.00", accountCredited: "2102925627 (Access Bank)- Ogunsola Omorinsola", status: "successful" },
-  { id: "5", type: "failed", label: "Withdrawal", description: "Description", amount: "-₦15,000.00", date: "12/01/2025", transactionId: "ID-12345677904", dateTime: "Nov 24, 2023 | 9:00am", fullDescription: "Basic Design Principles Spoil", rawAmount: "₦15,000.00", accountCredited: "2102925627 (Access Bank)- Ogunsola Omorinsola", status: "failed", rejectionReason: "Your withdrawal was rejected due to security reasons. Please contact support to resolve this.", transactionType: "Spoil Purchase", learnerName: "Ogunsola Omorinsola" },
-];
-
 export const iconConfig: Record<TransactionType, { bg: string; iconColor: string; Icon: ElementType }> = {
   withdrawal: { bg: "bg-[#FEF0E7]", iconColor: "text-[#F97316]", Icon: GoArrowUpRight },
   purchase: { bg: "bg-[#ECFDF5]", iconColor: "text-[#10B981]", Icon: LuArrowDownLeft },
@@ -84,7 +78,7 @@ export function mapPaymentToTransaction(p: PaymentDatum): Transaction {
     id: String(p.id),
     type,
     label,
-    description: p.description ?? p.type ?? "Description",
+    description: p.description ?? p.type ?? "-",
     amount: signed,
     date,
     transactionId: p.reference,

@@ -10,7 +10,7 @@ import useGetSpoilsPageQuery, { SPOILS_PAGE_SIZE } from "@spt/hooks/apiRequests/
 
 import TableStatusRow from "../../lecturers/components/TableStatusRow";
 import SpoylzThumbnail from "../../lecturers/details/components/spoylz/SpoylzThumbnail";
-import { formatDate } from "../../lecturers/utils";
+import { formatDate, formatNaira } from "../../lecturers/utils";
 import {
   NOT_AVAILABLE,
   findLecturer,
@@ -108,9 +108,8 @@ const SpoylzManagementTable = () => {
                   </td>
                   <td className="py-4 pr-4 text-[#212529]">{formatSpoylzAmount(spoil.pricing, spoil.amount)}</td>
                   <td className="py-4 pr-4 text-[#212529]">{spoil.enrolled_users ?? 0}</td>
-                  {/* No endpoint serves earnings per Spoylz yet. */}
-                  <td className="py-4 pr-4 text-[#212529]">{NOT_AVAILABLE}</td>
-                  <td className="py-4 pr-4 text-[#212529]">{NOT_AVAILABLE}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{formatNaira(spoil.lecturer_amount) ?? NOT_AVAILABLE}</td>
+                  <td className="py-4 pr-4 text-[#212529]">{formatNaira(spoil.institution_amount) ?? NOT_AVAILABLE}</td>
                   <td className="py-4 pr-4 text-[#212529]">{formatSpoylzType(spoil.type)}</td>
                   <td className="py-4 pr-4 text-gray-500">{formatDate(spoil.created_at)}</td>
                   <td className="py-4 pr-4">

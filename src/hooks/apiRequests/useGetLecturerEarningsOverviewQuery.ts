@@ -54,6 +54,8 @@ export const toLecturerEarningsOverview = (payload: unknown): LecturerEarningsOv
       "learners",
     ]),
     institutionEarnings: pickNumber(source, [
+      "total_institutional_earnings",
+      "institutional_earnings",
       "institution_earnings",
       "total_institution_earnings",
       "institution_earning",

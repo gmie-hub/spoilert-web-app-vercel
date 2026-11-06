@@ -2,18 +2,11 @@
 
 import { useState } from "react";
 
-import { useGetEarningsBreakdownQuery } from "@spt/hooks/apiRequests/useGetEarningsBreakdownQuery";
 import useGetEnrolledLearnersQuery from "@spt/hooks/apiRequests/useGetEnrolledLearnersQuery";
 import useGetLearnerProgressQuery from "@spt/hooks/apiRequests/useGetLearnerProgressQuery";
 import useGetLecturerSpoilsQuery from "@spt/hooks/apiRequests/useGetLecturerSpoilsQuery";
 
-import {
-  type StudentRow,
-  pairEarningsByTitle,
-  toSpoylzItem,
-  toStudentProgress,
-  toStudentRow,
-} from "../../mappers";
+import { type StudentRow, toSpoylzItem, toStudentProgress, toStudentRow } from "../../mappers";
 
 import EnrolledStudentsTable from "./EnrolledStudentsTable";
 import SpoylzDetails from "./SpoylzDetails";
@@ -97,9 +90,7 @@ const SpoylzCreatedTab = ({ lecturer }: { lecturer: Lecturer }) => {
   const [selectedStudent, setSelectedStudent] = useState<StudentRow | null>(null);
 
   const { spoils, isLoading, isError, errorMessage } = useGetLecturerSpoilsQuery(lecturer.userId);
-  const { earnings } = useGetEarningsBreakdownQuery(lecturer.userId);
-  const { earningFor } = pairEarningsByTitle(spoils, earnings?.data ?? []);
-  const spoylz = spoils.map((spoil) => toSpoylzItem(spoil, earningFor(spoil)));
+  const spoylz = spoils.map((spoil) => toSpoylzItem(spoil));
 
   if (view === "details" && selectedSpoylz) {
     return (
