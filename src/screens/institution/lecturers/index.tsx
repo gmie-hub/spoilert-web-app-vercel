@@ -34,6 +34,7 @@ const InstitutionLecturers = () => {
   const filteredLecturers = lecturers.filter((lecturer) => {
     const query = search.trim().toLowerCase();
     if (!query) return true;
+    
     return (
       `${lecturer.firstName} ${lecturer.lastName}`.toLowerCase().includes(query) ||
       lecturer.email.toLowerCase().includes(query)
